@@ -13,10 +13,6 @@ using namespace crisp;
 
 int main()
 {
-    Scalar<bool> test = true;
-
-    std::cout << (test or false) << std::endl;
-
     Image<bool, 1> one;
     Image<bool, 2> two;
 

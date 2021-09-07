@@ -57,6 +57,21 @@ namespace crisp
             Vector<T, N>& operator/=(T scalar);
             Vector<T, N>& operator%=(T scalar);
 
+            Vector<T, N>& operator=(T);
+
+            Vector<T, N> operator&(T t) const;
+            Vector<T, N> operator&&(T t) const;
+            Vector<T, N> operator|(T t) const;
+            Vector<T, N> operator||(T t) const;
+            Vector<T, N> operator^(T t) const;
+
+            Vector<T, N>& operator&=(T t);
+            Vector<T, N>& operator|=(T t);
+            Vector<T, N>& operator^=(T t);
+
+            Vector<T, N> operator~() const;
+            Vector<T, N> operator!() const;
+
             bool operator==(T scalar) const;
             bool operator!=(T scalar) const;
             
@@ -70,21 +85,26 @@ namespace crisp
             using Eigen::Array<T, 1, N>::w;
     };
 
-    // class specialization for n 0 1
+    // decays to T for N = 1
     template<typename T>
-    struct Scalar : public Vector<T, 1>
+    struct Vector<T, 1> : public Eigen::Array<T, 1, 1>
     {
-        Scalar() = default;
-        Scalar(T);
-
         // @brief non-explicit casting operator to true arithmetic type
-        operator T() const;
+        Vector(T t)
+            : Eigen::Array<T, 1, 1>()
+        {
+            Eigen::Array<T, 1, 1>::setConstant(t);
+        }
 
-        // @brief assignment
-        Scalar<T>& operator=(T);
-        Scalar<T>& operator=(const T&);
-        Scalar<T>& operator=(T&&);
+        inline operator T() const
+        {
+            return static_cast<T>((*this).at(0));
+        }
 
+        inline Vector<T, 1>& operator=(T t)
+        {
+            Eigen::Array<T, 1, 1>::operator()(0, 0) = t;
+        }
     };
 
     // class specialization for n = 2

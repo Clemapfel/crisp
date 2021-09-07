@@ -52,7 +52,7 @@ namespace crisp
         HSV();
         HSV(float, float, float);
 
-        operator Vector<float, 3>() const
+        operator Vector<float, 3>() const;
 
         float& hue();
         float hue() const;

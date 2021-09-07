@@ -14,7 +14,7 @@ namespace crisp
 
         for (size_t x = 0; x < get_size().x(); ++x)
             for (size_t y = 0; y < get_size().y(); ++y)
-                out(x, y) = not operator()(x, y);
+                out(x, y) = not bool(operator()(x, y));
 
         return out;
     }
@@ -55,12 +55,12 @@ namespace crisp
         return out;
     }
 
-    inline BinaryImage& BinaryImage::invert()
+    inline void BinaryImage::invert()
     {
-        for (bool& b : (*this))
-            b = not b;
-
-        return *this;
+        /*
+        for (long y = 0; y < _data.cols(); ++y)
+            for (long x = 0; x < _data.rows(); ++x)
+                operator()(x, y) = not bool(at(x, y);*/
     }
 
     inline BinaryImage& BinaryImage::operator&=(const BinaryImage& other)

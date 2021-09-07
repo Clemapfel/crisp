@@ -16,8 +16,8 @@ namespace crisp
     template<typename InnerValue_t, size_t N = 1>
     class Image
     {
-        class Iterator;
-        class ConstIterator;
+            class Iterator;
+            class ConstIterator;
 
         public:
             using Value_t = Vector<InnerValue_t, N>;
@@ -32,7 +32,7 @@ namespace crisp
 
             // @brief access pixel or padding if out of range
             Value_t& operator()(int x, int y);
-            Value_t operator()(int x, int y) const;
+            const Value_t operator()(int x, int y) const;
 
             // @brief access pixel with bounds checking
             Value_t at(size_t x, size_t y) const;
@@ -126,6 +126,23 @@ namespace crisp
             };
     };
 
+
+        /*
+    template<typename InnerValue_t, size_t N>
+    class Image : public detail::Image<InnerValue_t, N>
+    {
+        public:
+            using Value_t = typename detail::Image<InnerValue_t, N>::Value_t;
+
+            // @brief access pixel or padding if out of range
+            Value_t& operator()(int x, int y);
+            Value_t operator()(int x, int y) const;
+
+            // @brief access pixel with bounds checking
+            Value_t& at(size_t x, size_t y);
+            Value_t at(size_t x, size_t y) const;
+    };
+
     template<typename InnerValue_t>
     class Image<InnerValue_t, 1>
     {
@@ -137,7 +154,9 @@ namespace crisp
             // @brief access pixel with bounds checking
             InnerValue_t at(size_t x, size_t y) const;
             InnerValue_t& at(size_t x, size_t y);
-    };
+    };*/
+
+
 }
 
 #include ".src/multi_plane_image.inl"

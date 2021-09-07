@@ -164,17 +164,23 @@ namespace crisp
         return N;
     }
 
+    /*
     template<typename T>
     Scalar<T>::Scalar(T t)
         : Vector<T, 1>({t})
     {}
 
-    template<typename T>
-    Scalar<T>::operator T() const
+    /*
+    template<>
+    class Scalar<bool> : public Vector<bool, 1>
     {
-        return static_cast<T>(Vector<T, 1>::at(0));
-    }
+        inline operator bool() const
+        {
+            return static_cast<bool>((*this).Vector<bool, 1>::at(0));
+        }
+    };*/
 
+    /*
     template<typename T>
     Scalar<T> & Scalar<T>::operator=(T t)
     {
@@ -182,16 +188,65 @@ namespace crisp
     }
 
     template<typename T>
-    Scalar<T> & Scalar<T>::operator=(const T& t)
+    Scalar<T> Scalar<T>::operator&(T t) const
     {
-        (*this)[0] = t;
+        return (*this).at(0) & t;
     }
 
     template<typename T>
-    Scalar<T> & Scalar<T>::operator=(T&& t)
+    Scalar<T> Scalar<T>::operator&&(T t) const
     {
-        (*this)[0] = t;
+        return (*this).at(0) && t;
     }
+
+    template<typename T>
+    Scalar<T> Scalar<T>::operator|(T t) const
+    {
+        return (*this).at(0) | t;
+    }
+
+    template<typename T>
+    Scalar<T> Scalar<T>::operator||(T t) const
+    {
+        return (*this).at(0) || t;
+    }
+
+    template<typename T>
+    Scalar<T> Scalar<T>::operator^(T t) const
+    {
+        return (*this).at(0) ^ t;
+    }
+
+    template<typename T>
+    Scalar<T>& Scalar<T>::operator&=(T t)
+    {
+        return (*this)[0] &= t;
+    }
+
+    template<typename T>
+    Scalar<T>& Scalar<T>::operator|=(T t)
+    {
+        return (*this)[0] &= t;
+    }
+
+    template<typename T>
+    Scalar<T>& Scalar<T>::operator^=(T t)
+    {
+        return (*this)[0] &= t;
+    }
+
+    template<typename T>
+    Scalar<T> Scalar<T>::operator!() const
+    {
+        return ! (*this).at(0);
+    }
+
+    template<typename T>
+    Scalar<T> Scalar<T>::operator~() const
+    {
+        return ~ (*this).at(0);
+    }
+     */
 
     template<typename T>
     Vector2<T>::Vector2(T x, T y)

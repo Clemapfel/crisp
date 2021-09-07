@@ -37,23 +37,6 @@ namespace crisp
         return _data(x, y);
     }
 
-    template<typename InnerValue_t>
-    InnerValue_t Image<InnerValue_t, 1>::at(size_t x, size_t y) const
-    {
-        if (x < 0  or x >= _data.rows() or y < 0 or y >= _data.cols())
-            throw std::out_of_range("index out of range when trying to access pixel via Image::at");
-
-        return _data(x, y).at(0);
-    }
-
-    template<typename InnerValue_t>
-    InnerValue_t& Image<InnerValue_t, 1>::at(size_t x, size_t y)
-    {
-        if (x < 0  or x >= _data.rows() or y < 0 or y >= _data.cols())
-            throw std::out_of_range("index out of range when trying to access pixel via Image::at");
-
-        return _data(x, y).at(0);
-    }
 
     template<typename InnerValue_t, size_t N>
     typename Image<InnerValue_t, N>::Value_t Image<InnerValue_t, N>::get_pixel_out_of_bounds(int x, int y) const
@@ -117,19 +100,10 @@ namespace crisp
     }
 
     template<typename InnerValue_t, size_t N>
-    typename Image<InnerValue_t, N>::Value_t Image<InnerValue_t, N>::operator()(int x, int y) const
+    const typename Image<InnerValue_t, N>::Value_t Image<InnerValue_t, N>::operator()(int x, int y) const
     {
         if (x < 0  or x >= _data.rows() or y < 0 or y >= _data.cols())
-            return std::move(get_pixel_out_of_bounds(x, y));
-        else
-            return _data(x, y);
-    }
-
-    template<typename InnerValue_t>
-    InnerValue_t Image<InnerValue_t, 1>::operator()(int x, int y) const
-    {
-        if (x < 0  or x >= _data.rows() or y < 0 or y >= _data.cols())
-            return std::move(get_pixel_out_of_bounds(x, y));
+            return get_pixel_out_of_bounds(x, y);
         else
             return _data(x, y);
     }
@@ -138,16 +112,7 @@ namespace crisp
     typename Image<InnerValue_t, N>::Value_t& Image<InnerValue_t, N>::operator()(int x, int y)
     {
         if (x < 0  or x >= _data.rows() or y < 0 or y >= _data.cols())
-            return get_pixel_out_of_bounds(x, y);
-        else
-            return _data(x, y);
-    }
-
-    template<typename InnerValue_t>
-    InnerValue_t& Image<InnerValue_t, 1>::operator()(int x, int y)
-    {
-        if (x < 0  or x >= _data.rows() or y < 0 or y >= _data.cols())
-            return get_pixel_out_of_bounds(x, y);
+            return std::move(get_pixel_out_of_bounds(x, y));
         else
             return _data(x, y);
     }
