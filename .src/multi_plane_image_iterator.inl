@@ -58,13 +58,13 @@ namespace crisp
     template<typename InnerValue_t, size_t N>
     typename Image<InnerValue_t, N>::Value_t& Image<InnerValue_t, N>::Iterator::operator*() const
     {
-        return _data->operator()(_x, _y);
+        return _data->at(_x, _y);
     }
 
     template<typename InnerValue_t, size_t N>
     typename Image<InnerValue_t, N>::Iterator & Image<InnerValue_t, N>::Iterator::operator=(Value_t value)
     {
-        _data->operator()(_x, _y) = value;
+        _data->at(_x, _y) = value;
         return *this;
     }
 
@@ -121,6 +121,6 @@ namespace crisp
     template<typename InnerValue_t, size_t N>
     const typename Image<InnerValue_t, N>::Value_t& Image<InnerValue_t, N>::ConstIterator::operator*() const
     {
-        return _data->operator()(_x, _y);
+        return _data->at(_x, _y);
     }
 }

@@ -3,8 +3,6 @@
 // Created on 07.09.21 by clem (mail@clemens-cords.com)
 //
 
-#include <image/multi_plane_image.hpp>
-
 namespace crisp
 {
     template<typename InnerValue_t, size_t N>
@@ -151,10 +149,133 @@ namespace crisp
         return _padding_type;
     }
 
+    template<typename InnerValue_t, size_t N>
+    Image<InnerValue_t, N> Image<InnerValue_t, N>::operator+(const typename Image::Image_t& other) const
+    {
+        assert(get_size() == other.get_size());
 
+        Image<InnerValue_t, N> out;
 
+        for (long y = 0; y < _data.cols(); ++y)
+            for (long x = 0; x < _data.cols(); ++x)
+                out(x, y) = at(x, y) + other.at(x, y);
 
+        return out;
+    }
 
+    template<typename InnerValue_t, size_t N>
+    Image<InnerValue_t, N> Image<InnerValue_t, N>::operator-(const typename Image::Image_t& other) const
+    {
+        assert(get_size() == other.get_size());
+
+        Image<InnerValue_t, N> out;
+
+        for (long y = 0; y < _data.cols(); ++y)
+            for (long x = 0; x < _data.cols(); ++x)
+                out(x, y) = at(x, y) - other.at(x, y);
+
+        return out;
+    }
+
+    template<typename InnerValue_t, size_t N>
+    Image<InnerValue_t, N> Image<InnerValue_t, N>::operator*(const typename Image::Image_t& other) const
+    {
+        assert(get_size() == other.get_size());
+
+        Image<InnerValue_t, N> out;
+
+        for (long y = 0; y < _data.cols(); ++y)
+            for (long x = 0; x < _data.cols(); ++x)
+                out(x, y) = at(x, y) * other.at(x, y);
+
+        return out;
+    }
+
+    template<typename InnerValue_t, size_t N>
+    Image<InnerValue_t, N> Image<InnerValue_t, N>::operator/(const typename Image::Image_t& other) const
+    {
+        assert(get_size() == other.get_size());
+
+        Image<InnerValue_t, N> out;
+
+        for (long y = 0; y < _data.cols(); ++y)
+            for (long x = 0; x < _data.cols(); ++x)
+                out(x, y) = at(x, y) / other.at(x, y);
+
+        return out;
+    }
+
+    template<typename InnerValue_t, size_t N>
+    Image<InnerValue_t, N>& Image<InnerValue_t, N>::operator+=(const typename Image::Image_t& other)
+    {
+        assert(get_size() == other.get_size());
+
+        for (long y = 0; y < _data.cols(); ++y)
+            for (long x = 0; x < _data.cols(); ++x)
+                this->at(x, y) += other.at(x, y);
+
+        return *this;
+    }
+
+    template<typename InnerValue_t, size_t N>
+    Image<InnerValue_t, N>& Image<InnerValue_t, N>::operator-=(const typename Image::Image_t& other)
+    {
+        assert(get_size() == other.get_size());
+
+        for (long y = 0; y < _data.cols(); ++y)
+            for (long x = 0; x < _data.cols(); ++x)
+                this->at(x, y) -= other.at(x, y);
+
+        return *this;
+    }
+
+    template<typename InnerValue_t, size_t N>
+    Image<InnerValue_t, N>& Image<InnerValue_t, N>::operator*=(const typename Image::Image_t& other)
+    {
+        assert(get_size() == other.get_size());
+
+        for (long y = 0; y < _data.cols(); ++y)
+            for (long x = 0; x < _data.cols(); ++x)
+                this->at(x, y) *= other.at(x, y);
+
+        return *this;
+    }
+
+    template<typename InnerValue_t, size_t N>
+    Image<InnerValue_t, N>& Image<InnerValue_t, N>::operator/=(const typename Image::Image_t& other)
+    {
+        assert(get_size() == other.get_size());
+
+        for (long y = 0; y < _data.cols(); ++y)
+            for (long x = 0; x < _data.cols(); ++x)
+                this->at(x, y) /= other.at(x, y);
+
+        return *this;
+    }
+
+    template<typename InnerValue_t, size_t N>
+    auto Image<InnerValue_t, N>::begin()
+    {
+        return Iterator(this, 0, 0);
+    }
+    
+    template<typename InnerValue_t, size_t N>
+    auto Image<InnerValue_t, N>::begin() const
+    {
+        return ConstIterator(this, 0, 0);
+    }
+    
+    template<typename InnerValue_t, size_t N>
+    auto Image<InnerValue_t, N>::end()
+    {
+        return Iterator(this, _data.rows(), _data.cols());
+    }
+    
+    template<typename InnerValue_t, size_t N>
+    auto Image<InnerValue_t, N>::end() const
+    {
+        return ConstIterator(this, _data.rows(), _data.cols());
+    }
 
 }
 

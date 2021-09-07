@@ -54,18 +54,18 @@ namespace crisp
             Image_t operator/(const Image_t&) const;
 
             // @brief image-image assignment
-            Image_t operator+=(const Image_t&) const;
-            Image_t operator-=(const Image_t&) const;
-            Image_t operator*=(const Image_t&) const;
-            Image_t operator/=(const Image_t&) const;
+            Image_t& operator+=(const Image_t&);
+            Image_t& operator-=(const Image_t&);
+            Image_t& operator*=(const Image_t&);
+            Image_t& operator/=(const Image_t&);
 
             // @brief access front element
-            Iterator begin();
-            ConstIterator begin() const;
+            auto begin();
+            auto begin() const;
 
             // @brief access past-the-end element
-            Iterator end();
-            ConstIterator end() const;
+            auto end();
+            auto end() const;
 
         protected:
             Eigen::Matrix<Value_t, Eigen::Dynamic, Eigen::Dynamic> _data;
