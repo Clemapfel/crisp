@@ -7,7 +7,6 @@
 
 namespace crisp
 {
-    /*
     inline BinaryImage BinaryImage::operator!() const
     {
         BinaryImage out;
@@ -90,5 +89,4 @@ namespace crisp
 
         return *this;
     }
-     */
 }

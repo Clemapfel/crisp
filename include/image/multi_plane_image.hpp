@@ -125,6 +125,19 @@ namespace crisp
                     size_t _x, _y = 0;
             };
     };
+
+    template<typename InnerValue_t>
+    class Image<InnerValue_t, 1>
+    {
+        public:
+            // @brief access pixel or padding if out of range
+            InnerValue_t& operator()(int x, int y);
+            InnerValue_t operator()(int x, int y) const;
+
+            // @brief access pixel with bounds checking
+            InnerValue_t at(size_t x, size_t y) const;
+            InnerValue_t& at(size_t x, size_t y);
+    };
 }
 
 #include ".src/multi_plane_image.inl"

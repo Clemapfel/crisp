@@ -82,6 +82,9 @@ namespace crisp
 
         // @brief assignment
         Scalar<T>& operator=(T);
+        Scalar<T>& operator=(const T&);
+        Scalar<T>& operator=(T&&);
+
     };
 
     // class specialization for n = 2

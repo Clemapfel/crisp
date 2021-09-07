@@ -17,7 +17,8 @@ int main()
 
     std::cout << (test or false) << std::endl;
 
-    Image<bool> bool_image;
+    Image<bool, 1> one;
+    Image<bool, 2> two;
 
     return 0;
 }

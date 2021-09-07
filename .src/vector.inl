@@ -172,11 +172,23 @@ namespace crisp
     template<typename T>
     Scalar<T>::operator T() const
     {
-        return Vector<T, 1>::at(0);
+        return static_cast<T>(Vector<T, 1>::at(0));
     }
 
     template<typename T>
     Scalar<T> & Scalar<T>::operator=(T t)
+    {
+        (*this)[0] = t;
+    }
+
+    template<typename T>
+    Scalar<T> & Scalar<T>::operator=(const T& t)
+    {
+        (*this)[0] = t;
+    }
+
+    template<typename T>
+    Scalar<T> & Scalar<T>::operator=(T&& t)
     {
         (*this)[0] = t;
     }
