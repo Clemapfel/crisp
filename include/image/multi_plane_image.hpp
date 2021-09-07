@@ -25,19 +25,18 @@ namespace crisp
 
             // @brief ctors
             Image() = default;
-            Image(long width, long height, Value_t init = Value_t(InnerValue_t(0)));
+            Image(size_t width, size_t height, Value_t init = Value_t(InnerValue_t(0)));
 
             // @brief create as given size with 1 value
-            void create(long width, long height, Value_t init = Value_t(InnerValue_t(0)));
-
-            // @brief access pixel with range checking
-            auto& operator()(long x, long y);
-
-            // @brief const-access pixel with range checking
-            auto operator()(long x, long y) const;
+            void create(size_t width, size_t height, Value_t init = Value_t(InnerValue_t(0)));
 
             // @brief access pixel or padding if out of range
-            auto get_pixel_or_padding(int x, int y) const;
+            auto& operator()(int x, int y);
+            auto operator()(int x, int y) const;
+
+            // @brief access pixel with bounds checking
+            auto at(size_t x, size_t y) const;
+            auto& at(size_t x, size_t y);
 
             // @brief get number of pixels
             Vector2ui get_size() const;
@@ -72,6 +71,7 @@ namespace crisp
             Eigen::Matrix<Value_t, Eigen::Dynamic, Eigen::Dynamic> _data;
 
         private:
+            Value_t get_pixel_out_of_bounds(int x, int y) const;
             PaddingType _padding_type = PaddingType::STRETCH;
 
             struct Iterator
@@ -97,7 +97,7 @@ namespace crisp
                 private:
                     Image_t* _data;
                     Vector2ui _size;
-                    long _x, _y = 0;
+                    size_t _x, _y = 0;
             };
 
             struct ConstIterator
@@ -122,7 +122,7 @@ namespace crisp
                 private:
                     const Image_t* _data;
                     Vector2ui _size;
-                    long _x, _y = 0;
+                    size_t _x, _y = 0;
             };
     };
 }
