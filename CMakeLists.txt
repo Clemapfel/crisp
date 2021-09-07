@@ -25,7 +25,17 @@ add_library(crisp STATIC
 
         include/image/multi_plane_image.hpp
         .src/multi_plane_image.inl
-)
+
+        include/image/binary_image.hpp
+        .src/binary_image.inl
+
+        include/image/color_image.hpp
+        .src/color_image.inl
+
+        include/image/image_conversion.hpp
+        .src/image_conversion.inl
+
+        include/color.hpp .src/color.inl)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp sfml-graphics fftw3 fftw3l fftw3f)

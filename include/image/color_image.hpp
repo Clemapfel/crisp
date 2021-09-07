@@ -4,3 +4,13 @@
 //
 
 #pragma once
+
+#include <image/multi_plane_image.hpp>
+
+namespace crisp
+{
+    class ColorImage : public Image<float, 3>
+    {
+
+    };
+}

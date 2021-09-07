@@ -5,6 +5,7 @@
 
 #include <vector.hpp>
 #include <image.hpp>
+#include <color.hpp>
 
 #include <iostream>
 
