@@ -19,17 +19,18 @@ namespace crisp
     {
         ColorRepresentation();
 
-        /*
         virtual RGB to_rgb() const = 0;
         virtual HSV to_hsv() const = 0;
         virtual HSL to_hsl() const = 0;
-        virtual GrayScale to_grayscale() const = 0;*/
+        virtual GrayScale to_grayscale() const = 0;
     };
 
     struct RGB : public ColorRepresentation<3>
     {
         RGB() = default;
         RGB(float, float, float);
+
+        operator Vector<float, 3>() const;
 
         float& red();
         float red() const;
@@ -39,12 +40,19 @@ namespace crisp
 
         float& blue();
         float blue() const;
+
+        RGB to_rgb() const override;
+        HSV to_hsv() const override;
+        HSL to_hsl() const override;
+        GrayScale to_grayscale() const override;
     };
 
     struct HSV : public ColorRepresentation<3>
     {
         HSV();
         HSV(float, float, float);
+
+        operator Vector<float, 3>() const
 
         float& hue();
         float hue() const;
@@ -54,12 +62,19 @@ namespace crisp
 
         float& value();
         float value() const;
+
+        RGB to_rgb() const override;
+        HSV to_hsv() const override;
+        HSL to_hsl() const override;
+        GrayScale to_grayscale() const override;
     };
 
     struct HSL : public ColorRepresentation<3>
     {
         HSL();
         HSL(float, float, float);
+
+        operator Vector<float, 3>() const;
 
         float& hue();
         float hue() const;
@@ -69,6 +84,11 @@ namespace crisp
 
         float& lightness();
         float lightness() const;
+
+        RGB to_rgb() const override;
+        HSV to_hsv() const override;
+        HSL to_hsl() const override;
+        GrayScale to_grayscale() const override;
     };
 
     struct GrayScale : public ColorRepresentation<1>
@@ -76,7 +96,14 @@ namespace crisp
         GrayScale();
         GrayScale(float);
 
+        operator Vector<float, 1>() const;
+
         float& intensity();
         float intensity() const;
+
+        RGB to_rgb() const override;
+        HSV to_hsv() const override;
+        HSL to_hsl() const override;
+        GrayScale to_grayscale() const override;
     };
 }

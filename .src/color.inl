@@ -8,15 +8,199 @@
 namespace crisp
 {
     template<size_t N>
-    ColorRepresentation<N>::ColorRepresentation<size_t N>()
+    ColorRepresentation<N>::ColorRepresentation()
         : Vector<float, N>()
     {}
+
+    inline RGB RGB::to_rgb() const
+    {
+        return RGB(red(), green(), blue());
+    }
+    
+    inline HSV RGB::to_hsv() const
+    {
+        float h, s, v;
+
+        auto min = red() < green() ? red() : green();
+        min = min  < blue() ? min  : blue();
+
+        auto max = red() > green() ? red() : green();
+        max = max  > blue() ? max  : blue();
+
+        auto delta = max - min;
+
+        if (delta > 0)
+        {
+            if (max == red())
+                h = 60 * (fmod(((green() - blue()) / delta), 6));
+
+            else if (max == green())
+                h = 60 * (((blue() - red()) / delta) + 2);
+
+            else if (max == blue())
+                h = 60 * (((red() - green()) / delta) + 4);
+
+            if (max > 0)
+                s = delta / max;
+            else
+                s = 0;
+
+            v = max;
+        }
+        else
+        {
+            h = 0;
+            s = 0;
+            v = max;
+        }
+
+        if (h < 0)
+            h += 360;
+
+        return HSV(h / 360.f, s, v);
+    }
+
+    inline HSL RGB::to_hsl() const
+    {
+        return to_hsv().to_hsl();
+    }
+
+    inline GrayScale RGB::to_grayscale() const
+    {
+        return GrayScale((red() + green() + blue()) / 3));
+    }
+    
+    inline RGB HSV::to_rgb() const
+    {
+        hue() *= 360;
+        float c = value() * saturation();
+        float h_2 = hue() / 60;
+        float x = c * (1 - std::fabs(std::fmod(h_2, 2) - 1));
+
+        inline RGB out;
+
+        if (0 <= h_2 and h_2 < 1)
+        {
+            out = RGB(c, x, 0);
+        }
+        else if (1 <= h_2 and h_2 < 2)
+        {
+            out = RGB(x, c, 0);
+        }
+        else if (2 <= h_2 and h_2 < 3)
+        {
+            out = RGB(0, c, x);
+        }
+        else if (3 <= h_2 and h_2 < 4)
+        {
+            out = RGB(0, x, c);
+        }
+        else if (4 <= h_2 and h_2 < 5)
+        {
+            out = RGB(x, 0, c);
+        }
+        else if (5 <= h_2 and h_2 <= 6)
+        {
+            out = RGB(c, 0, x);
+        }
+
+        auto m = value() - c;
+        out.red() += m;
+        out.green() += m;
+        out.blue() += m;
+
+        return out;
+    }
+    
+    inline HSV HSV::to_hsv() const
+    {
+        return HSV(hue(), saturation(), value());
+    }
+    
+    inline HSL HSV::to_hsl() const
+    {
+        float hsv_s = saturation(),
+              hsv_v = value();
+
+        float hsl_l = hsv_v * (1 - hsv_s / 2),
+              hsl_s;
+
+        if (hsl_l == 0 or hsl_l == 1)
+            hsl_s = 0;
+        else
+            hsv_s = (hsv_v - hsl_l) / std::min(hsl_l, 1.f - hsl_l);
+
+        inline HSL out;
+        out.hue() = hue();
+        out.saturation() = hsl_s;
+        out.lightness() = hsl_l;
+
+        return out;
+    }
+    
+    inline GrayScale HSV::to_grayscale() const
+    {
+        return GrayScale(value());
+    }
+    
+    inline RGB HSL::to_rgb() const
+    {
+        to_hsv().to_rgb();
+    }
+    
+    inline HSV HSL::to_hsv() const
+    {
+        saturation() *= lightness() < 0.5 ? lightness() : 1 - lightness();
+
+        inline HSV out;
+        out.hue() = hue();
+        out.saturation() = 2 * saturation() / (lightness() + saturation());
+        out.value() = lightness() + saturation();
+
+        return out;
+    }
+    
+    inline HSL HSL::to_hsl() const
+    {
+        return HSL(hue(), saturation(), lightness());
+    }
+    
+    inline GrayScale HSL::to_grayscale() const
+    {
+        return GrayScale(lightness());
+    }
+    
+    inline RGB GrayScale::to_rgb() const
+    {
+        return RGB(intensity(), intensity(), intensity());
+    }
+    
+    inline HSV GrayScale::to_hsv() const
+    {
+        return HSV(0, 0, intensity());
+    }
+    
+    inline HSL GrayScale::to_hsl() const
+    {
+        return HSL(0, 0, intensity());
+    }
+    
+    inline GrayScale GrayScale::to_grayscale() const
+    {
+        return GrayScale(intensity());
+    }
+
 
     inline RGB::RGB(float r, float g, float b)
     {
         x() = r;
         y() = g;
         z() = b;
+    }
+    
+    inline RGB::operator Vector<float, 3>() const
+    {
+        return Vector<float, 3>(red(), green(), blue());
     }
 
     inline float & RGB::red()
@@ -55,6 +239,11 @@ namespace crisp
         y() = s;
         z() = v;
     }
+    
+    inline HSV::operator Vector<float, 3>() const
+    {
+        return Vector<float, 3>(hue(), saturation(), value());
+    }
 
     inline float& HSV::hue()
     {
@@ -92,6 +281,11 @@ namespace crisp
         y() = s;
         z() = l;
     }
+    
+    inline HSL::operator Vector<float, 3>() const
+    {
+        return Vector<float, 3>(hue(), saturation(), lightness());
+    }
 
     inline float & HSL::hue()
     {
@@ -116,6 +310,16 @@ namespace crisp
     inline GrayScale::GrayScale(float i)
     {
         x() = i;
+    }
+    
+    inline GrayScale::operator Vector<float, 1>() const
+    {
+        return Vector<float, 1>(intensity());
+    }
+    
+    inline GrayScale::operator float() const
+    {
+        return intensity();
     }
 
     inline float & GrayScale::intensity()
