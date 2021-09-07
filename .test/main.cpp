@@ -3,8 +3,17 @@
 // Created on 07.09.21 by clem (mail@clemens-cords.com)
 //
 
+#include <vector.hpp>
+
+#include <iostream>
+
+using namespace crisp;
+
 int main()
 {
+    Scalar<bool> test = true;
+
+    std::cout << (test or false) << std::endl;
     return 0;
 }
 

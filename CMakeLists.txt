@@ -3,6 +3,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -lstdc++fs -pthread -lpthread
 set(CMAKE_CXX_STANDARD 20)
 
 project(crisp)
+include_directories(./)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -18,11 +19,14 @@ include_directories("./eigen/Eigen")
 ### CRISP ############################################
 
 add_library(crisp STATIC
-        /include/vector.hpp
-        /.src/vector.hpp)
 
-#set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
-#target_link_libraries(crisp sfml-graphics fftw3 fftw3l fftw3f)
+        include/vector.hpp
+        .src/vector.inl
+
+)
+
+set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(crisp sfml-graphics fftw3 fftw3l fftw3f)
 
 # TODO: REMOVE
 include_directories("./include")

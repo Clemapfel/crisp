@@ -32,12 +32,12 @@ namespace crisp
             Vector<T, N> operator-(const Vector<T, N>& other) const;
             using Eigen::Array<T, 1, N>::operator*;
             using Eigen::Array<T, 1, N>::operator/;
-            
+
             using Eigen::Array<T, 1, N>::operator+=;
             using Eigen::Array<T, 1, N>::operator-=;
             using Eigen::Array<T, 1, N>::operator*=;
             using Eigen::Array<T, 1, N>::operator/=;
-            
+
             bool operator==(const Vector<T, N>& other) const;
             bool operator!=(const Vector<T, N>& other) const;
 
@@ -46,12 +46,14 @@ namespace crisp
             Vector<T, N> operator-(T scalar) const;
             Vector<T, N> operator*(T scalar) const;
             Vector<T, N> operator/(T scalar) const;
-            
+            Vector<T, N> operator%(T scalar) const;
+
             Vector<T, N>& operator+=(T scalar);
             Vector<T, N>& operator-=(T scalar);
             Vector<T, N>& operator*=(T scalar);
             Vector<T, N>& operator/=(T scalar);
-            
+            Vector<T, N>& operator%=(T scalar);
+
             bool operator==(T scalar) const;
             bool operator!=(T scalar) const;
             
@@ -73,7 +75,10 @@ namespace crisp
         Scalar(T);
 
         // @brief non-explicit casting operator to true arithmetic type
-        operator T();
+        operator T() const;
+
+        // @brief assignment
+        Scalar<T>& operator=(T);
     };
 
     // class specialization for n = 2
@@ -128,3 +133,5 @@ namespace crisp
     using Vector4i = Vector4<int>;
     using Vector4ui = Vector4<unsigned int>;
 }
+
+#include ".src/vector.inl"
