@@ -22,6 +22,9 @@ namespace crisp
             // @brief construct from initializer list
             Vector(std::initializer_list<T> list);
 
+            // @brief construct with all values as scalar
+            Vector(T);
+
             // @brief access data
             T& operator[](size_t i);
             T& at(size_t i);

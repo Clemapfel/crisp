@@ -25,6 +25,12 @@ namespace crisp
     }
 
     template<typename T, size_t N>
+    Vector<T, N>::Vector(T t)
+    {
+        Eigen::Array<T, 1, N>::setConstant(t);
+    }
+
+    template<typename T, size_t N>
     T & Vector<T, N>::operator[](size_t i)
     {
         return Eigen::Array<T, 1, N>::operator()(0, i);

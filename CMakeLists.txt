@@ -23,6 +23,8 @@ add_library(crisp STATIC
         include/vector.hpp
         .src/vector.inl
 
+        include/image/multi_plane_image.hpp
+        .src/multi_plane_image.inl
 )
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)

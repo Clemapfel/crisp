@@ -4,6 +4,7 @@
 //
 
 #include <vector.hpp>
+#include <image.hpp>
 
 #include <iostream>
 
@@ -14,6 +15,9 @@ int main()
     Scalar<bool> test = true;
 
     std::cout << (test or false) << std::endl;
+
+    Image<bool> bool_image;
+
     return 0;
 }
 
