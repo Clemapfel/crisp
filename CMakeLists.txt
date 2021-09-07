@@ -17,7 +17,9 @@ include_directories("./eigen/Eigen")
 
 ### CRISP ############################################
 
-#add_library(crisp STATIC)
+add_library(crisp STATIC
+        /include/vector.hpp
+        /.src/vector.hpp)
 
 #set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 #target_link_libraries(crisp sfml-graphics fftw3 fftw3l fftw3f)
