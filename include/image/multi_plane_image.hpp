@@ -31,12 +31,12 @@ namespace crisp
             void create(size_t width, size_t height, Value_t init = Value_t(InnerValue_t(0)));
 
             // @brief access pixel or padding if out of range
-            auto& operator()(int x, int y);
-            auto operator()(int x, int y) const;
+            Value_t& operator()(int x, int y);
+            Value_t operator()(int x, int y) const;
 
             // @brief access pixel with bounds checking
-            auto at(size_t x, size_t y) const;
-            auto& at(size_t x, size_t y);
+            Value_t at(size_t x, size_t y) const;
+            Value_t& at(size_t x, size_t y);
 
             // @brief get number of pixels
             Vector2ui get_size() const;

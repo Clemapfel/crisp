@@ -19,27 +19,21 @@ namespace crisp
     }
 
     template<typename InnerValue_t, size_t N>
-    auto Image<InnerValue_t, N>::at(size_t x, size_t y) const
+    typename Image<InnerValue_t, N>::Value_t Image<InnerValue_t, N>::at(size_t x, size_t y) const
     {
         if (x < 0  or x >= _data.rows() or y < 0 or y >= _data.cols())
             throw std::out_of_range("index out of range when trying to access pixel via Image::at");
 
-        if (N == 1)
-            return _data(x, y).at(0);
-        else
-            return _data(x, y);
+        return _data(x, y);
     }
 
     template<typename InnerValue_t, size_t N>
-    auto& Image<InnerValue_t, N>::at(size_t x, size_t y)
+    typename Image<InnerValue_t, N>::Value_t& Image<InnerValue_t, N>::at(size_t x, size_t y)
     {
         if (x < 0  or x >= _data.rows() or y < 0 or y >= _data.cols())
             throw std::out_of_range("index out of range when trying to access pixel via Image::at");
 
-        if (N == 1)
-            return _data(x, y).at(0);
-        else
-            return _data(x, y);
+        return _data(x, y);
     }
 
     template<typename InnerValue_t, size_t N>
@@ -64,7 +58,7 @@ namespace crisp
                 if (y_mod < 0)
                     y_mod += get_size().y();
 
-                return get_pixel(x_mod, y_mod);
+                return at(x_mod, y_mod);
             }
             case MIRROR:
             {
@@ -80,7 +74,7 @@ namespace crisp
                 else if (y >= get_size().y())
                     new_y = get_size().y() - 1 - new_y;
 
-                return get_pixel(new_x, new_y);
+                return at(new_x, new_y);
             }
             case STRETCH:
             {
@@ -96,7 +90,7 @@ namespace crisp
                 if (y >= get_size().y())
                     new_y = get_size().y() - 1;
 
-                return get_pixel(new_x, new_y);
+                return at(new_x, new_y);
             }
             default:
                 return Value_t(0);
@@ -104,31 +98,21 @@ namespace crisp
     }
 
     template<typename InnerValue_t, size_t N>
-    auto Image<InnerValue_t, N>::operator()(int x, int y) const
+    typename Image<InnerValue_t, N>::Value_t Image<InnerValue_t, N>::operator()(int x, int y) const
     {
         if (x < 0  or x >= _data.rows() or y < 0 or y >= _data.cols())
             return get_pixel_out_of_bounds();
         else
-        {
-            if (N == 1)
-                return _data(x, y).at(0);
-            else
-                return _data(x, y);
-        }
+            return _data(x, y);
     }
 
     template<typename InnerValue_t, size_t N>
-    auto& Image<InnerValue_t, N>::operator()(int x, int y)
+    typename Image<InnerValue_t, N>::Value_t& Image<InnerValue_t, N>::operator()(int x, int y)
     {
         if (x < 0  or x >= _data.rows() or y < 0 or y >= _data.cols())
             return std::move(get_pixel_out_of_bounds());
         else
-        {
-            if (N == 1)
-                return _data(x, y).at(0);
-            else
-                return _data(x, y);
-        }
+            return _data(x, y);
     }
 
     template<typename InnerValue_t, size_t N>
@@ -276,6 +260,5 @@ namespace crisp
     {
         return ConstIterator(this, _data.rows(), _data.cols());
     }
-
 }
 
