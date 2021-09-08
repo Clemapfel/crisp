@@ -22,6 +22,12 @@ namespace crisp::detail
     }
 
     template<typename T, size_t N>
+    T Vector<T, N>::operator[](size_t i) const
+    {
+        return Eigen::Array<T, 1, N>::operator()(0, i);
+    }
+
+    template<typename T, size_t N>
     T& Vector<T, N>::at(size_t i)
     {
         if (i >= N)
@@ -154,6 +160,69 @@ namespace crisp::detail
 
 namespace crisp
 {
+    // specializations: decay to trivial type for N = 1
+    template<typename T>
+    struct Vector<T, 1> : public detail::Vector<T, 1>
+    {
+        Vector();
+        Vector(T t);
+
+        inline operator T() const
+        {
+            return static_cast<T>(Eigen::Array<T, 1, 1>::operator()(0, 0));
+        }
+
+        inline Vector<T, 1>& operator=(T t)
+        {
+            Eigen::Array<T, 1, 1>::operator()(0, 0) = t;
+        }
+    };
+
+    // partial specialization for N = 2
+    template<typename T>
+    class Vector<T, 2> : public detail::Vector<T, 2>
+    {
+        public:
+            Vector();
+            Vector(std::initializer_list<T>);
+            Vector(T);
+
+            Vector(T x, T y);
+
+            using detail::Vector<T, 2>::x;
+            using detail::Vector<T, 2>::y;
+    };
+
+
+    template<typename T>
+    class Vector<T, 3> : public detail::Vector<T, 3>
+    {
+        public:
+            Vector();
+            Vector(std::initializer_list<T>);
+            Vector(T);
+            Vector(T x, T y, T z);
+
+            using detail::Vector<T, 3>::x;
+            using detail::Vector<T, 3>::y;
+            using detail::Vector<T, 3>::z;
+    };
+
+    template<typename T>
+    class Vector<T, 4> : public detail::Vector<T, 4>
+    {
+        public:
+            Vector();
+            Vector(std::initializer_list<T>);
+            Vector(T);
+            Vector(T x, T y, T z, T w);
+
+            using detail::Vector<T, 4>::x;
+            using detail::Vector<T, 4>::y;
+            using detail::Vector<T, 4>::z;
+            using detail::Vector<T, 4>::w;
+    };
+
     template<typename T, size_t N>
     Vector<T, N>::Vector()
         : detail::Vector<T, N>()
@@ -273,118 +342,3 @@ namespace crisp
         Vector<T, 3>::at(3) = w;
     }
 }
-
-    /*
-    template<typename T>
-    Scalar<T>::Scalar(T t)
-        : Vector<T, 1>({t})
-    {}
-
-    /*
-    template<>
-    class Scalar<bool> : public Vector<bool, 1>
-    {
-        inline operator bool() const
-        {
-            return static_cast<bool>((*this).Vector<bool, 1>::at(0));
-        }
-    };*/
-
-    /*
-    template<typename T>
-    Scalar<T> & Scalar<T>::operator=(T t)
-    {
-        (*this)[0] = t;
-    }
-
-    template<typename T>
-    Scalar<T> Scalar<T>::operator&(T t) const
-    {
-        return (*this).at(0) & t;
-    }
-
-    template<typename T>
-    Scalar<T> Scalar<T>::operator&&(T t) const
-    {
-        return (*this).at(0) && t;
-    }
-
-    template<typename T>
-    Scalar<T> Scalar<T>::operator|(T t) const
-    {
-        return (*this).at(0) | t;
-    }
-
-    template<typename T>
-    Scalar<T> Scalar<T>::operator||(T t) const
-    {
-        return (*this).at(0) || t;
-    }
-
-    template<typename T>
-    Scalar<T> Scalar<T>::operator^(T t) const
-    {
-        return (*this).at(0) ^ t;
-    }
-
-    template<typename T>
-    Scalar<T>& Scalar<T>::operator&=(T t)
-    {
-        return (*this)[0] &= t;
-    }
-
-    template<typename T>
-    Scalar<T>& Scalar<T>::operator|=(T t)
-    {
-        return (*this)[0] &= t;
-    }
-
-    template<typename T>
-    Scalar<T>& Scalar<T>::operator^=(T t)
-    {
-        return (*this)[0] &= t;
-    }
-
-    template<typename T>
-    Scalar<T> Scalar<T>::operator!() const
-    {
-        return ! (*this).at(0);
-    }
-
-    template<typename T>
-    Scalar<T> Scalar<T>::operator~() const
-    {
-        return ~ (*this).at(0);
-    }
-
-
-    template<typename T>
-    Vector2<T>::Vector2(T x, T y)
-        : Vector<T, 2>({x, y})
-    {}
-
-    template<typename T>
-    Vector2<T>::Vector2(Vector<T, 2> other)
-        : Vector2<T>(other.at(0), other.at(1))
-    {}
-
-    template<typename T>
-    Vector3<T>::Vector3(T x, T y, T z)
-        : Vector<T, 3>({x, y, z})
-    {}
-
-    template<typename T>
-    Vector3<T>::Vector3(Vector<T, 3> other)
-        : Vector3<T>(other.at(0), other.at(1), other.at(2))
-    {}
-
-    template<typename T>
-    Vector4<T>::Vector4(T x, T y, T z, T w)
-        : Vector<T, 4>({x, y, z})
-    {}
-
-    template<typename T>
-    Vector4<T>::Vector4(Vector<T, 4> other)
-        : Vector4<T>(other.at(0), other.at(1), other.at(2), other.at(3))
-    {}
-     */

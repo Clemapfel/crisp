@@ -9,66 +9,110 @@
 
 namespace crisp::detail
 {
-    // Vector class that behaves like a scalar in notation
+    // Vector class that behaves like a scalar, all arithmetics are element-wise
     template<typename T, size_t N>
     class Vector : public Eigen::Array<T, 1, N>
     {
         static_assert(std::is_integral<T>::value or std::is_floating_point<T>::value);
 
         public:
+            // @brief default ctor
             Vector();
 
-            // @brief access data
+            // @brief access data without bounds checking
+            // @param i: index
+            // @returns: reference to element
             T& operator[](size_t i);
+
+            // @brief const-access data without bounds checking
+            // @param i: index
+            // @returns: copy of element
+            T operator[](size_t i) const;
+
+            // @brief access data with bounds checking
+            // @brief i: index in [0, N]
+            // @returns: reference to element
             T& at(size_t i);
+
+            // @brief const-access data with bounds checking
+            // @brief i: index in [0, N]
+            // @returns: copy of element
             T at(size_t i) const;
 
-            // @brief vector-vector arithmetics
+            // @brief vector-vector elementwise-arithmetics
+            // @param other: vector of same size and type
+            // @returns: resulting vector
             Vector<T, N> operator+(const Vector<T, N>& other) const;
             Vector<T, N> operator-(const Vector<T, N>& other) const;
             using Eigen::Array<T, 1, N>::operator*;
             using Eigen::Array<T, 1, N>::operator/;
 
+            // @brief vector-vector elementwise assignment
+            // @param other: vector of same size and type
+            // @returns: reference to self after modification
             using Eigen::Array<T, 1, N>::operator+=;
             using Eigen::Array<T, 1, N>::operator-=;
             using Eigen::Array<T, 1, N>::operator*=;
             using Eigen::Array<T, 1, N>::operator/=;
 
+            // @brief element-wise boolean operators
+            // @param other: vector of same size and type
+            // @returns: true if for all i: (*this)[i] == other[i], false otherwise
             bool operator==(const Vector<T, N>& other) const;
             bool operator!=(const Vector<T, N>& other) const;
 
             // @brief perform elementwise vector-scalar artihmetics
+            // @param scalar: scalar of same type as vectors elements
+            // @returns: resulting vector
             Vector<T, N> operator+(T scalar) const;
             Vector<T, N> operator-(T scalar) const;
             Vector<T, N> operator*(T scalar) const;
             Vector<T, N> operator/(T scalar) const;
             Vector<T, N> operator%(T scalar) const;
 
+            // @brief perform elementwise vector-scalar assignment
+            // @param scalar: scalar of same type as vectors elements
+            // @returns: reference to self
             Vector<T, N>& operator+=(T scalar);
             Vector<T, N>& operator-=(T scalar);
             Vector<T, N>& operator*=(T scalar);
             Vector<T, N>& operator/=(T scalar);
             Vector<T, N>& operator%=(T scalar);
 
+            // @brief assign scalar to all elements
+            // @param : scalar
+            // @returns reference to self
             Vector<T, N>& operator=(T);
 
+            // @brief elementwise boolean and bitwise arithmetics
+            // @param : scalar
+            // @returns resulting vector
             Vector<T, N> operator&(T t) const;
             Vector<T, N> operator&&(T t) const;
             Vector<T, N> operator|(T t) const;
             Vector<T, N> operator||(T t) const;
             Vector<T, N> operator^(T t) const;
 
+            // @brief elementwise bitwise assignment
+            // @param : scalar
+            // @returns reference to self
             Vector<T, N>& operator&=(T t);
             Vector<T, N>& operator|=(T t);
             Vector<T, N>& operator^=(T t);
 
+            // @brief unary bitwise and boolean operators
+            // @returns resulting vector
             Vector<T, N> operator~() const;
             Vector<T, N> operator!() const;
 
-            bool operator==(T scalar) const;
-            bool operator!=(T scalar) const;
+            // @brief compare all elements to the same scalar
+            // @param : scalar
+            // @returns true if for all i: (*this)[i] == scalar, false otherwise
+            bool operator==(T) const;
+            bool operator!=(T) const;
 
             // @brief expose size
+            // @returns size
             static size_t size();
 
         protected:
@@ -78,21 +122,34 @@ namespace crisp::detail
             using Eigen::Array<T, 1, N>::w;
 
         private:
-            virtual inline void make_polymorphic_with_dummy() {};
+            virtual inline void make_polymorphic_with_this_dummy() {};
     };
 }
 
 namespace crisp
 {
-
-    // primary template
+    // partial specializations
     template<typename T, size_t N>
     class Vector : public detail::Vector<T, N>
     {
         public:
+            // @brief default ctor
             Vector();
+
+            // @brief ctor with initializer list
+            // @param : initializer list
             Vector(std::initializer_list<T>);
+
+            // @brief ctor and assign scalar to all elements
+            // @param : scalar
             Vector(T);
+
+            // @brief alternative way to access elements
+            // @returns (const) reference to corresponding element
+            using detail::Vector<T, 4>::x;
+            using detail::Vector<T, 4>::y;
+            using detail::Vector<T, 4>::z;
+            using detail::Vector<T, 4>::w;
     };
 
     // typedefs for commonly used Ts
@@ -107,67 +164,6 @@ namespace crisp
     using Vector4f = Vector<float, 4>;
     using Vector4i = Vector<int, 4>;
     using Vector4ui = Vector<size_t, 4>;
-
-    // specializations
-    template<typename T>
-    struct Vector<T, 1> : public detail::Vector<T, 1>
-    {
-        Vector();
-        Vector(T t);
-
-        inline operator T() const
-        {
-            return static_cast<T>(Eigen::Array<T, 1, 1>::operator()(0, 0));
-        }
-
-        inline Vector<T, 1>& operator=(T t)
-        {
-            Eigen::Array<T, 1, 1>::operator()(0, 0) = t;
-        }
-    };
-
-    template<typename T>
-    class Vector<T, 2> : public detail::Vector<T, 2>
-    {
-        public:
-            Vector();
-            Vector(std::initializer_list<T>);
-            Vector(T);
-            Vector(T x, T y);
-
-            using detail::Vector<T, 2>::x;
-            using detail::Vector<T, 2>::y;
-    };
-
-
-    template<typename T>
-    class Vector<T, 3> : public detail::Vector<T, 3>
-    {
-        public:
-            Vector();
-            Vector(std::initializer_list<T>);
-            Vector(T);
-            Vector(T x, T y, T z);
-
-            using detail::Vector<T, 3>::x;
-            using detail::Vector<T, 3>::y;
-            using detail::Vector<T, 3>::z;
-    };
-
-    template<typename T>
-    class Vector<T, 4> : public detail::Vector<T, 4>
-    {
-        public:
-            Vector();
-            Vector(std::initializer_list<T>);
-            Vector(T);
-            Vector(T x, T y, T z, T w);
-
-            using detail::Vector<T, 4>::x;
-            using detail::Vector<T, 4>::y;
-            using detail::Vector<T, 4>::z;
-            using detail::Vector<T, 4>::w;
-    };
 }
 
 #include ".src/vector.inl"
