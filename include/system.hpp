@@ -5,7 +5,8 @@
 
 #pragma once
 
-// header collecting all system headers
+// header collecting all includes related to loading, saving and rendering
+
 #include <system/image_io.hpp>
 #include <system/key_id.hpp>
 #include <system/input_handler.hpp>
