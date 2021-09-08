@@ -15,7 +15,7 @@ namespace crisp
     struct GrayScale;
 
     template<size_t N>
-    struct ColorRepresentation : protected Vector<float, N>
+    struct ColorRepresentation : public Vector<float, N>
     {
         ColorRepresentation();
 
