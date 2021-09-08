@@ -3,28 +3,26 @@
 // Created on 07.09.21 by clem (mail@clemens-cords.com)
 //
 
-#include <image/color_image.hpp>
-
 namespace crisp
 {
-    Image<float, 1> ColorImage::get_red_plane()
+    GrayScaleImage ColorImage::get_red_plane()
     {
         return get_nths_plane<0>();
     }
 
-    Image<float, 1> ColorImage::get_blue_plane()
+    GrayScaleImage ColorImage::get_blue_plane()
     {
         return get_nths_plane<1>();
     }
 
-    Image<float, 1> ColorImage::get_green_plane()
+    GrayScaleImage ColorImage::get_green_plane()
     {
         return get_nths_plane<2>();
     }
 
-    Image<float, 1> ColorImage::get_hue_plane()
+    GrayScaleImage ColorImage::get_hue_plane()
     {
-        Image<float, 1> out;
+        GrayScaleImage out;
         out.create(_data.rows(), _data.cols());
 
         for (long y = 0; y < _data.cols(); ++y)
@@ -39,9 +37,9 @@ namespace crisp
         return out;
     }
 
-    Image<float, 1> ColorImage::get_saturation_plane()
+    GrayScaleImage ColorImage::get_saturation_plane()
     {
-        Image<float, 1> out;
+        GrayScaleImage out;
         out.create(_data.rows(), _data.cols());
 
         for (long y = 0; y < _data.cols(); ++y)
@@ -56,9 +54,9 @@ namespace crisp
         return out;
     }
 
-    Image<float, 1> ColorImage::get_value_plane()
+    GrayScaleImage ColorImage::get_value_plane()
     {
-        Image<float, 1> out;
+        GrayScaleImage out;
         out.create(_data.rows(), _data.cols());
 
         for (long y = 0; y < _data.cols(); ++y)
@@ -73,9 +71,9 @@ namespace crisp
         return out;
     }
 
-    Image<float, 1> ColorImage::get_lightness_plane()
+    GrayScaleImage ColorImage::get_lightness_plane()
     {
-        Image<float, 1> out;
+        GrayScaleImage out;
         out.create(_data.rows(), _data.cols());
 
         for (long y = 0; y < _data.cols(); ++y)

@@ -6,6 +6,7 @@
 #pragma once
 
 #include <image/multi_plane_image.hpp>
+#include <image/color_image.hpp>
 
 namespace crisp
 {
@@ -13,7 +14,16 @@ namespace crisp
     class BinaryImage : public Image<bool, 1>
     {
         public:
+            // @brief apply unary not to all pixels
             void invert();
+
+            // @brief convert to visually identical grayscale image
+            GrayScaleImage convert_to_grayscale() const;
+
+            // @brief convert to visually identical color image
+            ColorImage convert_to_color() const;
+
+            // @brief convert to visually identical color image
 
             // bitwise operators
             // @brief element-wise binary NOT operator

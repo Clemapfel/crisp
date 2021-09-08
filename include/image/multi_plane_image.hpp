@@ -143,7 +143,7 @@ namespace crisp
                     size_t _x, _y = 0;
             };
     };
-    
+
     using GrayScaleImage = Image<float, 1>;
 }
 
