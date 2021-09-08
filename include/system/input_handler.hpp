@@ -5,20 +5,20 @@
 
 #pragma once
 
-#include <string>
-#include <map>
+#include <system/key_id.hpp>
+#include <vector.hpp>
 
 #include <SFML/System/Time.hpp>
 #include <SFML/Window/Event.hpp>
 
-#include <system/key_id.hpp>
-#include <vector.hpp>
+#include <string>
+#include <map>
 
 namespace crisp
 {
     class RenderWindow;
 
-    // @brief static handler that allows accesing the keyboard/mouse state
+    // static handler that allows accesing the keyboard/mouse state
     class InputHandler
     {
         friend class RenderWindow;

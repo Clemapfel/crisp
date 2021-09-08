@@ -5,6 +5,7 @@
 
 #pragma once
 
+// header collecting all system headers
 #include <system/image_io.hpp>
 #include <system/key_id.hpp>
 #include <system/input_handler.hpp>
