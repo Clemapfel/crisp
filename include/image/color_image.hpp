@@ -31,3 +31,5 @@ namespace crisp
             Image<float, 1> get_lightness_plane();
     };
 }
+
+#include ".src/color_image.inl"
