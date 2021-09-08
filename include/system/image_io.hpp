@@ -19,3 +19,5 @@ namespace crisp
     bool save_to_disk(const GrayScaleImage &, std::string path);
     bool save_to_disk(const ColorImage&, std::string path);
 }
+
+#include ".src/image_io.inl"
