@@ -30,6 +30,8 @@ namespace crisp
         RGB() = default;
         RGB(float, float, float);
 
+        RGB(Vector<float, 3>);
+        RGB& operator=(Vector<float, 3>);
         operator Vector<float, 3>() const;
 
         float& red();
@@ -49,9 +51,11 @@ namespace crisp
 
     struct HSV : public ColorRepresentation<3>
     {
-        HSV();
+        HSV() = default;
         HSV(float, float, float);
 
+        HSV(Vector<float, 3>);
+        HSV& operator=(Vector<float, 3>);
         operator Vector<float, 3>() const;
 
         float& hue();
@@ -71,9 +75,11 @@ namespace crisp
 
     struct HSL : public ColorRepresentation<3>
     {
-        HSL();
+        HSL() = default;
         HSL(float, float, float);
 
+        HSL(Vector<float, 3>);
+        HSL& operator=(Vector<float, 3>);
         operator Vector<float, 3>() const;
 
         float& hue();
@@ -93,10 +99,15 @@ namespace crisp
 
     struct GrayScale : public ColorRepresentation<1>
     {
-        GrayScale();
+        GrayScale() = default;
         GrayScale(float);
+        GrayScale(Vector<float, 1>);
+
+        GrayScale& operator=(Vector<float, 1>);
+        GrayScale& operator=(float);
 
         operator Vector<float, 1>() const;
+        operator float() const;
 
         float& intensity();
         float intensity() const;
@@ -107,3 +118,5 @@ namespace crisp
         GrayScale to_grayscale() const override;
     };
 }
+
+#include ".src/color.inl"

@@ -8,7 +8,7 @@
 namespace crisp
 {
     template<size_t N>
-    ColorRepresentation<N>::ColorRepresentation()
+    inline ColorRepresentation<N>::ColorRepresentation()
         : Vector<float, N>()
     {}
 
@@ -67,17 +67,19 @@ namespace crisp
 
     inline GrayScale RGB::to_grayscale() const
     {
-        return GrayScale((red() + green() + blue()) / 3));
+        return GrayScale((red() + green() + blue()) / 3);
     }
     
     inline RGB HSV::to_rgb() const
     {
-        hue() *= 360;
+        auto h = hue();
+
+        h *= 360;
         float c = value() * saturation();
-        float h_2 = hue() / 60;
+        float h_2 = h / 60;
         float x = c * (1 - std::fabs(std::fmod(h_2, 2) - 1));
 
-        inline RGB out;
+        RGB out;
 
         if (0 <= h_2 and h_2 < 1)
         {
@@ -130,7 +132,7 @@ namespace crisp
         else
             hsv_s = (hsv_v - hsl_l) / std::min(hsl_l, 1.f - hsl_l);
 
-        inline HSL out;
+        HSL out;
         out.hue() = hue();
         out.saturation() = hsl_s;
         out.lightness() = hsl_l;
@@ -145,17 +147,18 @@ namespace crisp
     
     inline RGB HSL::to_rgb() const
     {
-        to_hsv().to_rgb();
+        return to_hsv().to_rgb();
     }
     
     inline HSV HSL::to_hsv() const
     {
-        saturation() *= lightness() < 0.5 ? lightness() : 1 - lightness();
+        auto s = saturation();
+        s *= lightness() < 0.5 ? lightness() : 1 - lightness();
 
-        inline HSV out;
+        HSV out;
         out.hue() = hue();
-        out.saturation() = 2 * saturation() / (lightness() + saturation());
-        out.value() = lightness() + saturation();
+        out.saturation() = 2 * s / (lightness() + s);
+        out.value() = lightness() + s;
 
         return out;
     }
@@ -197,10 +200,24 @@ namespace crisp
         y() = g;
         z() = b;
     }
-    
+
+    inline RGB::RGB(Vector<float, 3> vec)
+    {
+        for (size_t i = 0; i < 3; ++i)
+            Vector<float, 3>::at(i) = vec.at(i);
+    }
+
+    inline RGB& RGB::operator=(Vector<float, 3> vec)
+    {
+        for (size_t i = 0; i < 3; ++i)
+            Vector<float, 3>::at(i) = vec.at(i);
+
+        return *this;
+    }
+
     inline RGB::operator Vector<float, 3>() const
     {
-        return Vector<float, 3>(red(), green(), blue());
+        return Vector<float, 3>({red(), green(), blue()});
     }
 
     inline float & RGB::red()
@@ -239,10 +256,24 @@ namespace crisp
         y() = s;
         z() = v;
     }
+
+    inline HSV::HSV(Vector<float, 3> vec)
+    {
+        for (size_t i = 0; i < 3; ++i)
+            Vector<float, 3>::at(i) = vec.at(i);
+    }
+
+    inline HSV& HSV::operator=(Vector<float, 3> vec)
+    {
+        for (size_t i = 0; i < 3; ++i)
+            Vector<float, 3>::at(i) = vec.at(i);
+
+        return *this;
+    }
     
     inline HSV::operator Vector<float, 3>() const
     {
-        return Vector<float, 3>(hue(), saturation(), value());
+        return Vector<float, 3>({hue(), saturation(), value()});
     }
 
     inline float& HSV::hue()
@@ -281,10 +312,24 @@ namespace crisp
         y() = s;
         z() = l;
     }
+
+    inline HSL::HSL(Vector<float, 3> vec)
+    {
+        for (size_t i = 0; i < 3; ++i)
+            Vector<float, 3>::at(i) = vec.at(i);
+    }
+
+    inline HSL& HSL::operator=(Vector<float, 3> vec)
+    {
+        for (size_t i = 0; i < 3; ++i)
+            Vector<float, 3>::at(i) = vec.at(i);
+
+        return *this;
+    }
     
     inline HSL::operator Vector<float, 3>() const
     {
-        return Vector<float, 3>(hue(), saturation(), lightness());
+        return Vector<float, 3>({hue(), saturation(), lightness()});
     }
 
     inline float & HSL::hue()
@@ -307,11 +352,38 @@ namespace crisp
         return y();
     }
 
+    inline float HSL::lightness() const
+    {
+        return z();
+    }
+
+    inline float& HSL::lightness()
+    {
+        return z();
+    }
+
     inline GrayScale::GrayScale(float i)
     {
         x() = i;
     }
-    
+
+    inline GrayScale::GrayScale(Vector<float, 1> v)
+    {
+        intensity() = v;
+    }
+
+    GrayScale& GrayScale::operator=(Vector<float, 1> v)
+    {
+        intensity() = v;
+        return *this;
+    }
+
+    GrayScale& GrayScale::operator=(float v)
+    {
+        intensity() = v;
+        return *this;
+    }
+
     inline GrayScale::operator Vector<float, 1>() const
     {
         return Vector<float, 1>(intensity());
