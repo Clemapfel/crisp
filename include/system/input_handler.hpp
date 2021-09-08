@@ -11,7 +11,7 @@
 #include <SFML/System/Time.hpp>
 #include <SFML/Window/Event.hpp>
 
-#include <key_id.hpp>
+#include <system/key_id.hpp>
 #include <vector.hpp>
 
 namespace crisp

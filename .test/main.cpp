@@ -6,6 +6,9 @@
 #include <vector.hpp>
 #include <image.hpp>
 #include <color.hpp>
+#include <system/image_io.hpp>
+#include <system/sprite.hpp>
+#include <system/render_window.hpp>
 
 #include <iostream>
 
@@ -13,9 +16,20 @@ using namespace crisp;
 
 int main()
 {
-    Image<bool, 1> one;
-    Image<bool, 2> two;
+    auto image = load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
 
-    return 0;
+    auto sprite = Sprite();
+    sprite.create_from(image);
+    sprite.set_scale(2);
+
+    auto window = RenderWindow(sprite.get_size().x(), sprite.get_size().y());
+
+    while (window.is_open())
+    {
+        auto time = window.update();
+        window.clear();
+        window.draw(sprite);
+        window.display();
+    }
 }
 

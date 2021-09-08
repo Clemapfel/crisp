@@ -15,7 +15,7 @@ namespace crisp
     struct GrayScale;
 
     template<size_t N>
-    struct ColorRepresentation : public Vector<float, N>
+    struct ColorRepresentation
     {
         ColorRepresentation();
 
@@ -25,14 +25,13 @@ namespace crisp
         virtual GrayScale to_grayscale() const = 0;
     };
 
-    struct RGB : public ColorRepresentation<3>
+    struct RGB : public ColorRepresentation<3>, public Vector<float, 3>
     {
         RGB() = default;
         RGB(float, float, float);
 
         RGB(Vector<float, 3>);
         RGB& operator=(Vector<float, 3>);
-        operator Vector<float, 3>() const;
 
         float& red();
         float red() const;
@@ -49,7 +48,7 @@ namespace crisp
         GrayScale to_grayscale() const override;
     };
 
-    struct HSV : public ColorRepresentation<3>
+    struct HSV : public ColorRepresentation<3>, public Vector<float, 3>
     {
         HSV() = default;
         HSV(float, float, float);
@@ -73,7 +72,7 @@ namespace crisp
         GrayScale to_grayscale() const override;
     };
 
-    struct HSL : public ColorRepresentation<3>
+    struct HSL : public ColorRepresentation<3>, public Vector<float, 3>
     {
         HSL() = default;
         HSL(float, float, float);
@@ -97,7 +96,7 @@ namespace crisp
         GrayScale to_grayscale() const override;
     };
 
-    struct GrayScale : public ColorRepresentation<1>
+    struct GrayScale : public ColorRepresentation<1>, public Vector<float, 1>
     {
         GrayScale() = default;
         GrayScale(float);

@@ -24,8 +24,8 @@ namespace crisp
             // @brief construct from initializer list
             Vector(std::initializer_list<T> list);
 
-            // @brief construct with all values as scalar
-            Vector(T);
+            // @brief construct variadic
+            Vector(T in...);
 
             // @brief access data
             T& operator[](size_t i);
@@ -80,7 +80,7 @@ namespace crisp
             // @brief expose size
             static size_t size();
             
-        protected:
+        //protected:
             using Eigen::Array<T, 1, N>::x;
             using Eigen::Array<T, 1, N>::y;
             using Eigen::Array<T, 1, N>::z;
@@ -115,6 +115,7 @@ namespace crisp
         }
     };
 
+    /*
     // class specialization for n = 2
     template<typename T>
     struct Vector2 : public Vector<T, 2>
@@ -154,18 +155,20 @@ namespace crisp
         using Vector<T, 4>::w;
     };
 
+    */
     // typedefs for commonly used Ts
-    using Vector2f = Vector2<float>;
-    using Vector2i = Vector2<int>;
-    using Vector2ui = Vector2<size_t>;
+    using Vector2f = Vector<float, 2>;
+    using Vector2i = Vector<int, 2>;
+    using Vector2ui = Vector<size_t, 2>;
 
-    using Vector3f = Vector3<float>;
-    using Vector3i = Vector3<int>;
-    using Vector3ui = Vector3<size_t>;
+    using Vector3f = Vector<float, 3>;
+    using Vector3i = Vector<int, 3>;
+    using Vector3ui = Vector<size_t, 3>;
 
-    using Vector4f = Vector4<float>;
-    using Vector4i = Vector4<int>;
-    using Vector4ui = Vector4<size_t>;
+    using Vector4f = Vector<float, 4>;
+    using Vector4i = Vector<int, 4>;
+    using Vector4ui = Vector<size_t, 4>;
+
 }
 
 #include ".src/vector.inl"

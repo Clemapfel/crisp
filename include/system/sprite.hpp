@@ -34,6 +34,9 @@ namespace crisp
             void create_from(const GrayScaleImage&);
             void create_from(const ColorImage&);
 
+        protected:
+            void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+
         private:
             void update();
 

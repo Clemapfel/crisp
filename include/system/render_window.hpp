@@ -27,9 +27,9 @@ namespace crisp
             void create(size_t width, size_t height, bool fullscreen = false, size_t fps_limit = 60);
 
             bool is_open() const;
-            using sf::RenderWindow::close();
+            using sf::RenderWindow::close;
 
-            Vector2ui get_resolution();
+            Vector2ui get_resolution() const;
             void set_background_color(RGB);
 
             Time update();

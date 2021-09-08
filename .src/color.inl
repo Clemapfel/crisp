@@ -9,7 +9,6 @@ namespace crisp
 {
     template<size_t N>
     inline ColorRepresentation<N>::ColorRepresentation()
-        : Vector<float, N>()
     {}
 
     inline RGB RGB::to_rgb() const
@@ -215,10 +214,11 @@ namespace crisp
         return *this;
     }
 
+    /*
     inline RGB::operator Vector<float, 3>() const
     {
         return Vector<float, 3>({red(), green(), blue()});
-    }
+    }*/
 
     inline float & RGB::red()
     {

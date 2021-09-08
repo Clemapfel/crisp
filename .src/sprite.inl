@@ -7,6 +7,7 @@
 
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/RenderTarget.hpp>
 
 namespace crisp
 {
@@ -32,7 +33,7 @@ namespace crisp
     inline Vector2f Sprite::get_size() const
     {
         auto size = _sprite.getTexture()->getSize();
-        return Vector2f(size.x * _scale, _size.y * scale);
+        return Vector2f(size.x * _scale, size.y * _scale);
     }
 
     inline size_t Sprite::get_scale() const
@@ -55,7 +56,7 @@ namespace crisp
         _sprite.setPosition(_position);
     }
 
-    inline Sprite::create_from(const BinaryImage& image)
+    inline void Sprite::create_from(const BinaryImage& image)
     {
         sf::Image temp;
         temp.create(image.get_size().x(), image.get_size().y());
@@ -78,7 +79,7 @@ namespace crisp
         update();
     }
 
-    inline Sprite::create_from(const GrayScaleImage& image)
+    inline void Sprite::create_from(const GrayScaleImage& image)
     {
         sf::Image temp;
         temp.create(image.get_size().x(), image.get_size().y());
@@ -97,7 +98,7 @@ namespace crisp
         update();
     }
 
-    inline Sprite::create_from(const ColorImage& image)
+    inline void Sprite::create_from(const ColorImage& image)
     {
         sf::Image temp;
         temp.create(image.get_size().x(), image.get_size().y());
@@ -114,5 +115,11 @@ namespace crisp
         _texture.loadFromImage(temp);
         _position = _sprite.getOrigin();
         update();
+    }
+
+    void Sprite::draw(sf::RenderTarget& target, sf::RenderStates states) const
+    {
+        states.texture = &_texture;
+        target.draw(_sprite, states);
     }
 }

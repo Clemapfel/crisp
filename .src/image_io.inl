@@ -17,8 +17,8 @@ namespace crisp
         sf::Image image;
         if (not image.loadFromFile(path))
         {
-            std::cerr << "[WARNING] file " << path " not found" << std::endl;
-            return BinaryImage();
+            std::cerr << "[WARNING] file " << path << " not found" << std::endl;
+            return ColorImage();
         }
 
         ColorImage out;
@@ -41,7 +41,7 @@ namespace crisp
         sf::Image image;
         if (not image.loadFromFile(path))
         {
-            std::cerr << "[WARNING] file " << path " not found" << std::endl;
+            std::cerr << "[WARNING] file " << path << " not found" << std::endl;
             return GrayScaleImage();
         }
 
@@ -65,7 +65,7 @@ namespace crisp
         sf::Image image;
         if (not image.loadFromFile(path))
         {
-            std::cerr << "[WARNING] file " << path " not found" << std::endl;
+            std::cerr << "[WARNING] file " << path << " not found" << std::endl;
             return BinaryImage();
         }
 
@@ -80,7 +80,7 @@ namespace crisp
 
                 if ((color.r + color.g + color.b) == 0)
                     out(x, y) = false;
-                else if ((color.r == 255 and color.g == 255 and color.b == 255)))
+                else if ((color.r == 255 and color.g == 255 and color.b == 255))
                     out(x, y) = true;
                 else
                 {

@@ -9,7 +9,8 @@ namespace crisp
 {
     inline RGB & ColorImage::operator()(int x, int y)
     {
-        return dynamic_cast<RGB&>(Image<float, 3>::operator()(x, y));
+        Vector<float, 3>& test = Image<float, 3>::operator()(x, y);
+        return dynamic_cast<RGB&>(test);
     }
 
     const RGB& ColorImage::operator()(int x, int y) const

@@ -4,6 +4,7 @@
 //
 
 #include <vector.hpp>
+#include <cstdarg>
 
 namespace crisp
 {
@@ -25,9 +26,26 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    Vector<T, N>::Vector(T t)
+    Vector<T, N>::Vector(T in...)
     {
-        Eigen::Array<T, 1, N>::setConstant(t);
+        va_list args;
+        va_start(args, in);
+
+        size_t s = sizeof(in);
+
+        if (sizeof(in) == 1)
+        {
+            Eigen::Array<T, 1, N>::setConstant(va_arg(args, T));
+            va_end(args);
+            return;
+        }
+
+        assert(sizeof(in) == N);
+
+        for (size_t i = 0; i < N; ++i)
+            Eigen::Array<T, 1, N>::operator()(0, i) = va_arg(args, T);
+
+        va_end(args);
     }
 
     template<typename T, size_t N>
@@ -246,7 +264,7 @@ namespace crisp
     {
         return ~ (*this).at(0);
     }
-     */
+
 
     template<typename T>
     Vector2<T>::Vector2(T x, T y)
@@ -277,4 +295,5 @@ namespace crisp
     Vector4<T>::Vector4(Vector<T, 4> other)
         : Vector4<T>(other.at(0), other.at(1), other.at(2), other.at(3))
     {}
+     */
 }

@@ -44,11 +44,11 @@ namespace crisp
         return sf::RenderWindow::isOpen();
     }
 
-    inline Vector2f RenderWindow::get_resolution()
+    inline Vector2ui RenderWindow::get_resolution() const
     {
         auto x = float(_resolution.at(0));
         auto y = float(_resolution.at(1));
-        auto out = Vector2f(x, y);
+        auto out = Vector2ui(x, y);
         return out;
     }
 
