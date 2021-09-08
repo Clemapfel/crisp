@@ -7,27 +7,6 @@
 
 namespace crisp
 {
-    inline RGB & ColorImage::operator()(int x, int y)
-    {
-        Vector<float, 3>& test = Image<float, 3>::operator()(x, y);
-        return dynamic_cast<RGB&>(test);
-    }
-
-    const RGB& ColorImage::operator()(int x, int y) const
-    {
-        return dynamic_cast<const RGB&>(Image<float, 3>::operator()(x, y));
-    }
-
-    RGB& ColorImage::at(size_t x, size_t y)
-    {
-        return dynamic_cast<RGB&>(Image<float, 3>::at(x, y));
-    }
-
-    const RGB& ColorImage::at(size_t x, size_t y) const
-    {
-        return dynamic_cast<const RGB&>(Image<float, 3>::at(x, y));
-    }
-
     Image<float, 1> ColorImage::get_red_plane()
     {
         return get_nths_plane<0>();

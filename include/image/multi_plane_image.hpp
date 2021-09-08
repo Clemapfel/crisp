@@ -7,11 +7,24 @@
 
 #include <vector.hpp>
 #include <image/padding_type.hpp>
+#include <color.hpp>
 
 #include <type_traits>
 
 namespace crisp
 {
+    namespace detail
+    {
+        template<typename T, size_t N>
+        using choose_image_value_t = typename std::conditional<N == 3 and std::is_same_v<T, float>, RGB, typename std::conditional<N == 1, T, Vector<T, N>>::type>::type;
+        // if (T == float and N == 3)
+        //      type = RGB
+        // else if (N == 1)
+        //      type = T
+        // else
+        //      type = Vector<T, N>
+    }
+
     // an image that lives in ram and is operated upon by the cpu
     template<typename InnerValue_t, size_t N = 1>
     class Image
@@ -20,7 +33,7 @@ namespace crisp
         class ConstIterator;
 
         public:
-            using Value_t = typename std::conditional<N == 1, InnerValue_t, Vector<InnerValue_t, N>>::type;
+            using Value_t = detail::choose_image_value_t<InnerValue_t, N>;
 
             // @brief ctors
             Image() = default;
