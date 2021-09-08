@@ -3,7 +3,6 @@
 // Created on 08.09.21 by clem (mail@clemens-cords.com)
 //
 
-#include <system/render_window.hpp>
 #include <system/input_handler.hpp>
 
 namespace crisp

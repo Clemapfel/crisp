@@ -3,8 +3,6 @@
 // Created on 08.09.21 by clem (mail@clemens-cords.com)
 //
 
-#include <system/sprite.hpp>
-
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>

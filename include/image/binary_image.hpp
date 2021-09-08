@@ -22,42 +22,33 @@ namespace crisp
 
             // @brief convert to visually identical color image
             ColorImage convert_to_color() const;
-
-            // @brief convert to visually identical color image
-
-            // bitwise operators
+            
             // @brief element-wise binary NOT operator
-            // @returns a copy of the processed image
+            // @returns resulting image
             BinaryImage operator!() const;
 
             // @brief element-wise binary AND operator
-            // @param : a const reference to another image of equal size
-            // @returns a copy of the processed image
+            // @returns resulting image
             BinaryImage operator&(const BinaryImage&) const;
 
             // @brief element-wise binary OR operator
-            // @param : a const reference to another image of equal size
-            // @returns a copy of the processed image
+            // @returns resulting image
             BinaryImage operator|(const BinaryImage&) const;
 
             // @brief element-wise binary XOR operator
-            // @param : a const reference to another image of equal size
-            // @returns a copy of the processed image
+            // @returns resulting image
             BinaryImage operator^(const BinaryImage&) const;
 
             // @brief element-wise binary AND operator assignment
-            // @param : a const reference to another image of equal size
-            // @returns a reference to itself after processing
+            // @returns reference to itself
             BinaryImage& operator&=(const BinaryImage&);
 
             // @brief element-wise binary OR operator assignment
-            // @param : a const reference to another image of equal size
-            // @returns a reference to itself after processing
+            // @returns reference to itself
             BinaryImage& operator|=(const BinaryImage&);
 
             // @brief element-wise binary XOR operator assignment
-            // @param : a const reference to another image of equal size
-            // @returns a reference to itself after processing
+            // @returns reference to itself
             BinaryImage& operator^=(const BinaryImage&);
     };
 }

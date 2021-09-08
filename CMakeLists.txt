@@ -32,18 +32,35 @@ add_library(crisp STATIC
         include/image/color_image.hpp
         .src/color_image.inl
 
-        include/image/image_conversion.hpp
-        .src/image_conversion.inl
+        include/color.hpp
+        .src/color.inl
 
-        include/color.hpp .src/color.inl include/system/image_io.hpp .src/image_io.inl include/system/render_window.hpp .src/render_window.inl include/system/input_handler.hpp include/system/key_id.hpp .src/input_handler.inl include/system/sprite.hpp .src/sprite.inl include/system.hpp include/image/grayscale_image.hpp include/image/grayscale_image.hpp .src/grayscale_image.hpp .src/grayscale_image.inl)
+        include/system/image_io.hpp
+        .src/image_io.inl
+
+        include/system/render_window.hpp
+        .src/render_window.inl
+
+        include/system/input_handler.hpp
+        .src/input_handler.inl
+
+        include/system/key_id.hpp
+
+        include/system/sprite.hpp
+        .src/sprite.inl
+
+        include/system.hpp
+
+        include/image/grayscale_image.hpp
+        .src/grayscale_image.inl)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp sfml-graphics fftw3 fftw3l fftw3f)
 
 # TODO: REMOVE
 include_directories("./include")
-include_directories("./.src")
-include_directories("./.test")
+#include_directories("./.src")
+#include_directories("./.test")
 
 add_executable(TEST .test/main.cpp)
 target_link_libraries(TEST sfml-graphics sfml-window sfml-system)

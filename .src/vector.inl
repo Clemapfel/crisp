@@ -3,7 +3,6 @@
 // Created on 07.09.21 by clem (mail@clemens-cords.com)
 //
 
-#include <vector.hpp>
 #include <cstdarg>
 
 namespace crisp::detail

@@ -3,7 +3,6 @@
 // Created on 08.09.21 by clem (mail@clemens-cords.com)
 //
 
-#include <system/image_io.hpp>
 #include <color.hpp>
 
 #include <SFML/Graphics/Image.hpp>
