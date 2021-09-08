@@ -18,9 +18,8 @@ namespace crisp
         _data.setConstant(init);
     }
 
-
     template<typename InnerValue_t, size_t N>
-    typename Image<InnerValue_t, N>::Value_t Image<InnerValue_t, N>::at(size_t x, size_t y) const
+    const typename Image<InnerValue_t, N>::Value_t& Image<InnerValue_t, N>::at(size_t x, size_t y) const
     {
         if (x < 0  or x >= _data.rows() or y < 0 or y >= _data.cols())
             throw std::out_of_range("index out of range when trying to access pixel via Image::at");
@@ -100,7 +99,7 @@ namespace crisp
     }
 
     template<typename InnerValue_t, size_t N>
-    const typename Image<InnerValue_t, N>::Value_t Image<InnerValue_t, N>::operator()(int x, int y) const
+    const typename Image<InnerValue_t, N>::Value_t& Image<InnerValue_t, N>::operator()(int x, int y) const
     {
         if (x < 0  or x >= _data.rows() or y < 0 or y >= _data.cols())
             return get_pixel_out_of_bounds(x, y);
@@ -112,7 +111,10 @@ namespace crisp
     typename Image<InnerValue_t, N>::Value_t& Image<InnerValue_t, N>::operator()(int x, int y)
     {
         if (x < 0  or x >= _data.rows() or y < 0 or y >= _data.cols())
-            return std::move(get_pixel_out_of_bounds(x, y));
+        {
+            _dummy_padding_reference = get_pixel_out_of_bounds(x, y);
+            return _dummy_padding_reference;
+        }
         else
             return _data(x, y);
     }
@@ -136,7 +138,7 @@ namespace crisp
     }
 
     template<typename InnerValue_t, size_t N>
-    Image<InnerValue_t, N> Image<InnerValue_t, N>::operator+(const typename Image::Image_t& other) const
+    Image<InnerValue_t, N> Image<InnerValue_t, N>::operator+(const Image<InnerValue_t, N>& other) const
     {
         assert(get_size() == other.get_size());
 
@@ -150,7 +152,7 @@ namespace crisp
     }
 
     template<typename InnerValue_t, size_t N>
-    Image<InnerValue_t, N> Image<InnerValue_t, N>::operator-(const typename Image::Image_t& other) const
+    Image<InnerValue_t, N> Image<InnerValue_t, N>::operator-(const Image<InnerValue_t, N>& other) const
     {
         assert(get_size() == other.get_size());
 
@@ -164,7 +166,7 @@ namespace crisp
     }
 
     template<typename InnerValue_t, size_t N>
-    Image<InnerValue_t, N> Image<InnerValue_t, N>::operator*(const typename Image::Image_t& other) const
+    Image<InnerValue_t, N> Image<InnerValue_t, N>::operator*(const Image<InnerValue_t, N>& other) const
     {
         assert(get_size() == other.get_size());
 
@@ -178,7 +180,7 @@ namespace crisp
     }
 
     template<typename InnerValue_t, size_t N>
-    Image<InnerValue_t, N> Image<InnerValue_t, N>::operator/(const typename Image::Image_t& other) const
+    Image<InnerValue_t, N> Image<InnerValue_t, N>::operator/(const Image<InnerValue_t, N>& other) const
     {
         assert(get_size() == other.get_size());
 
@@ -192,7 +194,7 @@ namespace crisp
     }
 
     template<typename InnerValue_t, size_t N>
-    Image<InnerValue_t, N>& Image<InnerValue_t, N>::operator+=(const typename Image::Image_t& other)
+    Image<InnerValue_t, N>& Image<InnerValue_t, N>::operator+=(const Image<InnerValue_t, N>& other)
     {
         assert(get_size() == other.get_size());
 
@@ -204,7 +206,7 @@ namespace crisp
     }
 
     template<typename InnerValue_t, size_t N>
-    Image<InnerValue_t, N>& Image<InnerValue_t, N>::operator-=(const typename Image::Image_t& other)
+    Image<InnerValue_t, N>& Image<InnerValue_t, N>::operator-=(const Image<InnerValue_t, N>& other)
     {
         assert(get_size() == other.get_size());
 
@@ -216,7 +218,7 @@ namespace crisp
     }
 
     template<typename InnerValue_t, size_t N>
-    Image<InnerValue_t, N>& Image<InnerValue_t, N>::operator*=(const typename Image::Image_t& other)
+    Image<InnerValue_t, N>& Image<InnerValue_t, N>::operator*=(const Image<InnerValue_t, N>& other)
     {
         assert(get_size() == other.get_size());
 
@@ -228,16 +230,32 @@ namespace crisp
     }
 
     template<typename InnerValue_t, size_t N>
-    Image<InnerValue_t, N>& Image<InnerValue_t, N>::operator/=(const typename Image::Image_t& other)
+    Image<InnerValue_t, N>& Image<InnerValue_t, N>::operator/=(const Image<InnerValue_t, N>& other)
     {
         assert(get_size() == other.get_size());
 
         for (long y = 0; y < _data.cols(); ++y)
             for (long x = 0; x < _data.cols(); ++x)
                 this->at(x, y) /= other.at(x, y);
-
         return *this;
     }
+
+    template<typename InnerValue_t, size_t N>
+    template<size_t PlaneIndex>
+    Image<InnerValue_t, 1>  Image<InnerValue_t, N>::get_nths_plane() const
+    {
+        static_assert(PlaneIndex < N, "Please specify an plane index less than N");
+
+        Image<InnerValue_t, 1> out;
+        out.create(_data.rows(), _data.cols());
+
+        for (long y = 0; y < _data.cols(); ++y)
+            for (long x = 0; x < _data.rows(); ++x)
+                out(x, y) = _data(x, y).at(PlaneIndex);
+
+        return out;
+    }
+
 
     template<typename InnerValue_t, size_t N>
     auto Image<InnerValue_t, N>::begin()

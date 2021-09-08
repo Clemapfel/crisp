@@ -16,12 +16,11 @@ namespace crisp
     template<typename InnerValue_t, size_t N = 1>
     class Image
     {
-            class Iterator;
-            class ConstIterator;
+        class Iterator;
+        class ConstIterator;
 
         public:
-            using Value_t = Vector<InnerValue_t, N>;
-            using Image_t = Image<InnerValue_t, N>;
+            using Value_t = typename std::conditional<N == 1, InnerValue_t, Vector<InnerValue_t, N>>::type;
 
             // @brief ctors
             Image() = default;
@@ -31,12 +30,12 @@ namespace crisp
             void create(size_t width, size_t height, Value_t init = Value_t(InnerValue_t(0)));
 
             // @brief access pixel or padding if out of range
-            Value_t& operator()(int x, int y);
-            const Value_t operator()(int x, int y) const;
+            virtual const Value_t& operator()(int x, int y) const;
+            virtual Value_t& operator()(int x, int y);
 
             // @brief access pixel with bounds checking
-            Value_t at(size_t x, size_t y) const;
-            Value_t& at(size_t x, size_t y);
+            virtual const Value_t& at(size_t x, size_t y) const;
+            virtual Value_t& at(size_t x, size_t y);
 
             // @brief get number of pixels
             Vector2ui get_size() const;
@@ -48,16 +47,20 @@ namespace crisp
             PaddingType get_padding_type() const;
 
             // @brief image-image arithmetics
-            Image_t operator+(const Image_t&) const;
-            Image_t operator-(const Image_t&) const;
-            Image_t operator*(const Image_t&) const;
-            Image_t operator/(const Image_t&) const;
+            Image<InnerValue_t, N> operator+(const Image<InnerValue_t, N>&) const;
+            Image<InnerValue_t, N> operator-(const Image<InnerValue_t, N>&) const;
+            Image<InnerValue_t, N> operator*(const Image<InnerValue_t, N>&) const;
+            Image<InnerValue_t, N> operator/(const Image<InnerValue_t, N>&) const;
 
             // @brief image-image assignment
-            Image_t& operator+=(const Image_t&);
-            Image_t& operator-=(const Image_t&);
-            Image_t& operator*=(const Image_t&);
-            Image_t& operator/=(const Image_t&);
+            Image<InnerValue_t, N>& operator+=(const Image<InnerValue_t, N>&);
+            Image<InnerValue_t, N>& operator-=(const Image<InnerValue_t, N>&);
+            Image<InnerValue_t, N>& operator*=(const Image<InnerValue_t, N>&);
+            Image<InnerValue_t, N>& operator/=(const Image<InnerValue_t, N>&);
+            
+            // @brief access all pixels nth component as a picture
+            template<size_t PlaneIndex>
+            Image<InnerValue_t, 1> get_nths_plane() const;
 
             // @brief access front element
             auto begin();
@@ -72,12 +75,14 @@ namespace crisp
 
         private:
             Value_t get_pixel_out_of_bounds(int x, int y) const;
+            Value_t _dummy_padding_reference;
+
             PaddingType _padding_type = PaddingType::STRETCH;
 
             struct Iterator
             {
                 public:
-                    Iterator(Image_t*, size_t x, size_t y);
+                    Iterator(Image<InnerValue_t, N>*, size_t x, size_t y);
 
                     using iterator_category = std::bidirectional_iterator_tag;
                     using value_type = Value_t;
@@ -95,7 +100,7 @@ namespace crisp
                     Iterator& operator=(Value_t);
 
                 private:
-                    Image_t* _data;
+                    Image<InnerValue_t, N>* _data;
                     Vector2ui _size;
                     size_t _x, _y = 0;
             };
@@ -103,7 +108,7 @@ namespace crisp
             struct ConstIterator
             {
                 public:
-                    ConstIterator(const Image_t*, size_t x, size_t y);
+                    ConstIterator(const Image<InnerValue_t, N>*, size_t x, size_t y);
 
                     using iterator_category = std::bidirectional_iterator_tag;
                     using value_type = const Value_t;
@@ -120,43 +125,13 @@ namespace crisp
                     const Value_t& operator*() const;
 
                 private:
-                    const Image_t* _data;
+                    const Image<InnerValue_t, N>* _data;
                     Vector2ui _size;
                     size_t _x, _y = 0;
             };
     };
-
-
-        /*
-    template<typename InnerValue_t, size_t N>
-    class Image : public detail::Image<InnerValue_t, N>
-    {
-        public:
-            using Value_t = typename detail::Image<InnerValue_t, N>::Value_t;
-
-            // @brief access pixel or padding if out of range
-            Value_t& operator()(int x, int y);
-            Value_t operator()(int x, int y) const;
-
-            // @brief access pixel with bounds checking
-            Value_t& at(size_t x, size_t y);
-            Value_t at(size_t x, size_t y) const;
-    };
-
-    template<typename InnerValue_t>
-    class Image<InnerValue_t, 1>
-    {
-        public:
-            // @brief access pixel or padding if out of range
-            InnerValue_t& operator()(int x, int y);
-            InnerValue_t operator()(int x, int y) const;
-
-            // @brief access pixel with bounds checking
-            InnerValue_t at(size_t x, size_t y) const;
-            InnerValue_t& at(size_t x, size_t y);
-    };*/
-
-
+    
+    using GrayScaleImage = Image<float, 1>;
 }
 
 #include ".src/multi_plane_image.inl"
