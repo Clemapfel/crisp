@@ -16,6 +16,8 @@ namespace crisp
         static_assert(std::is_integral<T>::value or std::is_floating_point<T>::value);
         
         public:
+            virtual ~Vector() = default;
+
             // @brief default CTOR
             Vector();
             
@@ -89,6 +91,12 @@ namespace crisp
     template<typename T>
     struct Vector<T, 1> : public Eigen::Array<T, 1, 1>
     {
+        Vector()
+            : Eigen::Array<T, 1, 1>()
+        {
+            Eigen::Array<T, 1, 1>::setConstant(0);
+        }
+
         // @brief non-explicit casting operator to true arithmetic type
         Vector(T t)
             : Eigen::Array<T, 1, 1>()
@@ -98,7 +106,7 @@ namespace crisp
 
         inline operator T() const
         {
-            return static_cast<T>((*this).at(0));
+            return static_cast<T>(Eigen::Array<T, 1, 1>::operator()(0, 0));
         }
 
         inline Vector<T, 1>& operator=(T t)
@@ -149,15 +157,15 @@ namespace crisp
     // typedefs for commonly used Ts
     using Vector2f = Vector2<float>;
     using Vector2i = Vector2<int>;
-    using Vector2ui = Vector2<unsigned int>;
+    using Vector2ui = Vector2<size_t>;
 
     using Vector3f = Vector3<float>;
     using Vector3i = Vector3<int>;
-    using Vector3ui = Vector3<unsigned int>;
+    using Vector3ui = Vector3<size_t>;
 
     using Vector4f = Vector4<float>;
     using Vector4i = Vector4<int>;
-    using Vector4ui = Vector4<unsigned int>;
+    using Vector4ui = Vector4<size_t>;
 }
 
 #include ".src/vector.inl"
