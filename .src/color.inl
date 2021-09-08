@@ -9,6 +9,7 @@ namespace crisp
 {
     template<size_t N>
     inline ColorRepresentation<N>::ColorRepresentation()
+        : Vector<float, N>(0.f)
     {}
 
     inline RGB RGB::to_rgb() const
@@ -270,11 +271,6 @@ namespace crisp
 
         return *this;
     }
-    
-    inline HSV::operator Vector<float, 3>() const
-    {
-        return Vector<float, 3>({hue(), saturation(), value()});
-    }
 
     inline float& HSV::hue()
     {
@@ -325,11 +321,6 @@ namespace crisp
             Vector<float, 3>::at(i) = vec.at(i);
 
         return *this;
-    }
-    
-    inline HSL::operator Vector<float, 3>() const
-    {
-        return Vector<float, 3>({hue(), saturation(), lightness()});
     }
 
     inline float & HSL::hue()
@@ -382,11 +373,6 @@ namespace crisp
     {
         intensity() = v;
         return *this;
-    }
-
-    inline GrayScale::operator Vector<float, 1>() const
-    {
-        return Vector<float, 1>(intensity());
     }
     
     inline GrayScale::operator float() const
