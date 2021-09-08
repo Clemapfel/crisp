@@ -102,7 +102,7 @@ namespace crisp
     const typename Image<InnerValue_t, N>::Value_t& Image<InnerValue_t, N>::operator()(int x, int y) const
     {
         if (x < 0  or x >= _data.rows() or y < 0 or y >= _data.cols())
-            return get_pixel_out_of_bounds(x, y);
+            return std::move(get_pixel_out_of_bounds(x, y));
         else
             return _data(x, y);
     }
@@ -122,7 +122,7 @@ namespace crisp
     template<typename InnerValue_t, size_t N>
     Vector2ui Image<InnerValue_t, N>::get_size() const
     {
-        return {_data.rows(), _data.cols()};
+        return {size_t(_data.rows()), size_t(_data.cols())};
     }
 
     template<typename InnerValue_t, size_t N>

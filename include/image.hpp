@@ -11,3 +11,4 @@
 #include <image/color_image.hpp>
 #include <image/multi_plane_image.hpp>
 #include <image/padding_type.hpp>
+#include <image/image_conversion.hpp>
