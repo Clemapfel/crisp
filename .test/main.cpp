@@ -16,6 +16,10 @@ using namespace crisp;
 
 int main()
 {
+    Vector<float, 3> test;
+    Vector<float, 3>& test_up = dynamic_cast<Vector<float, 3>&>(test);
+    RGB& test_down = dynamic_cast<RGB&>(test_up);
+
     auto image = load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
 
     auto sprite = Sprite();
