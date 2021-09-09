@@ -5,24 +5,24 @@
 
 namespace crisp
 {
-    GrayScaleImage ColorImage::get_red_plane()
+    Image<float, 1> ColorImage::get_red_plane()
     {
         return get_nths_plane<0>();
     }
 
-    GrayScaleImage ColorImage::get_blue_plane()
+    Image<float, 1> ColorImage::get_blue_plane()
     {
         return get_nths_plane<1>();
     }
 
-    GrayScaleImage ColorImage::get_green_plane()
+    Image<float, 1> ColorImage::get_green_plane()
     {
         return get_nths_plane<2>();
     }
 
-    GrayScaleImage ColorImage::get_hue_plane()
+    Image<float, 1> ColorImage::get_hue_plane()
     {
-        GrayScaleImage out;
+        Image<float, 1> out;
         out.create(_data.rows(), _data.cols());
 
         for (long y = 0; y < _data.cols(); ++y)
@@ -37,9 +37,9 @@ namespace crisp
         return out;
     }
 
-    GrayScaleImage ColorImage::get_saturation_plane()
+    Image<float, 1> ColorImage::get_saturation_plane()
     {
-        GrayScaleImage out;
+        Image<float, 1> out;
         out.create(_data.rows(), _data.cols());
 
         for (long y = 0; y < _data.cols(); ++y)
@@ -54,9 +54,9 @@ namespace crisp
         return out;
     }
 
-    GrayScaleImage ColorImage::get_value_plane()
+    Image<float, 1> ColorImage::get_value_plane()
     {
-        GrayScaleImage out;
+        Image<float, 1> out;
         out.create(_data.rows(), _data.cols());
 
         for (long y = 0; y < _data.cols(); ++y)
@@ -71,9 +71,9 @@ namespace crisp
         return out;
     }
 
-    GrayScaleImage ColorImage::get_lightness_plane()
+    Image<float, 1> ColorImage::get_lightness_plane()
     {
-        GrayScaleImage out;
+        Image<float, 1> out;
         out.create(_data.rows(), _data.cols());
 
         for (long y = 0; y < _data.cols(); ++y)

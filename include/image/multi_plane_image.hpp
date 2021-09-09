@@ -75,6 +75,9 @@ namespace crisp
             template<size_t PlaneIndex>
             Image<InnerValue_t, 1> get_nths_plane() const;
 
+            template<size_t PlaneIndex>
+            void set_nths_plane(const Image<InnerValue_t, 1>&);
+
             // @brief access front element
             auto begin();
             auto begin() const;
@@ -143,8 +146,6 @@ namespace crisp
                     size_t _x, _y = 0;
             };
     };
-
-    using GrayScaleImage = Image<float, 1>;
 }
 
 #include ".src/multi_plane_image.inl"

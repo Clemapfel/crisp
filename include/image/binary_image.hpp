@@ -6,6 +6,7 @@
 #pragma once
 
 #include <image/multi_plane_image.hpp>
+#include <image/grayscale_image.hpp>
 #include <image/color_image.hpp>
 
 namespace crisp

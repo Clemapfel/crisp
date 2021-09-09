@@ -15,25 +15,25 @@ namespace crisp
     {
         public:
             // @brief access individual component of each color representation as 1-d image
-            GrayScaleImage get_red_plane();
+            Image<float, 1> get_red_plane();
 
             // @brief access individual component of each color representation as 1-d image
-            GrayScaleImage get_blue_plane();
+            Image<float, 1> get_blue_plane();
 
             // @brief access individual component of each color representation as 1-d image
-            GrayScaleImage get_green_plane();
+            Image<float, 1> get_green_plane();
 
             // @brief access individual component of each color representation as 1-d image
-            GrayScaleImage get_hue_plane();
+            Image<float, 1> get_hue_plane();
 
             // @brief access individual component of each color representation as 1-d image
-            GrayScaleImage get_saturation_plane();
+            Image<float, 1> get_saturation_plane();
 
             // @brief access individual component of each color representation as 1-d image
-            GrayScaleImage get_value_plane();
+            Image<float, 1> get_value_plane();
 
             // @brief access individual component of each color representation as 1-d image
-            GrayScaleImage get_lightness_plane();
+            Image<float, 1> get_lightness_plane();
     };
 }
 
