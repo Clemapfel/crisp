@@ -33,7 +33,6 @@ namespace crisp
         public:
             using EvaluationFunction_t = std::function<typename Image_t::Value_t(const Image_t&, size_t, size_t,
                                                                                  const Kernel&)>;
-
             SpatialFilter();
 
             // @brief apply filter to image
