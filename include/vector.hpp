@@ -73,12 +73,6 @@ namespace crisp
             using Eigen::Array<T, 1, N>::operator*=;
             using Eigen::Array<T, 1, N>::operator/=;
 
-            // @brief element-wise boolean operators
-            // @param other: vector of same size and type
-            // @returns: true if for all i: (*this)[i] == other[i], false otherwise
-            bool operator==(const Vector<T, N>& other) const;
-            bool operator!=(const Vector<T, N>& other) const;
-
             // @brief perform elementwise vector-scalar artihmetics
             // @param scalar: scalar of same type as vectors elements
             // @returns: resulting vector
@@ -123,11 +117,27 @@ namespace crisp
             Vector<T, N> operator~() const;
             Vector<T, N> operator!() const;
 
+            // @brief element-wise boolean operators
+            // @param other: vector of same size and type
+            // @returns: true if for all i: (*this)[i] == other[i], false otherwise
+            bool operator==(const Vector<T, N>& other) const;
+            bool operator!=(const Vector<T, N>& other) const;
+
+            bool operator<(const Vector<T, N>&) const;
+            bool operator<=(const Vector<T, N>&) const;
+            bool operator>(const Vector<T, N>&) const;
+            bool operator>=(const Vector<T, N>&) const;
+
             // @brief compare all elements to the same scalar
             // @param : scalar
             // @returns true if for all i: (*this)[i] == scalar, false otherwise
             bool operator==(T) const;
             bool operator!=(T) const;
+
+            bool operator<(T) const;
+            bool operator<=(T) const;
+            bool operator>(T) const;
+            bool operator>=(T) const;
 
             // @brief expose size
             // @returns size
