@@ -36,7 +36,7 @@ namespace crisp
         setFramerateLimit(fps_limit);
 
         _background_shape.setPosition(0, 0);
-        _background_shape.setSize(sf::Vector2f{width, height});
+        _background_shape.setSize(sf::Vector2f{float(width), float(height)});
     }
 
     inline bool RenderWindow::is_open() const

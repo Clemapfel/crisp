@@ -27,7 +27,7 @@ int main()
               0.5,   2, 0.5,
               0.5, 0.5, 0.5;
 
-    filter.set_kernel(filter.box(10, 1));
+    filter.set_kernel(filter.normalized_box(10));
     filter.set_evaluation_function(filter.convolution());
     filter.apply_to(image);
 

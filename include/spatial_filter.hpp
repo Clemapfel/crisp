@@ -15,6 +15,18 @@ namespace crisp
 {
     using Kernel = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>;
 
+    // @brief convolute two kernels
+    Kernel convolute(Kernel left, Kernel right);
+
+    // @brief numerically seperate kernel
+    bool seperate(const Kernel& original, Kernel* out_left, Kernel* out_right);
+
+    // @brief normalize a kernel so it's elements sum to 1
+    void normalize(Kernel&);
+
+    // @brief rotate a kernel by 90° n times
+    void rotate(Kernel&, size_t n_90_degrees);
+
     template<typename Image_t>
     class SpatialFilter
     {

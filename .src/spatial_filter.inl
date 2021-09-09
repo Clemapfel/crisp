@@ -7,6 +7,110 @@
 
 namespace crisp
 {
+    Kernel convolute(Kernel left, Kernel right)
+    {
+        auto size = Vector2f{float(left.rows()), float(left.cols())};
+
+        assert(left.cols() >= right.cols() and left.rows() >= right.rows());
+
+        Kernel result;
+        result.resize(size.x(), size.y());
+
+        long a = floor(right.rows() / 2.f);
+        long b = floor(right.cols() / 2.f);
+
+        for (long i = 0; i < size.x(); ++i)
+        {
+            for (long j = 0; j < size.y(); ++j)
+            {
+                float current_sum = 0;
+                for (long s = -a; s <= a; ++s)
+                {
+                    for (long t = -b; t <= b; ++t)
+                    {
+                        if (i + s < 0 or j + t < 0 or i + s >= left.rows() or j + t >= left.cols())
+                            continue;
+
+                        auto test = right(a + s, b + t);
+                        auto test2 = left(i + s, j + t);
+                    }
+                }
+                result(i, j) = current_sum;
+            }
+        }
+
+        return result;
+    }
+
+    bool seperate(const Kernel& original, Kernel* out_left, Kernel* out_right)
+    {
+        auto svd = Eigen::JacobiSVD<Kernel, Eigen::ColPivHouseholderQRPreconditioner>(original, Eigen::ComputeThinU | Eigen::ComputeThinV);
+
+        auto s = svd.singularValues()(0);
+
+        auto singular_sum = 0;
+        for(size_t i = 0; i < svd.singularValues().size(); ++i)
+            singular_sum += svd.singularValues()(i);
+
+        if (abs(s - singular_sum) < 0.005)
+        {
+            out_left = nullptr;
+            out_right = nullptr;
+            return false;
+        }
+
+        auto U = svd.matrixU();
+        auto u = Eigen::Vector3d();
+        for (size_t i = 0; i < U.rows(); ++i)
+            u(i) = U(i, 0) * s;
+
+        auto V = svd.matrixV();
+        auto v = Eigen::Vector3d();
+        for (size_t i = 0; i < V.cols(); ++i)
+            v(i) = V(i, 0);
+
+        *out_left = u;
+        *out_right = v.transpose();
+        return true;
+    }
+
+    void normalize(Kernel& kernel)
+    {
+        float sum = 0;
+        for (long i = 0; i < kernel.rows(); ++i)
+            for (long j = 0; j < kernel.rows(); ++j)
+                sum += kernel(i, j);
+
+        for (long i = 0; i < kernel.rows(); ++i)
+            for (long j = 0; j < kernel.rows(); ++j)
+                kernel(i, j) /= sum;
+    }
+
+    void rotate(Kernel& kernel, size_t n)
+    {
+        n = n % 4;
+        if (n == 0 or n == 4)
+            return;
+
+        long size = kernel.cols();
+
+        while (n > 0)
+        {
+            for (long x = 0; x < size / 2; ++x)
+            {
+                for (long y = x; y < size - x - 1; ++y)
+                {
+                    float temp = kernel(x, y);
+                    kernel(x, y) = kernel(y, size - 1 - x);
+                    kernel(y, size - 1 - x) = kernel(size - 1 - x, size - 1 - y);
+                    kernel(size - 1 - x, size - 1 - y) = kernel(size - 1 - y, x);
+                    kernel(size - 1 - y, x) = temp;
+                }
+            }
+            n -= 1;
+        }
+    }
+
     template<typename Image_t>
     SpatialFilter<Image_t>::SpatialFilter()
     {
@@ -438,7 +542,7 @@ namespace crisp
     template<typename Image_t>
     auto && SpatialFilter<Image_t>::min()
     {
-        return std::move([](const Image_t& image, long x, long y, const Kernel& kernel) -> typename Image_t::Value_t
+        static auto f = [](const Image_t& image, long x, long y, const Kernel& kernel) -> typename Image_t::Value_t
         {
             long a = (kernel.cols() - 1) / 2;
             long b = (kernel.rows() - 1) / 2;
@@ -459,13 +563,15 @@ namespace crisp
             }
 
             return out;
-        });
+        };
+
+        return f;
     }
 
     template<typename Image_t>
     auto && SpatialFilter<Image_t>::max()
     {
-        return std::move([](const Image_t& image, long x, long y, const Kernel& kernel) -> typename Image_t::Value_t
+        static auto f = [](const Image_t& image, long x, long y, const Kernel& kernel) -> typename Image_t::Value_t
         {
             long a = (kernel.cols() - 1) / 2;
             long b = (kernel.rows() - 1) / 2;
@@ -486,13 +592,15 @@ namespace crisp
             }
 
             return out;
-        });
+        };
+
+        return f;
     }
 
     template<typename Image_t>
     auto && SpatialFilter<Image_t>::mean()
     {
-        return std::move([](const Image_t& image, long x, long y, const Kernel& kernel) -> typename Image_t::Value_t {
+        static auto f = [](const Image_t& image, long x, long y, const Kernel& kernel) -> typename Image_t::Value_t {
             long a = (kernel.cols() - 1) / 2;
             long b = (kernel.rows() - 1) / 2;
 
@@ -513,13 +621,15 @@ namespace crisp
             }
 
             return out;
-        });
+        };
+
+        return f;
     }
 
     template<typename Image_t>
     auto && SpatialFilter<Image_t>::median()
     {
-        return std::move([](const Image_t& image, long x, long y, const Kernel& kernel) -> typename Image_t::Value_t {
+        static auto f = [](const Image_t& image, long x, long y, const Kernel& kernel) -> typename Image_t::Value_t {
             long a = (kernel.cols() - 1) / 2;
             long b = (kernel.rows() - 1) / 2;
 
@@ -543,14 +653,16 @@ namespace crisp
             }
 
             return out;
-        });
+        };
+
+        return f;
     }
 
     template<typename Image_t>
     auto && SpatialFilter<Image_t>::n_ths_k_quantile(
             size_t n, size_t k)
     {
-        return std::move([n, k](const Image_t& image, long x, long y, const Kernel& kernel) -> float
+        static auto f = [n, k](const Image_t& image, long x, long y, const Kernel& kernel) -> float
         {
             assert(kernel.rows() % 2 == 1 and kernel.cols() % 2 == 1 && "Kernel needs to have odd dimensions");
 
@@ -570,6 +682,8 @@ namespace crisp
                 return values.front();
             else
                 return values.at(size_t(values.size() * (float(n) / float(k))));
-        });
+        };
+
+        return f;
     }
 }
