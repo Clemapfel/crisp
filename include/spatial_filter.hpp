@@ -27,19 +27,24 @@ namespace crisp
     // @brief rotate a kernel by 90° n times
     void rotate(Kernel&, size_t n_90_degrees);
 
-    template<typename Image_t>
     class SpatialFilter
     {
         public:
-            using EvaluationFunction_t = std::function<typename Image_t::Value_t(const Image_t&, size_t, size_t,
-                                                                                 const Kernel&)>;
+            enum EvaluationFunction
+            {
+                CONVOLUTION,
+                NORMALIZED_CONVOLUTION,
+                MINIMUM,
+                MAXIMUM,
+            };
+
             SpatialFilter();
 
             // @brief apply filter to image
+            template<typename Image_t>
             void apply_to(Image_t&);
 
-            // @brief set the filters evaluation function, convolution by default
-            void set_evaluation_function(EvaluationFunction_t&&);
+            void set_evaluation_function(EvaluationFunction);
 
             // @brief set the filters kernel, identity by default
             void set_kernel(Kernel);
@@ -86,27 +91,24 @@ namespace crisp
             static Kernel kirsch_compass_e();
             static Kernel kirsch_compass_ne();
 
-            // evaluation functions
-
-            // @brief applies the kernel by convolving it with the image such that pixel = kernel(s, t) * image(x + s, y + t)
-            // @note no normalization will take place. To normalize the result, normalize the kernel via crisp::normalize
-            static auto&& convolution();
-
-            // @brief applies the kernel by returning the mean/median/min/max/ of it's weighted sum
-            static auto&& mean();
-            static auto&& median();
-            static auto&& min();
-            static auto&& max();
-            static auto&& n_ths_k_quantile(size_t n, size_t k);
-
         private:
             Kernel _kernel;
-            EvaluationFunction_t _evaluation_function;
+            float _kernel_sum;
+
+            EvaluationFunction _evaluation_function;
+
+            template<typename Image_t>
+            void apply_convolution_to(Image_t& in, Image_t& out);
+
+            template<typename Image_t>
+            void apply_normalized_convolution_to(Image_t& in, Image_t& out);
+
+            template<typename Image_t>
+            void apply_min_to(Image_t& in, Image_t& out);
+
+            template<typename Image_t>
+            void apply_max_to(Image_t& in, Image_t& out);
     };
-
-
-    using GrayScaleFilter = SpatialFilter<GrayScaleImage>;
-    using ColorFilter = SpatialFilter<ColorImage>;
 }
 
 #include ".src/spatial_filter.inl"

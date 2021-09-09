@@ -69,8 +69,8 @@ namespace crisp
         for (size_t i = 0; i < V.cols(); ++i)
             v(i) = V(i, 0);
 
-        *out_left = u;
-        *out_right = v.transpose();
+        *out_left = u.cast<float>();
+        *out_right = v.transpose().cast<float>();
         return true;
     }
 
@@ -111,60 +111,80 @@ namespace crisp
         }
     }
 
-    template<typename Image_t>
-    SpatialFilter<Image_t>::SpatialFilter()
+    
+    SpatialFilter::SpatialFilter()
     {
         set_kernel(identity(1));
-        set_evaluation_function(convolution());
+        set_evaluation_function(CONVOLUTION);
     }
 
     template<typename Image_t>
-    void SpatialFilter<Image_t>::apply_to(Image_t& image)
+    void SpatialFilter::apply_to(Image_t& image)
     {
         Image_t result;
         result.create(image.get_size().x(), image.get_size().y());
 
-        for (long x = 0; x < image.get_size().x(); ++x)
-            for (long y = 0; y < image.get_size().y(); ++y)
-                result(x, y) = _evaluation_function(image, x, y, _kernel);
+        switch (_evaluation_function)
+        {
+            case CONVOLUTION:
+                apply_convolution_to(image, result);
+                break;
+
+            case NORMALIZED_CONVOLUTION:
+                apply_normalized_convolution_to(image, result);
+                break;
+
+            case MINIMUM:
+                apply_min_to(image, result);
+                break;
+
+            case MAXIMUM:
+                apply_max_to(image, result);
+                break;
+        }
 
         for (long x = 0; x < image.get_size().x(); ++x)
             for (long y = 0; y < image.get_size().y(); ++y)
                 image(x, y) = result(x, y);
     }
 
-    template<typename Image_t>
-    float SpatialFilter<Image_t>::operator()(size_t x, size_t y) const
+    
+    float SpatialFilter::operator()(size_t x, size_t y) const
     {
         return _kernel(x, y);
     }
 
-    template<typename Image_t>
-    float& SpatialFilter<Image_t>::operator()(size_t x, size_t y)
+    
+    float& SpatialFilter::operator()(size_t x, size_t y)
     {
         return _kernel(x, y);
     }
 
-    template<typename Image_t>
-    void SpatialFilter<Image_t>::set_kernel(Kernel kernel)
+    
+    void SpatialFilter::set_kernel(Kernel kernel)
     {
         _kernel = kernel;
+
+        _kernel_sum = 0;
+        for (size_t x = 0; x < _kernel.rows(); ++x)
+            for (size_t y = 0; y < _kernel.cols(); ++y)
+                _kernel_sum += _kernel(x, y);
     }
 
-    template<typename Image_t>
-    Kernel& SpatialFilter<Image_t>::get_kernel()
+    
+    Kernel& SpatialFilter::get_kernel()
     {
         return _kernel;
     }
 
-    template<typename Image_t>
-    void SpatialFilter<Image_t>::set_evaluation_function(SpatialFilter::EvaluationFunction_t&& lambda)
+    
+    void SpatialFilter::set_evaluation_function(SpatialFilter::EvaluationFunction function)
     {
-        _evaluation_function = lambda;
+        _evaluation_function = function;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::identity(size_t dimensions)
+    
+    Kernel SpatialFilter::identity(size_t dimensions)
     {
         assert(dimensions != 0);
         Kernel out;
@@ -174,8 +194,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::zero(size_t dimensions)
+    
+    Kernel SpatialFilter::zero(size_t dimensions)
     {
         assert(dimensions != 0);
         Kernel out;
@@ -184,8 +204,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::one(size_t dimensions)
+    
+    Kernel SpatialFilter::one(size_t dimensions)
     {
         assert(dimensions != 0);
         Kernel out;
@@ -194,8 +214,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::box(size_t dimensions, float value)
+    
+    Kernel SpatialFilter::box(size_t dimensions, float value)
     {
         assert(dimensions != 0);
         Kernel out;
@@ -204,15 +224,14 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::normalized_box(size_t dimension)
+    
+    Kernel SpatialFilter::normalized_box(size_t dimension)
     {
         assert(dimension != 0);
         return box(dimension, 1.f / float(dimension));
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::gaussian(size_t dimension)
+    Kernel SpatialFilter::gaussian(size_t dimension)
     {
         assert(dimension != 0);
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> matrix;
@@ -246,8 +265,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::laplacian_first_derivative()
+    
+    Kernel SpatialFilter::laplacian_first_derivative()
     {
         Kernel out;
         out.resize(3, 3);
@@ -259,8 +278,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::laplacian_second_derivative()
+    
+    Kernel SpatialFilter::laplacian_second_derivative()
     {
         Kernel out;
         out.resize(3, 3);
@@ -272,8 +291,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::simple_gradient_x()
+    
+    Kernel SpatialFilter::simple_gradient_x()
     {
         Kernel out;
         out.resize(1, 2);
@@ -283,8 +302,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::simple_gradient_y()
+    
+    Kernel SpatialFilter::simple_gradient_y()
     {
         Kernel out;
         out.resize(2, 1);
@@ -294,8 +313,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::roberts_gradient_x()
+    
+    Kernel SpatialFilter::roberts_gradient_x()
     {
         Kernel out;
         out.resize(2, 2);
@@ -306,8 +325,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::roberts_gradient_y()
+    
+    Kernel SpatialFilter::roberts_gradient_y()
     {
         Kernel out;
         out.resize(2, 2);
@@ -318,8 +337,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::prewitt_gradient_x()
+    
+    Kernel SpatialFilter::prewitt_gradient_x()
     {
         Kernel out;
         out.resize(3, 3);
@@ -331,8 +350,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::prewitt_gradient_y()
+    
+    Kernel SpatialFilter::prewitt_gradient_y()
     {
         Kernel out;
         out.resize(3, 3);
@@ -344,8 +363,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::sobel_gradient_x()
+    
+    Kernel SpatialFilter::sobel_gradient_x()
     {
         Kernel out;
         out.resize(3, 3);
@@ -357,8 +376,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::sobel_gradient_y()
+    
+    Kernel SpatialFilter::sobel_gradient_y()
     {
         Kernel out;
         out.resize(3, 3);
@@ -370,8 +389,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::kirsch_compass_n()
+    
+    Kernel SpatialFilter::kirsch_compass_n()
     {
         Kernel out;
         out.resize(3, 3);
@@ -383,8 +402,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::kirsch_compass_nw()
+    
+    Kernel SpatialFilter::kirsch_compass_nw()
     {
         Kernel out;
         out.resize(3, 3);
@@ -396,8 +415,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::kirsch_compass_w()
+    
+    Kernel SpatialFilter::kirsch_compass_w()
     {
         Kernel out;
         out.resize(3, 3);
@@ -409,8 +428,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::kirsch_compass_sw()
+    
+    Kernel SpatialFilter::kirsch_compass_sw()
     {
         Kernel out;
         out.resize(3, 3);
@@ -422,8 +441,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::kirsch_compass_s()
+    
+    Kernel SpatialFilter::kirsch_compass_s()
     {
         Kernel out;
         out.resize(3, 3);
@@ -435,8 +454,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::kirsch_compass_se()
+    
+    Kernel SpatialFilter::kirsch_compass_se()
     {
         Kernel out;
         out.resize(3, 3);
@@ -448,8 +467,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::kirsch_compass_e()
+    
+    Kernel SpatialFilter::kirsch_compass_e()
     {
         Kernel out;
         out.resize(3, 3);
@@ -461,8 +480,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::kirsch_compass_ne()
+    
+    Kernel SpatialFilter::kirsch_compass_ne()
     {
         Kernel out;
         out.resize(3, 3);
@@ -474,8 +493,8 @@ namespace crisp
         return out;
     }
 
-    template<typename Image_t>
-    Kernel SpatialFilter<Image_t>::laplacian_of_gaussian(size_t dimension)
+    
+    Kernel SpatialFilter::laplacian_of_gaussian(size_t dimension)
     {
         assert(dimension != 0);
         Kernel matrix;
@@ -508,182 +527,134 @@ namespace crisp
         return matrix;
     }
 
+
     template<typename Image_t>
-    auto && SpatialFilter<Image_t>::convolution()
+    void SpatialFilter::apply_convolution_to(Image_t& in, Image_t& out)
     {
-        static auto f = [](const Image_t& image, long x, long y, const Kernel& kernel) -> typename Image_t::Value_t
+        long a = floor(_kernel.rows() / 2);
+        long b = floor(_kernel.cols() / 2);
+
+        bool rows_even = _kernel.rows() % 2 == 0,
+             cols_even = _kernel.cols() % 2 == 0;
+
+        using Value_t = typename Image_t::Value_t;
+
+        for (size_t y = 0; y < in.get_size().y(); ++y)
         {
-            long a = floor(kernel.rows() / 2);
-            long b = floor(kernel.cols() / 2);
-
-            bool rows_even = kernel.rows() % 2 == 0,
-                 cols_even = kernel.cols() % 2 == 0;
-
-            using Value_t = typename Image_t::Value_t;
-
-            Value_t current_sum = Value_t(0.f);
-            for (long s = -a; rows_even ? s < a : s <= a; ++s)
+            for (size_t x = 0; x < in.get_size().x(); ++x)
             {
-                for (long t = -b; cols_even ? t < b : t <= b; ++t)
+                Value_t current_sum = Value_t(0.f);
+                for (long s = -a; rows_even ? s < a : s <= a; ++s)
                 {
-                    if (abs(kernel(a + s, b + t) - 0) < 0.000001)
-                        continue;
+                    for (long t = -b; cols_even ? t < b : t <= b; ++t)
+                    {
+                        if (abs(_kernel(a + s, b + t)) < std::numeric_limits<float>::epsilon())
+                            continue;
 
-                    current_sum += kernel(a + s, b + t) * image(x + s, y + t);
+                        current_sum += _kernel(a + s, b + t) * in(x + s, y + t);
+                    }
                 }
+
+                out(x, y) = current_sum;
             }
-
-            return current_sum;
-        };
-
-        return f;
+        }
     }
 
     template<typename Image_t>
-    auto && SpatialFilter<Image_t>::min()
+    void SpatialFilter::apply_normalized_convolution_to(Image_t& in, Image_t& out)
     {
-        static auto f = [](const Image_t& image, long x, long y, const Kernel& kernel) -> typename Image_t::Value_t
+        long a = floor(_kernel.rows() / 2);
+        long b = floor(_kernel.cols() / 2);
+
+        bool rows_even = _kernel.rows() % 2 == 0,
+             cols_even = _kernel.cols() % 2 == 0;
+
+        using Value_t = typename Image_t::Value_t;
+
+        for (size_t y = 0; y < in.get_size().y(); ++y)
         {
-            long a = (kernel.cols() - 1) / 2;
-            long b = (kernel.rows() - 1) / 2;
-
-            using ImageValue_t = typename Image_t::Value_t;
-            using Inner_t = typename Image_t::Value_t::Value_t;
-
-            ImageValue_t out;
-            for (size_t i = 0; i < ImageValue_t::size(); ++i)
+            for (size_t x = 0; x < in.get_size().x(); ++x)
             {
-                Inner_t current = std::numeric_limits<Inner_t>::max();
+                Value_t current_sum = Value_t(0.f);
+                for (long s = -a; rows_even ? s < a : s <= a; ++s)
+                {
+                    for (long t = -b; cols_even ? t < b : t <= b; ++t)
+                    {
+                        if (abs(_kernel(a + s, b + t) - 0) < 0.000001)
+                            continue;
 
-                for (long s = -a; s <= a; ++s)
-                    for (long t = -b; t <= b; ++t)
-                        current = std::min<float>(kernel(s + a, t + b) * image(x + a, y + b).at(i), float(current));
+                        current_sum += _kernel(a + s, b + t) * in(x + s, y + t);
+                    }
+                }
 
-                out.at(i) = current;
+                out(x, y) = current_sum / _kernel_sum;
             }
-
-            return out;
-        };
-
-        return f;
+        }
     }
 
     template<typename Image_t>
-    auto && SpatialFilter<Image_t>::max()
+    void SpatialFilter::apply_min_to(Image_t& in, Image_t& out)
     {
-        static auto f = [](const Image_t& image, long x, long y, const Kernel& kernel) -> typename Image_t::Value_t
+        long a = floor(_kernel.rows() / 2);
+        long b = floor(_kernel.cols() / 2);
+
+        bool rows_even = _kernel.rows() % 2 == 0,
+             cols_even = _kernel.cols() % 2 == 0;
+
+        using ImageValue_t = typename Image_t::Value_t;
+        using Inner_t = typename Image_t::Value_t::Value_t;
+
+        for (size_t y = 0; y < in.get_size().y(); ++y)
         {
-            long a = (kernel.cols() - 1) / 2;
-            long b = (kernel.rows() - 1) / 2;
-
-            using ImageValue_t = typename Image_t::Value_t;
-            using Inner_t = typename Image_t::Value_t::Value_t;
-
-            ImageValue_t out;
-            for (size_t i = 0; i < ImageValue_t::size(); ++i)
+            for (size_t x = 0; x < in.get_size().x(); ++x)
             {
-                Inner_t current = std::numeric_limits<Inner_t>::min();
+                ImageValue_t min_vec;
+                for (size_t i = 0; i < ImageValue_t::size(); ++i)
+                {
+                    Inner_t current = std::numeric_limits<Inner_t>::max();
 
-                for (long s = -a; s <= a; ++s)
-                    for (long t = -b; t <= b; ++t)
-                        current = std::max<float>(kernel(s + a, t + b) * image(x + a, y + b).at(i), float(current));
+                    for (long s = -a; s <= a; ++s)
+                        for (long t = -b; t <= b; ++t)
+                            current = std::min<float>(_kernel(s + a, t + b) * in(x + a, y + b).at(i), float(current));
 
-                out.at(i) = current;
+                    min_vec.at(i) = current;
+                }
+
+                out(x, y) = min_vec;
             }
-
-            return out;
-        };
-
-        return f;
+        }
     }
 
     template<typename Image_t>
-    auto && SpatialFilter<Image_t>::mean()
+    void SpatialFilter::apply_max_to(Image_t& in, Image_t& out)
     {
-        static auto f = [](const Image_t& image, long x, long y, const Kernel& kernel) -> typename Image_t::Value_t {
-            long a = (kernel.cols() - 1) / 2;
-            long b = (kernel.rows() - 1) / 2;
+        long a = floor(_kernel.rows() / 2);
+        long b = floor(_kernel.cols() / 2);
 
-            using ImageValue_t = typename Image_t::Value_t;
-            using Inner_t = typename Image_t::Value_t::Value_t;
+        bool rows_even = _kernel.rows() % 2 == 0,
+             cols_even = _kernel.cols() % 2 == 0;
 
-            ImageValue_t out;
-            for (size_t i = 0; i < ImageValue_t::size(); ++i)
-            {
-                float sum = 0;
-                size_t n = 0;
+        using ImageValue_t = typename Image_t::Value_t;
+        using Inner_t = typename Image_t::Value_t::Value_t;
 
-                for (long s = -a; s <= a; ++s)
-                    for (long t = -b; t <= b; ++t, n++)
-                        sum += kernel(s + a, t + b) * image(x + a, y + b).at(i);
-
-                out.at(i) = static_cast<Inner_t>(sum / n);
-            }
-
-            return out;
-        };
-
-        return f;
-    }
-
-    template<typename Image_t>
-    auto && SpatialFilter<Image_t>::median()
-    {
-        static auto f = [](const Image_t& image, long x, long y, const Kernel& kernel) -> typename Image_t::Value_t {
-            long a = (kernel.cols() - 1) / 2;
-            long b = (kernel.rows() - 1) / 2;
-
-            using ImageValue_t = typename Image_t::Value_t;
-            using Inner_t = typename Image_t::Value_t::Value_t;
-
-            ImageValue_t out;
-            for (size_t i = 0; i < ImageValue_t::size(); ++i)
-            {
-                std::vector<float> values;
-                values.reserve(kernel.rows() * kernel.cols());
-
-                for (long s = -a; s <= a; ++s)
-                    for (long t = -b; t <= b; ++t)
-                        values.push_back(kernel(s + a, t + b) * image(x + a, y + b).at(i));
-
-                if (values.size() % 2 == 0)
-                    out.at(i) = (values.at(floor(values.size() / 2.f)) + values.at(ceil(values.size() / 2.f))) / 2;
-                else
-                    out.at(i) = values.at(values.size() / 2 + 1);
-            }
-
-            return out;
-        };
-
-        return f;
-    }
-
-    template<typename Image_t>
-    auto && SpatialFilter<Image_t>::n_ths_k_quantile(
-            size_t n, size_t k)
-    {
-        static auto f = [n, k](const Image_t& image, long x, long y, const Kernel& kernel) -> float
+        for (size_t y = 0; y < in.get_size().y(); ++y)
         {
-            assert(kernel.rows() % 2 == 1 and kernel.cols() % 2 == 1 && "Kernel needs to have odd dimensions");
+            for (size_t x = 0; x < in.get_size().x(); ++x)
+            {
+                ImageValue_t max_vec;
+                for (size_t i = 0; i < ImageValue_t::size(); ++i)
+                {
+                    Inner_t current = std::numeric_limits<Inner_t>::min();
 
-            long a = (kernel.cols() - 1) / 2;
-            long b = (kernel.rows() - 1) / 2;
+                    for (long s = -a; s <= a; ++s)
+                        for (long t = -b; t <= b; ++t)
+                            current = std::max<float>(_kernel(s + a, t + b) * in(x + a, y + b).at(i), float(current));
 
-            std::vector<float> values;
-            values.reserve(kernel.rows()*kernel.cols());
+                    max_vec.at(i) = current;
+                }
 
-            for (long s = -a; s <= a; ++s)
-                for (long t = -b; t <= b; ++t)
-                    values.push_back(kernel(s + a, t + b) * image(x + a, y + b));
-
-            if (n >= k)
-                return values.back();
-            else if (n <= 0)
-                return values.front();
-            else
-                return values.at(size_t(values.size() * (float(n) / float(k))));
-        };
-
-        return f;
+                out(x, y) = max_vec;
+            }
+        }
     }
 }

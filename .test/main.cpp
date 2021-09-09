@@ -20,15 +20,15 @@ int main()
 {
     auto image = load_grayscale_image("/home/clem/Workspace/crisp/.test/opal_color.png");
 
-    auto filter = SpatialFilter<GrayScaleImage>();
+    auto filter = SpatialFilter();
     Kernel kernel;
     kernel.resize(3, 3);
     kernel << 0.5, 0.5, 0.5,
               0.5,   2, 0.5,
               0.5, 0.5, 0.5;
 
-    filter.set_kernel(filter.normalized_box(10));
-    filter.set_evaluation_function(filter.convolution());
+    filter.set_kernel(filter.normalized_box(3));
+    filter.set_evaluation_function(SpatialFilter::CONVOLUTION);
     filter.apply_to(image);
 
     auto sprite = Sprite();
