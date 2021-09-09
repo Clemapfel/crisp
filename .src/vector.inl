@@ -20,7 +20,10 @@ namespace crisp
     {
         size_t i = 0;
         for (T t : list)
-            this->at(i++) = t;
+        {
+            this->at(i) = t;
+            i += 1;
+        }
     }
 
     template<typename T, size_t N>
@@ -49,7 +52,16 @@ namespace crisp
     template<typename T, size_t N>
     Vector<T, N>::operator T() const
     {
-        return Eigen::Array<T, 1, N>::operator()(0, 0);
+        if (N == 1)
+            return Eigen::Array<T, 1, N>::operator()(0, 0);
+        else
+        {
+            T sum = 0;
+            for (size_t i = 0; i < N; ++i)
+                sum += std::abs<T>(at(i));
+
+            return sum;
+        }
     }
 
     template<typename T, size_t N>

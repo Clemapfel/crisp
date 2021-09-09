@@ -45,9 +45,9 @@ namespace crisp
         switch (_padding_type)
         {
             case ZERO:
-                return Value_t(0);
+                return Value_t(InnerValue_t(0));
             case ONE:
-                return Value_t(1);
+                return Value_t(InnerValue_t(1));
             case REPEAT:
             {
                 int x_mod = x % int(get_size().x());
@@ -94,7 +94,7 @@ namespace crisp
                 return at(new_x, new_y);
             }
             default:
-                return Value_t(0);
+                return Value_t(InnerValue_t(0));
         }
     }
 
@@ -102,7 +102,10 @@ namespace crisp
     const typename Image<InnerValue_t, N>::Value_t& Image<InnerValue_t, N>::operator()(int x, int y) const
     {
         if (x < 0  or x >= _data.rows() or y < 0 or y >= _data.cols())
-            return std::move(get_pixel_out_of_bounds(x, y));
+        {
+            _dummy_padding_reference = get_pixel_out_of_bounds(x, y);
+            return _dummy_padding_reference;
+        }
         else
             return _data(x, y);
     }

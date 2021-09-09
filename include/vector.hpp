@@ -28,12 +28,13 @@ namespace crisp
             Vector();
 
             // @brief ctor and assign all elements
-            Vector(T);
+            explicit Vector(T);
 
             // @brief construct variadic
             // @note if the number of arguments exceeds N, the behavior is undefined
             Vector(std::initializer_list<T>);
 
+            // @brief decays vector to element for N = 1, casts to norm otherwise
             explicit (N != 1) operator T() const;
 
             // @brief access data without bounds checking

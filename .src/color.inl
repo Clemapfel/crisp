@@ -201,6 +201,13 @@ namespace crisp
         z() = b;
     }
 
+    inline RGB::RGB(float all)
+    {
+        x() = all;
+        y() = all;
+        z() = all;
+    }
+
     inline RGB::RGB(Vector<float, 3> vec)
     {
         for (size_t i = 0; i < 3; ++i)
@@ -258,6 +265,13 @@ namespace crisp
         z() = v;
     }
 
+    inline HSV::HSV(float all)
+    {
+        x() = all;
+        y() = all;
+        z() = all;
+    }
+
     inline HSV::HSV(Vector<float, 3> vec)
     {
         for (size_t i = 0; i < 3; ++i)
@@ -307,6 +321,13 @@ namespace crisp
         x() = h;
         y() = s;
         z() = l;
+    }
+
+    inline HSL::HSL(float all)
+    {
+        x() = all;
+        y() = all;
+        z() = all;
     }
 
     inline HSL::HSL(Vector<float, 3> vec)

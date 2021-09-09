@@ -41,6 +41,7 @@ namespace crisp
 
         // @brief ctor
         RGB(float red, float green, float blue);
+        RGB(float all);
 
         // @brief ctor from vector
         RGB(Vector<float, 3>);
@@ -83,6 +84,7 @@ namespace crisp
         // @param saturation: range [0, 1]
         // @param value: also called "brightness", range [0, 1]
         HSV(float hue, float saturation, float value);
+        HSV(float all);
 
         // @brief ctor from vector
         HSV(Vector<float, 3>);
@@ -125,6 +127,7 @@ namespace crisp
         // @param saturation: range [0, 1]
         // @param lightness: range [0, 1]
         HSL(float hue, float saturation, float lightness);
+        HSL(float all);
 
         // @brief ctor from vector
         HSL(Vector<float, 3>);

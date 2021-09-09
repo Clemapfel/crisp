@@ -407,29 +407,32 @@ namespace crisp
     template<typename Image_t>
     auto && SpatialFilter<Image_t>::convolution()
     {
-        return std::move([](const Image_t& image, long x, long y, const Kernel& kernel) -> typename Image_t::Value_t
+        static auto f = [](const Image_t& image, long x, long y, const Kernel& kernel) -> typename Image_t::Value_t
         {
             long a = floor(kernel.rows() / 2);
             long b = floor(kernel.cols() / 2);
 
+            bool rows_even = kernel.rows() % 2 == 0,
+                 cols_even = kernel.cols() % 2 == 0;
+
             using Value_t = typename Image_t::Value_t;
 
             Value_t current_sum = Value_t(0.f);
-            for (long s = -a; s <= a; ++s)
+            for (long s = -a; rows_even ? s < a : s <= a; ++s)
             {
-                for (long t = -b; t <= b; ++t)
+                for (long t = -b; cols_even ? t < b : t <= b; ++t)
                 {
                     if (abs(kernel(a + s, b + t) - 0) < 0.000001)
                         continue;
 
-                    auto first = kernel(a + s, b + t);
-                    auto two = image(x + s, y + t);
-                    current_sum += first * two;
+                    current_sum += kernel(a + s, b + t) * image(x + s, y + t);
                 }
             }
 
             return current_sum;
-        });
+        };
+
+        return f;
     }
 
     template<typename Image_t>
@@ -489,14 +492,34 @@ namespace crisp
     template<typename Image_t>
     auto && SpatialFilter<Image_t>::mean()
     {
-        return SpatialFilter<Image_t>::convolution();
+        return std::move([](const Image_t& image, long x, long y, const Kernel& kernel) -> typename Image_t::Value_t {
+            long a = (kernel.cols() - 1) / 2;
+            long b = (kernel.rows() - 1) / 2;
+
+            using ImageValue_t = typename Image_t::Value_t;
+            using Inner_t = typename Image_t::Value_t::Value_t;
+
+            ImageValue_t out;
+            for (size_t i = 0; i < ImageValue_t::size(); ++i)
+            {
+                float sum = 0;
+                size_t n = 0;
+
+                for (long s = -a; s <= a; ++s)
+                    for (long t = -b; t <= b; ++t, n++)
+                        sum += kernel(s + a, t + b) * image(x + a, y + b).at(i);
+
+                out.at(i) = static_cast<Inner_t>(sum / n);
+            }
+
+            return out;
+        });
     }
 
     template<typename Image_t>
     auto && SpatialFilter<Image_t>::median()
     {
-        return std::move([](const Image_t& image, long x, long y, const Kernel& kernel) -> typename Image_t::Value_t
-        {
+        return std::move([](const Image_t& image, long x, long y, const Kernel& kernel) -> typename Image_t::Value_t {
             long a = (kernel.cols() - 1) / 2;
             long b = (kernel.rows() - 1) / 2;
 
@@ -507,7 +530,7 @@ namespace crisp
             for (size_t i = 0; i < ImageValue_t::size(); ++i)
             {
                 std::vector<float> values;
-                values.reserve(kernel.rows()*kernel.cols());
+                values.reserve(kernel.rows() * kernel.cols());
 
                 for (long s = -a; s <= a; ++s)
                     for (long t = -b; t <= b; ++t)

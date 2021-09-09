@@ -21,7 +21,8 @@ namespace crisp
         class ConstIterator;
 
         public:
-            using Value_t = typename std::conditional<N == 3 and std::is_same_v<InnerValue_t, float>, RGB, crisp::Vector<InnerValue_t, N>>::type;
+            using Value_t = typename std::conditional<N == 3 and std::is_same_v<InnerValue_t, float>, RGB, Vector<InnerValue_t, N>>::type;
+            static constexpr size_t n_planes = N;
 
             // @brief ctors
             Image() = default;
@@ -79,7 +80,7 @@ namespace crisp
 
         private:
             Value_t get_pixel_out_of_bounds(int x, int y) const;
-            Value_t _dummy_padding_reference;
+            mutable Value_t _dummy_padding_reference;
 
             PaddingType _padding_type = PaddingType::STRETCH;
 
