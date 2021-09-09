@@ -122,7 +122,7 @@ namespace crisp
     template<typename InnerValue_t, size_t N>
     Vector2ui Image<InnerValue_t, N>::get_size() const
     {
-        return {size_t(_data.rows()), size_t(_data.cols())};
+        return Vector2ui({size_t(_data.rows()), size_t(_data.cols())});
     }
 
     template<typename InnerValue_t, size_t N>

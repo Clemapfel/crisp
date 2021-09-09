@@ -13,7 +13,7 @@ namespace crisp
     class Vector;
 }
 
-namespace crisp::detail
+namespace crisp
 {
     // Vector class that behaves like a scalar, all arithmetics are element-wise
     template<typename T, size_t N>
@@ -27,7 +27,14 @@ namespace crisp::detail
             // @brief default ctor
             Vector();
 
-            explicit (N != 1) operator T();
+            // @brief ctor and assign all elements
+            Vector(T);
+
+            // @brief construct variadic
+            // @note if the number of arguments exceeds N, the behavior is undefined
+            Vector(std::initializer_list<T>);
+
+            explicit (N != 1) operator T() const;
 
             // @brief access data without bounds checking
             // @param i: index
@@ -125,7 +132,6 @@ namespace crisp::detail
             // @returns size
             static size_t size();
 
-        protected:
             using Eigen::Array<T, 1, N>::x;
             using Eigen::Array<T, 1, N>::y;
             using Eigen::Array<T, 1, N>::z;
@@ -133,33 +139,6 @@ namespace crisp::detail
 
         private:
             virtual inline void make_polymorphic_with_this_dummy() {};
-    };
-}
-
-namespace crisp
-{
-    // partial specializations
-    template<typename T, size_t N>
-    class Vector : public detail::Vector<T, N>
-    {
-        public:
-            // @brief default ctor
-            Vector();
-
-            // @brief ctor with initializer list
-            // @param : initializer list
-            Vector(std::initializer_list<T>);
-
-            // @brief ctor and assign scalar to all elements
-            // @param : scalar
-            Vector(T);
-
-            // @brief alternative way to access elements
-            // @returns (const) reference to corresponding element
-            using detail::Vector<T, 4>::x;
-            using detail::Vector<T, 4>::y;
-            using detail::Vector<T, 4>::z;
-            using detail::Vector<T, 4>::w;
     };
 
     // typedefs for commonly used Ts

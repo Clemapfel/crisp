@@ -25,13 +25,13 @@ namespace crisp
 
     inline Vector2f Sprite::get_position() const
     {
-        return Vector2f(_position.x, _position.y);
+        return Vector2f{_position.x, _position.y};
     }
 
     inline Vector2f Sprite::get_size() const
     {
         auto size = _sprite.getTexture()->getSize();
-        return Vector2f(size.x * _scale, size.y * _scale);
+        return Vector2f{float(size.x * _scale), float(size.y * _scale)};
     }
 
     inline size_t Sprite::get_scale() const

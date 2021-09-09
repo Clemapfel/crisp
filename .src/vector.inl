@@ -4,8 +4,9 @@
 //
 
 #include <cstdarg>
+#include <vector.hpp>
 
-namespace crisp::detail
+namespace crisp
 {
     template<typename T, size_t N>
     Vector<T, N>::Vector()
@@ -15,9 +16,40 @@ namespace crisp::detail
     }
 
     template<typename T, size_t N>
-    Vector<T, N>::operator T()
+    Vector<T, N>::Vector(std::initializer_list<T> list)
     {
-        Eigen::Array<T, 1, N>::operator()(0, 0);
+        size_t i = 0;
+        for (T t : list)
+            this->at(i++) = t;
+    }
+
+    template<typename T, size_t N>
+    Vector<T, N>::Vector(T t)
+    {
+        Eigen::Array<T, 1, N>::setConstant(t);
+    }
+
+    /*
+    template<typename T, size_t N>
+    template<typename Var_t>
+    Vector<T, N>::Vector(Var_t in...)
+    {
+        std::va_list args;
+        va_start(args, in);
+
+        std::vector<Var_t> temp;
+        for (size_t i = 0; i < N; ++i)
+        {
+            this->at(i) = va_arg(args, Var_t);
+        }
+
+        va_end(args);
+    }*/
+
+    template<typename T, size_t N>
+    Vector<T, N>::operator T() const
+    {
+        return Eigen::Array<T, 1, N>::operator()(0, 0);
     }
 
     template<typename T, size_t N>
@@ -49,7 +81,7 @@ namespace crisp::detail
             throw std::out_of_range(
                     "Index " + std::to_string(i) + " out of range for vector of size " + std::to_string(N));
 
-        return Eigen::Array<T, 1, N>::operator()(0, i);;
+        return Eigen::Array<T, 1, N>::operator()(0, i);
     }
 
     template<typename T, size_t N>
@@ -149,6 +181,22 @@ namespace crisp::detail
     }
 
     template<typename T, size_t N>
+    Vector <T, N>& Vector<T, N>::operator*=(T scalar)
+    {
+        for (size_t i = 0; i < N; ++i)
+            this->at(i) *= scalar;
+        return *this;
+    }
+
+    template<typename T, size_t N>
+    Vector <T, N>& Vector<T, N>::operator/=(T scalar)
+    {
+        for (size_t i = 0; i < N; ++i)
+            this->at(i) /= scalar;
+        return *this;
+    }
+
+    template<typename T, size_t N>
     Vector <T, N>& Vector<T, N>::operator%=(T scalar)
     {
         for (size_t i = 0; i < N; ++i)
@@ -161,194 +209,137 @@ namespace crisp::detail
     {
         return N;
     }
-}
-
-namespace crisp
-{
-    // specializations: decay to trivial type for N = 1
-    template<typename T>
-    struct Vector<T, 1> : public detail::Vector<T, 1>
-    {
-        Vector();
-        Vector(T t);
-
-        inline operator T&()
-        {
-            return static_cast<T>(Eigen::Array<T, 1, 1>::operator()(0, 0));
-        }
-
-        inline operator T() const
-        {
-            return static_cast<T>(Eigen::Array<T, 1, 1>::operator()(0, 0));
-        }
-
-        inline Vector<T, 1>& operator=(T t)
-        {
-            Eigen::Array<T, 1, 1>::operator()(0, 0) = t;
-        }
-    };
-
-    // partial specialization for N = 2
-    template<typename T>
-    class Vector<T, 2> : public detail::Vector<T, 2>
-    {
-        public:
-            Vector();
-            Vector(std::initializer_list<T>);
-            Vector(T);
-
-            Vector(T x, T y);
-
-            using detail::Vector<T, 2>::x;
-            using detail::Vector<T, 2>::y;
-    };
-
-
-    template<typename T>
-    class Vector<T, 3> : public detail::Vector<T, 3>
-    {
-        public:
-            Vector();
-            Vector(std::initializer_list<T>);
-            Vector(T);
-            Vector(T x, T y, T z);
-
-            using detail::Vector<T, 3>::x;
-            using detail::Vector<T, 3>::y;
-            using detail::Vector<T, 3>::z;
-    };
-
-    template<typename T>
-    class Vector<T, 4> : public detail::Vector<T, 4>
-    {
-        public:
-            Vector();
-            Vector(std::initializer_list<T>);
-            Vector(T);
-            Vector(T x, T y, T z, T w);
-
-            using detail::Vector<T, 4>::x;
-            using detail::Vector<T, 4>::y;
-            using detail::Vector<T, 4>::z;
-            using detail::Vector<T, 4>::w;
-    };
 
     template<typename T, size_t N>
-    Vector<T, N>::Vector()
-        : detail::Vector<T, N>()
-    {}
-
-    template<typename T>
-    Vector<T, 1>::Vector()
-        : detail::Vector<T, 1>()
-    {}
-
-    template<typename T>
-    Vector<T, 2>::Vector()
-        : detail::Vector<T, 2>()
-    {}
-
-    template<typename T>
-    Vector<T, 3>::Vector()
-        : detail::Vector<T, 3>()
-    {}
-
-    template<typename T>
-    Vector<T, 4>::Vector()
-        : detail::Vector<T, 4>()
-    {}
-
-    template<typename T, size_t N>
-    Vector<T, N>::Vector(std::initializer_list<T> list)
+    Vector<T, N>& Vector<T, N>::operator=(T t)
     {
-        assert(list.size() == N);
+        for (size_t i = 0; i < N; ++i)
+            this->at(i) = t;
 
-        size_t i = 0;
-        for (auto it = list.begin(); i < N and it != list.end(); it += 1, ++i)
-            Eigen::Array<T, 1, N>::operator()(0, i) = *it;
-    }
-
-    template<typename T>
-    Vector<T, 2>::Vector(std::initializer_list<T> list)
-    {
-        assert(list.size() == 2);
-
-        size_t i = 0;
-        for (auto it = list.begin(); i < 2 and it != list.end(); it += 1, ++i)
-            Eigen::Array<T, 1, 2>::operator()(0, i) = *it;
-    }
-
-    template<typename T>
-    Vector<T, 3>::Vector(std::initializer_list<T> list)
-    {
-        assert(list.size() == 3);
-
-        size_t i = 0;
-        for (auto it = list.begin(); i < 3 and it != list.end(); it += 1, ++i)
-            Eigen::Array<T, 1, 3>::operator()(0, i) = *it;
-    }
-
-    template<typename T>
-    Vector<T, 4>::Vector(std::initializer_list<T> list)
-    {
-        assert(list.size() == 4);
-
-        size_t i = 0;
-        for (auto it = list.begin(); i < 4 and it != list.end(); it += 1, ++i)
-            Eigen::Array<T, 1, 4>::operator()(0, i) = *it;
+        return *this;
     }
 
     template<typename T, size_t N>
-    Vector<T, N>::Vector(T value)
+    Vector<T, N> Vector<T, N>::operator&(T t) const
     {
-       Eigen::Array<T, 1, N>::setConstant(value);
+        Vector<T, N> out;
+
+        for (size_t i = 0; i < N; ++i)
+            out = this->at(i) & t;
+
+        return out;
     }
 
-    template<typename T>
-    Vector<T, 1>::Vector(T value)
+    template<typename T, size_t N>
+    Vector<T, N> Vector<T, N>::operator&&(T t) const
     {
-       Eigen::Array<T, 1, 1>::setConstant(value);
+        Vector<T, N> out;
+
+        for (size_t i = 0; i < N; ++i)
+            out = this->at(i) && t;
+
+        return out;
     }
 
-    template<typename T>
-    Vector<T, 2>::Vector(T value)
+    template<typename T, size_t N>
+    Vector<T, N> Vector<T, N>::operator|(T t) const
     {
-       Eigen::Array<T, 1, 2>::setConstant(value);
+        Vector<T, N> out;
+
+        for (size_t i = 0; i < N; ++i)
+            out = this->at(i) && t;
+
+        return out;
     }
 
-    template<typename T>
-    Vector<T, 3>::Vector(T value)
+    template<typename T, size_t N>
+    Vector<T, N> Vector<T, N>::operator||(T t) const
     {
-       Eigen::Array<T, 1, 3>::setConstant(value);
+        Vector<T, N> out;
+
+        for (size_t i = 0; i < N; ++i)
+            out = this->at(i) && t;
+
+        return out;
     }
 
-    template<typename T>
-    Vector<T, 4>::Vector(T value)
+    template<typename T, size_t N>
+    Vector<T, N> Vector<T, N>::operator^(T t) const
     {
-       Eigen::Array<T, 1, 4>::setConstant(value);
+        Vector<T, N> out;
+
+        for (size_t i = 0; i < N; ++i)
+            out = this->at(i) && t;
+
+        return out;
     }
 
-    template<typename T>
-    Vector<T, 2>::Vector(T x, T y)
+    template<typename T, size_t N>
+    Vector<T, N> Vector<T, N>::operator~() const
     {
-        Vector<T, 2>::at(0) = x;
-        Vector<T, 2>::at(1) = y;
+        Vector<T, N> out;
+
+        for (size_t i = 0; i < N; ++i)
+            out = ~(this->at(i));
+
+        return out;
     }
 
-    template<typename T>
-    Vector<T, 3>::Vector(T x, T y, T z)
+    template<typename T, size_t N>
+    Vector<T, N> Vector<T, N>::operator!() const
     {
-        Vector<T, 3>::at(0) = x;
-        Vector<T, 3>::at(1) = y;
-        Vector<T, 3>::at(2) = z;
+        Vector<T, N> out;
+
+        for (size_t i = 0; i < N; ++i)
+            out = !(this->at(i));
+
+        return out;
     }
 
-    template<typename T>
-    Vector<T, 4>::Vector(T x, T y, T z, T w)
+    template<typename T, size_t N>
+    Vector<T, N>& Vector<T, N>::operator&=(T t)
     {
-        Vector<T, 3>::at(0) = x;
-        Vector<T, 3>::at(1) = y;
-        Vector<T, 3>::at(2) = z;
-        Vector<T, 3>::at(3) = w;
+        for (size_t i = 0; i < N; ++i)
+            this->at(i) &= t->at(i);
+
+        return *this;
+    }
+
+    template<typename T, size_t N>
+    Vector<T, N>& Vector<T, N>::operator|=(T t)
+    {
+        for (size_t i = 0; i < N; ++i)
+            this->at(i) |= t->at(i);
+
+        return *this;
+    }
+
+    template<typename T, size_t N>
+    Vector<T, N>& Vector<T, N>::operator^=(T t)
+    {
+        for (size_t i = 0; i < N; ++i)
+            this->at(i) |= t->at(i);
+
+        return *this;
+    }
+
+    template<typename T, size_t N>
+    bool Vector<T, N>::operator==(T t) const
+    {
+        for (size_t i = 0; i < N; ++i)
+            if (this->at(i) != t)
+                return false;
+
+        return true;
+    }
+
+    template<typename T, size_t N>
+    bool Vector<T, N>::operator!=(T t) const
+    {
+        for (size_t i = 0; i < N; ++i)
+            if (this->at(i) == t)
+                return false;
+
+        return true;
     }
 }

@@ -20,6 +20,7 @@ int main()
 {
     auto image = load_grayscale_image("/home/clem/Workspace/crisp/.test/opal_color.png");
 
+    /*
     auto filter = SpatialFilter<GrayScaleImage>();
     Kernel kernel;
     kernel.resize(3, 3);
@@ -30,11 +31,13 @@ int main()
     filter.set_kernel(kernel);
     filter.set_evaluation_function(filter.median());
     filter.apply_to(image);
+     */
 
     auto sprite = Sprite();
     sprite.create_from(image);
     sprite.set_scale(2);
 
+    auto size = sprite.get_size();
     auto window = RenderWindow(sprite.get_size().x(), sprite.get_size().y());
 
     while (window.is_open())

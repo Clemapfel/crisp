@@ -67,7 +67,7 @@ namespace crisp
 
             static inline RenderWindow* _window = nullptr;
 
-            static inline Vector2f _cursor_position = Vector2f(0,0);
+            static inline Vector2f _cursor_position; // = Vector2f(0.f, 0.f);
             static inline std::map<KeyID, sf::Time> _hold_duration = {};
 
             static inline size_t _current_state_index = 1;

@@ -74,7 +74,7 @@ namespace crisp
 
         private:
             sf::Clock _elapsed;
-            Vector2ui _resolution = Vector2ui(0, 0);
+            Vector2ui _resolution = Vector2ui{0, 0};
             sf::RectangleShape _background_shape;
     };
 }
