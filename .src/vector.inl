@@ -15,6 +15,12 @@ namespace crisp::detail
     }
 
     template<typename T, size_t N>
+    Vector<T, N>::operator T()
+    {
+        Eigen::Array<T, 1, N>::operator()(0, 0);
+    }
+
+    template<typename T, size_t N>
     T& Vector<T, N>::operator[](size_t i)
     {
         return Eigen::Array<T, 1, N>::operator()(0, i);
@@ -165,6 +171,11 @@ namespace crisp
     {
         Vector();
         Vector(T t);
+
+        inline operator T&()
+        {
+            return static_cast<T>(Eigen::Array<T, 1, 1>::operator()(0, 0));
+        }
 
         inline operator T() const
         {

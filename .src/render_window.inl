@@ -15,6 +15,7 @@ namespace crisp
 
     inline RenderWindow::RenderWindow(size_t width, size_t height)
     {
+        InputHandler::set_window(this);
         create(width, height);
     }
 

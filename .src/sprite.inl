@@ -87,7 +87,7 @@ namespace crisp
             for (long y = 0; y < image.get_size().y(); ++y)
             {
                 auto intensity = image(x, y);
-                temp.setPixel(x, y, sf::Color(intensity * 255, intensity * 255, intensity * 255, 255));
+                temp.setPixel(x, y, sf::Color(intensity * 255.f, intensity * 255.f, intensity * 255.f, 255.f));
             }
         }
 

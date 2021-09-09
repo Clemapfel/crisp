@@ -7,18 +7,20 @@
 
 #include <image/multi_plane_image.hpp>
 #include <image/color_image.hpp>
+#include <image/grayscale_image.hpp>
 
 #include <Dense>
 
 namespace crisp
 {
     using Kernel = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>;
-    
+
     template<typename Image_t>
-    class SpatialFilter 
+    class SpatialFilter
     {
         public:
-            using EvaluationFunction_t = std::function<typename Image_t::Value_t(const Image_t&, size_t, size_t, const Kernel&)>;
+            using EvaluationFunction_t = std::function<typename Image_t::Value_t(const Image_t&, size_t, size_t,
+                                                                                 const Kernel&)>;
 
             SpatialFilter();
 
@@ -36,7 +38,7 @@ namespace crisp
 
             // @brief access kernel elements
             float& operator()(size_t x, size_t y);
-            const float operator()(size_t x, size_t y) const;
+            float operator()(size_t x, size_t y) const;
 
             // kernels
             static Kernel identity(size_t dimensions);
@@ -50,18 +52,18 @@ namespace crisp
             static Kernel laplacian_first_derivative();
             static Kernel laplacian_second_derivative();
 
-            static Kernel laplacian_of_gaussian(long dimensions);
-            
+            static Kernel laplacian_of_gaussian(size_t dimensions);
+
             static Kernel simple_gradient_x();
             static Kernel simple_gradient_y();
-            
-            static Kernel roberts_gradient_x(); 
+
+            static Kernel roberts_gradient_x();
             static Kernel roberts_gradient_y();
-            
-            static Kernel prewitt_gradient_x(); 
+
+            static Kernel prewitt_gradient_x();
             static Kernel prewitt_gradient_y();
-            
-            static Kernel sobel_gradient_x(); 
+
+            static Kernel sobel_gradient_x();
             static Kernel sobel_gradient_y();
 
             static Kernel kirsch_compass_n();
@@ -88,9 +90,12 @@ namespace crisp
 
         private:
             Kernel _kernel;
-            EvaluationFunction_t _function;
+            EvaluationFunction_t _evaluation_function;
     };
 
+
     using GrayScaleFilter = SpatialFilter<GrayScaleImage>;
-    using ColorFilter = SpatialFilter<ColorImage>
+    using ColorFilter = SpatialFilter<ColorImage>;
 }
+
+#include ".src/spatial_filter.inl"

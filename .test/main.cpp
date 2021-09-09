@@ -6,9 +6,11 @@
 #include <vector.hpp>
 #include <image.hpp>
 #include <color.hpp>
+#include <image.hpp>
 #include <system/image_io.hpp>
 #include <system/sprite.hpp>
 #include <system/render_window.hpp>
+#include <spatial_filter.hpp>
 
 #include <iostream>
 
@@ -16,7 +18,18 @@ using namespace crisp;
 
 int main()
 {
-    auto image = load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
+    auto image = load_grayscale_image("/home/clem/Workspace/crisp/.test/opal_color.png");
+
+    auto filter = SpatialFilter<GrayScaleImage>();
+    Kernel kernel;
+    kernel.resize(3, 3);
+    kernel << 0.5, 0.5, 0.5,
+              0.5,   2, 0.5,
+              0.5, 0.5, 0.5;
+
+    filter.set_kernel(kernel);
+    filter.set_evaluation_function(filter.median());
+    filter.apply_to(image);
 
     auto sprite = Sprite();
     sprite.create_from(image);

@@ -7,12 +7,8 @@
 
 #include <image/color_image.hpp>
 
-class ColorImage;
-
 namespace crisp
 {
-    class ColorImage;
-
     class GrayScaleImage : public Image<float, 1>
     {
         public:

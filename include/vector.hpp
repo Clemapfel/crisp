@@ -7,6 +7,12 @@
 
 #include <Dense>
 
+namespace crisp
+{
+    template<typename, size_t>
+    class Vector;
+}
+
 namespace crisp::detail
 {
     // Vector class that behaves like a scalar, all arithmetics are element-wise
@@ -16,8 +22,12 @@ namespace crisp::detail
         static_assert(std::is_integral<T>::value or std::is_floating_point<T>::value);
 
         public:
+            using Value_t = T;
+
             // @brief default ctor
             Vector();
+
+            explicit (N != 1) operator T();
 
             // @brief access data without bounds checking
             // @param i: index

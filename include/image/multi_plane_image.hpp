@@ -13,18 +13,6 @@
 
 namespace crisp
 {
-    namespace detail
-    {
-        template<typename T, size_t N>
-        using choose_image_value_t = typename std::conditional<N == 3 and std::is_same_v<T, float>, RGB, typename std::conditional<N == 1, T, Vector<T, N>>::type>::type;
-        // if (T == float and N == 3)
-        //      type = RGB
-        // else if (N == 1)
-        //      type = T
-        // else
-        //      type = Vector<T, N>
-    }
-
     // an image that lives in ram and is operated upon by the cpu
     template<typename InnerValue_t, size_t N = 1>
     class Image
@@ -33,14 +21,14 @@ namespace crisp
         class ConstIterator;
 
         public:
-            using Value_t = detail::choose_image_value_t<InnerValue_t, N>;
+            using Value_t = typename std::conditional<N == 3 and std::is_same_v<InnerValue_t, float>, RGB, crisp::Vector<InnerValue_t, N>>::type;
 
             // @brief ctors
             Image() = default;
-            Image(size_t width, size_t height, Value_t init = Value_t(InnerValue_t(0)));
+            Image(size_t width, size_t height, Value_t init = Value_t());
 
             // @brief create as given size with 1 value
-            void create(size_t width, size_t height, Value_t init = Value_t(InnerValue_t(0)));
+            void create(size_t width, size_t height, Value_t init = Value_t());
 
             // @brief access pixel or padding if out of range
             virtual const Value_t& operator()(int x, int y) const;
