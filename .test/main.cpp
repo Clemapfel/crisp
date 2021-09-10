@@ -12,6 +12,7 @@
 #include <system/render_window.hpp>
 #include <spatial_filter.hpp>
 #include <morphological_transform.hpp>
+#include <pseudocolor_mapping.hpp>
 
 #include <iostream>
 
@@ -19,7 +20,7 @@ using namespace crisp;
 
 int main()
 {
-    auto image = load_binary_image("/home/clem/Workspace/crisp/.test/opal_color.png");
+    auto image = load_grayscale_image("/home/clem/Workspace/crisp/.test/opal_color.png");
 
     auto morph = MorphologicalTransform();
     auto se = morph.all_foreground(3, 3);
@@ -27,8 +28,12 @@ int main()
     morph.set_structuring_element(se);
     //morph.dilate(image);
 
+    auto pseudo = PseudoColorTransform();
+    pseudo.set_function(pseudo.value_range_to_hue_range(0.3, 1, 0, 1));
+    auto as_color = pseudo.transform(image);
+
     auto sprite = Sprite();
-    sprite.create_from(image);
+    sprite.create_from(as_color);
     sprite.set_scale(2);
 
     auto size = sprite.get_size();
@@ -37,12 +42,6 @@ int main()
     while (window.is_open())
     {
         auto time = window.update();
-
-        if (InputHandler::was_key_pressed(KeyID::SPACE))
-        {
-            morph.miss_or_hit_transform(image);
-            sprite.create_from(image);
-        }
 
         window.clear();
         window.draw(sprite);
