@@ -22,7 +22,9 @@ int main()
     auto image = load_binary_image("/home/clem/Workspace/crisp/.test/opal_color.png");
 
     auto morph = MorphologicalTransform();
-    morph.set_structuring_element(morph.all_foreground(5, 5));
+    auto se = morph.all_foreground(3, 3);
+    se(1, 1) = false;
+    morph.set_structuring_element(se);
     //morph.dilate(image);
 
     auto sprite = Sprite();
@@ -38,7 +40,7 @@ int main()
 
         if (InputHandler::was_key_pressed(KeyID::SPACE))
         {
-            morph.erode(image);
+            morph.miss_or_hit_transform(image);
             sprite.create_from(image);
         }
 

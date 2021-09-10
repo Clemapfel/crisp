@@ -10,7 +10,7 @@
 
 namespace crisp
 {
-    using StructuringElement = Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic>;
+    using StructuringElement = Eigen::Matrix<std::optional<bool>, Eigen::Dynamic, Eigen::Dynamic>;
 
     class MorphologicalTransform
     {
@@ -18,8 +18,8 @@ namespace crisp
             void set_structuring_element(StructuringElement);
             StructuringElement& get_structuring_element();
             
-            bool& operator()(size_t x, size_t y);
-            bool operator()(size_t x, size_t y) const;
+            std::optional<bool>& operator()(size_t x, size_t y);
+            std::optional<bool> operator()(size_t x, size_t y) const;
 
             void set_structuring_element_origin(size_t x, size_t y);
             Vector2ui get_structuring_element_origin() const;
@@ -44,9 +44,6 @@ namespace crisp
             
             template<typename Image_t>
             void hit_or_miss_transform(Image_t& image);
-
-            template<typename Image_t>
-            void miss_or_hit_transform(Image_t& image);
             
             static StructuringElement all_dont_care(long nrows, long ncols);
             static StructuringElement all_foreground(long nrows, long ncols);
@@ -55,10 +52,13 @@ namespace crisp
             static StructuringElement square(long dimensions);
             static StructuringElement diamond(long dimensions);
             static StructuringElement circle(long dimensions);
+
+            /*
             static StructuringElement square_pyramid(long dimensions, float min_intensity = 0, float max_intensity = 1);
             static StructuringElement diamond_pyramid(long dimensions, float min_intensity = 0, float max_intensity = 1);
             static StructuringElement cone(long dimensions, float min_intensity = 0, float max_intensity = 1);
             static StructuringElement hemisphere(long dimensions, float min_intensity = 0, float max_intensity = 1);
+            */
 
         private:
             Vector2ui _origin;
