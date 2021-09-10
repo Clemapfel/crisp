@@ -8,6 +8,7 @@
 #include <image/binary_image.hpp>
 #include <image/color_image.hpp>
 #include <image/multi_plane_image.hpp>
+#include <fourier_transform.hpp>
 
 #include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/Texture.hpp>
@@ -47,16 +48,17 @@ namespace crisp
             size_t get_scale() const;
 
             // @brief load from binary image
-            // @param : binary image
             void create_from(const BinaryImage&);
 
             // @brief load from grayscale image
-            // @param : grayscale image
             void create_from(const GrayScaleImage&);
 
             // @brief load from color image
-            // @param : color image
             void create_from(const ColorImage&);
+
+            // @brief load from fourier spectrum
+            template<FourierTransformMode Mode>
+            void create_from(const FourierTransform<Mode>&);
 
         protected:
             void draw(sf::RenderTarget& target, sf::RenderStates states) const override;

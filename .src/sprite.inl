@@ -115,6 +115,28 @@ namespace crisp
         update();
     }
 
+    template<FourierTransformMode Mode>
+    inline void Sprite::create_from(const FourierTransform<Mode>& transform)
+    {
+        auto image = transform.as_image();
+
+        sf::Image temp;
+        temp.create(image.get_size().x(), image.get_size().y());
+
+        for (long x = 0; x < image.get_size().x(); ++x)
+        {
+            for (long y = 0; y < image.get_size().y(); ++y)
+            {
+                auto value = image(x, y);
+                temp.setPixel(x, y, sf::Color(float(value) * 255, float(value) * 255, float(value) * 255, 255));
+            }
+        }
+
+        _texture.loadFromImage(temp);
+        _position = _sprite.getOrigin();
+        update();
+    }
+
     void Sprite::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
         states.texture = &_texture;

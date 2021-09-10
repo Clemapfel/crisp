@@ -13,6 +13,7 @@
 #include <spatial_filter.hpp>
 #include <morphological_transform.hpp>
 #include <pseudocolor_mapping.hpp>
+#include <fourier_transform.hpp>
 
 #include <iostream>
 
@@ -28,12 +29,11 @@ int main()
     morph.set_structuring_element(se);
     //morph.dilate(image);
 
-    auto pseudo = PseudoColorTransform();
-    pseudo.set_function(pseudo.value_range_to_hue_range(0.3, 1, 0, 1));
-    auto as_color = pseudo.transform(image);
+    auto spectrum = FourierTransform<SPEED>();
+    spectrum.transform_from(image);
 
     auto sprite = Sprite();
-    sprite.create_from(as_color);
+    sprite.create_from(spectrum);
     sprite.set_scale(2);
 
     auto size = sprite.get_size();
