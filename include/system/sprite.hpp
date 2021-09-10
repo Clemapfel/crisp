@@ -69,7 +69,7 @@ namespace crisp
             // @brief load from filter kernel
             void create_from(const Kernel&);
 
-            // @brief load from strucrugin element
+            // @brief load from structuring element, "don't care" are black, background are grey (rgb(0.5, 0.5, 0.5)), foreground white
             void create_from(const StructuringElement&);
 
         protected:
