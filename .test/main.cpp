@@ -11,6 +11,7 @@
 #include <system/sprite.hpp>
 #include <system/render_window.hpp>
 #include <spatial_filter.hpp>
+#include <morphological_transform.hpp>
 
 #include <iostream>
 
@@ -18,18 +19,11 @@ using namespace crisp;
 
 int main()
 {
-    auto image = load_grayscale_image("/home/clem/Workspace/crisp/.test/opal_color.png");
+    auto image = load_binary_image("/home/clem/Workspace/crisp/.test/opal_color.png");
 
-    auto filter = SpatialFilter();
-    Kernel kernel;
-    kernel.resize(3, 3);
-    kernel << 0.5, 0.5, 0.5,
-              0.5,   2, 0.5,
-              0.5, 0.5, 0.5;
-
-    filter.set_kernel(filter.normalized_box(3));
-    filter.set_evaluation_function(SpatialFilter::CONVOLUTION);
-    filter.apply_to(image);
+    auto morph = MorphologicalTransform();
+    morph.set_structuring_element(morph.all_foreground(5, 5));
+    //morph.dilate(image);
 
     auto sprite = Sprite();
     sprite.create_from(image);
@@ -41,6 +35,13 @@ int main()
     while (window.is_open())
     {
         auto time = window.update();
+
+        if (InputHandler::was_key_pressed(KeyID::SPACE))
+        {
+            morph.erode(image);
+            sprite.create_from(image);
+        }
+
         window.clear();
         window.draw(sprite);
         window.display();

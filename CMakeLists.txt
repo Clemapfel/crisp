@@ -52,7 +52,7 @@ add_library(crisp STATIC
         include/system.hpp
 
         include/image/grayscale_image.hpp
-        .src/grayscale_image.inl include/image/image_segment.hpp include/spatial_filter.hpp .src/spatial_filter.inl include/morphological_transform.hpp)
+        .src/grayscale_image.inl include/image/image_segment.hpp include/spatial_filter.hpp .src/spatial_filter.inl include/morphological_transform.hpp .src/morphological_transform.inl)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp sfml-graphics fftw3 fftw3l fftw3f)

@@ -6,10 +6,11 @@
 #pragma once
 
 #include <Dense>
+#include <vector.hpp>
 
 namespace crisp
 {
-    using StructuringElement = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>;
+    using StructuringElement = Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic>;
 
     class MorphologicalTransform
     {
@@ -17,10 +18,10 @@ namespace crisp
             void set_structuring_element(StructuringElement);
             StructuringElement& get_structuring_element();
             
-            float& operator()(size_t x, size_t y);
-            float operator()(size_t x, size_t y) const;
+            bool& operator()(size_t x, size_t y);
+            bool operator()(size_t x, size_t y) const;
 
-            void set_structuring_element_origin(x, y);
+            void set_structuring_element_origin(size_t x, size_t y);
             Vector2ui get_structuring_element_origin() const;
 
             template<typename Image_t>
@@ -62,5 +63,13 @@ namespace crisp
         private:
             Vector2ui _origin;
             StructuringElement _structuring_element;
+
+            template<typename Image_t>
+            void erode_aux(Image_t&, Image_t&);
+
+            template<typename Image_t>
+            void dilate_aux(Image_t&, Image_t&);
     };
 }
+
+#include ".src/morphological_transform.inl"

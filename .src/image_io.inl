@@ -71,6 +71,8 @@ namespace crisp
         BinaryImage out;
         out.create(image.getSize().x, image.getSize().y);
 
+        bool had_to_threshold = false;
+
         for (long x = 0; x < image.getSize().x; ++x)
         {
             for (long y = 0; y < image.getSize().y; ++y)
@@ -83,11 +85,14 @@ namespace crisp
                     out(x, y) = true;
                 else
                 {
-                    std::cerr << "[WARNING] loading binary image from an image file containing more than just black (rgb(0, 0, 0)) and white (rgb(1, 1, 1)) pixels. A threshold of 0.5 will be applied." << std::endl;
                     out(x, y) = ((color.r / 255.f + color.g / 255.f + color.b / 255.f) / 3.f) > 0.5;
+                    had_to_threshold = true;
                 }
             }
         }
+
+        if (had_to_threshold)
+            std::cerr << "[WARNING] loading binary image from an image file containing more than just black (rgb(0, 0, 0)) and white (rgb(1, 1, 1)) pixels. A threshold of 0.5 will be applied." << std::endl;
 
         return out;
     }
