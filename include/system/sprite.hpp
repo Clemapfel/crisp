@@ -13,6 +13,9 @@
 #include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Sprite.hpp>
+#include <spatial_filter.hpp>
+#include <morphological_transform.hpp>
+#include <frequency_domain_filter.hpp>
 
 namespace crisp
 {
@@ -59,6 +62,15 @@ namespace crisp
             // @brief load from fourier spectrum
             template<FourierTransformMode Mode>
             void create_from(const FourierTransform<Mode>&);
+
+            // @brief load from frequency domain filter
+            void create_from(const FrequencyDomainFilter&);
+
+            // @brief load from filter kernel
+            void create_from(const Kernel&);
+
+            // @brief load from strucrugin element
+            void create_from(const StructuringElement&);
 
         protected:
             void draw(sf::RenderTarget& target, sf::RenderStates states) const override;

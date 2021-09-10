@@ -32,9 +32,13 @@ int main()
     auto spectrum = FourierTransform<SPEED>();
     spectrum.transform_from(image);
 
+    auto filter = FrequencyDomainFilter(spectrum);
+
+    filter.set_function(filter.gaussian_bandreject(200, 300));
+    filter.set_offset(50, 50);
+
     auto sprite = Sprite();
-    sprite.create_from(spectrum);
-    sprite.set_scale(2);
+    sprite.create_from(filter);
 
     auto size = sprite.get_size();
     auto window = RenderWindow(sprite.get_size().x(), sprite.get_size().y());

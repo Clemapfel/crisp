@@ -137,6 +137,25 @@ namespace crisp
         update();
     }
 
+    inline void Sprite::create_from(const FrequencyDomainFilter& filter)
+    {
+        sf::Image temp;
+        temp.create(filter.get_size().x(), filter.get_size().y());
+
+        for (long x = 0; x < filter.get_size().x(); ++x)
+        {
+            for (long y = 0; y < filter.get_size().y(); ++y)
+            {
+                auto value = filter(x, y);
+                temp.setPixel(x, y, sf::Color(float(value) * 255, float(value) * 255, float(value) * 255, 255));
+            }
+        }
+
+        _texture.loadFromImage(temp);
+        _position = _sprite.getOrigin();
+        update();
+    }
+
     void Sprite::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
         states.texture = &_texture;

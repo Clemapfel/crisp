@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <grayscale_image.hpp>
 #include <fourier_transform.hpp>
 
 namespace crisp
@@ -17,7 +16,10 @@ namespace crisp
             // @brief construct the filter of a specified size
             // @param width: the x-dimension of the spectrum the filter will be applied to
             // @param height: the y-dimensions of the spectrum the filter will be applied to
-            FrequencyDomainFilter(long width, long height);
+            FrequencyDomainFilter(size_t width, size_t height);
+
+            template<FourierTransformMode Mode>
+            FrequencyDomainFilter(const FourierTransform<Mode>&);
 
             // @brief multiply the filter with a fourier specturm
             // @param : the spectrum to be modified
@@ -35,14 +37,14 @@ namespace crisp
             // @brief set the function that determines the shape of the filter
             // @param lambda: function that takes the x- and y-coordinate and returns an appropraite value
             // @note identity by default;
-            void set_function(std::function<double(long, long)>&& lambda);
+            void set_function(std::function<double(size_t, size_t)>&& lambda);
 
             // @brief move the center of the function relative to the filters center origin
             // @param x_dist_from_center: x-distance, values in [-width/2, +width/2]
             // @param y_dist_from_center: y-distance, values in [-height/2, +height/2];
             // @param force_symmetry: should the filter be mirror across it's origin
             // @note not mirroring it will cause the spectrums phase angle to distort after filtering
-            void set_offset(long x_dist_from_center, long y_dist_from_center, bool force_symmetry = true);
+            void set_offset(size_t x_dist_from_center, size_t y_dist_from_center, bool force_symmetry = true);
 
             // @brief element-wise add one filter to another
             // @param : the other filter
@@ -88,13 +90,13 @@ namespace crisp
             // @param x: the x-index, values in [0, width]
             // @param y: the y-index, values in [0, height]
             // @returns reference to the corresponding value
-            virtual double & operator()(long x, long y);
+            virtual double & operator()(size_t x, size_t y);
 
             // @brief const-access the filters elements
             // @param x: the x-index, values in [0, width]
             // @param y: the y-index, values in [0, height]
             // @returns the corresponding value
-            virtual double operator()(long x, long y) const;
+            virtual double operator()(size_t x, size_t y) const;
 
             // @brief expose the filters values as one vector in row-major order
             // @returns const reference to the filters values
@@ -199,15 +201,9 @@ namespace crisp
             Vector2ui _size;
             bool _offset_symmetrical = true;
             Vector2ui _offset = {0,0};
-            std::function<double(long, long)> _function = [](long x, long y) -> double {return 1;};
+            std::function<double(size_t, size_t)> _function = [](int x, int y) -> double {return 1;};
 
-            double distance(long x, long y);
-
-            template<typename T>
-            static T project(T lower_bound, T upper_bound, T value)
-            {
-                return value * fabs(lower_bound - upper_bound) + std::min(lower_bound, upper_bound);
-            }
+            double distance(size_t x, size_t y);
 
             void initialize() const;
             mutable bool _values_initialized = false;
