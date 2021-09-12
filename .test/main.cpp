@@ -23,11 +23,11 @@ using namespace crisp;
 
 int main()
 {
-    auto image = load_grayscale_image("/home/clem/Workspace/crisp/.test/opal_color.png");
-    auto binary = variable_threshold(image);
+    auto image = load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
+    image = superpixel_clustering(image, 50);
 
     auto sprite = Sprite();
-    sprite.create_from(binary);
+    sprite.create_from(image);
 
     auto size = sprite.get_size();
     auto window = RenderWindow(sprite.get_size().x(), sprite.get_size().y());

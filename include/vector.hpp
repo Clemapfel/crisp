@@ -88,10 +88,6 @@ namespace crisp
             // @brief perform elementwise vector-scalar assignment
             // @param scalar: scalar of same type as vectors elements
             // @returns: reference to self
-            Vector<T, N>& operator+=(T scalar);
-            Vector<T, N>& operator-=(T scalar);
-            Vector<T, N>& operator*=(T scalar);
-            Vector<T, N>& operator/=(T scalar);
             Vector<T, N>& operator%=(T scalar);
 
             // @brief assign scalar to all elements

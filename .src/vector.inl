@@ -5,6 +5,8 @@
 
 #include <cstdarg>
 #include <vector.hpp>
+#import <.src/common.inl>
+
 
 namespace crisp
 {
@@ -206,6 +208,7 @@ namespace crisp
         return *this;
     }
 
+    /*
     template<typename T, size_t N>
     Vector <T, N>& Vector<T, N>::operator+=(T scalar)
     {
@@ -237,6 +240,7 @@ namespace crisp
             this->at(i) /= scalar;
         return *this;
     }
+     */
 
     template<typename T, size_t N>
     Vector <T, N>& Vector<T, N>::operator%=(T scalar)
@@ -423,9 +427,6 @@ namespace crisp
 }
 
 using namespace std;
-
-#import <iostream>
-#import <.src/common.inl>
 
 template<typename T, size_t N>
 struct std::hash<crisp::Vector<T, N>>
