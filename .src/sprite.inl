@@ -159,11 +159,11 @@ namespace crisp
     void Sprite::create_from(const Kernel& kernel)
     {
         sf::Image temp;
-        temp.create(kernel.get_size().x(), kernel.get_size().y());
+        temp.create(kernel.rows(), kernel.cols());
 
-        for (long x = 0; x < kernel.get_size().x(); ++x)
+        for (long x = 0; x < kernel.rows(); ++x)
         {
-            for (long y = 0; y < kernel.get_size().y(); ++y)
+            for (long y = 0; y < kernel.cols(); ++y)
             {
                 auto value = kernel(x, y);
                 temp.setPixel(x, y, sf::Color(float(value) * 255, float(value) * 255, float(value) * 255, 255));
@@ -178,11 +178,11 @@ namespace crisp
     void Sprite::create_from(const StructuringElement & se)
     {
         sf::Image temp;
-        temp.create(se.get_size().x(), se.get_size().y());
+        temp.create(se.rows(), se.cols());
 
-        for (long x = 0; x < se.get_size().x(); ++x)
+        for (long x = 0; x < se.rows(); ++x)
         {
-            for (long y = 0; y < se.get_size().y(); ++y)
+            for (long y = 0; y < se.cols(); ++y)
             {
                 float value = se(x, y).has_value() ? (se(x, y).value() ? 1.f : 0.5f) : 0.f;
                 temp.setPixel(x, y, sf::Color(float(value) * 255, float(value) * 255, float(value) * 255, 255));
