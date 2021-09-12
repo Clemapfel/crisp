@@ -359,4 +359,48 @@ namespace crisp
 
         return out;
     }
+
+    template<typename Image_t>
+    Image_t superpixel_clustering(const Image_t& in, size_t n_superpixels)
+    {
+        const size_t n_pixels = image.get_size().x() * image.get_size().y();
+        auto spacing = sqrt(n_pixels / double(n_superpixel));
+
+        using Value_t = typename Image_t::Value_t;
+        auto value_distance = [&](const Value_t& a, const Value_t& b) -> float
+        {
+            float distance = 0;
+            for (size_t i = 0; i < Value_t::size(); ++i)
+                distance += fabs(a.at(i) - b.at(i));
+
+            distance /= Value_t::size();
+        };
+
+        auto xy_distance = [&](const Vector2ui& a, const Vector2ui& b) -> float
+        {
+            float distance = 0;
+            distance += abs<size_t>(a.x() - b.x());
+            distance += abs<size_t>(a.y() - b.y());
+
+            return distance / (2 * spacing * spacing);
+        };
+
+        struct Cluster
+        {
+            Vector2f center;
+            float color_sum;
+            Vector2f xy_sum;
+            size_t n;
+
+            float final_color; // unused until post-processing
+        };
+
+        std::map<size_t, Cluster> clusters;
+
+        // initialize
+        for (size_t i = 0, index = 0; i * spacing < image.get_size().x(); i += spacing)
+            for (size_t j = 0; j * spacing < image.get_size().y(); j += spacing, index++)
+                clusters.emplace(index, Cluster{i + spacing * 0})
+
+    }
 }

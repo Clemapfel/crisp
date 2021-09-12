@@ -36,6 +36,15 @@ namespace crisp
 
     template<typename Inner_t>
     BinaryImage neighborhood_threshold(const Image<Inner_t>&, size_t neighborhood_size = 5);
+
+    template<typename Image_t>
+    Image_t superpixel_clustering(const Image_t&, size_t n_superpixels);
+
+    template<typename Image_t>
+    Image_t region_growing_clustering(const Image_t&, BinaryImage seed_image);
+
+    template<typename Image_t>
+    Image_t k_means_clustering(const Image_t&, size_t n_clusters, size_t max_n_iterations = std::numeric_limits<size_t>::max());
 }
 
 #include ".src/segmentation.inl"
