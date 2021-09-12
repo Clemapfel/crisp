@@ -23,11 +23,21 @@ using namespace crisp;
 
 int main()
 {
+    auto binary = load_binary_image("/home/clem/Workspace/crisp/.test/opal_color.png");
     auto image = load_grayscale_image("/home/clem/Workspace/crisp/.test/opal_color.png");
 
-    auto segments = decompose_into_segments(image);
+    auto segments = decompose_into_connected_segments(binary, 500);
 
-    std::cout << segments.size() << std::endl;
+    float step = 1.f / segments.size();
+    size_t i = 0;
+    for (auto s : segments)
+    {
+        for (auto v : s)
+        {
+            image(v.x(), v.y()) = step * (i+1);
+        }
+        i++;
+    }
 
     auto sprite = Sprite();
     sprite.create_from(image);
