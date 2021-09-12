@@ -390,13 +390,16 @@ namespace crisp
             Vector2f center;
             Value_t color_sum;
             Vector2f xy_sum;
-            size_t n;
+            int n;
         };
 
         std::unordered_map<size_t, Cluster> clusters;
 
         auto distance = [&](const Vector2i& pos, size_t cluster_i)
         {
+            if (cluster_i == -1)
+                return std::numeric_limits<float>::max();
+
             auto& cluster = clusters.at(cluster_i);
             auto cluster_xy = cluster.xy_sum;
             cluster_xy = cluster_xy / float(cluster.n);
@@ -407,40 +410,69 @@ namespace crisp
             return xy_distance(pos, cluster_xy) + 2 * value_distance(image(pos.x(), pos.y()), cluster_v);
         };
 
-        Image_t out;
-        out.create(image.get_size().x(), image.get_size().y());
+        auto sobel = SpatialFilter();
+        sobel.set_kernel(sobel.sobel_gradient_x());
+
+        Image_t out = image;
+
+        sobel.apply_to(out);
+        sobel.set_kernel(sobel.sobel_gradient_y());
+        sobel.apply_to(out);
+
+        float per_row = ceil(sqrt(n_superpixels));
+        spacing = max(image.get_size().x() / per_row, image.get_size().y() / per_row);
+        spacing = ceil(spacing);
 
         // initialize
-        for (size_t i = 0, index = 0; i < image.get_size().x(); i += spacing)
+        size_t n_total = 0;
+        for (size_t ii = 0, index = 0; ii < per_row; ii++)
         {
-            for (size_t j = 0; j < image.get_size().y(); j += spacing, index++)
+            for (size_t jj = 0; jj < per_row; jj++, index++)
             {
+                auto i = ii * spacing;
+                auto j = jj * spacing;
+
                 auto center = Vector2f{float(i + spacing * 0.5), float(j + spacing * 0.5)};
                 auto cluster = Cluster{center, image(center.x(), center.y()), center, 1};
+
+                size_t min_x = i, min_y = j;
+                float min_gradient_value = std::numeric_limits<float>::max();
 
                 for (size_t x = i; x < i + spacing; ++x)
                 {
                     for (size_t y = j; y < j + spacing; ++y)
                     {
+                        if (x < 0 or x >= image.get_size().x() or y < 0 or y >= image.get_size().y())
+                            continue;
+
                         out(x, y).at(0) = index;
                         cluster.xy_sum += Vector2f{float(x), float(y)};
                         cluster.color_sum += image(x, y);
                         cluster.n += 1;
+                        n_total += 1;
+
+                        float gradient = 0;
+                        for (size_t k = 0; k < Value_t::size(); ++k)
+                            gradient += out(x, y).at(k);
+
+                        gradient /= Value_t::size();
+
+                        if (gradient < min_gradient_value)
+                        {
+                            min_x = x;
+                            min_y = y;
+
+                            min_gradient_value = gradient;
+                        }
                     }
                 }
 
+                cluster.center = Vector2f{float(min_x), float(min_y)};
                 clusters.insert(std::make_pair(index, std::move(cluster)));
             }
         }
 
-        const float initial_clustering_weight = 0.5;
-        for (auto& pair : clusters)
-        {
-            auto& cluster = pair.second;
-            cluster.xy_sum *= initial_clustering_weight;
-            cluster.color_sum *= initial_clustering_weight;
-            cluster.n *= initial_clustering_weight;
-        }
+        assert(n_total == n_pixels);
 
         size_t n_changed = n_pixels;
         while (n_changed > 0)
@@ -473,14 +505,18 @@ namespace crisp
                         {
                             n_changed += 1;
                             out(x, y) = cluster_i;
+
                             cluster.color_sum += image(x, y);
                             cluster.xy_sum += Vector2f{float(x), float(y)};
                             cluster.n += 1;
 
                             auto& old_cluster = clusters.at(old_i);
-                            old_cluster.color_sum -= image(x, y);
-                            old_cluster.xy_sum -= Vector2f{float(x), float(y)};
-                            old_cluster.n -= 1;
+                            if (old_cluster.n > 0)
+                            {
+                                old_cluster.color_sum -= image(x, y);
+                                old_cluster.xy_sum -= Vector2f{float(x), float(y)};
+                                old_cluster.n -= 1;
+                            }
                         }
                     }
                 }
@@ -495,6 +531,9 @@ namespace crisp
 
         for (auto& c : clusters)
         {
+            if (c.second.n < 0)
+                c.second.n = 1;
+
             auto color = c.second.color_sum;
             color = color / float(c.second.n);
             final_colors.at(c.first) = color;
