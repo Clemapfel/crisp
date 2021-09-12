@@ -8,7 +8,7 @@
 namespace crisp
 {
     template<typename T>
-    T project(T lower_bound, T upper_bound, T value)
+    [[nodiscard]] T project(T lower_bound, T upper_bound, T value)
     {
         return value * fabs(lower_bound - upper_bound) + std::min(lower_bound, upper_bound);
     }
@@ -22,5 +22,16 @@ namespace crisp
             return 1;
         else
             return 0;
+    }
+
+    template<typename T>
+    [[nodiscard]] T clamp(T lower_bound, T upper_bound, T value)
+    {
+        if (value < lower_bound)
+            return lower_bound;
+        else if (value > upper_bound)
+            return upper_bound;
+        else
+            return value;
     }
 }

@@ -9,6 +9,7 @@
 #include <image/color_image.hpp>
 #include <image/multi_plane_image.hpp>
 #include <fourier_transform.hpp>
+#include <histogram.hpp>
 
 #include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/Texture.hpp>
@@ -71,6 +72,10 @@ namespace crisp
 
             // @brief load from structuring element, "don't care" are black, background are grey (rgb(0.5, 0.5, 0.5)), foreground white
             void create_from(const StructuringElement&);
+
+            // @brief load from histogram
+            template<size_t N>
+            void create_from(const Histogram<N>&);
 
         protected:
             void draw(sf::RenderTarget& target, sf::RenderStates states) const override;

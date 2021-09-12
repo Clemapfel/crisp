@@ -175,6 +175,46 @@ namespace crisp
         update();
     }
 
+    template<size_t N>
+    void Sprite::create_from(const Histogram <N>& histogram)
+    {
+        sf::Image temp;
+        temp.create(N, N, sf::Color::Black);
+
+        float n = 0;
+        float mean = 0;
+        size_t max = 0;
+        for (const auto& pair : histogram)
+        {
+            max = std::max(max, pair.second);
+            mean += pair.first * pair.second;
+            n += pair.second;
+        }
+
+        mean /= n;
+
+        size_t step = ceil(float(max) / (0.85 * N));
+
+        if (N > 1920)
+            std::cerr << "[Warning] rendering a histogram with " << N << " different values to a texture will take up a large amount of memory" << std::endl;
+
+        for (size_t x = 0; x < N; ++x)
+        {
+            if (x == mean)
+                for (size_t y = 0; y < temp.getSize().y; ++y)
+                    temp.setPixel(x, y, sf::Color::Red);
+
+            for (size_t y = 1; y * step < histogram.at(x); ++y)
+            {
+                temp.setPixel(x, temp.getSize().y - y, sf::Color::White);
+            }
+        }
+
+        _texture.loadFromImage(temp);
+        _position = _sprite.getOrigin();
+        update();
+    }
+
     void Sprite::create_from(const StructuringElement & se)
     {
         sf::Image temp;
