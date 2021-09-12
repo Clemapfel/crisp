@@ -32,10 +32,10 @@ namespace crisp
         public:
             enum EvaluationFunction
             {
-                CONVOLUTION,
-                NORMALIZED_CONVOLUTION,
-                MINIMUM,
-                MAXIMUM,
+                CONVOLUTION = 0,
+                NORMALIZED_CONVOLUTION = 1,
+                MINIMUM = 2,
+                MAXIMUM = 3,
             };
 
             SpatialFilter();

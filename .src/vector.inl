@@ -54,15 +54,17 @@ namespace crisp
     Vector<T, N>::operator T() const
     {
         if (N == 1)
-            return Eigen::Array<T, 1, N>::operator()(0, 0);
+            return static_cast<T>(Eigen::Array<T, 1, N>::operator()(0, 0));
         else
+            assert(false && "explicit type casting is only supported for vectors of length 1");
+        /*else
         {
             T sum = 0;
             for (size_t i = 0; i < N; ++i)
                 sum += std::abs<T>(at(i));
 
             return sum;
-        }
+        }*/
     }
 
     template<typename T, size_t N>

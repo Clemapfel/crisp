@@ -364,27 +364,27 @@ namespace crisp
     }
 
     
-    Kernel SpatialFilter::sobel_gradient_x()
-    {
-        Kernel out;
-        out.resize(3, 3);
-
-        out << -1, -2, -1,
-                0,  0,  0,
-                1,  2,  1;
-
-        return out;
-    }
-
-    
     Kernel SpatialFilter::sobel_gradient_y()
     {
         Kernel out;
         out.resize(3, 3);
 
-        out << -1,  0,  1,
-               -2,  0,  2,
-               -1,  0,  1 ;
+        out << +1, +2, +1,
+                0,  0,  0,
+                -1,  -2,  -1;
+
+        return out;
+    }
+
+    
+    Kernel SpatialFilter::sobel_gradient_x()
+    {
+        Kernel out;
+        out.resize(3, 3);
+
+        out << +1,  0,  -1,
+               +2,  0,  -2,
+               +1,  0,  -1 ;
 
         return out;
     }
@@ -534,8 +534,8 @@ namespace crisp
         long a = floor(_kernel.rows() / 2);
         long b = floor(_kernel.cols() / 2);
 
-        bool rows_even = _kernel.rows() % 2 == 0,
-             cols_even = _kernel.cols() % 2 == 0;
+        bool rows_even = _kernel.rows() % 2 != 0,
+             cols_even = _kernel.cols() % 2 != 0;
 
         using Value_t = typename Image_t::Value_t;
 
@@ -548,8 +548,8 @@ namespace crisp
                 {
                     for (long t = -b; cols_even ? t < b : t <= b; ++t)
                     {
-                        if (abs(_kernel(a + s, b + t)) < std::numeric_limits<float>::epsilon())
-                            continue;
+                        //if (_kernel(a + s, b + t) == 0.f)
+                          //  continue;
 
                         current_sum += _kernel(a + s, b + t) * in(x + s, y + t);
                     }
@@ -580,14 +580,14 @@ namespace crisp
                 {
                     for (long t = -b; cols_even ? t < b : t <= b; ++t)
                     {
-                        if (abs(_kernel(a + s, b + t) - 0) < 0.000001)
+                        if (_kernel(a + s, b + t) == 0)
                             continue;
 
                         current_sum += _kernel(a + s, b + t) * in(x + s, y + t);
                     }
                 }
 
-                out(x, y) = current_sum / _kernel_sum;
+                out(x, y) = current_sum / (_kernel_sum != 0 ? _kernel_sum : 1);
             }
         }
     }

@@ -451,13 +451,13 @@ namespace crisp
                         cluster.n += 1;
                         n_total += 1;
 
-                        float gradient = 0;
+                        float gradient = 100000000;
                         for (size_t k = 0; k < Value_t::size(); ++k)
                             gradient += out(x, y).at(k);
 
                         gradient /= Value_t::size();
 
-                        if (gradient < min_gradient_value)
+                        if (gradient > min_gradient_value)
                         {
                             min_x = x;
                             min_y = y;
