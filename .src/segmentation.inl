@@ -373,7 +373,7 @@ namespace crisp
             for (size_t i = 0; i < Value_t::size(); ++i)
                 distance += fabs(a.at(i) - b.at(i));
 
-            return distance * Value_t::size();
+            return distance;
         };
 
         auto xy_distance = [&](const auto& a, const auto& b) -> float
@@ -391,17 +391,24 @@ namespace crisp
             Value_t color_sum;
             Vector2f xy_sum;
             size_t n;
-            Value_t final_color; // unused until post-processing
         };
 
         std::unordered_map<size_t, Cluster> clusters;
 
-        Image_t out;
-        out.create(image.get_size().x(), image.get_size().y(), Value_t(0));
+        auto distance = [&](const Vector2i& pos, size_t cluster_i)
+        {
+            auto& cluster = clusters.at(cluster_i);
+            auto cluster_xy = cluster.xy_sum;
+            cluster_xy = cluster_xy / float(cluster.n);
 
-        Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> distances;
-        distances.resize(image.get_size().x(), image.get_size().y());
-        distances.setConstant(std::numeric_limits<float>::infinity());
+            auto cluster_v = cluster.color_sum;
+            cluster_v = cluster_v / float(cluster.n);
+
+            return xy_distance(pos, cluster_xy) + 2 * value_distance(image(pos.x(), pos.y()), cluster_v);
+        };
+
+        Image_t out;
+        out.create(image.get_size().x(), image.get_size().y());
 
         // initialize
         for (size_t i = 0, index = 0; i < image.get_size().x(); i += spacing)
@@ -409,24 +416,16 @@ namespace crisp
             for (size_t j = 0; j < image.get_size().y(); j += spacing, index++)
             {
                 auto center = Vector2f{float(i + spacing * 0.5), float(j + spacing * 0.5)};
-                auto cluster = Cluster{center, image(center.x(), center.y()), center, 1, Value_t(0)};
+                auto cluster = Cluster{center, image(center.x(), center.y()), center, 1};
 
                 for (size_t x = i; x < i + spacing; ++x)
                 {
                     for (size_t y = j; y < j + spacing; ++y)
                     {
                         out(x, y).at(0) = index;
-                        cluster.color_sum += image(x, y);
                         cluster.xy_sum += Vector2f{float(x), float(y)};
+                        cluster.color_sum += image(x, y);
                         cluster.n += 1;
-                    }
-                }
-
-                for (size_t x = i; x < i + spacing && x < distances.rows(); ++x)
-                {
-                    for (size_t y = j; y < j + spacing && y < distances.cols(); ++y)
-                    {
-                        distances(x, y) = xy_distance(Vector2f{float(x), float(y)}, cluster.xy_sum / float(cluster.n));
                     }
                 }
 
@@ -434,82 +433,102 @@ namespace crisp
             }
         }
 
+        const float initial_clustering_weight = 0.5;
         for (auto& pair : clusters)
         {
-            size_t cluster_i = pair.first;
-            Value_t mean_color = pair.second.color_sum;
-            mean_color = mean_color / float(pair.second.n);
+            auto& cluster = pair.second;
+            cluster.xy_sum *= initial_clustering_weight;
+            cluster.color_sum *= initial_clustering_weight;
+            cluster.n *= initial_clustering_weight;
+        }
 
-            Vector2f mean_pos = pair.second.xy_sum;
-            mean_pos = mean_pos / float(pair.second.n);
-            auto& center = mean_pos;
-
-            for (int i = -spacing; i < +spacing; ++i)
+        size_t n_changed = n_pixels;
+        while (n_changed > 0)
+        {
+            n_changed = 0;
+            for (auto& pair : clusters)
             {
-                for (int j = -spacing; j < +spacing; ++j)
+                auto& cluster = pair.second;
+                auto cluster_i = pair.first;
+
+                for (int y_offset = -0.75 * spacing; y_offset < 0.75 * spacing; ++y_offset)
                 {
-                    if (center.x() + i < 0 or center.x() + i >= image.get_size().x() or center.y() + j < 0 or
-                        center.y() + j >= image.get_size().y())
-                        continue;
-
-                    int old_i = out(center.x() + i, center.y() + j).at(0);
-                    if (old_i == cluster_i)
-                        continue;
-
-                    auto pos = Vector2f{center.x() + i, center.y() + j};
-                    auto color = image(pos.x(), pos.y());
-                    auto color_dist = value_distance(mean_color, color);
-                    auto xy_dist = xy_distance(mean_pos, Vector2f{pos.x(), pos.y()}) / (2 * spacing);
-                    float new_dist = color_dist + xy_dist;
-                    auto old_dist = distances(long(center.x() + i), long(center.y() + j));
-
-                    if (new_dist < old_dist)
+                    for (int x_offset = -0.75 * spacing; x_offset < 0.75 * spacing; ++x_offset)
                     {
-                        out(pos.x(), pos.y()) = cluster_i;
-                        distances(long(pos.x()), long(pos.y())) = new_dist;
+                        const int x = cluster.center.x() + x_offset;
+                        const int y = cluster.center.y() + y_offset;
 
-                        pair.second.n += 1;
-                        pair.second.color_sum += color;
-                        pair.second.xy_sum += Vector2f{pos.x(), pos.y()};
+                        if (x < 0 or x >= image.get_size().x() or y < 0 or y >= image.get_size().y())
+                            continue;
 
-                        if (old_i != 0)
+                        size_t old_i = out(x, y).at(0);
+
+                        if (old_i == cluster_i)
+                            continue;
+
+                        float old_dist = distance(Vector2i{x, y}, old_i);
+                        float new_dist = distance(Vector2i{x, y}, cluster_i);
+
+                        if (new_dist < old_dist)
                         {
-                            auto& cluster = clusters.at(old_i);
-                            cluster.color_sum -= color;
-                            cluster.xy_sum += Vector2f{pos.x(), pos.y()};
-                            cluster.n -= 1;
-                        }
+                            n_changed += 1;
+                            out(x, y) = cluster_i;
+                            cluster.color_sum += image(x, y);
+                            cluster.xy_sum += Vector2f{float(x), float(y)};
+                            cluster.n += 1;
 
-                        mean_color = pair.second.color_sum;
-                        mean_color = mean_color / float(pair.second.n);
+                            auto& old_cluster = clusters.at(old_i);
+                            old_cluster.color_sum -= image(x, y);
+                            old_cluster.xy_sum -= Vector2f{float(x), float(y)};
+                            old_cluster.n -= 1;
+                        }
                     }
                 }
             }
+
+            std::cout << n_changed << std::endl;
         }
+
+        // post process
+        std::vector<Value_t> final_colors;
+        final_colors.resize(clusters.size());
 
         for (auto& c : clusters)
         {
             auto color = c.second.color_sum;
             color = color / float(c.second.n);
-            c.second.final_color = color;
+            final_colors.at(c.first) = color;
         }
 
-        float threshold = 3 / 255.f;
-        for (size_t i = 1; i < clusters.size(); ++i)
+        // merge
+        size_t n_merged = 0;
+        for (size_t i = 0; i < final_colors.size(); ++i)
         {
-            auto& current = clusters.at(i - 1).final_color;
-            auto& next = clusters.at(i).final_color;
-
-            if (value_distance(current, next) < threshold)
+            for (size_t j = 0; j < final_colors.size(); ++j)
             {
-                current += next;
-                current = current / 2.f;
-                next = current;
+                if (i == j)
+                    continue;
+
+                if (final_colors.at(i) == final_colors.at(j))
+                    continue;
+
+                if (value_distance(final_colors.at(i), final_colors.at(j)) < 0.01)
+                {
+                    n_merged++;
+                    Value_t new_color = final_colors.at(i);
+                    new_color += final_colors.at(j);
+
+                    new_color /= 2.f;
+                    final_colors.at(i) = new_color;
+                    final_colors.at(j) = new_color;
+                }
             }
         }
 
+        std::cout << "n merged: " << n_merged << std::endl;
+
         for (auto& px : out)
-            px = clusters.at(px.at(0)).final_color;
+            px = final_colors.at(px.at(0));
 
         return out;
     }

@@ -24,10 +24,11 @@ using namespace crisp;
 int main()
 {
     auto image = load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
-    image = superpixel_clustering(image, 50);
+    image = superpixel_clustering(image, 200);
 
     auto sprite = Sprite();
     sprite.create_from(image);
+    sprite.set_scale(2);
 
     auto size = sprite.get_size();
     auto window = RenderWindow(sprite.get_size().x(), sprite.get_size().y());
