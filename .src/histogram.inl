@@ -27,6 +27,11 @@ namespace crisp
     template<typename Inner_t>
     void Histogram<N>::create_from(const Image<Inner_t, 1>& image)
     {
+        for (auto& pair : _data)
+            pair.second = 0;
+
+        size_t n = 0;
+        Inner_t sum = 0;
         for (const auto& it : image)
         {
             float value = float(it);
@@ -34,7 +39,18 @@ namespace crisp
 
             value *= N;
             _data.at(size_t(floor(value))) += 1;
+
+            sum += value;
+            n += 1;
         }
+
+        _mean = double(sum) / double(n);
+    }
+
+    template<size_t N>
+    double Histogram<N>::mean() const
+    {
+        return _mean;
     }
 
     template<size_t N>

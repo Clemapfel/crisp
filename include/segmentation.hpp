@@ -19,6 +19,23 @@ namespace crisp
     // @brief extract all 4-connected regions of identical value
     template<typename Image_t>
     std::vector<ImageSegment> decompose_into_connected_segments(const Image_t&, size_t min_segment_size = 2);
+
+    template<typename Inner_t>
+    BinaryImage manual_threshold(const Image<Inner_t, 1>&, Inner_t threshold);
+
+    template<typename Inner_t>
+    BinaryImage basic_threshold(const Image<Inner_t>&);
+
+    template<typename Inner_t>
+    BinaryImage otsu_threshold(const Image<Inner_t>&);
+
+    // @param : image
+    // @param tail_length_factor: range [0, 1+)
+    template<typename Inner_t>
+    BinaryImage variable_threshold(const Image<Inner_t>&, float tail_length_factor = 0.05);
+
+    template<typename Inner_t>
+    BinaryImage neighborhood_threshold(const Image<Inner_t>&, size_t neighborhood_size = 5);
 }
 
 #include ".src/segmentation.inl"

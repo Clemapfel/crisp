@@ -25,6 +25,8 @@ namespace crisp
 
             size_t at(size_t bin_index) const;
 
+            double mean() const;
+
             auto begin();
             auto begin() const;
 
@@ -32,6 +34,7 @@ namespace crisp
             auto end() const;
 
         private:
+            double _mean;
             std::unordered_map<size_t, size_t> _data;
     };
 }

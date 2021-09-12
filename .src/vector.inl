@@ -388,25 +388,37 @@ namespace crisp
     template<typename T, size_t N>
     bool Vector<T, N>::operator<(T t) const
     {
-        return (*this).to_hash() < Vector<T, N>(t).to_hash();
+        if (N == 1)
+            return T(*this) < t;
+        else
+            return (*this).to_hash() < Vector<T, N>(t).to_hash();
     }
 
     template<typename T, size_t N>
     bool Vector<T, N>::operator<=(T t) const
     {
-        return (*this).to_hash() <= Vector<T, N>(t).to_hash();
+        if (N == 1)
+            return T(*this) < t;
+        else
+            return (*this).to_hash() <= Vector<T, N>(t).to_hash();
     }
 
     template<typename T, size_t N>
     bool Vector<T, N>::operator>(T t) const
     {
-        return (*this).to_hash() > Vector<T, N>(t).to_hash();
+        if (N == 1)
+            return T(*this) < t;
+        else
+            return (*this).to_hash() > Vector<T, N>(t).to_hash();
     }
 
     template<typename T, size_t N>
     bool Vector<T, N>::operator>=(T t) const
     {
-        return (*this).to_hash() >= Vector<T, N>(t).to_hash();
+        if (N == 1)
+            return T(*this) < t;
+        else
+            return (*this).to_hash() >= Vector<T, N>(t).to_hash();
     }
 }
 
