@@ -354,4 +354,44 @@ namespace crisp
 
         return true;
     }
+
+    template<typename T, size_t N>
+    bool Vector<T, N>::operator<(T t) const
+    {
+        for (size_t i = 0; i < N; ++i)
+            if (this->at(i) >= t)
+                return false;
+
+        return true;
+    }
+
+    template<typename T, size_t N>
+    bool Vector<T, N>::operator<=(T t) const
+    {
+        for (size_t i = 0; i < N; ++i)
+            if (this->at(i) > t)
+                return false;
+
+        return true;
+    }
+
+    template<typename T, size_t N>
+    bool Vector<T, N>::operator>(T t) const
+    {
+        for (size_t i = 0; i < N; ++i)
+            if (this->at(i) <= t)
+                return false;
+
+        return true;
+    }
+
+    template<typename T, size_t N>
+    bool Vector<T, N>::operator>=(T t) const
+    {
+        for (size_t i = 0; i < N; ++i)
+            if (this->at(i) < t)
+                return false;
+
+        return true;
+    }
 }
