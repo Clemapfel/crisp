@@ -19,7 +19,7 @@ namespace crisp
     template<typename T, size_t N>
     class Vector : public Eigen::Array<T, 1, N>
     {
-        static_assert(std::is_integral<T>::value or std::is_floating_point<T>::value);
+            static_assert(std::is_integral<T>::value or std::is_floating_point<T>::value);
 
         public:
             using Value_t = T;
@@ -56,6 +56,9 @@ namespace crisp
             // @brief i: index in [0, N]
             // @returns: copy of element
             T at(size_t i) const;
+
+            // @brief translate to hash, hash collisions will appear if any component is outside of [0,1]
+            size_t to_hash() const;
 
             // @brief vector-vector elementwise-arithmetics
             // @param other: vector of same size and type
@@ -149,7 +152,8 @@ namespace crisp
             using Eigen::Array<T, 1, N>::w;
 
         private:
-            virtual inline void make_polymorphic_with_this_dummy() {};
+            virtual inline void make_polymorphic_with_this_dummy()
+            {};
     };
 
     // typedefs for commonly used Ts
@@ -165,5 +169,9 @@ namespace crisp
     using Vector4i = Vector<int, 4>;
     using Vector4ui = Vector<size_t, 4>;
 }
+
+// hash
+template<typename T, size_t N>
+struct std::hash<crisp::Vector<T, N>>;
 
 #include ".src/vector.inl"

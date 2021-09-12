@@ -97,6 +97,12 @@ namespace crisp
     }
 
     template<typename T, size_t N>
+    size_t Vector<T, N>::to_hash() const
+    {
+        return std::hash<Vector<T, N>>{}(*this);
+    }
+
+    template<typename T, size_t N>
     Vector <T, N> Vector<T, N>::operator+(const Vector <T, N>& other) const
     {
         auto out = *this;
@@ -130,6 +136,30 @@ namespace crisp
                 return false;
 
         return true;
+    }
+
+    template<typename T, size_t N>
+    bool Vector<T, N>::operator<(const Vector <T, N>& other) const
+    {
+        return (*this).to_hash() < other.to_hash();
+    }
+
+    template<typename T, size_t N>
+    bool Vector<T, N>::operator<=(const Vector <T, N>& other) const
+    {
+        return (*this).to_hash() <= other.to_hash();
+    }
+
+    template<typename T, size_t N>
+    bool Vector<T, N>::operator>(const Vector <T, N>& other) const
+    {
+        return (*this).to_hash() > other.to_hash();
+    }
+
+    template<typename T, size_t N>
+    bool Vector<T, N>::operator>=(const Vector <T, N>& other) const
+    {
+        return (*this).to_hash() >= other.to_hash();
     }
 
     template<typename T, size_t N>
@@ -358,40 +388,53 @@ namespace crisp
     template<typename T, size_t N>
     bool Vector<T, N>::operator<(T t) const
     {
-        for (size_t i = 0; i < N; ++i)
-            if (this->at(i) >= t)
-                return false;
-
-        return true;
+        return (*this).to_hash() < Vector<T, N>(t).to_hash();
     }
 
     template<typename T, size_t N>
     bool Vector<T, N>::operator<=(T t) const
     {
-        for (size_t i = 0; i < N; ++i)
-            if (this->at(i) > t)
-                return false;
-
-        return true;
+        return (*this).to_hash() <= Vector<T, N>(t).to_hash();
     }
 
     template<typename T, size_t N>
     bool Vector<T, N>::operator>(T t) const
     {
-        for (size_t i = 0; i < N; ++i)
-            if (this->at(i) <= t)
-                return false;
-
-        return true;
+        return (*this).to_hash() > Vector<T, N>(t).to_hash();
     }
 
     template<typename T, size_t N>
     bool Vector<T, N>::operator>=(T t) const
     {
-        for (size_t i = 0; i < N; ++i)
-            if (this->at(i) < t)
-                return false;
-
-        return true;
+        return (*this).to_hash() >= Vector<T, N>(t).to_hash();
     }
 }
+
+using namespace std;
+
+#import <iostream>
+#import <.src/common.inl>
+
+template<typename T, size_t N>
+struct std::hash<crisp::Vector<T, N>>
+{
+    size_t operator()(const crisp::Vector<T, N>& in) const
+    {
+        //std::cout << "{ ";
+
+        // map each component into [0, 256*256], then map onto 2 chars: AA AB ..
+        int sigma = 256;
+        std::string out;
+        for (size_t i = 0; i < N; ++i)
+        {
+            int projected = float(crisp::clamp<T>(0, 1, in.at(i))) * float(65025);
+            out.push_back(static_cast<char>(floor(float(projected) / float(sigma))));
+            out.push_back(static_cast<char>(int(projected % sigma)));
+            //std::cout << in.at(i) << " ";
+        }
+
+        //std::cout << "} : " << std::hash<std::string>{}(out) << std::endl;
+
+        return std::hash<std::string>{}(out);
+    }
+};
