@@ -14,6 +14,7 @@
 #include <morphological_transform.hpp>
 #include <pseudocolor_mapping.hpp>
 #include <fourier_transform.hpp>
+#include <edge_detection.hpp>
 
 #include <iostream>
 
@@ -38,9 +39,11 @@ int main()
     filter.set_offset(50, 50);
 
     auto hist = Histogram<256>(image);
+    auto res = EdgeDetection::canny(image);
 
     auto sprite = Sprite();
-    sprite.create_from(hist);
+    sprite.create_from(res);
+
 
     auto size = sprite.get_size();
     auto window = RenderWindow(sprite.get_size().x(), sprite.get_size().y());
