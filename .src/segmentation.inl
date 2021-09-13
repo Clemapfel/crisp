@@ -387,6 +387,7 @@ namespace crisp
 
         struct Cluster
         {
+            const Vector2f initial_center;
             Vector2f center;
             Value_t color_sum;
             Vector2f xy_sum;
@@ -410,14 +411,8 @@ namespace crisp
             return xy_distance(pos, cluster_xy) + 2 * value_distance(image(pos.x(), pos.y()), cluster_v);
         };
 
-        auto sobel = SpatialFilter();
-        sobel.set_kernel(sobel.sobel_gradient_x());
-
-        Image_t out = image;
-
-        sobel.apply_to(out);
-        sobel.set_kernel(sobel.sobel_gradient_y());
-        sobel.apply_to(out);
+        auto out = image;
+        auto gradient_img = compute_gradient_magnitude(image);
 
         float per_row = ceil(sqrt(n_superpixels));
         spacing = max(image.get_size().x() / per_row, image.get_size().y() / per_row);
@@ -433,9 +428,9 @@ namespace crisp
                 auto j = jj * spacing;
 
                 auto center = Vector2f{float(i + spacing * 0.5), float(j + spacing * 0.5)};
-                auto cluster = Cluster{center, image(center.x(), center.y()), center, 1};
+                auto cluster = Cluster{center, center, image(center.x(), center.y()), center, 1};
 
-                size_t min_x = i, min_y = j;
+                size_t min_x = cluster.center.x(), min_y = cluster.center.y();
                 float min_gradient_value = std::numeric_limits<float>::max();
 
                 for (size_t x = i; x < i + spacing; ++x)
@@ -451,13 +446,8 @@ namespace crisp
                         cluster.n += 1;
                         n_total += 1;
 
-                        float gradient = 100000000;
-                        for (size_t k = 0; k < Value_t::size(); ++k)
-                            gradient += out(x, y).at(k);
-
-                        gradient /= Value_t::size();
-
-                        if (gradient > min_gradient_value)
+                        float gradient = gradient_img(x, y);
+                        if (gradient < min_gradient_value)
                         {
                             min_x = x;
                             min_y = y;
@@ -475,7 +465,7 @@ namespace crisp
         assert(n_total == n_pixels);
 
         size_t n_changed = n_pixels;
-        while (n_changed > 0)
+        while (n_changed > 0.01 * n_pixels)
         {
             n_changed = 0;
             for (auto& pair : clusters)
@@ -483,13 +473,16 @@ namespace crisp
                 auto& cluster = pair.second;
                 auto cluster_i = pair.first;
 
-                for (int y_offset = -0.75 * spacing; y_offset < 0.75 * spacing; ++y_offset)
-                {
-                    for (int x_offset = -0.75 * spacing; x_offset < 0.75 * spacing; ++x_offset)
-                    {
-                        const int x = cluster.center.x() + x_offset;
-                        const int y = cluster.center.y() + y_offset;
+                const float offset = 0.75 * spacing;
+                int x_range_min = std::min(cluster.initial_center.x(), cluster.center.x()) - offset;
+                int x_range_max = std::max(cluster.initial_center.x(), cluster.center.x()) + offset;
+                int y_range_min = std::min(cluster.initial_center.y(), cluster.center.y()) - offset;
+                int y_range_max = std::max(cluster.initial_center.y(), cluster.center.y()) + offset;
 
+                for (int y = y_range_min; y < y_range_max; ++y)
+                {
+                    for (int x = x_range_min; x < x_range_max; ++x)
+                    {
                         if (x < 0 or x >= image.get_size().x() or y < 0 or y >= image.get_size().y())
                             continue;
 
@@ -521,8 +514,6 @@ namespace crisp
                     }
                 }
             }
-
-            std::cout << n_changed << std::endl;
         }
 
         // post process
@@ -563,8 +554,6 @@ namespace crisp
                 }
             }
         }
-
-        std::cout << "n merged: " << n_merged << std::endl;
 
         for (auto& px : out)
             px = final_colors.at(px.at(0));

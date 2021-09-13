@@ -101,7 +101,7 @@ namespace crisp
     template<typename InnerValue_t, size_t N>
     const typename Image<InnerValue_t, N>::Value_t& Image<InnerValue_t, N>::operator()(int x, int y) const
     {
-        if (x < 0  or x >= _data.rows() or y < 0 or y >= _data.cols())
+        if (x < 0 or x >= _data.rows() or y < 0 or y >= _data.cols())
         {
             _dummy_padding_reference = get_pixel_out_of_bounds(x, y);
             return _dummy_padding_reference;
@@ -113,7 +113,7 @@ namespace crisp
     template<typename InnerValue_t, size_t N>
     typename Image<InnerValue_t, N>::Value_t& Image<InnerValue_t, N>::operator()(int x, int y)
     {
-        if (x < 0  or x >= _data.rows() or y < 0 or y >= _data.cols())
+        if (x < 0 or x >= _data.rows() or y < 0 or y >= _data.cols())
         {
             _dummy_padding_reference = get_pixel_out_of_bounds(x, y);
             return _dummy_padding_reference;

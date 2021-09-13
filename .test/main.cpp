@@ -24,16 +24,12 @@ using namespace crisp;
 
 int main()
 {
-    auto image = load_grayscale_image("/home/clem/Workspace/crisp/.test/opal_color.png");
+    auto image = load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
 
-    image.set_padding_type(PaddingType::ZERO);
-    GrayScaleImage gradient = crisp::compute_gradient_magnitude(image);
-
-    for (size_t x = 0; x < gradient.get_size().x(); ++x)
-        std::cout << float(gradient(x, 0)) << std::endl;
+    image = superpixel_clustering(image, 200);
 
     auto sprite = Sprite();
-    sprite.create_from(gradient);
+    sprite.create_from(image);
     sprite.set_scale(2);
 
     auto size = sprite.get_size();
