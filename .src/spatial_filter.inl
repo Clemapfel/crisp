@@ -594,18 +594,9 @@ namespace crisp
                     }
                 }
 
-                if (float(current_sum) < min)
-                    min = current_sum;
-
-                if (float(current_sum) > max)
-                    max = current_sum;
-
-                out(x, y) = current_sum;
+                out(x, y) = current_sum / (_kernel_sum == 0 ? 1 : _kernel_sum);
             }
         }
-
-        for (auto& px : out)
-            px = (px - min) / (max - min);
     }
 
     template<typename Image_t>

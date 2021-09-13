@@ -16,6 +16,7 @@
 #include <fourier_transform.hpp>
 #include <edge_detection.hpp>
 #include <segmentation.hpp>
+#include <whole_image_transform.hpp>
 
 #include <iostream>
 
@@ -26,6 +27,7 @@ int main()
     auto image = load_grayscale_image("/home/clem/Workspace/crisp/.test/opal_color.png");
     //image = superpixel_clustering(image, 200);
 
+    /*
     auto x_grad = image,
          y_grad = image;
 
@@ -54,9 +56,16 @@ int main()
         px = (px - min) / (max - min);
 
     std::cout << min << " " << max << std::endl;
+     */
+
+    image.set_padding_type(PaddingType::ZERO);
+    GrayScaleImage gradient = crisp::compute_gradient_magnitude(image);
+
+    for (size_t x = 0; x < gradient.get_size().x(); ++x)
+        std::cout << float(gradient(x, 0)) << std::endl;
 
     auto sprite = Sprite();
-    sprite.create_from(image);
+    sprite.create_from(gradient);
     sprite.set_scale(2);
 
     auto size = sprite.get_size();
