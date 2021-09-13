@@ -26,7 +26,7 @@ int main()
 {
     auto image = load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
 
-    image = superpixel_clustering(image, 200);
+    image = superpixel_clustering(image, 300);
 
     auto sprite = Sprite();
     sprite.create_from(image);

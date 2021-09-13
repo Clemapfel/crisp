@@ -38,7 +38,7 @@ namespace crisp
     BinaryImage neighborhood_threshold(const Image<Inner_t>&, size_t neighborhood_size = 5);
 
     template<typename Image_t>
-    Image_t superpixel_clustering(const Image_t&, size_t n_superpixels);
+    Image_t superpixel_clustering(const Image_t&, size_t n_superpixels, size_t max_n_iterations = std::numeric_limits<size_t>::max());
 
     template<typename Image_t>
     Image_t region_growing_clustering(const Image_t&, BinaryImage seed_image);

@@ -361,7 +361,7 @@ namespace crisp
     }
 
     template<typename Image_t>
-    Image_t superpixel_clustering(const Image_t& image, size_t n_superpixels)
+    Image_t superpixel_clustering(const Image_t& image, size_t n_superpixels, size_t max_n_iterations)
     {
         const size_t n_pixels = image.get_size().x() * image.get_size().y();
         auto spacing = sqrt(n_pixels / double(n_superpixels));
@@ -465,7 +465,8 @@ namespace crisp
         assert(n_total == n_pixels);
 
         size_t n_changed = n_pixels;
-        while (n_changed > 0.01 * n_pixels)
+        size_t n_iterations = 0;
+        while (n_changed > 0 and n_iterations < max_n_iterations)
         {
             n_changed = 0;
             for (auto& pair : clusters)
@@ -514,6 +515,8 @@ namespace crisp
                     }
                 }
             }
+
+            n_iterations++;
         }
 
         // post process
@@ -557,6 +560,412 @@ namespace crisp
 
         for (auto& px : out)
             px = final_colors.at(px.at(0));
+
+        return out;
+    }
+
+    template<typename Image_t>
+    Image_t k_means_clustering(const Image_t& image, size_t n_clusters, size_t max_n_iterations)
+    {
+        assert(false &
+               "k-means clusterin in n dimensions is not currently supportly. Please convert you image to color or grayscale");
+    }
+
+    template<>
+    GrayScaleImage k_means_clustering<GrayScaleImage>(const GrayScaleImage& image, size_t n_clusters, size_t max_n_iterations)
+    {
+        struct Cluster
+        {
+           float color_sum;
+           size_t n;
+           float mean_color;
+        };
+
+        std::vector<Cluster> clusters;
+        std::map<int, size_t> intensity_histogram;
+
+        for (long x = 0; x < image.get_size().x(); ++x)
+        {
+            for (long y = 0; y < image.get_size().y(); ++y)
+            {
+                int value = int(image(x, y) * 255);
+                if (intensity_histogram.find(value) == intensity_histogram.end())
+                    intensity_histogram.emplace(value, 1);
+                else
+                    intensity_histogram.at(value) += 1;
+            }
+        }
+
+        std::vector<std::pair<int, size_t>> as_vector;
+        for (auto& pair : intensity_histogram)
+            as_vector.emplace_back(pair.first, pair.second);
+
+        int interval = int(as_vector.size() / float(n_clusters));
+        for (size_t i = 0; i < n_clusters; ++i)
+        {
+            int max_intensity = i * interval;
+            size_t max_intensity_n = 0;
+
+            for (int j = i * interval; j < as_vector.size() and j < (i + 1) * interval; ++j)
+            {
+                if (as_vector.at(j).second > max_intensity_n)
+                {
+                    max_intensity = as_vector.at(j).first;
+                    max_intensity_n = as_vector.at(j).second;
+                }
+            }
+
+            clusters.emplace_back(Cluster{max_intensity / 255.f, 1, max_intensity / 255.f});
+        }
+
+        auto dist = [](float a, float b) -> int
+        {
+            return abs(int(a * 255) - int(b * 255));
+        };
+
+        GrayScaleImage out;
+        out.create(image.get_size().x(), image.get_size().y(), -1);
+
+        size_t n_changed = 1;
+        size_t n_iterations = 0;
+        while (n_changed != 0)
+        {
+            n_changed = 0;
+            for (long x = 0; x < image.get_size().x(); ++x)
+            {
+                for (long y = 0; y < image.get_size().y(); ++y)
+                {
+                    float min_distance = std::numeric_limits<float>::infinity();
+                    size_t min_cluster_i = -1;
+
+                    for (size_t i = 0; i < clusters.size(); ++i)
+                    {
+                        auto current_distance = dist(image(x, y), clusters.at(i).mean_color);
+                        if (current_distance < min_distance)
+                        {
+                            min_distance = current_distance;
+                            min_cluster_i = i;
+                        }
+                    }
+
+                    int old_i = int(out(x, y));
+
+                    if (old_i < 0 or old_i >= clusters.size())
+                    {
+                        out(x, y) = min_cluster_i;
+                        clusters.at(min_cluster_i).n += 1;
+                        clusters.at(min_cluster_i).color_sum += image(x, y);
+
+                        if (n_iterations > 0)
+                        {
+                        clusters.at(min_cluster_i).mean_color = clusters.at(min_cluster_i).color_sum;
+                        clusters.at(min_cluster_i).mean_color /= clusters.at(min_cluster_i).n;
+                        }
+
+                        n_changed++;
+                    }
+                    else if (out(x, y) != min_cluster_i)
+                    {
+                        auto before_dist = dist(clusters.at(old_i).mean_color, clusters.at(min_cluster_i).mean_color);
+
+                        clusters.at(old_i).n -= 1;
+                        clusters.at(old_i).color_sum -= image(x, y);
+                        clusters.at(old_i).mean_color = clusters.at(old_i).color_sum;
+                        clusters.at(old_i).mean_color /= clusters.at(old_i).n;
+
+                        out(x, y) = min_cluster_i;
+
+                        clusters.at(min_cluster_i).n += 1;
+                        clusters.at(min_cluster_i).color_sum += image(x, y);
+
+                        if (n_iterations > 0)
+                        {
+                            clusters.at(min_cluster_i).mean_color = clusters.at(min_cluster_i).color_sum;
+                            clusters.at(min_cluster_i).mean_color /= clusters.at(min_cluster_i).n;
+                        }
+
+                        auto after_dist = dist(clusters.at(old_i).mean_color, clusters.at(min_cluster_i).mean_color);
+
+                        if (abs(after_dist - before_dist) > 0)
+                            n_changed++;
+                    }
+                }
+            }
+
+            if (n_iterations == 0)
+            {
+                for (auto& cluster : clusters)
+                    cluster.mean_color = cluster.color_sum / cluster.n;
+            }
+
+            std::cout << n_iterations << ": " << n_changed << std::endl;
+            n_iterations++;
+        }
+
+        for (size_t i = 0; i < clusters.size(); ++i)
+        {
+            for (size_t j = 0; j < clusters.size(); ++j)
+            {
+                if (i == j)
+                    continue;
+
+                // pseudo merge
+                if (dist(clusters.at(i).mean_color, clusters.at(j).mean_color) < 1)
+                {
+                    size_t new_n = clusters.at(i).n + clusters.at(j).n;
+                    float new_sum = clusters.at(i).color_sum + clusters.at(j).color_sum;
+                    clusters.at(i).color_sum = new_sum;
+                    clusters.at(i).n = new_n;
+                    clusters.at(i).mean_color = new_sum;
+                    clusters.at(i).mean_color /= clusters.at(i).n;
+
+                    clusters.at(j).color_sum = new_sum;
+                    clusters.at(j).n = new_n;
+                    clusters.at(j).mean_color = new_sum;
+                    clusters.at(j).mean_color /= clusters.at(j).n;
+                }
+            }
+        }
+
+        for (auto& px : out)
+        {
+            px = clusters.at(px).mean_color;
+        }
+
+        return out;
+    }
+
+    template<>
+    ColorImage k_means_clustering<ColorImage>(const ColorImage& image, size_t n_clusters, size_t max_n_iterations)
+    {
+         // initial clusters
+        struct Cluster
+        {
+           RGB color_sum;
+           size_t n;
+
+           RGB mean_color;
+        };
+
+        std::vector<Cluster> clusters;
+
+        struct HueElement
+        {
+            size_t n;
+            float saturation_sum;
+            float value_sum;
+        };
+
+        // heuristic to pick initial cluster centers
+        std::vector<HueElement> hue_histogram;
+        std::vector<size_t> gray_histogram;
+
+        for (size_t i = 0; i < 256; ++i)
+        {
+            hue_histogram.emplace_back(HueElement{0, 0});
+            gray_histogram.emplace_back(0);
+        }
+
+        for (long x = 0; x < image.get_size().x(); ++x)
+        for (long y = 0; y < image.get_size().y(); ++y)
+        {
+            auto hsv = image(x, y).to_hsv();
+
+            if (hsv.saturation() < 0.33)
+                gray_histogram.at(int(hsv.value() * 255)) += 1;
+            else
+            {
+                auto& element = hue_histogram.at(int(hsv.hue() * 255));
+                element.n += 1;
+                element.saturation_sum += hsv.saturation();
+                element.value_sum += hsv.value();
+            }
+        }
+
+        // try to find centrum in hue band
+        int interval = int(255 / (n_clusters));
+        std::vector<size_t> gray_clusters;
+
+        for (size_t i = 0; i < n_clusters; ++i)
+        {
+            int max_hue = i * interval;
+            size_t max_hue_n = 0;
+            float s_sum = 0;
+            float n_sum = 0;
+            float v_sum = 0;
+
+            for (size_t hue = i * interval; hue < hue_histogram.size() and hue < (i+1) * interval; ++hue)
+            {
+                if (hue_histogram.at(hue).n > max_hue_n)
+                {
+                    max_hue = hue;
+                    max_hue_n = hue_histogram.at(hue).n;
+                }
+
+                s_sum += hue_histogram.at(hue).saturation_sum;
+                v_sum += hue_histogram.at(hue).value_sum;
+                n_sum += hue_histogram.at(hue).n;
+            }
+
+            if (n_sum == 0 or s_sum / n_sum < 0.33 or v_sum / n_sum < 0.25)
+                gray_clusters.push_back(i);
+            else
+            {
+                auto hsv = HSV{max_hue / 255.f, s_sum / n_sum, v_sum / n_sum};
+                auto color = hsv.to_rgb();
+                clusters.emplace_back(Cluster{color, 1, color});
+            }
+        }
+
+        if (gray_clusters.size() > 0)
+        {
+            interval = int(255 / gray_clusters.size());
+            for (size_t i = 0; i < gray_clusters.size(); ++i)
+            {
+                int max_gray = 0;
+                size_t max_gray_n = 0;
+
+                for (size_t gray = i * interval; gray < gray_histogram.size() and gray < (i + 1) * interval; ++gray)
+                {
+                    if (gray_histogram.at(gray) > max_gray_n)
+                    {
+                        max_gray = gray;
+                        max_gray_n = gray_histogram.at(gray);
+                    }
+                }
+
+                auto color = RGB(max_gray / 255.f, max_gray / 255.f, max_gray / 255.f);
+                clusters.emplace_back(Cluster{color, 1, color});
+            }
+        }
+
+        auto dist = [](RGB a, RGB b) -> int
+        {
+            auto a_hsv = a.to_hsv(), b_hsv = b.to_hsv();
+
+            int score = abs(int(a.red() * 255) - int(b.red() * 255)) +
+                        abs(int(a.green() * 255) - int(b.green() * 255)) +
+                        abs(int(a.blue() * 255) - int(b.blue() * 255));
+
+            return score;
+        };
+
+        ColorImage out; // .r is cluster index
+        out.create(image.get_size().x(), image.get_size().y(), RGB(-1, 0, 0));
+
+        size_t n_changed = 1;
+        size_t n_iterations = 0;
+        while (n_changed != 0 and n_iterations < max_n_iterations)
+        {
+            n_changed = 0;
+            for (long x = 0; x < image.get_size().x(); ++x)
+            {
+                for (long y = 0; y < image.get_size().y(); ++y)
+                {
+                    int min_distance = std::numeric_limits<int>::max();
+                    size_t min_cluster_i = -1;
+
+                    for (size_t i = 0; i < clusters.size(); ++i)
+                    {
+                        auto current_distance = dist(image(x, y), clusters.at(i).mean_color);
+                        if (current_distance < min_distance)
+                        {
+                            min_distance = current_distance;
+                            min_cluster_i = i;
+                        }
+                    }
+
+                    int old_i = int(out(x, y).x());
+
+                    if (old_i < 0 or old_i >= clusters.size())
+                    {
+                        out(x, y) = min_cluster_i;
+                        clusters.at(min_cluster_i).n += 1;
+                        clusters.at(min_cluster_i).color_sum += image(x, y);
+
+                        if (n_iterations > 0)
+                        {
+                            clusters.at(min_cluster_i).mean_color = clusters.at(min_cluster_i).color_sum;
+                            clusters.at(min_cluster_i).mean_color /= clusters.at(min_cluster_i).n;
+                        }
+
+                        n_changed++;
+                    }
+                    else if (out(x, y).x() != min_cluster_i)
+                    {
+                        auto before_dist = dist(clusters.at(old_i).mean_color, clusters.at(min_cluster_i).mean_color);
+
+                        clusters.at(old_i).n -= 1;
+                        clusters.at(old_i).color_sum -= image(x, y);
+
+                        if (n_iterations >= 0)
+                        {
+                            clusters.at(old_i).mean_color = clusters.at(old_i).color_sum;
+                            clusters.at(old_i).mean_color /= clusters.at(old_i).n;
+                        }
+
+                        out(x, y) = min_cluster_i;
+
+                        clusters.at(min_cluster_i).n += 1;
+                        clusters.at(min_cluster_i).color_sum += image(x, y);
+
+                        if (n_iterations >= 0)
+                        {
+                            clusters.at(min_cluster_i).mean_color = clusters.at(min_cluster_i).color_sum;
+                            clusters.at(min_cluster_i).mean_color /= clusters.at(min_cluster_i).n;
+                        }
+
+                        auto after_dist = dist(clusters.at(old_i).mean_color, clusters.at(min_cluster_i).mean_color);
+
+                        if (abs(after_dist - before_dist) > 0)
+                            n_changed++;
+                    }
+                }
+            }
+
+            if (n_iterations == 0)
+            {
+                for (auto& cluster : clusters)
+                {
+                    cluster.mean_color = cluster.color_sum;
+                    cluster.mean_color /= cluster.n;
+                }
+            }
+
+            n_iterations++;
+        }
+
+        for (size_t i = 0; i < clusters.size(); ++i)
+        {
+            for (size_t j = 0; j < clusters.size(); ++j)
+            {
+                if (i == j)
+                    continue;
+
+                // pseudo merge
+                if (dist(clusters.at(i).mean_color, clusters.at(j).mean_color) < 1)
+                {
+                    size_t new_n = clusters.at(i).n + clusters.at(j).n;
+                    RGB new_sum = clusters.at(i).color_sum;
+                    new_sum += clusters.at(j).color_sum;
+
+                    clusters.at(i).color_sum = new_sum;
+                    clusters.at(i).n = new_n;
+                    clusters.at(i).mean_color = new_sum;
+                    clusters.at(i).mean_color /= clusters.at(i).n;
+
+                    clusters.at(j).color_sum = new_sum;
+                    clusters.at(j).n = new_n;
+                    clusters.at(j).mean_color = new_sum;
+                    clusters.at(j).mean_color /= clusters.at(j).n;
+                }
+            }
+        }
+
+        for (auto& px : out)
+        {
+            px = clusters.at(px.x()).mean_color;
+        }
 
         return out;
     }
