@@ -28,7 +28,7 @@ namespace crisp
             Vector();
 
             // @brief ctor and assign all elements
-            explicit Vector(T);
+            explicit (N != 1) Vector(T);
 
             // @brief construct variadic
             // @note if the number of arguments exceeds N, the behavior is undefined

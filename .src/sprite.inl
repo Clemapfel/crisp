@@ -54,6 +54,27 @@ namespace crisp
         _sprite.setPosition(_position);
     }
 
+    template<typename T>
+    inline void Sprite::create_from(const Image<T, 1>& image)
+    {
+        sf::Image temp;
+        temp.create(image.get_size().x(), image.get_size().y());
+
+        for (long x = 0; x < image.get_size().x(); ++x)
+        {
+            for (long y = 0; y < image.get_size().y(); ++y)
+            {
+                T value = image(x, y);
+                auto as_float = static_cast<float>(value);
+                temp.setPixel(x, y, sf::Color(as_float * 255, as_float * 255, as_float * 255, 255));
+            }
+        }
+
+        _texture.loadFromImage(temp);
+        _position = _sprite.getOrigin();
+        update();
+    }
+
     inline void Sprite::create_from(const BinaryImage& image)
     {
         sf::Image temp;

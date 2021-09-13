@@ -259,6 +259,16 @@ namespace crisp
         return out;
     }
 
+    template<typename InnerValue_t, size_t N>
+    template<size_t PlaneIndex>
+    void Image<InnerValue_t, N>::set_nths_plane(const Image<InnerValue_t, 1>& plane)
+    {
+        static_assert(PlaneIndex < N, "Please specify an plane index less than N");
+
+        for (long y = 0; y < _data.cols(); ++y)
+            for (long x = 0; x < _data.rows(); ++x)
+                _data(x, y).at(PlaneIndex) = plane(x, y).at(0);
+    }
 
     template<typename InnerValue_t, size_t N>
     auto Image<InnerValue_t, N>::begin()

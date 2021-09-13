@@ -9,19 +9,17 @@
 
 namespace crisp
 {
-    // @brief only keep maxima in specified neighborhod
-    template<typename Image_t>
-    void non_maxima_surpress(Image_t&, size_t neighborhood_size);
-
     // @brief apply histogram equalization
     template<typename Image_t>
     void histogram_equalize(Image_t&);
 
-    // @brief compute gradient magnitude
+    // @brief map all values in the image into [0, 1]
+    template<typename Image_t>
+    void normalize(Image_t&);
+
+    // @brief compute normalized gradient magnitude
     template<typename Image_t>
     GrayScaleImage compute_gradient_magnitude(const Image_t&);
-
-    // @brief compute the
 
     // @brief quantize into 8-bit, then split into bitplanes
     std::vector<Image<bool, 1>> bitplane_decompose(const Image<float, 1>&);

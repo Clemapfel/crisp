@@ -141,6 +141,9 @@ namespace crisp
             case MAXIMUM:
                 apply_max_to(image, result);
                 break;
+
+            case MEDIAN:
+                apply_median_to(image, result);
         }
 
         for (int x = 0; x < image.get_size().x(); ++x)
@@ -622,7 +625,7 @@ namespace crisp
 
                     for (int s = -a; s <= a; ++s)
                         for (int t = -b; t <= b; ++t)
-                            current = std::min<float>(_kernel(s + a, t + b) * in(x + a, y + b).at(i), float(current));
+                            current = std::min<float>(_kernel(s + a, t + b) * in(x + s, y + t).at(i), float(current));
 
                     min_vec.at(i) = current;
                 }
@@ -655,12 +658,47 @@ namespace crisp
 
                     for (int s = -a; s <= a; ++s)
                         for (int t = -b; t <= b; ++t)
-                            current = std::max<float>(_kernel(s + a, t + b) * in(x + a, y + b).at(i), float(current));
+                            current = std::max<float>(_kernel(s + a, t + b) * in(x + s, y + t).at(i), float(current));
 
                     max_vec.at(i) = current;
                 }
 
                 out(x, y) = max_vec;
+            }
+        }
+    }
+
+
+    template<typename Image_t>
+    void SpatialFilter::apply_median_to(Image_t& in, Image_t& out)
+    {
+        int a = floor(_kernel.rows() / 2);
+        int b = floor(_kernel.cols() / 2);
+
+        bool rows_even = _kernel.rows() % 2 == 0,
+             cols_even = _kernel.cols() % 2 == 0;
+
+        using ImageValue_t = typename Image_t::Value_t;
+        using Inner_t = typename Image_t::Value_t::Value_t;
+
+        for (size_t y = 0; y < in.get_size().y(); ++y)
+        {
+            for (size_t x = 0; x < in.get_size().x(); ++x)
+            {
+                ImageValue_t vec_out;
+                for (size_t i = 0; i < ImageValue_t::size(); ++i)
+                {
+                    std::vector<Inner_t> values;
+
+                    for (int s = -a; s <= a; ++s)
+                        for (int t = -b; t <= b; ++t)
+                            values.push_back(_kernel(s + a, t + b) * in(x + s, y + t).at(i));
+
+                    std::sort(values.begin(), values.end());
+                    vec_out.at(i) = values.size() % 2 != 0 ? values.at(values.size() / 2.f + 1) : (values.at(values.size() / 2.f) + values.at(values.size() / 2.f + 1)) / 2.f;
+                }
+
+                out(x, y) = vec_out;
             }
         }
     }

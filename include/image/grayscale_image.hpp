@@ -12,6 +12,12 @@ namespace crisp
     class GrayScaleImage : public Image<float, 1>
     {
         public:
+            GrayScaleImage();
+            GrayScaleImage(size_t , size_t);
+
+            template<typename T>
+            GrayScaleImage(const Image<T, 1>&);
+
             // @brief convert to visually identical color image
             ColorImage convert_to_color() const;
     };

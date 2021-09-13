@@ -36,6 +36,7 @@ namespace crisp
                 NORMALIZED_CONVOLUTION = 1,
                 MINIMUM = 2,
                 MAXIMUM = 3,
+                MEDIAN = 4
             };
 
             SpatialFilter();
@@ -108,6 +109,9 @@ namespace crisp
 
             template<typename Image_t>
             void apply_max_to(Image_t& in, Image_t& out);
+
+            template<typename Image_t>
+            void apply_median_to(Image_t& in, Image_t& out);
     };
 }
 

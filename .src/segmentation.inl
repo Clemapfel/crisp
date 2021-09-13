@@ -567,8 +567,7 @@ namespace crisp
     template<typename Image_t>
     Image_t k_means_clustering(const Image_t& image, size_t n_clusters, size_t max_n_iterations)
     {
-        assert(false &
-               "k-means clusterin in n dimensions is not currently supportly. Please convert you image to color or grayscale");
+        assert(false && "k-means clusterin in n dimensions is not currently supportly. Please convert you image to color or grayscale");
     }
 
     template<>
@@ -588,7 +587,7 @@ namespace crisp
         {
             for (long y = 0; y < image.get_size().y(); ++y)
             {
-                int value = int(image(x, y) * 255);
+                int value = int(image(x, y) * 255.f);
                 if (intensity_histogram.find(value) == intensity_histogram.end())
                     intensity_histogram.emplace(value, 1);
                 else
@@ -624,7 +623,7 @@ namespace crisp
         };
 
         GrayScaleImage out;
-        out.create(image.get_size().x(), image.get_size().y(), -1);
+        out.create(image.get_size().x(), image.get_size().y());
 
         size_t n_changed = 1;
         size_t n_iterations = 0;
@@ -664,7 +663,7 @@ namespace crisp
 
                         n_changed++;
                     }
-                    else if (out(x, y) != min_cluster_i)
+                    else if (out(x, y) != float(min_cluster_i))
                     {
                         auto before_dist = dist(clusters.at(old_i).mean_color, clusters.at(min_cluster_i).mean_color);
 
@@ -879,7 +878,7 @@ namespace crisp
 
                     if (old_i < 0 or old_i >= clusters.size())
                     {
-                        out(x, y) = min_cluster_i;
+                        out(x, y) = RGB(min_cluster_i);
                         clusters.at(min_cluster_i).n += 1;
                         clusters.at(min_cluster_i).color_sum += image(x, y);
 
@@ -904,7 +903,7 @@ namespace crisp
                             clusters.at(old_i).mean_color /= clusters.at(old_i).n;
                         }
 
-                        out(x, y) = min_cluster_i;
+                        out(x, y) = RGB(min_cluster_i);
 
                         clusters.at(min_cluster_i).n += 1;
                         clusters.at(min_cluster_i).color_sum += image(x, y);

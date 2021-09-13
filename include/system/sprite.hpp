@@ -51,6 +51,10 @@ namespace crisp
             // @returns scale as unsignend integer
             size_t get_scale() const;
 
+            // @brief load from any 1-d image
+            template<typename T>
+            void create_from(const Image<T, 1>&);
+
             // @brief load from binary image
             void create_from(const BinaryImage&);
 
