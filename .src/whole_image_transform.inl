@@ -11,83 +11,47 @@ namespace crisp
     template<typename Image_t>
     GrayScaleImage compute_gradient_magnitude(const Image_t& image)
     {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        GrayScaleImage x_gradient;
-        x_gradient.create(image.get_size().x(), image.get_size().y());
-
         using Value_t = typename Image_t::Value_t;
 
-        for (size_t x = 0; x < image.get_size().x(); ++x)
-            for (size_t y = 0; y < image.get_size().y(); ++y)
+        GrayScaleImage as_grayscale;
+        as_grayscale.create(image.get_size().x(), image.get_size().y());
+
+        for (size_t y = 0; y < image.get_size().y(); ++y)
+            for (size_t x = 0; x < image.get_size().x(); ++x)
             {
-                float sum = 0;
+                float image_value = 0;
                 for (size_t i = 0; i < Value_t::size(); ++i)
-                    sum += image(x, y).at(i);
+                    image_value += float(image(x, y).at(i));
 
-                x_gradient(x, y) = sum / float(Value_t::size());
+                as_grayscale(x, y) = image_value / float(Value_t::size());
             }
 
-        auto y_gradient = x_gradient;
+        GrayScaleImage out;
+        out.create(image.get_size().x(), image.get_size().y());
 
-        SpatialFilter filter;
+        Kernel x_gradient = SpatialFilter::sobel_gradient_x();
+        Kernel y_gradient = SpatialFilter::sobel_gradient_y();
 
-        Kernel x_right;
-        x_right.resize(3, 1);
-        x_right << 1, 0, -1;
-        filter.set_kernel(x_right);
-        filter.apply_to(x_gradient);
-
-        Kernel x_left;
-        x_left.resize(1, 3);
-        x_left << 1, 2, 1;
-        filter.set_kernel(x_left);
-        filter.apply_to(x_gradient);
-
-        Kernel y_right;
-        y_right.resize(3, 1);
-        y_right << 1, 2, 3;
-        filter.set_kernel(y_right);
-        filter.apply_to(y_gradient);
-
-        Kernel y_left;
-        y_left.resize(1, 3);
-        y_left << 1, 0, -1;
-        filter.set_kernel(y_left);
-        filter.apply_to(y_gradient);
-
-        float min = std::numeric_limits<float>::max(), max = -1;
-
-        for (size_t x = 0; x < image.get_size().x(); ++x)
-            for (size_t y = 0; y < image.get_size().y(); ++y)
+        for (size_t y = 0; y < image.get_size().y(); ++y)
+            for (size_t x = 0; x < image.get_size().x(); ++x)
             {
-                float x_val = x_gradient(x, y) / 4.f;   // normalizes
-                float y_val = y_gradient(x, y) / 4.f;
-                x_gradient(x, y) = float(sqrt(x_val * x_val + y_val * y_val) / sqrt(2));
+                float gx = 0;
+                float gy = 0;
 
-                min = std::min<float>(x_gradient(x, y), min);
-                max = std::max<float>(x_gradient(x, y), max);
+                for (size_t i = 0; i < 3; ++i)
+                    for (size_t j = 0; j < 3; ++j)
+                    {
+                        gx += x_gradient(i, j) * float(as_grayscale(x - (i - 1), y - (j - 1)));
+                        gy += y_gradient(i, j) * float(as_grayscale(x - (i - 1), y - (j - 1)));
+                    }
+
+                gx /= 4;
+                gy /= 4;
+
+                out(x, y) = sqrtf(gx * gx + gy * gy) / sqrtf(2);
             }
 
-        //for (auto& px : x_gradient)
-          //  px = px / max;
-
-        std::cout << "min: " << min << "  max: " << max << std::endl;
-
-        return x_gradient;
+        return out;
     }
 
 }
