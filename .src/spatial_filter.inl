@@ -16,17 +16,17 @@ namespace crisp
         Kernel result;
         result.resize(size.x(), size.y());
 
-        long a = floor(right.rows() / 2.f);
-        long b = floor(right.cols() / 2.f);
+        int a = floor(right.rows() / 2.f);
+        int b = floor(right.cols() / 2.f);
 
-        for (long i = 0; i < size.x(); ++i)
+        for (int i = 0; i < size.x(); ++i)
         {
-            for (long j = 0; j < size.y(); ++j)
+            for (int j = 0; j < size.y(); ++j)
             {
                 float current_sum = 0;
-                for (long s = -a; s <= a; ++s)
+                for (int s = -a; s <= a; ++s)
                 {
-                    for (long t = -b; t <= b; ++t)
+                    for (int t = -b; t <= b; ++t)
                     {
                         if (i + s < 0 or j + t < 0 or i + s >= left.rows() or j + t >= left.cols())
                             continue;
@@ -77,12 +77,12 @@ namespace crisp
     void normalize(Kernel& kernel)
     {
         float sum = 0;
-        for (long i = 0; i < kernel.rows(); ++i)
-            for (long j = 0; j < kernel.rows(); ++j)
+        for (int i = 0; i < kernel.rows(); ++i)
+            for (int j = 0; j < kernel.rows(); ++j)
                 sum += kernel(i, j);
 
-        for (long i = 0; i < kernel.rows(); ++i)
-            for (long j = 0; j < kernel.rows(); ++j)
+        for (int i = 0; i < kernel.rows(); ++i)
+            for (int j = 0; j < kernel.rows(); ++j)
                 kernel(i, j) /= sum;
     }
 
@@ -92,13 +92,13 @@ namespace crisp
         if (n == 0 or n == 4)
             return;
 
-        long size = kernel.cols();
+        int size = kernel.cols();
 
         while (n > 0)
         {
-            for (long x = 0; x < size / 2; ++x)
+            for (int x = 0; x < size / 2; ++x)
             {
-                for (long y = x; y < size - x - 1; ++y)
+                for (int y = x; y < size - x - 1; ++y)
                 {
                     float temp = kernel(x, y);
                     kernel(x, y) = kernel(y, size - 1 - x);
@@ -143,8 +143,8 @@ namespace crisp
                 break;
         }
 
-        for (long x = 0; x < image.get_size().x(); ++x)
-            for (long y = 0; y < image.get_size().y(); ++y)
+        for (int x = 0; x < image.get_size().x(); ++x)
+            for (int y = 0; y < image.get_size().y(); ++y)
                 image(x, y) = result(x, y);
     }
 
@@ -273,7 +273,7 @@ namespace crisp
 
         out << -1, -1, -1,
                -1,  8, -1,
-               -1  -1, -1;
+               -1, -1, -1;
 
         return out;
     }
@@ -509,9 +509,9 @@ namespace crisp
         float min = std::numeric_limits<float>::max(),
               max = std::numeric_limits<float>::min();
 
-        for (long x = 0; x < dimension; ++x)
+        for (int x = 0; x < dimension; ++x)
         {
-            for (long y = 0; y < dimension; ++y)
+            for (int y = 0; y < dimension; ++y)
             {
                 float x_sq = (x - center)*(x - center);
                 float y_sq = (y - center)*(y - center);
@@ -531,26 +531,28 @@ namespace crisp
     template<typename Image_t>
     void SpatialFilter::apply_convolution_to(Image_t& in, Image_t& out)
     {
-        long a = floor(_kernel.rows() / 2);
-        long b = floor(_kernel.cols() / 2);
+        int a = floor(_kernel.rows() / 2);
+        int b = floor(_kernel.cols() / 2);
 
         bool rows_even = _kernel.rows() % 2 != 0,
              cols_even = _kernel.cols() % 2 != 0;
 
         using Value_t = typename Image_t::Value_t;
 
-        for (size_t y = 0; y < in.get_size().y(); ++y)
+        for (int y = 0; y < in.get_size().y(); ++y)
         {
-            for (size_t x = 0; x < in.get_size().x(); ++x)
+            for (int x = 0; x < in.get_size().x(); ++x)
             {
                 Value_t current_sum = Value_t(0.f);
-                for (long s = -a; rows_even ? s < a : s <= a; ++s)
+                for (int s = -a; s <= a; ++s)
                 {
-                    for (long t = -b; cols_even ? t < b : t <= b; ++t)
+                    for (int t = -b; t <= b; ++t)
                     {
-                        //if (_kernel(a + s, b + t) == 0.f)
-                          //  continue;
+                        if (a + s > _kernel.rows() or b + t > _kernel.cols())
+                            continue;
 
+                        Value_t image = in(x + s, y + t);
+                        float kernel = _kernel(a + s, b + t);
                         current_sum += _kernel(a + s, b + t) * in(x + s, y + t);
                     }
                 }
@@ -563,40 +565,54 @@ namespace crisp
     template<typename Image_t>
     void SpatialFilter::apply_normalized_convolution_to(Image_t& in, Image_t& out)
     {
-        long a = floor(_kernel.rows() / 2);
-        long b = floor(_kernel.cols() / 2);
+        int a = floor(_kernel.rows() / 2);
+        int b = floor(_kernel.cols() / 2);
 
         bool rows_even = _kernel.rows() % 2 == 0,
              cols_even = _kernel.cols() % 2 == 0;
 
         using Value_t = typename Image_t::Value_t;
+        using Inner_t = typename Image_t::Value_t::Value_t;
+
+        float min = std::numeric_limits<float>::max();
+        float max = float(0);
 
         for (size_t y = 0; y < in.get_size().y(); ++y)
         {
             for (size_t x = 0; x < in.get_size().x(); ++x)
             {
                 Value_t current_sum = Value_t(0.f);
-                for (long s = -a; rows_even ? s < a : s <= a; ++s)
+                for (int s = -a; s <= a; ++s)
                 {
-                    for (long t = -b; cols_even ? t < b : t <= b; ++t)
+                    for (int t = -b; t <= b; ++t)
                     {
-                        if (_kernel(a + s, b + t) == 0)
+                        if (a + s >= _kernel.rows() or b + t >= _kernel.cols() or _kernel(a + s, b + t) == 0)
                             continue;
 
+                        float value = in(x + s, y + t);
                         current_sum += _kernel(a + s, b + t) * in(x + s, y + t);
                     }
                 }
 
-                out(x, y) = current_sum / (_kernel_sum != 0 ? _kernel_sum : 1);
+                if (float(current_sum) < min)
+                    min = current_sum;
+
+                if (float(current_sum) > max)
+                    max = current_sum;
+
+                out(x, y) = current_sum;
             }
         }
+
+        for (auto& px : out)
+            px = (px - min) / (max - min);
     }
 
     template<typename Image_t>
     void SpatialFilter::apply_min_to(Image_t& in, Image_t& out)
     {
-        long a = floor(_kernel.rows() / 2);
-        long b = floor(_kernel.cols() / 2);
+        int a = floor(_kernel.rows() / 2);
+        int b = floor(_kernel.cols() / 2);
 
         bool rows_even = _kernel.rows() % 2 == 0,
              cols_even = _kernel.cols() % 2 == 0;
@@ -613,8 +629,8 @@ namespace crisp
                 {
                     Inner_t current = std::numeric_limits<Inner_t>::max();
 
-                    for (long s = -a; s <= a; ++s)
-                        for (long t = -b; t <= b; ++t)
+                    for (int s = -a; s <= a; ++s)
+                        for (int t = -b; t <= b; ++t)
                             current = std::min<float>(_kernel(s + a, t + b) * in(x + a, y + b).at(i), float(current));
 
                     min_vec.at(i) = current;
@@ -628,8 +644,8 @@ namespace crisp
     template<typename Image_t>
     void SpatialFilter::apply_max_to(Image_t& in, Image_t& out)
     {
-        long a = floor(_kernel.rows() / 2);
-        long b = floor(_kernel.cols() / 2);
+        int a = floor(_kernel.rows() / 2);
+        int b = floor(_kernel.cols() / 2);
 
         bool rows_even = _kernel.rows() % 2 == 0,
              cols_even = _kernel.cols() % 2 == 0;
@@ -646,8 +662,8 @@ namespace crisp
                 {
                     Inner_t current = std::numeric_limits<Inner_t>::min();
 
-                    for (long s = -a; s <= a; ++s)
-                        for (long t = -b; t <= b; ++t)
+                    for (int s = -a; s <= a; ++s)
+                        for (int t = -b; t <= b; ++t)
                             current = std::max<float>(_kernel(s + a, t + b) * in(x + a, y + b).at(i), float(current));
 
                     max_vec.at(i) = current;

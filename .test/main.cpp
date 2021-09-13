@@ -26,20 +26,32 @@ int main()
     auto image = load_grayscale_image("/home/clem/Workspace/crisp/.test/opal_color.png");
     //image = superpixel_clustering(image, 200);
 
-    auto sobel = SpatialFilter();
-    sobel.set_evaluation_function(SpatialFilter::NORMALIZED_CONVOLUTION);
-    sobel.set_kernel(sobel.prewitt_gradient_x());
-    sobel.apply_to(image);
-    //sobel.set_kernel(sobel.sobel_gradient_y());
-    //sobel.apply_to(image);
+    auto x_grad = image,
+         y_grad = image;
 
-    float min = 192819281, max = -192839128;
+    auto sobel = SpatialFilter();
+    sobel.set_evaluation_function(SpatialFilter::CONVOLUTION);
+    sobel.set_kernel(sobel.sobel_gradient_x());
+    sobel.apply_to(x_grad);
+    sobel.set_kernel(sobel.sobel_gradient_y());
+    sobel.apply_to(y_grad);
+
+    float min = 21312312312, max = 0;
+
+    for (long x = 0; x < image.get_size().x(); ++x)
+        for (long y = 0; y < image.get_size().y(); ++y)
+        {
+            float xg = x_grad(x, y);
+            float yg = y_grad(x, y);
+
+            image(x, y) = sqrt(xg * xg + yg * yg);
+
+            min = std::min<float>(image(x, y), min);
+            max = std::max<float>(image(x, y), max);
+        }
 
     for (auto& px : image)
-    {
-        min = std::min(float(px), min);
-        max = std::max(float(px), max);
-    }
+        px = (px - min) / (max - min);
 
     std::cout << min << " " << max << std::endl;
 
