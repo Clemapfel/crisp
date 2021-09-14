@@ -94,7 +94,30 @@ target_link_libraries(crisp sfml-graphics sfml-window sfml-system fftw3 fftw3l f
 include_directories("./include")
 include_directories("./")
 
-### YOUR EXECUTABLE HERE ########################################################################
+### EXAMPLES ####################################################################################
+
+add_executable(EXAMPLE_COLOR docs/color/color_example.cpp)
+target_link_libraries(EXAMPLE_COLOR crisp)
+
+add_executable(EXAMPLE_FREQUENCY_DOMAIN docs/frequency_domain/frequency_domain_example.cpp)
+target_link_libraries(EXAMPLE_FREQUENCY_DOMAIN crisp)
+
+add_executable(EXAMPLE_IMAGE docs/image/image_example.cpp)
+target_link_libraries(EXAMPLE_IMAGE crisp)
+
+add_executable(EXAMPLE_MORPHOLOGICAL_TRANSFORM docs/morphological_transform/morphological_transform_example.cpp)
+target_link_libraries(EXAMPLE_MORPHOLOGICAL_TRANSFORM crisp)
+
+add_executable(EXAMPLE_SEGMENTATION docs/segmentation/segmentation_example.cpp)
+target_link_libraries(EXAMPLE_SEGMENTATION crisp)
+
+add_executable(EXAMPLE_SPATIAL_FILTER docs/spatial_filters/spatial_filter_example.cpp)
+target_link_libraries(EXAMPLE_SPATIAL_FILTER crisp)
+
+add_executable(EXAMPLE_SYSTEM docs/system/system_example.cpp)
+target_link_libraries(EXAMPLE_SYSTEM crisp)
+
+### TESTS #######################################################################################
 
 add_executable(TEST .test/main.cpp)
 target_link_libraries(TEST crisp)
