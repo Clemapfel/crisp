@@ -3,8 +3,6 @@
 // Created on 10.09.21 by clem (mail@clemens-cords.com)
 //
 
-#include <morphological_transform.hpp>
-
 namespace crisp
 {
     void MorphologicalTransform::set_structuring_element(StructuringElement se)

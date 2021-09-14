@@ -3,8 +3,6 @@
 // Created on 13.09.21 by clem (mail@clemens-cords.com)
 //
 
-#pragma once
-
 #include <random>
 
 namespace crisp

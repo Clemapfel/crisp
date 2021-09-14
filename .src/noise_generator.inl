@@ -3,8 +3,6 @@
 // Created on 05.08.21 by clem (mail@clemens-cords.com)
 //
 
-#include <noise_generator.hpp>
-
 namespace crisp
 {
     template<typename Dist_t>

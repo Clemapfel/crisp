@@ -3,7 +3,6 @@
 // Created on 12.08.21 by clem (mail@clemens-cords.com)
 //
 
-#include <pseudocolor_mapping.hpp>
 #include ".src/common.inl"
 
 namespace crisp

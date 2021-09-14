@@ -3,7 +3,6 @@
 // Created on 12.09.21 by clem (mail@clemens-cords.com)
 //
 
-#include <histogram.hpp>
 #include <.src/common.inl>
 
 namespace crisp

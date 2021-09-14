@@ -3,7 +3,6 @@
 // Created on 13.09.21 by clem (mail@clemens-cords.com)
 //
 
-#include <whole_image_transform.hpp>
 #include <spatial_filter.hpp>
 
 namespace crisp

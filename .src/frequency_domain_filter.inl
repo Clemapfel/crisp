@@ -3,7 +3,6 @@
 // Created on 09.08.21 by clem (mail@clemens-cords.com)
 //
 
-#include <frequency_domain_filter.hpp>
 #include ".src/common.inl"
 
 namespace crisp

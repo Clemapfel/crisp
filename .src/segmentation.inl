@@ -3,7 +3,6 @@
 // Created on 12.09.21 by clem (mail@clemens-cords.com)
 //
 
-#include <segmentation.hpp>
 #include <vector.hpp>
 #include <histogram.hpp>
 

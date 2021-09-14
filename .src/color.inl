@@ -3,8 +3,6 @@
 // Created on 07.09.21 by clem (mail@clemens-cords.com)
 //
 
-#include <color.hpp>
-
 namespace crisp
 {
     template<size_t N>

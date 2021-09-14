@@ -3,7 +3,6 @@
 // Created on 12.09.21 by clem (mail@clemens-cords.com)
 //
 
-#include <edge_detection.hpp>
 #include <spatial_filter.hpp>
 
 namespace crisp::EdgeDetection 

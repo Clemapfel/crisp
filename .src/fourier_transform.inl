@@ -3,8 +3,6 @@
 // Created on 10.08.21 by clem (mail@clemens-cords.com)
 //
 
-#include <fourier_transform.hpp>
-
 namespace crisp
 {
     template<FourierTransformMode Mode>

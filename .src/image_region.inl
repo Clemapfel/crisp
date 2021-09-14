@@ -3,13 +3,10 @@
 // Created on 13.09.21 by clem (mail@clemens-cords.com)
 //
 
-#pragma once
-
-#include <image_region.hpp>
-
 namespace crisp
 {
-template<typename Image_t>
+
+    template<typename Image_t>
     ImageRegion<Image_t>::ImageRegion(const ImageSegment& segment, const Image_t& image)
     {
         create_from(segment, image);
