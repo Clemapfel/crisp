@@ -19,13 +19,13 @@ namespace crisp
     template<typename InnerValue_t, size_t N = 1>
     class Image
     {
+        /// @brief non-const iterator, iterates left-to-right, top-to-bottom
+        class Iterator;
+
+        /// @brief const iterator, iterates left-to-right, top-to-bottom
+        class ConstIterator;
+
         public:
-            /// @brief non-const iterator, iterates left-to-right, top-to-bottom
-            class Iterator;
-
-            /// @brief const iterator, iterates left-to-right, top-to-bottom
-            class ConstIterator;
-
             /// @brief expose pixel value type
             using Value_t = typename std::conditional<N == 3 and std::is_same_v<InnerValue_t, float>, RGB, Vector<InnerValue_t, N>>::type;
 
