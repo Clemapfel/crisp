@@ -27,8 +27,40 @@ using namespace crisp;
 
 int main()
 {
-    // load
     auto image = load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
+
+    // multiply each color by either 3 or -3
+    float factor = M_PI;
+    for (auto& pixel : image)
+    {
+        pixel *= factor;
+        factor *= 1.000005;
+    }
+
+    normalize(image);
+
+    auto sprite = Sprite();
+    sprite.create_from(image);
+    sprite.set_scale(2);
+
+    auto window = RenderWindow(sprite.get_size().x(), sprite.get_size().y());
+
+    while (window.is_open())
+    {
+        auto time = window.update();
+
+        window.clear();
+        window.draw(sprite);
+        window.display();
+    }
+
+
+    // load
+    /*
+    auto image = load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/image/binary_opal.png");
+    return 0;
+
     GrayScaleImage plane = image.get_nths_plane<1>();
 
     // corrupt
@@ -46,7 +78,7 @@ int main()
 
     plane = (image.get_nths_plane<2>());
     save_to_disk(plane, "/home/clem/Workspace/crisp/docs/image/opal_corrupted_2.png");
-*/
+
     plane = (image.get_nths_plane<1>());
     save_to_disk(plane, "/home/clem/Workspace/crisp/docs/image/opal_corrupted_1.png");
 
@@ -57,12 +89,11 @@ int main()
     median_filter.apply_to(plane);
     normalize(plane);
 
-    /*
     save_to_disk(plane, "/home/clem/Workspace/crisp/docs/image/opal_restored_1.png");
 
     image.set_nths_plane<1>(plane);
     save_to_disk(image, "/home/clem/Workspace/crisp/docs/image/opal_restored_2.png");
-*/
+
     auto plan_backup = plane;
     auto sprite = Sprite();
     sprite.set_scale(2);
@@ -107,5 +138,6 @@ int main()
         window.draw(sprite);
         window.display();
     }
+     */
 }
 

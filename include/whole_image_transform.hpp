@@ -17,7 +17,7 @@ namespace crisp
     template<typename Image_t>
     void normalize(Image_t&);
 
-    // @brief compute normalized gradient magnitude
+    // @brief compute normalized gradient magnitude using sobel gradient
     template<typename Image_t>
     GrayScaleImage compute_gradient_magnitude(const Image_t&);
 

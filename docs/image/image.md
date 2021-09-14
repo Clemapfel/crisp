@@ -2,9 +2,23 @@
 
 ## Table of Content
 
+1. **Introduction**</br>
+2. **Image I/O**</br>
+    2.1 Loading Images</br>
+    2.2 Saving Images</br>
+3. **Working with Images**</br>
+    3.1 Rendering Images</br>
+    3.2 Padding & Accessing Pixels</br>
+    3.3 Creating Images</br>
+    3.4 Image Iterators</br>
+    3.5 Image-Image arithmetic operators</br>
+4. **Multi Dimensional Images**</br>
+    4.1 Accessing Planes</br>
+5. **A final example**</br>
+
 ## 1. Introduction
 
-Images are obviously at the heart of image processing so it's includeant to understand them thoroughly. In ``crisp`` Image are n-dimensional matrices of abritrary value and arbitrary but arithmetic value type Each dimension (for example red, green, blue in an rgb image) we'll call a "plane" henceforth. ``crisp`` offers a central template all images inherit from called [``crisp::Image``](../include/image/multi_plane_image.hpp):
+Images are obviously at the heart of image processing so it's important to understand them thoroughly. In ``crisp``, images are n-dimensional matrices of arbitrary value and arbitrary (but arithmetic) value type:
 
 ```cpp
 template<typename InnerValue_t, size_t N>
@@ -14,22 +28,27 @@ class Image
 
 We see it takes two template arguments: 
 + ``InnerValue_t`` is the value type of the elements in all planes
-+ ``N`` is the number of planes
++ ``N`` is the number of dimensions
 
-Most of the time we won't be dealing with this class directly but with one of it's 3 implementations:
-+ [``crisp::BinaryImage``](/include/image/binary_image.hpp) (daughter of ``Image<bool, 1>``) is a 1-dimension image where each value can either be white (true) or black (false). Because the term "black and white image" is colloqially ill-defined we will call them *binary images*
-+ [``crisp::GrayScaleImage``](/include/image/grayscale_image.hpp) (daughter of ``Image<float, 1>``) is a 1-dimensional image where each value is a 32-bit float in [0, 1]
-+ [``crisp::ColorImage``](/include/image/binary_image.hpp) (daughter of ``Image<float, 3>``) is a 3-dimensional image where each value is a vector representing color in RGB format. Each component of the vector is a 32-bit float in the range [0, 1]
+We will henceforth call each dimensional matrix of an image a "plane", for example in a 3-dimensional rgb image we have 3 planes: red, green and blue.
 
-Now that we established a more easily imagined form than n-dimensional matrices, let's go through ``crisp::Image``s features:
+Most of the time we won't be dealing with ``crisp::Image`` directly but rather with one of it's 3 implementations:
++ [``BinaryImage``](/include/image/binary_image.hpp) is a 1-dimension image where each value can either be white (true) or black (false). Because the term "black and white image" is colloqially ill-defined we will call them *binary images*
++ [``GrayScaleImage``](/include/image/grayscale_image.hpp) is a 1-dimensional image where each value is a 32-bit float
++ [``crisp::ColorImage``](/include/image/binary_image.hpp) is a 3-dimensional image where each value is a vector representing color in the RGB format. Each component of the vector (each planes pixels) are a 32-bit float
+
+For all images that use a floating point arithmetic type such as ``float`` or ``double`` we assume the valid values are in [0, 1]. This means that each color value in our color image is, too, in [0, 1]. Remember this as it differs from the often used [0, 255] interval in literature instead.
+
+It may be somewhat hard to imaging what an n-dimensional matrix looks like so let's talk about to actually get an image to show up on your screen. 
 
 ## 2. Image I/O
 ### 2.1 Loading Images
 
-To load an image from the disk we can use:
+To load an image from the disk we use:
 
 ```cpp
 #include <image/image_io.hpp>
+using namespace crisp;
 
 // in main.cpp
 std::string path = /*...*/ + "/crisp/.test/opal_color.png";
@@ -40,13 +59,13 @@ BinaryImage binary = load_binary_image(path);
 ```
 ![](./color_opal.png) ![](./grayscale_opal.png) ![](./binary_opal.png)
 
-Loading functions are provided for the three main image types, implicit conversion is guruanteed to suceed so ``crisp`` has no problem loading a color image as grayscale for example or vice-versa. ``crisp`` supports the following file extensions:``.bmp``,``.png``,``.tga``,``.jpg``,``.gif``,``.psd``,``.hdr`` and ``.pic``.
+Loading functions are provided for the three main image types and implicitly converting a file into any of the three is guruanteed to suceed so ``crisp`` has no problem loading a for example a color image as grayscale for example or vice-versa. ``crisp`` supports the following file extensions:``.bmp``,``.png``,``.tga``,``.jpg``,``.gif``,``.psd``,``.hdr`` and ``.pic``.
 
-When loading non-binary images as binary the image is automatically thresholded with a threshold of ``0.5f`` applied to whatever the underlying data type is. If this threshold doesn't work for us we can simply threshold it manually using any of the various thresholding methods provided in [``crisp::Segmentation``](TODO: tutorial). 
+When loading non-binary images (images with more than just ``rgb(0, 0, 0)`` and ``rgb(1, 1, 1)``) as binary the image is automatically thresholded with a threshold of ``0.5f``. If this threshold doesn't work for a specific application we can simply threshold it manually using any of the various thresholding methods provided in [``crisp::Segmentation``](../segmentation/segmentation.md). 
 
 ### 2.2 Saving Images
 
-To store an image (any of binary, grayscale or color) we use [``save_to_disk``](/include/image/binary_image.hpp):
+To store an image* we use [``save_to_disk``](/include/image/binary_image.hpp):
 
 ```cpp
 #include <image/image_io.hpp>
@@ -57,15 +76,24 @@ save_to_disk(grayscale, path + "/my_grayscale.png");
 save_to_disk(binary, path + "/my_binary.png");
 ``` 
 
-Again the above mentioned file extentions are supported. 
+For both loading and saving the following underlying image types are supported natively, for all image implementations not mentioned here you will need to convert them into one of the following:
+
++ ``crisp::BinaryImage``
++ ``crisp::GrayScaleImage``
++ ``crisp::ColorImage``
++ ``crisp::Image<T, 1>`` for any arithmetic ``T``
++ ``crisp::Image<T, 3>`` for any arithmetic ``T``
+
+For the last 2 cases crisp will convert them to grayscale and color respectively.
 
 ## 3. Working with Images
 ### 3.1 Rendering Images
-To render an image we need to bind it to a ``crisp::Sprite`` via ``sprite::create_from`` and then display it by binding it to a window during the familiar render loop:
+To render an image we need to bind it to a ``crisp::Sprite`` via ``Sprite::create_from`` and then display it by binding it to a window during the familiar render loop:
 
-```
+```cpp
 #include <images.hpp>
 #include <system.hpp>
+using namespace crisp;
 
 int main() 
 {
@@ -76,7 +104,7 @@ int main()
     // bind it to a sprite
     auto sprite = Sprite();
     sprite.create_from(image);
-    sprite.set_scale(2);
+    sprite.set_scale(2); // scales only the sprite, not the image
     
     // create a render window
     auto window = RenderWindow(sprite.get_size().x(), sprite.get_size().y());
@@ -92,13 +120,45 @@ int main()
     }
 }
 ``` 
-A more detailed and clearer explanation of what is happening here can be found in the [system tutorial](TODO), for now just know that we're loading a grayscale image from the disk and rendering it in a little window for easy viewing:
+A more detailed explanation of what is happening here can be found in the [system tutorial](../system/system.md), for now just know that all we're doing is creating a window that is the same size as the sprite and rendering the image into it so we can view it easily without having to export it to the disk first.
 
 ![](./full_window_view.png)
 
+### 3.1.1 A Note on Artifacting
+
+Recall that our images are matrices of a type that is assumed to be in [0, 1] however there is no mechanism in place to actually enforce this. If we don't normalize an image back into that interval we will see artifacting that may throw off newer user. Consider this example:
+
+```cpp
+auto image = load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
+
+float factor = M_PI;
+for (auto& pixel : image)
+{
+    pixel *= factor;
+    factor *= 1.000001;
+}
+```
+
+Here we're taking each pixel and multiplying it by PI (3.14159..) while also slowly increasing that factor the more pixels we visit. It's not important what exactly this code does for now all you need to know is that it maps our color values from [0, 1] to [0, PI+). This is what the image looks like now:
+
+![](./opal_pi_artifact.png)
+
+The image almost unrecognizable even though all we did was multiply it by a deterministic factor. If you see something like this happen your values are most likely outside [0, 1]. You can simply call ``crisp::normalize`` as provided in ``whole_image_processing.hpp`` to map the values back into [0, 1]:
+
+```
+#include <whole_image_processing.hpp>
+
+// in main
+normalize(image)
+```
+
+![](./opal_pi_artifact_clean.png)
+
+Doing so reveals that the actual effect of the loop on the image is adding a simple gradient.
+
 ## 3.2 Accessing Individual pixels
 
-Recall that our images are matrices, we will stick to grayscale images for now so our matrices have 1 dimension in which we have m*n elements of 32-bit floats. m is the x-dimension of the image, n the y-dimensions. Images provide the following access operators:
+Recall that our images are matrices of a specific value type. We will stick to grayscale images for now so our matrices have 1 dimension in which we have m*n elements of 32-bit floats. m is the x-dimension of the image, n the y-dimensions. Images provide the following access operators:
 
 ```cpp
 // for crisp::Image<float, 1>
@@ -109,37 +169,38 @@ float  operator(int x, int y) const;
 float& operator(int x, int y);
 ```
 
-Image coordinates are by convention the right-hand coordinate system where the positive x-axis extends to the right and the positive y-axis extends downward. This means the top-most left-most pixel in an image gets index (0, 0), the top-most right-most pixel is (m, 0), the one in the bottom left corner is (0, n) and the pixel in the bottom right corner is at position (m, n). 
+Image coordinates are in the right-hand coordinate system where the positive x-axis extends to the right and the positive y-axis extends downward. This means the top-most left-most pixel in an image is at index (0, 0), the one right to it is (1, 0), the one directly below (0, 0) is (1, 0), etc. The top-most right-most pixel is (m, 0), bottom-most left-most is (0, n) and the pixel in the bottom right corner of the image is at position (m, n). 
 
-Using the above mentioned operators we can access any pixel, when using ``at`` the function will do bounds checking and throw an exception if a pixel coordinate (a, b) is supplied that is **not** such that ``0 <= a < m and 0 <= b < n``. Using the const version of at simply returns the pixels value, using the non-const version returns a reference to the pixels value that can be modified to modify the corresponding pixel in the image. 
+Using the above mentioned operators we can access any of the pixels. When using ``at``, it will bounds-check the index and throw an exception if a pixel coordinate (a, b) is supplied  that does **not** fullfill ``0 <= a < m and 0 <= b < n``. Using the const version of at simply returns the pixels value, using the non-const version returns a reference to the pixels value that can be modified to modify the corresponding pixel in the image. This is true for both access operators.
 
-``operator()(int, int)`` does not check for bounds, instead if the coordinates are out of bounds it accesses what is called [*Padding*](../../include/image/padding_type.hpp). You can think of padding like a frame that extends outwards from the image into infinity. The values on that frame depend on the ``crisp::PaddingType`` specified for the image:
+``operator()(int, int)`` does not check for bounds, instead, if the coordinates are out of bounds it accesses what is called [*Padding*](../../include/image/padding_type.hpp). You can think of padding like the frame of an image that extends outwards into infinity in all directions. The values on that frame depend on the ``crisp::PaddingType`` specified for the image:
 
-+ ``ZERO``: Simply makes it so all calls to oob areas will return 0 (or the equivalent value type such as rgb(0, 0, 0) for a color image)
++ ``ZERO``: Simply makes it so all calls to out of bounds areas will return 0 (or the equivalent value type such as rgb(0, 0, 0) for a color image)<br>
 ![](./zero_padding.png)
 
-+ ``ONE``: Similar to ``ZERO`` but returns 1 (or the appropriate value type equivalent) instead
++ ``ONE``: Similar to ``ZERO`` but returns 1 (or the appropriate value type equivalent, rgb(1, 1, 1) for example) instead<br>
 ![](./one_padding.png)
-+ ``REPEAT``: "tiles" the image such that if you leave off the right side you enter the image from the left and vice-versa. 
++ ``REPEAT``: "tiles" the image such that if you leave off the right side you "overflow" and reenter the image from the left and vice-versa in all directions<br>
 ![](./repeat_padding.png)
-+ ``MIRROR``: Mirrors the image along the connected boundary
++ ``MIRROR``: Mirrors the image along the connected boundary<br>
 ![](./mirror_padding.png)
-+ ``STRETCH``: Extendes the pixels on the outer most row/column of the pixels side nearest to the oob position infinitely
++ ``STRETCH``: Extends the values on the outer most row/column of the sides infinitely<br>
 ![](./stretch_padding.png)
   
-By default, any image regardless of type will have it's paddingtype set to ``STRETCH``. To change it, simply call:
+By default, any image regardless of type will have it's padding set to ``STRETCH``. To change it, simply call:
 
 ```cpp
 #include <image/padding_type.hpp>
 image.set_padding_type(PaddingType::MIRROR);
 ```
 
-The padding-type can have significant effects as it will often modify the behavior of filters and other transforms around the edges of the image so be sure to keep in mind the current padding type and how appropriate it is for your application. 
+The padding-type can have significant effects on your processing pipelines. It will often modify the behavior of filters and other transforms around the edges of the image so be sure to keep in mind the current padding type and evaluate how appropriate it is for your application regularly. 
 
-Now that we know how to access pixels individually we can use them to create our own images or modify existing ones:
+Now that we know how to access pixels individually we can use them to modify them like so:
 
-```
+```cpp
 #include <images.hpp>
+using namespace crisp;
 
 int main() 
 {
@@ -158,7 +219,7 @@ Can you guess what this short loop will draw?
 
 ![](./drawn_line.png)
 
-As expected we set the horizontal elements of the matrix to 0, creating a black line from the top left corner to the bottom right corner. 
+As expected we set the horizontal elements along the trace of the matrix to 0, creating a 1-pixel thick black line from the top left corner to the bottom right corner of the image. 
 
 ## 3.3 Creating Images
 
@@ -265,7 +326,7 @@ for (size_t x = 0; x < image.get_size().x(); ++x)
 
 Keep this order of elements in mind when writing loops and when using the range expression, by default iterator iterates *top-to-bottom, left-to-right*
 
-## 3.4 Image Arithmetics
+## 3.5 Image Arithmetics
 Images support at least the following arithmetic operators:
 ```cpp
 Image<InnerValue_t, N> operator+(const Image<InnerValue_t, N>&) const;
