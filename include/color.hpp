@@ -18,19 +18,19 @@ namespace crisp
     template<size_t N>
     struct ColorRepresentation : public Vector<float, N>
     {
-        // @brief default ctor
+        /// @brief default ctor
         ColorRepresentation();
 
-        // @brief convert to RGB format
+        /// @brief convert to RGB format
         virtual RGB to_rgb() const = 0;
 
-        // @brief convert to HSV format
+        /// @brief convert to HSV format
         virtual HSV to_hsv() const = 0;
 
-        // @brief convert to HSL format
+        /// @brief convert to HSL format
         virtual HSL to_hsl() const = 0;
 
-        // @brief convert to grayscale
+        /// @brief convert to grayscale
         virtual GrayScale to_grayscale() const = 0;
     };
 
@@ -39,25 +39,25 @@ namespace crisp
     {
         RGB() = default;
 
-        // @brief ctor
+        /// @brief ctor
         RGB(float red, float green, float blue);
         RGB(float all);
 
-        // @brief ctor from vector
+        /// @brief ctor from vector
         RGB(Vector<float, 3>);
 
-        // @brief assign from vector
+        /// @brief assign from vector
         RGB& operator=(Vector<float, 3>);
 
-        // @brief expose red (x) component
+        /// @brief expose red (x) component
         float& red();
         float red() const;
 
-        // @brief expose green (y) component
+        /// @brief expose green (y) component
         float& green();
         float green() const;
 
-        // @brief expose blue (z) component
+        /// @brief expose blue (z) component
         float& blue();
         float blue() const;
 
@@ -79,28 +79,28 @@ namespace crisp
     {
         HSV() = default;
 
-        // @brief ctor
-        // @param hue: range [0, 1]
-        // @param saturation: range [0, 1]
-        // @param value: also called "brightness", range [0, 1]
+        /// @brief ctor
+        /// @param hue: range [0, 1]
+        /// @param saturation: range [0, 1]
+        /// @param value: also called "brightness", range [0, 1]
         HSV(float hue, float saturation, float value);
         HSV(float all);
 
-        // @brief ctor from vector
+        /// @brief ctor from vector
         HSV(Vector<float, 3>);
 
-        // @brief assign from vector
+        /// @brief assign from vector
         HSV& operator=(Vector<float, 3>);
 
-        // @brief expose hue (x) component
+        /// @brief expose hue (x) component
         float& hue();
         float hue() const;
 
-        // @brief expose saturation (y) component
+        /// @brief expose saturation (y) component
         float& saturation();
         float saturation() const;
 
-        // @brief expose value (z) component
+        /// @brief expose value (z) component
         float& value();
         float value() const;
 
@@ -122,28 +122,28 @@ namespace crisp
     {
         HSL() = default;
 
-        // @brief ctor
-        // @param hue: range [0, 1]
-        // @param saturation: range [0, 1]
-        // @param lightness: range [0, 1]
+        /// @brief ctor
+        /// @param hue: range [0, 1]
+        /// @param saturation: range [0, 1]
+        /// @param lightness: range [0, 1]
         HSL(float hue, float saturation, float lightness);
         HSL(float all);
 
-        // @brief ctor from vector
+        /// @brief ctor from vector
         HSL(Vector<float, 3>);
 
-        // @brief assign from vector
+        /// @brief assign from vector
         HSL& operator=(Vector<float, 3>);
 
-        // @brief expose hue (x) component
+        /// @brief expose hue (x) component
         float& hue();
         float hue() const;
 
-        // @brief expose saturation (y) component
+        /// @brief expose saturation (y) component
         float& saturation();
         float saturation() const;
 
-        // @brief expose lightness (z) component
+        /// @brief expose lightness (z) component
         float& lightness();
         float lightness() const;
 
@@ -164,22 +164,22 @@ namespace crisp
     {
         GrayScale() = default;
 
-        // @brief ctor from value
+        /// @brief ctor from value
         GrayScale(float);
 
-        // @brief ctor from vector
+        /// @brief ctor from vector
         GrayScale(Vector<float, 1>);
 
-        // @brief assign from value
+        /// @brief assign from value
         GrayScale& operator=(float);
 
-        // @brief assign from vector
+        /// @brief assign from vector
         GrayScale& operator=(Vector<float, 1>);
 
-        // @brief decay to value
+        /// @brief decay to value
         operator float() const;
 
-        // @param expose intensity (value) component
+        /// @param expose intensity (value) component
         float& intensity();
         float intensity() const;
 

@@ -18,43 +18,43 @@ namespace crisp
 {
     class RenderWindow;
 
-    // static handler that allows accesing the keyboard/mouse state
+    /// @brief static handler that allows accesing the keyboard/mouse state
     class InputHandler
     {
         friend class RenderWindow;
 
         public:
-            // @brief InputHandler cannot be constructed, all access happens through static functions
+            /// @brief InputHandler cannot be constructed, all access happens through static functions
             InputHandler() = delete;
 
-            // @brief does the current state show that the key is pressed?
-            // @param key_id: id of key
-            // @returns true if down, false otherwise
+            /// @brief does the current state show that the key is pressed
+            /// @param key_id
+            /// @returns true if key is down, false otherwise
             static bool is_key_down(KeyID key_id);
 
-            // @brief is the key state this cycle different than last cycle
-            // @param key_id: id of key
-            // @returns true if state is different, false otherwise
+            /// @brief is the key state this cycle different than last cycle
+            /// @param key_id
+            /// @returns true if down this frame and up last frame or up this frame and down last frame
             static bool has_state_changed(KeyID key_id);
 
-            // @brief is key down this cycle, not down last cycle
-            // @param key_id: id of key
-            // @returns true if key is down this cycle and not down last cycle, false otherwise
+            /// @brief is key down this cycle, not down last cycle
+            /// @param key_id
+            /// @returns true if up last frame, down this frame
             static bool was_key_pressed(KeyID key_id);
 
-            // @brief is key not down this cycle, down last cycle
-            // @param key_id: id of key
-            // @returns true if key is up this cycle and down last cycle, false otherwise
+            /// @brief is key not down this cycle, down last cycle
+            /// @param key_id
+            /// @returns true if down last frame, up this frame
             static bool was_key_released(KeyID key_id);
 
-            // @brief how long was the key in a pressed state
-            // @param key_id: id of key
-            // @returns time since the key was first pressed
-            // @note the duration only updates after each render cycles because it is tied to the operating systems window updating
+            /// @brief how long was the key in a pressed state
+            /// @param key_id
+            /// @returns time since key was registered as pressed
+            /// @note the duration only updates after each render cycles because it is tied to the operating systems window updating
             static sf::Time get_hold_duration(KeyID key_id);
 
-            // @brief get position of mouse cursor relative to the windows origin
-            // @returns {0,0} if the cursor is in the top left of the window, {resolution.x, resolution.y} if in the bottom right, outside those bounds if the cursor is outside of the window
+            /// @brief get position of mouse cursor relative to the windows origin
+            /// @returns position relatived to top left corner of window which is treated as {0, 0}. Positions outside the window are allowed
             static Vector2f cursor_position();
 
         protected:

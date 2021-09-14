@@ -18,7 +18,7 @@ namespace crisp
             template<typename T>
             GrayScaleImage(const Image<T, 1>&);
 
-            // @brief convert to visually identical color image
+            /// @brief convert to visually identical color image
             ColorImage convert_to_color() const;
     };
 }

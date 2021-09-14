@@ -14,25 +14,25 @@ namespace crisp
     class ColorImage : public Image<float, 3>
     {
         public:
-            // @brief access individual component of each color representation as 1-d image
+            /// @brief access individual component of each color representation as 1-d image
             Image<float, 1> get_red_plane();
 
-            // @brief access individual component of each color representation as 1-d image
+            /// @brief access individual component of each color representation as 1-d image
             Image<float, 1> get_blue_plane();
 
-            // @brief access individual component of each color representation as 1-d image
+            /// @brief access individual component of each color representation as 1-d image
             Image<float, 1> get_green_plane();
 
-            // @brief access individual component of each color representation as 1-d image
+            /// @brief access individual component of each color representation as 1-d image
             Image<float, 1> get_hue_plane();
 
-            // @brief access individual component of each color representation as 1-d image
+            /// @brief access individual component of each color representation as 1-d image
             Image<float, 1> get_saturation_plane();
 
-            // @brief access individual component of each color representation as 1-d image
+            /// @brief access individual component of each color representation as 1-d image
             Image<float, 1> get_value_plane();
 
-            // @brief access individual component of each color representation as 1-d image
+            /// @brief access individual component of each color representation as 1-d image
             Image<float, 1> get_lightness_plane();
     };
 }
