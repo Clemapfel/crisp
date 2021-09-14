@@ -22,6 +22,6 @@ namespace crisp
         };
     }
 
-    // a set of unique pixel coordinates
+    /// @brief a set of unique pixel coordinates
     using ImageSegment = std::set<Vector2ui, detail::PixelCoordCompare>;
 }
