@@ -19,9 +19,11 @@ namespace crisp
             void invert();
 
             /// @brief convert to visually identical grayscale image
+            /// @returns new grayscale image
             GrayScaleImage convert_to_grayscale() const;
 
             /// @brief convert to visually identical color image
+            /// @returns new color image
             ColorImage convert_to_color() const;
             
             /// @brief element-wise binary NOT operator

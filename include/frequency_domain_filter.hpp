@@ -9,7 +9,7 @@
 
 namespace crisp
 {
-    // filter intended to be applied to frequency-domain transforms such as the fourier transform
+    /// @brief filter intended to be applied to frequency-domain transforms such as the fourier transform
     class FrequencyDomainFilter
     {
         public:
@@ -18,51 +18,51 @@ namespace crisp
             /// @param height: the y-dimensions of the spectrum the filter will be applied to
             FrequencyDomainFilter(size_t width, size_t height);
 
+            /// @brief construct filter of the same size as the specturm
+            /// @param spectrum
             template<FourierTransformMode Mode>
             FrequencyDomainFilter(const FourierTransform<Mode>&);
 
             /// @brief multiply the filter with a fourier specturm
-            /// @param : the spectrum to be modified
+            /// @param spectrum: the spectrum to be modified
             template<FourierTransformMode Mode>
             void apply_to(FourierTransform<Mode>&) const;
 
             /// @brief resize the filter
-            /// @param : vector where .x is the x-dimensions and .y the y-dimensions of the spectrum the filter will be applied to
+            /// @param size: vector where .x is the x-dimensions and .y the y-dimensions of the spectrum the filter will be applied to
             void set_size(Vector2ui);
 
             /// @brief get the filters dimensions
             /// @returns vector where .x is the width, .y the height of the filter
             Vector2ui get_size() const;
 
-            /// @brief set the function that determines the shape of the filter
+            /// @brief set the function that determines the shape of the filter (identity by default)
             /// @param lambda: function that takes the x- and y-coordinate and returns an appropraite value
-            /// @note identity by default;
             void set_function(std::function<double(size_t, size_t)>&& lambda);
 
             /// @brief move the center of the function relative to the filters center origin
             /// @param x_dist_from_center: x-distance, values in [-width/2, +width/2]
-            /// @param y_dist_from_center: y-distance, values in [-height/2, +height/2];
-            /// @param force_symmetry: should the filter be mirror across it's origin
-            /// @note not mirroring it will cause the spectrums phase angle to distort after filtering
+            /// @param y_dist_from_center: y-distance, values in [-height/2, +height/2]
+            /// @param force_symmetry: should the filter be mirrored across it's origin
             void set_offset(size_t x_dist_from_center, size_t y_dist_from_center, bool force_symmetry = true);
 
             /// @brief element-wise add one filter to another
-            /// @param : the other filter
+            /// @param : other filter
             /// @returns resulting filter
             FrequencyDomainFilter operator+(const FrequencyDomainFilter&) const;
 
             /// @brief element-wise subtract one filter from another
-            /// @param : the other filter
+            /// @param : other filter
             /// @returns resulting filter
             FrequencyDomainFilter operator-(const FrequencyDomainFilter&) const;
 
             /// @brief element-wise add multiply one filter with another
-            /// @param : the other filter
+            /// @param : other filter
             /// @returns resulting filter
             FrequencyDomainFilter operator*(const FrequencyDomainFilter&) const;
 
             /// @brief element-wise divide one filter by another
-            /// @param : the other filter
+            /// @param : other filter
             /// @returns resulting filter
             FrequencyDomainFilter operator/(const FrequencyDomainFilter&) const;
 
@@ -104,7 +104,8 @@ namespace crisp
 
             // pre-build functions, use with set_function
 
-            /// @brief return the identity function, the resulting filter with have a value of 1 in all components
+            /// @brief identity filter
+            /// @returns filter where all elements are 1
             auto&& identity();
 
             /// @brief shape into an ideal-lowpass filter. The resulting filter will pass lower frequencies closer to the center of the spectrum and reject higher frequencies
