@@ -4,7 +4,6 @@
 //
 
 #include <cstdarg>
-#include <vector.hpp>
 #include <.src/common.inl>
 
 namespace crisp
@@ -19,6 +18,8 @@ namespace crisp
     template<typename T, size_t N>
     Vector<T, N>::Vector(std::initializer_list<T> list)
     {
+        assert(list.size() == N);
+
         size_t i = 0;
         for (T t : list)
         {
@@ -33,38 +34,11 @@ namespace crisp
         Eigen::Array<T, 1, N>::setConstant(t);
     }
 
-    /*
-    template<typename T, size_t N>
-    template<typename Var_t>
-    Vector<T, N>::Vector(Var_t in...)
-    {
-        std::va_list args;
-        va_start(args, in);
-
-        std::vector<Var_t> temp;
-        for (size_t i = 0; i < N; ++i)
-        {
-            this->at(i) = va_arg(args, Var_t);
-        }
-
-        va_end(args);
-    }*/
-
     template<typename T, size_t N>
     Vector<T, N>::operator T() const
     {
-        if (N == 1)
-            return static_cast<T>(Eigen::Array<T, 1, N>::operator()(0, 0));
-        else
-            assert(false && "explicit type casting is only supported for vectors of length 1");
-        /*else
-        {
-            T sum = 0;
-            for (size_t i = 0; i < N; ++i)
-                sum += std::abs<T>(at(i));
-
-            return sum;
-        }*/
+        static_assert(N == 1, "explicit type casting is only supported for vectors of length 1");
+        return static_cast<T>(Eigen::Array<T, 1, N>::operator()(0, 0));
     }
 
     template<typename T, size_t N>
@@ -209,42 +183,16 @@ namespace crisp
         return *this;
     }
 
-    /*
     template<typename T, size_t N>
-    Vector <T, N>& Vector<T, N>::operator+=(T scalar)
+    Vector <T, N>& Vector<T, N>::operator%=(const Vector<T, N>& other)
     {
         for (size_t i = 0; i < N; ++i)
-            this->at(i) += scalar;
+            this->at(i) %= other.at(i);
         return *this;
     }
 
     template<typename T, size_t N>
-    Vector <T, N>& Vector<T, N>::operator-=(T scalar)
-    {
-        for (size_t i = 0; i < N; ++i)
-            this->at(i) -= scalar;
-        return *this;
-    }
-
-    template<typename T, size_t N>
-    Vector <T, N>& Vector<T, N>::operator*=(T scalar)
-    {
-        for (size_t i = 0; i < N; ++i)
-            this->at(i) *= scalar;
-        return *this;
-    }
-
-    template<typename T, size_t N>
-    Vector <T, N>& Vector<T, N>::operator/=(T scalar)
-    {
-        for (size_t i = 0; i < N; ++i)
-            this->at(i) /= scalar;
-        return *this;
-    }
-     */
-
-    template<typename T, size_t N>
-    Vector <T, N>& Vector<T, N>::operator%=(T scalar)
+    Vector<T, N>& Vector<T, N>::operator%=(T scalar)
     {
         for (size_t i = 0; i < N; ++i)
             this->at(i) %= scalar;
@@ -294,7 +242,7 @@ namespace crisp
         Vector<T, N> out;
 
         for (size_t i = 0; i < N; ++i)
-            out = this->at(i) && t;
+            out = this->at(i) | t;
 
         return out;
     }
@@ -305,7 +253,7 @@ namespace crisp
         Vector<T, N> out;
 
         for (size_t i = 0; i < N; ++i)
-            out = this->at(i) && t;
+            out = this->at(i) || t;
 
         return out;
     }
@@ -316,7 +264,7 @@ namespace crisp
         Vector<T, N> out;
 
         for (size_t i = 0; i < N; ++i)
-            out = this->at(i) && t;
+            out = this->at(i) ^ t;
 
         return out;
     }
@@ -328,17 +276,6 @@ namespace crisp
 
         for (size_t i = 0; i < N; ++i)
             out = ~(this->at(i));
-
-        return out;
-    }
-
-    template<typename T, size_t N>
-    Vector<T, N> Vector<T, N>::operator!() const
-    {
-        Vector<T, N> out;
-
-        for (size_t i = 0; i < N; ++i)
-            out = !(this->at(i));
 
         return out;
     }
@@ -427,16 +364,12 @@ namespace crisp
     }
 }
 
-using namespace std;
-
 template<typename T, size_t N>
 struct std::hash<crisp::Vector<T, N>>
 {
     size_t operator()(const crisp::Vector<T, N>& in) const
     {
-        //std::cout << "{ ";
-
-        // map each component into [0, 256*256], then map onto 2 chars: AA AB ..
+        // map each component into [0, 256*256], then map onto 2 chars: AA AB .., then hash the resulting string
         int sigma = 256;
         std::string out;
         for (size_t i = 0; i < N; ++i)
@@ -444,10 +377,7 @@ struct std::hash<crisp::Vector<T, N>>
             int projected = float(crisp::clamp<T>(0, 1, in.at(i))) * float(65025);
             out.push_back(static_cast<char>(floor(float(projected) / float(sigma))));
             out.push_back(static_cast<char>(int(projected % sigma)));
-            //std::cout << in.at(i) << " ";
         }
-
-        //std::cout << "} : " << std::hash<std::string>{}(out) << std::endl;
 
         return std::hash<std::string>{}(out);
     }
