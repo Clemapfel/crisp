@@ -29,26 +29,32 @@ namespace crisp
             BinaryImage operator!() const;
 
             /// @brief element-wise binary AND operator
+            /// @param image: another binary image
             /// @returns resulting image
             BinaryImage operator&(const BinaryImage&) const;
 
             /// @brief element-wise binary OR operator
+            /// @param image: another binary image
             /// @returns resulting image
             BinaryImage operator|(const BinaryImage&) const;
 
             /// @brief element-wise binary XOR operator
+            /// @param image: another binary image
             /// @returns resulting image
             BinaryImage operator^(const BinaryImage&) const;
 
             /// @brief element-wise binary AND operator assignment
+            /// @param image: another binary image
             /// @returns reference to itself
             BinaryImage& operator&=(const BinaryImage&);
 
             /// @brief element-wise binary OR operator assignment
+            /// @param image: another binary image
             /// @returns reference to itself
             BinaryImage& operator|=(const BinaryImage&);
 
             /// @brief element-wise binary XOR operator assignment
+            /// @param image: another binary image
             /// @returns reference to itself
             BinaryImage& operator^=(const BinaryImage&);
     };

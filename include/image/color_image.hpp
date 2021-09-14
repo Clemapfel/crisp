@@ -10,30 +10,66 @@
 
 namespace crisp
 {
-    // color image whos pixel have RGB values
+    /// @brief color image whos pixel have RGB values
     class ColorImage : public Image<float, 3>
     {
         public:
-            /// @brief access individual component of each color representation as 1-d image
+            /// @brief access all red components
+            /// @returns component as 1d image
             Image<float, 1> get_red_plane();
+            
+            /// @brief set all red components
+            /// @param plane: plane as 1d image
+            void set_red_plane(const Image<float, 1>&);
 
-            /// @brief access individual component of each color representation as 1-d image
+            /// @brief access all blue components
+            /// @returns component as 1d image
             Image<float, 1> get_blue_plane();
 
-            /// @brief access individual component of each color representation as 1-d image
+            /// @brief set all blue components
+            /// @param plane: plane as 1d image
+            void set_blue_plane(const Image<float, 1>&);
+
+            /// @brief set all green components
+            /// @returns component as 1d image
             Image<float, 1> get_green_plane();
 
-            /// @brief access individual component of each color representation as 1-d image
+            /// @brief set all green components
+            /// @param plane: plane as 1d image
+            void set_green_plane(const Image<float, 1>&);
+
+
+            /// @brief extract hue component as if the image was in HSV
+            /// @returns component as 1d image
             Image<float, 1> get_hue_plane();
 
-            /// @brief access individual component of each color representation as 1-d image
+            /// @brief set all hue components
+            /// @param plane: plane as 1d image
+            void set_hue_plane(const Image<float, 1>&);
+
+            /// @brief extract saturation component as if the image was in HSV
+            /// @returns component as 1d image
             Image<float, 1> get_saturation_plane();
 
-            /// @brief access individual component of each color representation as 1-d image
+            /// @brief set all saturation components
+            /// @param plane: plane as 1d image
+            void set_saturation_plane(const Image<float, 1>&);
+
+            /// @brief extract value component as if the image was in HSV
+            /// @returns component as 1d image
             Image<float, 1> get_value_plane();
 
-            /// @brief access individual component of each color representation as 1-d image
+            /// @brief set all value components
+            /// @param plane: plane as 1d image
+            void set_value_plane(const Image<float, 1>&);
+
+            /// @brief extract lightness component as if the image was in HSL
+            /// @param plane: plane as 1d image
             Image<float, 1> get_lightness_plane();
+
+            /// @brief set all lightness components
+            /// @param plane: plane as 1d image
+            void set_lightness_plane(const Image<float, 1>&);
     };
 }
 
