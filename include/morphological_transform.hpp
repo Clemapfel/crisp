@@ -10,9 +10,10 @@
 
 namespace crisp
 {
-    /// @brief matrix of std::optional<bool> used as structuring element, where no value represents "don't care" elements
+    /// @brief matrix of std::optional<bool> used as flat structuring element, the optional element not having a value represents "don't care" elements
     using StructuringElement = Eigen::Matrix<std::optional<bool>, Eigen::Dynamic, Eigen::Dynamic>;
 
+    /// @brief object representing a morphological transform using a flat structuring element
     class MorphologicalTransform
     {
         public:

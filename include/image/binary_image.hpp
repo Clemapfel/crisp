@@ -11,7 +11,7 @@
 
 namespace crisp
 {
-    // image that uses booleans as pixels
+    /// @brief image whos pixels have 1 boolean value
     class BinaryImage : public Image<bool, 1>
     {
         public:

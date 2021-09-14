@@ -10,7 +10,7 @@
 
 namespace crisp
 {
-    /// @brief color image whos pixel have RGB values
+    /// @brief color image whos pixel have crisp::RGB values
     class ColorImage : public Image<float, 3>
     {
         public:
@@ -37,7 +37,6 @@ namespace crisp
             /// @brief set all green components
             /// @param plane: plane as 1d image
             void set_green_plane(const Image<float, 1>&);
-
 
             /// @brief extract hue component as if the image was in HSV
             /// @returns component as 1d image

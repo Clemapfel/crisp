@@ -14,6 +14,8 @@
 namespace crisp
 {
     /// @brief an image that lives in ram and is operated upon by the cpu
+    /// @param InnerValue_t: inner value type of the pixels (which are vectors themself)
+    /// @param N: number of components of the pixels
     template<typename InnerValue_t, size_t N = 1>
     class Image
     {

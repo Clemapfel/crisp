@@ -5,9 +5,9 @@
 
 #pragma once
 
-/// @brief enum that governs what values indices out of bounds will return
 namespace crisp
 {
+    /// @brief enum that governs what values indices out of bounds will return
     enum PaddingType
     {
         /// let image be [1, 2, 3, 4] (size 4*1), then padding has the form:

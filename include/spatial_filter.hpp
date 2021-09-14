@@ -13,6 +13,7 @@
 
 namespace crisp
 {
+    /// @brief filter kernel, float matrix of uneven size
     using Kernel = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>;
 
     /// @brief convolute two kernels
@@ -38,6 +39,7 @@ namespace crisp
     /// @param n_90_degrees: number of 90° clockwise rotations
     void rotate(Kernel&, size_t n_90_degrees);
 
+    /// @brief object representing a filter operating in the spatial domain
     class SpatialFilter
     {
         public:

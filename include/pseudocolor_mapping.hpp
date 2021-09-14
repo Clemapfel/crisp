@@ -13,7 +13,7 @@
 
 namespace crisp
 {
-    // maps grayscale values to color values
+    /// @brief transform that maps grayscale values to color values
     class PseudoColorTransform
     {
         public:

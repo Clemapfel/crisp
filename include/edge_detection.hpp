@@ -9,7 +9,7 @@
 
 namespace crisp::EdgeDetection
 {
-    /// @brief if handed as an argument to edge detection algorithms, they will employ a heuristic to measure the threshold
+    /// @brief if handed as an argument to edge detection algorithms, will employ a heuristic to measure the corresponding threshold
     constexpr float MEASURE_THRESHOLD = -1.f;
 
     /// @brief compute simple gradient of image and threshold it

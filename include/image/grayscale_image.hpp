@@ -9,6 +9,7 @@
 
 namespace crisp
 {
+    /// @brief image where each pixel has only one 32-bit float intensity
     class GrayScaleImage : public Image<float, 1>
     {
         public:

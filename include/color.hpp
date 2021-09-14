@@ -9,6 +9,7 @@
 
 namespace crisp
 {
+    // forward declarations
     struct RGB;
     struct HSV;
     struct HSL;
@@ -22,15 +23,23 @@ namespace crisp
         ColorRepresentation();
 
         /// @brief convert to RGB format
+        /// @returns RGB after conversion
+        /// @note if any initial component is outside of [0, 1] the behavior is undefined
         virtual RGB to_rgb() const = 0;
 
         /// @brief convert to HSV format
+        /// @returns HSV after conversion
+        /// @note if any initial component is outside of [0, 1] the behavior is undefined
         virtual HSV to_hsv() const = 0;
 
         /// @brief convert to HSL format
+        /// @returns HSL after conversion
+        /// @note if any initial component is outside of [0, 1] the behavior is undefined
         virtual HSL to_hsl() const = 0;
 
         /// @brief convert to grayscale
+        /// @returns equivalent GrayScale
+        /// @note if any initial component is outside of [0, 1] the behavior is undefined
         virtual GrayScale to_grayscale() const = 0;
     };
 

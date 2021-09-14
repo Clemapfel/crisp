@@ -11,7 +11,7 @@
 namespace crisp
 {
     /// @brief uncorrelated noise generator
-    /// takes a probablitity density functions and returns a pseudo-random number following that PDF
+    /// @param RandomNumberDistribution_t: takes a probablitity density functions and returns a pseudo-random number following that PDF
     template<typename RandomNumberDistribution_t>
     class NoiseGenerator
     {

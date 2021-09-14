@@ -14,7 +14,8 @@ namespace crisp
     /// @brief covariance matrix of float
     using CovarianceMatrix = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>;
 
-    /// @brief mathematically a closed, simply connected region, a set of unique pixel coordinates and their corresponding values in an image,
+    /// @brief a closed, simply connected region (or in less mathematical terms: a set of unique pixel coordinates and their corresponding values in an image)
+    /// @param Image_t: type of image used for the values
     template<typename Image_t>
     class ImageRegion
     {
