@@ -71,6 +71,9 @@ namespace crisp
 
             std::set<Element, ElementCompare> _elements;
 
+            std::vector<Vector2ui> _boundary;
+            std::vector<uint8_t> _boundary_direction;
+
             Vector2f _centroid;
 
             Vector2ui _x_bounds,
