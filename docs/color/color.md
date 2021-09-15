@@ -289,5 +289,15 @@ If the user specifies ranges that are overlapping, only one of them will be appl
 ```cpp
 auto deer = load_grayscale_image(/*...*/ + "/crips/docs/color/infrared_deer.png");
 
-auto mapping = PseudoColorMapping();
 auto ranges = PseudoColorMapping::RangeMapping();
+ranges.add_value_range_to_hue(0.6, 1, 0);
+ranges.add_value_range_to_hue_range(0, 0.6, 0.5, 0.9);
+pseudocolor.value_ranges_to_hue_ranges(ranges);
+color_deer = std::move(pseudocolor.transform(deer));
+
+// save to disk or render
+``` 
+![](./multi_ranges.png)
+
+As we can see the deer are even easier to spot now.
+

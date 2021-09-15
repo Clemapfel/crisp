@@ -60,6 +60,12 @@ namespace crisp
             using Eigen::Array<T, 1, N>::operator*=;
             using Eigen::Array<T, 1, N>::operator/=;
 
+            Vector<T, N> operator&(const Vector<T, N>& other) const;
+            Vector<T, N> operator&&(const Vector<T, N>& other) const;
+            Vector<T, N> operator|(const Vector<T, N>& other) const;
+            Vector<T, N> operator||(const Vector<T, N>& other) const;
+            Vector<T, N> operator^(const Vector<T, N>& other) const;
+
             Vector<T, N>& operator%=(const Vector<T, N>& other);
             Vector<T, N>& operator%=(T scalar);
 
