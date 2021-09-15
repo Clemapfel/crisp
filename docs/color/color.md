@@ -7,7 +7,8 @@
 3. [GrayScale](#3-grayscale)
 4. [HSV](#4-hsv)
 5. [HSL](#5-hsl)
-6. [Conclusion](#6-conclusion)
+6. [In Summary](#6-in-summary)
+7. [Pseudo Color](#7-)
 
 ## 1. Introduction
 While it's nice to simplify things by using binary or grayscale images (most) humans see in color and thus colors are a central part of many of ``crisp``s features. 
@@ -213,8 +214,80 @@ for (size_t y = 0; y < specturm.get_size().y(); ++y)
 
 ![](./lightness_spectrum.png)
 
-## 6. Conclusion
+## 6. In Summary
 
 Differentiation between some color representations can be difficult and especially HSV and HSL have enough similarities to get hung up but hopefully this has cleared up what exactly each component of each representation means. Always remember that in crisp converting from any color representation to any color representation is easy and quick, simply call ``.to_xyz()`` and you're done.
 
+## 7. Pseudo Color
 
+"PseudoColor" is a term to describe a transform function that maps grayscale values onto a different color representation often to aid humans in visually understanding images. Let's consider an example first:
+
+![](./infrared_deer.png)
+(source: texasoutdoors)
+
+Here we have a noisy, low-resolution infrared image of deer. Infrared cameras only have one component so to visualize it in human-perceptile ranges equipment will often render it as a grayscale image like this. To aid in human confirmation we can use *pseudocolor* to highlight the deer as such:
+
+![](./gray_range_hue_range.png)
+
+No segmentation algorithm was performed here, all we did was map higher (lighter)
+ intensity values to a range of color values. Because the deer are much warmer than their surrounding, the infrared response to their bodies will be higher. With the new color image it's much easier to identify the deer from surrounding foliage. 
+
+Pseudocolor has many applications in medicine and any field where single-intensity valued images are meant for human inspections.
+
+## 7.1 PseudoColorMapping
+
+In ``crisp`` pseudocolor transformations are handled by [``crisp::PseudoColorMapping``](../include/pseudocolor_mapping.hpp). To setup a transform we first need to construct the object:
+
+```cpp
+auto mapping = PseudoColorMapping();
+``` 
+
+We now need to specify a type of transform via ```PseudoColorMapping::set_function```. This function takes a lambda of which several are available as static functions. Let's first talk about what exactly a transform does.
+
+The transform has to take a range of gray values gi = {g1, g2, ...} and map them onto a range of hue values hi = {h1, h2, ...}. Because we are working with hues we will be talking about color in HSV format where both saturation and value are set to 1. The following transforms are available:
+
++ ``identity()`` maps all gray values onto themself resulting in no visual change in the image
+  ![](./infrared_deer.png)
++ ``value_to_hue(float g, flat h)`` maps a single gray value onto a single hue values, that is {g} -> {h}
++ ``value_range_to_hue(float gmin, float gmax, float h)`` maps a range of gray values onto a single hue, that is the set [gmin, gmax] -> {h} and 
+![](./gray_range_to_hue_value.png)
++ ``value_range_to_hue_range(float gmin, float gmax, float hmin, float hmax)`` maps a range of gray values onto a range of hue values, that is [gmin, gmax] -> [hmin, hmax]
+![](./gray_range_hue_range.png)
++ ``value_range_to_inverse_hue_range(float gmin, float gmax, float hmin, float hmax)`` maps a range of gray values onto an *inverted* range of hue values, that is [gmin, gmay] -> [hmax, hmin]
+![](./gray_range_to_inverse_hue_range.png)
+  
+To summarize, to get the picture mentioned at the start of this section we do the following (after noting that all objects with an intensity > 0.6 are likely to be warmblooded):
+
+```cpp
+auto deer = load_grayscale_image(/*...*/ + "/crips/docs/color/infrared_deer.png");
+
+auto mapping = PseudoColorMapping();
+mapping.set_function(PseudoColorMapping::value_range_to_hue_range(0.6, 1, 0, 1);
+
+ColorImage as_color = mapping.transform(deer)
+
+// save to disk or render here
+```
+![](./final_deer.png)
+
+## 7.2 Multi Range Mapping
+
+crisp offers an even more flexible way of mapping intensities to colors. Let's say we want to map the deer onto an easily recognizable solid color while mapping all other foliage and such onto a darker hue range. Humans do a lot better at differentiating color from color than color from grey. As it is currently this is not possible but this is why crisp offers 
+``PseudoColorMapping::RangeMapping``. This object basically stores multiple ranges and takes the same functions ``PseudoColorMapping`` does:
+
+```cpp
+void add_value_to_hue(float g, float h);
+void add_value_range_to_hue(float gmin, float gmax, float h);
+void add_value_range_to_hue_range(float gmin, float gmax, float hmin, float hmax);
+void add_value_range_to_inverse_hue_range(float gmin, float gmax, float hmin, float hmax);
+```
+
+We can then bind the ``RangeMapping`` via ``PseudoColorMapping::value_ranges_to_hue_ranges(RangeMapping&)``.
+
+If the user specifies ranges that are overlapping, only one of them will be applied but which is undefined. To illustrate the functionality of ``RangeMapping`` let's try to implement our example from earlier in this section: We want to map the deer (intensity > 0.6) onto a solid color, let's say red and we want to map the foliage (intensity < 0.6) onto a range of colors, let's say blue to green:
+
+```cpp
+auto deer = load_grayscale_image(/*...*/ + "/crips/docs/color/infrared_deer.png");
+
+auto mapping = PseudoColorMapping();
+auto ranges = PseudoColorMapping::RangeMapping();

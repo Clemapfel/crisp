@@ -14,11 +14,11 @@
 namespace crisp
 {
     /// @brief transform that maps grayscale values to color values
-    class PseudoColorTransform
+    class PseudoColorMapping
     {
         public:
             /// @brief default ctor
-            PseudoColorTransform() = default;
+            PseudoColorMapping() = default;
 
             /// @brief transform a grayscale image into a color image my mapping certain gray values to the specified hues
             /// @param image: grayscale image
@@ -65,7 +65,7 @@ namespace crisp
             // @brief container class that allows for specifying multiple ranges at the same time
             class RangeMapping
             {
-                friend class PseudoColorTransform;
+                friend class PseudoColorMapping;
 
                 public:
                     /// @brief default ctor

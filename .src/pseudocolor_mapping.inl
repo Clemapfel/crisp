@@ -7,7 +7,7 @@
 
 namespace crisp
 {
-    ColorImage PseudoColorTransform::transform(const GrayScaleImage& grayscale)
+    ColorImage PseudoColorMapping::transform(const GrayScaleImage& grayscale)
     {
         ColorImage out;
         out.create(grayscale.get_size().x(), grayscale.get_size().y(), RGB(0,0,0));
@@ -19,18 +19,18 @@ namespace crisp
         return out;
     }
 
-    void PseudoColorTransform::set_function(std::function<RGB(float)>&& mapping)
+    void PseudoColorMapping::set_function(std::function<RGB(float)>&& mapping)
     {
         _function = mapping;
     }
 
-    auto && PseudoColorTransform::identity()
+    auto && PseudoColorMapping::identity()
     {
         static auto f = [](float x) -> RGB {return RGB(x);};
         return f;
     }
 
-    auto && PseudoColorTransform::value_range_to_hue_range(float min_gray, float max_gray, float min_hue, float max_hue)
+    auto && PseudoColorMapping::value_range_to_hue_range(float min_gray, float max_gray, float min_hue, float max_hue)
     {
         static auto f = [min_gray, max_gray, min_hue, max_hue](float x) -> RGB {
 
@@ -53,7 +53,7 @@ namespace crisp
         return f;
     }
 
-    auto && PseudoColorTransform::value_range_to_inverse_hue_range(float min_gray, float max_gray, float min_hue, float max_hue)
+    auto && PseudoColorMapping::value_range_to_inverse_hue_range(float min_gray, float max_gray, float min_hue, float max_hue)
     {
         static auto f = [min_gray, max_gray, min_hue, max_hue](float x) -> RGB {
 
@@ -77,9 +77,9 @@ namespace crisp
         return f;
     }
 
-    auto&& PseudoColorTransform::value_ranges_to_hue_ranges(PseudoColorTransform::RangeMapping& mapping)
+    auto&& PseudoColorMapping::value_ranges_to_hue_ranges(PseudoColorMapping::RangeMapping& mapping)
     {
-        static auto f = [&mapping](float x) -> RGB {
+        static auto f = [mapping](float x) -> RGB {
 
             for (auto& map : mapping._gray_to_hue)
             {
@@ -126,35 +126,35 @@ namespace crisp
         return f;
     }
     
-    auto && PseudoColorTransform::value_to_hue(float gray, float hue)
+    auto && PseudoColorMapping::value_to_hue(float gray, float hue)
     {
         return value_range_to_hue_range(gray, gray, hue, hue);
     }
 
-    auto && PseudoColorTransform::value_range_to_hue(float min_gray, float max_gray, float hue)
+    auto && PseudoColorMapping::value_range_to_hue(float min_gray, float max_gray, float hue)
     {
         return value_range_to_hue_range(min_gray, max_gray, hue, hue);
     }
 
-    void PseudoColorTransform::RangeMapping::add_value_to_hue(float gray, float hue)
+    void PseudoColorMapping::RangeMapping::add_value_to_hue(float gray, float hue)
     {
         _gray_to_hue.push_back({{gray, gray}, {hue, hue}});
 
     }
 
-    void PseudoColorTransform::RangeMapping::add_value_range_to_hue(float min_gray, float max_gray, float hue)
+    void PseudoColorMapping::RangeMapping::add_value_range_to_hue(float min_gray, float max_gray, float hue)
     {
         _gray_to_hue.push_back({{min_gray, max_gray}, {hue, hue}});
     }
 
-    void PseudoColorTransform::RangeMapping::add_value_range_to_hue_range(float min_gray, float max_gray, float min_hue,
-                                                                          float max_hue)
+    void PseudoColorMapping::RangeMapping::add_value_range_to_hue_range(float min_gray, float max_gray, float min_hue,
+                                                                        float max_hue)
     {
         _gray_to_hue.push_back({{min_gray, max_gray}, {min_hue, max_hue}});
     }
 
-    void PseudoColorTransform::RangeMapping::add_value_range_to_inverse_hue_range(float min_gray, float max_gray,
-                                                                                  float min_hue, float max_hue)
+    void PseudoColorMapping::RangeMapping::add_value_range_to_inverse_hue_range(float min_gray, float max_gray,
+                                                                                float min_hue, float max_hue)
     {
         _gray_to_inverse_hue.push_back({{min_gray, max_gray}, {min_hue, max_hue}});
     }
