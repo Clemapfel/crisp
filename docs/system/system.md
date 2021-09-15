@@ -29,7 +29,7 @@ Most major files formats (bmp, png, tga, jpg, gif, psd, hdr, pic) are supported.
 + Binary
   The image will thresholded into ``crisp::BinaryImage`` by letting each pixel be ``(red + green + blue + 0*alpha) / 3 > 0.5``, that is if the equivalent grayscale value of the images pixel is bigger than 0.5, it will be treated as ``true`` (white), ``false`` (black) otherwise. If you wish to use a different threshold, load the image as grayscale and threshold it manually using ``crisp::segmentation::manual_threshold``
   
-## 1.2 Saving and Image
+## 1.2 Saving an Image
 
 You can save an image to the disk like this:
 

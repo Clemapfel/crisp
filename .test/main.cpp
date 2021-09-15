@@ -27,60 +27,27 @@ using namespace crisp;
 
 int main()
 {
-    auto image = load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
-
-    // multiply each color by either 3 or -3
-    float factor = M_PI;
-    for (auto& pixel : image)
-    {
-        pixel *= factor;
-        factor *= 1.000005;
-    }
-
-    normalize(image);
-
-    auto sprite = Sprite();
-    sprite.create_from(image);
-    sprite.set_scale(2);
-
-    auto window = RenderWindow(sprite.get_size().x(), sprite.get_size().y());
-
-    while (window.is_open())
-    {
-        auto time = window.update();
-
-        window.clear();
-        window.draw(sprite);
-        window.display();
-    }
-
-
-    // load
-    /*
-    auto image = load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
-    save_to_disk(image, "/home/clem/Workspace/crisp/docs/image/binary_opal.png");
-    return 0;
-
+    auto image = load_color_image("/home/clem/Workspace/crisp/docs/image/color_opal.png");
     GrayScaleImage plane = image.get_nths_plane<1>();
 
     // corrupt
-    auto noise = SaltAndPepperNoise(0, 0.05);
+    auto noise = SaltAndPepperNoise(0.1, 0);
     for (auto& px : plane)
-        px = float(px) + 0.2f + noise(); //std::max<float>(px + 0.2f - noise(), 1.f);
+        px += noise();
 
-        /*
     image.set_nths_plane<1>(plane);
     save_to_disk(image, "/home/clem/Workspace/crisp/docs/image/opal_corrupted.png");
+    return 0;
 
     // investigate planes
-    plane = (image.get_nths_plane<0>());
+    plane = image.get_nths_plane<0>();
     save_to_disk(plane, "/home/clem/Workspace/crisp/docs/image/opal_corrupted_0.png");
 
-    plane = (image.get_nths_plane<2>());
-    save_to_disk(plane, "/home/clem/Workspace/crisp/docs/image/opal_corrupted_2.png");
-
-    plane = (image.get_nths_plane<1>());
+    plane = image.get_nths_plane<1>();
     save_to_disk(plane, "/home/clem/Workspace/crisp/docs/image/opal_corrupted_1.png");
+
+    plane = image.get_nths_plane<2>();
+    save_to_disk(plane, "/home/clem/Workspace/crisp/docs/image/opal_corrupted_2.png");
 
     // restore
     auto median_filter = SpatialFilter();
@@ -138,6 +105,5 @@ int main()
         window.draw(sprite);
         window.display();
     }
-     */
 }
 

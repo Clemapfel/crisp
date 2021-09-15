@@ -1,6 +1,5 @@
-# CRISP: Clems Real-Time Image/Signal Processing Library
+# CRISP: Clems Real-Time Interactive Signal Processing Library
 
-This section is still under construction
 
 # Documentation
 
