@@ -86,13 +86,25 @@ namespace crisp
             /// @param x: the x-index, values in [0, width]
             /// @param y: the y-index, values in [0, height]
             /// @returns reference to the corresponding value
-            virtual double & operator()(size_t x, size_t y);
+            double & operator()(size_t x, size_t y);
 
             /// @brief const-access the filters elements
             /// @param x: the x-index, values in [0, width]
             /// @param y: the y-index, values in [0, height]
             /// @returns the corresponding value
-            virtual double operator()(size_t x, size_t y) const;
+            double operator()(size_t x, size_t y) const;
+
+            /// @brief access the filters elements with bounds checking
+            /// @param x: the x-index, values in [0, width]
+            /// @param y: the y-index, values in [0, height]
+            /// @returns reference to the corresponding value
+            double & at(size_t x, size_t y);
+
+            /// @brief const-access the filters elements with bounds checking
+            /// @param x: the x-index, values in [0, width]
+            /// @param y: the y-index, values in [0, height]
+            /// @returns the corresponding value
+            double at(size_t x, size_t y) const;
 
             /// @brief expose the filters values as one vector in row-major order
             /// @returns const reference to the filters values

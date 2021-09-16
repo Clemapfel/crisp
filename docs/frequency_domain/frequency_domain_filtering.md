@@ -15,7 +15,15 @@ Fourier- and Discrete Cosine Transforms and their Filters
     2.3 [Visualizing the Spectrum](#23-visualizing-the-spectrum)<br>
     2.4 [Accessing Coefficients](#24-accessing-coefficients)<br>
     2.5 [Transforming Back into an Image](#25-transforming-back-into-an-image)<br>
-3. []()
+3. [Spectral Filters](#3-spectral-filters)<br>
+    3.1 [Creating & Visualizing Filters](#31-creating-and-visualizing-filters)<br>
+    3.2 [Filter Shapes](#32-filter-shapes)<br>
+        3.2.1 [Low-Pass Filters](#321-low-pass-filters)<br>
+        3.2.2 [High-Pass Filters](#322-high-pass-filters)<br>
+        3.2.3 [Band-Pass Filters](#323-band-pass-filters)<br>
+        3.2.4 [Band-Reject Filters](#324-band-reject-filters)<br>
+   3.3 [Modifying Filter]()
+   
 
 ## 1. Introduction
 
@@ -132,8 +140,8 @@ auto result = spectrum.transform_to<GrayScaleImage>();
 
 The original image is unrecognizable but we do note the typical periodicity that is inherent to all spectral techniques.
 
-## 2. Spectral Filters
-## 2.1 Creating and Visualizing Filters
+## 3. Spectral Filters
+## 3.1 Creating and Visualizing Filters
 
 Spectral filters can be best thought of as floating point valued matrices of the same size as the fourier spectrum (2*m*2*n as mentioned before) we're trying to filter. Applying the filter usually means multiplying it by the spectrum. 
 
@@ -158,7 +166,7 @@ sprite.create_from(filter);
 auto image = filter.as_image<GrayScaleImage>();
 // save to disk
 ```
-## 2.2 Filter Shapes
+## 3.2 Filter Shapes
 
 The simplest filter shape is ``FrequencyDomainFilter::identity()``. In order to not modify the spectrum after applying (multiplying) the filter we would expect the filter to be valued 1 at all positions:
 
@@ -170,20 +178,232 @@ filter.set_function(filter.identity());
 
 Visualization confirms this is indeed the case.
 
-## 2.2.1 Low-Pass Filters
+## 3.2.1 Low-Pass Filters
 
 Low-Pass filters attenuate (diminish) higher frequencies and pass (do not modify) lower frequencies. For our fourier spectrum the lower frequency is the dc component at the center, the higher frequencies are more towards the outer edges of it. 
 
-``crisp`` provides three types of low-pass filters:
+``crisp`` provides three types of low-pass filter shaping functions:
 
-+ ``ideal_lowpass`` has a sharp cutoff point between is attenuating and passing regions:<br>
++ ``as_ideal_lowpass`` has a sharp cutoff point between is attenuating and passing regions:<br>
 ![](./ideal_lowpass.png)<br><br>
-+ ``gaussian_lowpass`` has a smooth transition between attenuating and passing regions that follows a [gaussian distribution](https://en.wikipedia.org/wiki/Gaussian_filter) :<br>
++ ``as_gaussian_lowpass`` has a smooth transition between attenuating and passing regions that follows a [gaussian distribution](https://en.wikipedia.org/wiki/Gaussian_filter) :<br>
 ![](./gaussian_lowpass.png)<br><br>
-+ ``butterworth_lowpass`` of order n is a filter that also has a smooth distribution that follows the [butterworth distribution of order n](https://en.wikipedia.org/wiki/Butterworth_filter). This filter approaches the ideal lowpass for order n -> infinity and approaches the gaussian lowpass for order n -> 0:
-![](./butterworth_0_lowpass.png)<br>
++ ``as_butterworth_lowpass`` of order n is a filter that also has a smooth distribution that follows the [butterworth distribution of order n](https://en.wikipedia.org/wiki/Butterworth_filter). This filter approaches the ideal lowpass for order n -> infinity and approaches the gaussian lowpass for order n -> 0. Shown below: order 1, 2 and 3<br>
+![](./butterworth_1_lowpass.png)<br>
 ![](./butterworth_2_lowpass.png)<br>
-![](./butterworth_10_lowpass.png)<br>
+![](./butterworth_3_lowpass.png)<br>
+  
+Each function takes 3 arguments:
+```cpp
+void FrequencyDomainFilter::as_xyz_lowpass(
+    double cutoff_frequency, 
+    double pass_factor, 
+    double reject_factor
+);
+```  
+where 
++ ``cutoff_frequency`` is the frequency after which the attenuating region starts, in ``[0, min(2*m, 2*n)]`` where m, n size of the original image
++ ``pass_factor`` is the factor the coefficients in the passing (low frequency, inner) region are multiplied by. By default this factor is 1
++ ``reject_factor`` is the factor the coefficients in the attenuating (high frequency, outer) region are multiplied by. By default this factor is 0
+
+## 3.2.2 High-Pass Filters
+
+High-pass filters attentate low frequncies towards the centrum of the spectrum and pass high frequencies towards the outer edges. Just like low-pass, ``crisp`` offers three filter shaping functions:
+
++ ``as_ideal_highpass`` again has a sharp cutoff point from attenuating to passing region:<br>
+![](ideal_highpass.png)<br><br>
+
++ ``as_gaussian_highpass`` again has a smooth gaussian transition from attenuating to passing region:<br>
+![](gaussian_highpass.png)<br><br>
+
++ ``as_butterworth_highpass`` similarly follows the butterworth filter shape along it's cutoff region. Pictured are butterworth highpass filters of order 1, 2, 3:<br>
+![](./butterworth_1_highpass.png)<br>
+![](./butterworth_2_highpass.png)<br>
+![](./butterworth_3_highpass.png)<br><br>
+  
+Just like low-pass filters each high-pass filter shaping function takes three arguments:
+
+```cpp
+void FrequencyDomainFilter::as_xyz_highpass(
+    double cutoff_frequency, 
+    double pass_factor, 
+    double reject_factor
+);
+```  
+where 
++ ``cutoff_frequency`` is the frequency after which the passing region starts, in ``[0, min(2*m, 2*n)]`` where m, n size of the original image
++ ``pass_factor`` is the factor the coefficients in the passing (high frequency, outer) region are multiplied by. By default this factor is 1
++ ``reject_factor`` is the factor the coefficients in the attenuating (lower frequency, inner) region are multiplied by. By default this factor is 0
+
+As you may have noticed the highpass filter is the inverse of the low-pass filter, that is for a highpass filter H, lowpass filter I of with the same cutoff frequency, reject- and pass-factor it holds true that: ``identity - H = I`` and ``identity - I = H``. We will see later how we can use arithmetic operations like these to our advantage.
+
+## 3.2.3 Band-Pass Filters
+
+A band-pass filter is a filter that passing frequencies in a specified band, that is for band cutoffs c_min (the inner cutoff) and c_max (the outer cutoff) frequencies ``freq`` such that ``c_min < freq < c_max`` are passed, all other frequencies are attenuated. ``crisp`` again offers the familiar 3 filter shaping function variations:
+
++ ``as_ideal_bandpass`` has a sharp transition between passing and attenuating region:<br>
+![](./ideal_bandpass.png)<br><br>
+
++ ``as_gaussian_bandpass`` has a smooth, gaussian transition between passing and attenuating region:<br>
+![](./gaussian_bandpass.png)<br><br>
+
++ ``as_butterworth_bandpass`` also has a smooth transition, however it follows, again, the butterworth filter shape of specified order. Pictured are order 1, 2, 3:<br>
+![](./butterworth_1_bandpass.png)<br>
+![](./butterworth_2_bandpass.png)<br>
+![](./butterworth_3_bandpass.png)<br><br>
+  
+Unlike low-pass and high-pass filters, band-pass-filters take two cutoff frequencies, c_min and c_max such that frequencies below c_min are attenuated, frequencies between c_min and _cmax are passed and frequencies above c_max are again attenuated:
+
+```cpp
+void FrequencyDomainFilter::as_xyz_bandpass(
+    double cutoff_min,
+    double cutoff_max,
+    double pass_factor, 
+    double reject_factor
+);
+```  
+where 
++ ``cutoff_min`` is the lower cutoff frequency, in ``[0, min(2*m, 2*n)]`` where m, n size of the original image
++ ``cutoff_max`` is the higher cutoff frequency, also in ``[0, min(2*m, 2*n)]``
++ ``pass_factor`` is the factor the coefficients in the passing (inside the "donut") region are multiplied by. By default this factor is 1
++ ``reject_factor`` is the factor the coefficients in the attenuating (outside the "donut") region are multiplied by. By default this factor is 0
+
+## 3.2.4 Band-Reject Filters
+
+Lastly we have bandreject filters which are the inverse of band-pass filters. Bandreject filters attenuate frequencies inside their two cutoff points and pass frequencies outside of it. ``crisp`` again supplies 3 different shapes:
+
++ ``as_ideal_bandreject`` with a sharp cutoff:<br>
+![](./ideal_bandreject.png)<br><br>
+  
++ ``as_gaussian_bandreject`` with a smooth, gaussian cutoff transition:<br>
+![](./gaussian_bandreject.png)<br><br>
+  
++ ``as_butterworth_bandreject`` with the now familiar butterworth cutoff transition of specified order, pictured again are order 1, 2, 3:<br>
+![](./butterworth_1_bandreject.png)<br>
+![](./butterworth_2_bandreject.png)<br>
+![](./butterworth_3_bandreject.png)<br><br>
+  
+Bandreject filters are the inverse of band-pass filters, that is for a band-pass filter ``B_p`` and a bandreject filter ``B_r`` it holds true that: ``identity - B_r = B_p`` and ``identity - B_p = B_r``. Similarly bandreject filters again take 4 parameters:
+
+```cpp
+void FrequencyDomainFilter::as_xyz_bandreject(
+    double cutoff_min,
+    double cutoff_max,
+    double pass_factor, 
+    double reject_factor
+);
+```  
+where 
++ ``cutoff_min`` is the lower cutoff frequency, in ``[0, min(2*m, 2*n)]``. Frequencies below this frequency are passed
+  
++ ``cutoff_max`` is the higher cutoff frequency, also in ``[0, min(2*m, 2*n)]``, frequencies above this frequency are passed but frequency below ``cutoff_max`` and above ``cutoff_min`` are attenuated
++ ``pass_factor`` is the factor the coefficients in the passing (outside the "donut") region are multiplied by. By default this factor is 1
++ ``reject_factor`` is the factor the coefficients in the attenuating (inside the "donut") region are multiplied by. By default this factor is 0
+
+## 3.3 Modifying Filter
+
+It's easiest to think of filters as 1D-images with ``double`` pixels because just like images we can access individual elements and those elemnts are indexed just like pixels would be (that is the top-most, left-most pixel has index (0, 0)). The follow functions can be used to access individual elements of the filter:
+
+```cpp
+// access as x-y-elements
+double & operator()(size_t x, size_t y);
+double operator()(size_t x, size_t y) const;
+
+// access with bounds checking
+double & at(size_t x, size_t y);
+double at(size_t x, size_t y) const;
+
+// access as vector in row-major order
+const std::vector<double>& get_values() const;
+``` 
+
+Where ``get_values`` returns a vector of pixels in row-major order, that is they are enumerated left-to-right, top-to-bottom just like ``crisp::Image<T, N>::Iterator`` would. 
+
+We already eluded to this earlier but filters support arithmetic filter-filter operations, these are elementwise-operations so multiplying one filter by another is equivalent to multiplying each element by the corresponding element of the other filter. The following arithmetic operators are supported:
+
+```cpp
+FrequencyDomainFilter operator+(const FrequencyDomainFilter&) const;
+FrequencyDomainFilter operator-(const FrequencyDomainFilter&) const;
+FrequencyDomainFilter operator*(const FrequencyDomainFilter&) const;
+FrequencyDomainFilter operator/(const FrequencyDomainFilter&) const;
+
+FrequencyDomainFilter& operator+=(const FrequencyDomainFilter&);
+FrequencyDomainFilter& operator-=(const FrequencyDomainFilter&);
+FrequencyDomainFilter& operator*=(const FrequencyDomainFilter&);
+FrequencyDomainFilter& operator/=(const FrequencyDomainFilter&);
+```
+
+The fact these are defined and the fact both the attenuating and passing factor are freely choosable lends a huge amount of freedom in filter design. To truly achieve full flexibility however we need to also be able to move a filters center.
+
+## 3.4 Filter Offset and Symmetry
+
+``crisp::FrequencyDomainFilter`` uses the following function:
+
+```cpp
+void set_offset(
+        size_t x_dist_from_center, 
+        size_t y_dist_from_center, 
+        bool force_symmetry = true);
+```
+
+To illustrate how it works let's consider a practical example. We first define a butterworth bandpass filter with a relatively high order, this means we still don't have a completely sharp transition but we're also not as "fanned out" as we would be using a truly gaussian filter:
+
+```cpp
+#include <fourier_transform.hpp>
+#include <frequency_domain_filter.hpp>
+
+auto image = /*...*/;
+auto spectrum = FourierSpectrum(image);
+spectrum.transform_from(image);
+
+auto filter = FrequencyDomainFilter(spectrum);
+filter.as_butterworth_bandpass(
+        0.25 * spectrum.get_size().x(), // lower cutoff
+        0.3 * spectrum.get_size().x(),  // upper cutoff
+        4,  // order
+        1,  // passing factor
+        0   // attenuating factor
+);
+```
+This filter currently has the following shape:<br>
+![](./no_offset.png)<br><br>
+
+We can then offset it with ``set_offset``, for now we leave ``force_symmetry`` off:
+
+```cpp
+filter.set_offset(
+    -0.2 * spectrum.get_size().x(), // x offset
+    -0.1 * spectrum.get_size().y(), // y offset
+    false); // force symmetry
+```
+![](./with_offset.png)
+
+As expected the filters center moved towards the top left of the image.
+
+Multiplying a fourier spectrum with a filter that is not radially symmetrical changes will result in TODO CITATION. This is why it's usually advisable to keep ``force_symmetry`` on. Doing so results in:
+
+```cpp
+filter.set_offset(
+    -0.2 * spectrum.get_size().x(),-0.1 * spectrum.get_size().y(), true);
+```
+
+![](./with_symmetry.png)
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+
 
 
 
