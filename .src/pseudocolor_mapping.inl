@@ -7,30 +7,12 @@
 
 namespace crisp
 {
-    ColorImage PseudoColorMapping::transform(const GrayScaleImage& grayscale)
+    ColorImage PseudoColor::identity(const GrayScaleImage& image)
     {
-        ColorImage out;
-        out.create(grayscale.get_size().x(), grayscale.get_size().y(), RGB(0,0,0));
-
-        for (long x = 0; x < grayscale.get_size().x(); ++x)
-            for (long y = 0; y < grayscale.get_size().y(); ++y)
-                out(x, y) = _function(grayscale(x, y));
-
-        return out;
+        return image.convert_to_color();
     }
 
-    void PseudoColorMapping::set_function(std::function<RGB(float)>&& mapping)
-    {
-        _function = mapping;
-    }
-
-    auto && PseudoColorMapping::identity()
-    {
-        static auto f = [](float x) -> RGB {return RGB(x);};
-        return std::move(f);
-    }
-
-    auto && PseudoColorMapping::value_range_to_hue_range(float min_gray, float max_gray, float min_hue, float max_hue)
+    ColorImage PseudoColor::value_range_to_hue_range(float min_gray, float max_gray, float min_hue, float max_hue, const GrayScaleImage& in)
     {
         auto f = [min_gray, max_gray, min_hue, max_hue](float x) -> RGB {
 
@@ -49,11 +31,18 @@ namespace crisp
                 return HSV{hue, 1, 1}.to_rgb();
             }
         };
-
-        return std::move(f);
+        
+        auto out = ColorImage();
+        out.create(in.get_size().x(), in.get_size().y());
+        
+        for (long x = 0; x < out.get_size().x(); ++x)
+            for (long y = 0; y < out.get_size().y(); ++y)
+                out(x, y) = f(in.at(x, y));
+            
+        return out;
     }
 
-    auto && PseudoColorMapping::value_range_to_inverse_hue_range(float min_gray, float max_gray, float min_hue, float max_hue)
+    ColorImage PseudoColor::value_range_to_inverse_hue_range(float min_gray, float max_gray, float min_hue, float max_hue, const GrayScaleImage& in)
     {
         auto f = [min_gray, max_gray, min_hue, max_hue](float x) -> RGB {
 
@@ -73,13 +62,20 @@ namespace crisp
                 return HSV{hue, 1, 1}.to_rgb();
             }
         };
-
-        return std::move(f);
+        
+        auto out = ColorImage();
+        out.create(in.get_size().x(), in.get_size().y());
+        
+        for (long x = 0; x < out.get_size().x(); ++x)
+            for (long y = 0; y < out.get_size().y(); ++y)
+                out(x, y) = f(in.at(x, y));
+            
+        return out;
     }
 
-    auto&& PseudoColorMapping::value_ranges_to_hue_ranges(PseudoColorMapping::RangeMapping& mapping)
+    ColorImage PseudoColor::value_ranges_to_hue_ranges(RangeMapping& mapping, const GrayScaleImage& in)
     {
-        static auto f = [mapping](float x) -> RGB {
+        auto f = [mapping](float x) -> RGB {
 
             for (auto& map : mapping._gray_to_hue)
             {
@@ -122,38 +118,51 @@ namespace crisp
 
             return RGB(x);
         };
-
-        return std::move(f);
+        
+        auto out = ColorImage();
+        out.create(in.get_size().x(), in.get_size().y());
+        
+        for (long x = 0; x < out.get_size().x(); ++x)
+            for (long y = 0; y < out.get_size().y(); ++y)
+                out(x, y) = f(in.at(x, y));
+            
+        return out;
     }
     
-    auto && PseudoColorMapping::value_to_hue(float gray, float hue)
+    ColorImage PseudoColor::value_to_hue(float gray, float hue, const GrayScaleImage& in)
     {
-        return value_range_to_hue_range(gray, gray, hue, hue);
+        return value_range_to_hue_range(gray, gray, hue, hue, in);
     }
 
-    auto && PseudoColorMapping::value_range_to_hue(float min_gray, float max_gray, float hue)
+    ColorImage PseudoColor::value_range_to_hue(float min_gray, float max_gray, float hue, const GrayScaleImage& in)
     {
-        return value_range_to_hue_range(min_gray, max_gray, hue, hue);
+        return value_range_to_hue_range(min_gray, max_gray, hue, hue, in);
     }
 
-    void PseudoColorMapping::RangeMapping::add_value_to_hue(float gray, float hue)
+    void PseudoColor::RangeMapping::add_value_to_hue(float gray, float hue)
     {
         _gray_to_hue.push_back({{gray, gray}, {hue, hue}});
     }
 
-    void PseudoColorMapping::RangeMapping::add_value_range_to_hue(float min_gray, float max_gray, float hue)
+    void PseudoColor::RangeMapping::add_value_range_to_hue(float min_gray, float max_gray, float hue)
     {
         _gray_to_hue.push_back({{min_gray, max_gray}, {hue, hue}});
     }
 
-    void PseudoColorMapping::RangeMapping::add_value_range_to_hue_range(float min_gray, float max_gray, float min_hue,
-                                                                        float max_hue)
+    void PseudoColor::RangeMapping::add_value_range_to_hue_range(
+            float min_gray, 
+            float max_gray, 
+            float min_hue,
+            float max_hue)
     {
         _gray_to_hue.push_back({{min_gray, max_gray}, {min_hue, max_hue}});
     }
 
-    void PseudoColorMapping::RangeMapping::add_value_range_to_inverse_hue_range(float min_gray, float max_gray,
-                                                                                float min_hue, float max_hue)
+    void PseudoColor::RangeMapping::add_value_range_to_inverse_hue_range(
+            float min_gray, 
+            float max_gray,
+            float min_hue, 
+            float max_hue)
     {
         _gray_to_inverse_hue.push_back({{min_gray, max_gray}, {min_hue, max_hue}});
     }

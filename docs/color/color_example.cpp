@@ -48,51 +48,38 @@ void hue_spectrum()
 }
 
 #include <pseudocolor_mapping.hpp>
+#include <whole_image_transform.hpp>
 
 int main()
 {
     auto deer = load_grayscale_image("/home/clem/Workspace/crisp/docs/color/infrared_deer.png");
     auto color_deer = ColorImage();
 
-    auto pseudocolor = PseudoColorMapping();
+    // for intro
+    color_deer = PseudoColor::value_range_to_hue_range(0.601, 1, 0, 1, deer);
+    save_to_disk(color_deer, "/home/clem/Workspace/crisp/docs/color/final_deer.png");
 
-    // one to one
-    /*
-    pseudocolor.set_function(PseudoColorMapping::value_to_hue(0.2, 0));
-    color_deer = pseudocolor.transform(deer);
+    // one to one (needs to be range because image is so noisy)
+    color_deer = PseudoColor::value_range_to_hue(0.595, 0.605, 0, deer);
     save_to_disk(color_deer, "/home/clem/Workspace/crisp/docs/color/gray_value_to_hue_value.png");
-    */
-
     // many to one
-    pseudocolor.set_function(PseudoColorMapping::value_range_to_hue(0.6, 1, 0));
-    color_deer = pseudocolor.transform(deer);
+    color_deer = PseudoColor::value_range_to_hue(0.6, 1, 0, deer);
     save_to_disk(color_deer, "/home/clem/Workspace/crisp/docs/color/gray_range_to_hue_value.png");
 
     // many to many
-    pseudocolor.set_function(PseudoColorMapping::value_range_to_hue_range(0, 0.8, 0.5, 1));
-    color_deer = pseudocolor.transform(deer);
+    color_deer = PseudoColor::value_range_to_hue_range(0, 0.8, 0.5, 1, deer);
     save_to_disk(color_deer, "/home/clem/Workspace/crisp/docs/color/gray_range_to_hue_range.png");
 
     // many to many inverse
-    pseudocolor.set_function(PseudoColorMapping::value_range_to_inverse_hue_range(0, 0.8, 0.5, 1));
-    color_deer = pseudocolor.transform(deer);
+    color_deer = PseudoColor::value_range_to_inverse_hue_range(0, 0.8, 0.5, 1, deer);
     save_to_disk(color_deer, "/home/clem/Workspace/crisp/docs/color/gray_range_to_inverse_hue_range.png");
 
-    /*
-    // final
-    pseudocolor.set_function(PseudoColorMapping::value_range_to_hue_range(0.601, 1, 0, 1));
-    color_deer = pseudocolor.transform(deer);
-    save_to_disk(color_deer, "/home/clem/Workspace/crisp/docs/color/final_deer.png");
-     */
-
-
     // multiple ranges
-    auto ranges = PseudoColorMapping::RangeMapping();
-    ranges.add_value_range_to_hue(0.6, 1, 0);
-    ranges.add_value_range_to_hue_range(0, 0.6, 0.5, 0.9);
-    pseudocolor.value_ranges_to_hue_ranges(ranges);
-    color_deer = pseudocolor.transform(deer);
-    save_to_disk(color_deer, "/home/clem/Workspace/crisp/docs/color/multi_ranges.png");
+    auto ranges = PseudoColor::RangeMapping();
+    ranges.add_value_range_to_hue(0.601, 1, 0);
+    ranges.add_value_range_to_hue_range(0, 0.6, 0.2, 0.75);
+    color_deer = PseudoColor::value_ranges_to_hue_ranges(ranges, deer);
+    save_to_disk(color_deer, "/home/clem/Workspace/crisp/docs/color/gray_ranges_to_hue_ranges.png");
 
 }
 
