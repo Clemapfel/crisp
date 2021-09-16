@@ -60,9 +60,9 @@ namespace crisp
         sf::Image temp;
         temp.create(image.get_size().x(), image.get_size().y());
 
-        for (long x = 0; x < image.get_size().x(); ++x)
+        for (size_t x = 0; x < image.get_size().x(); ++x)
         {
-            for (long y = 0; y < image.get_size().y(); ++y)
+            for (size_t y = 0; y < image.get_size().y(); ++y)
             {
                 T value = image(x, y);
                 auto as_float = static_cast<float>(value);
@@ -80,9 +80,9 @@ namespace crisp
         sf::Image temp;
         temp.create(image.get_size().x(), image.get_size().y());
 
-        for (long x = 0; x < image.get_size().x(); ++x)
+        for (size_t x = 0; x < image.get_size().x(); ++x)
         {
-            for (long y = 0; y < image.get_size().y(); ++y)
+            for (size_t y = 0; y < image.get_size().y(); ++y)
             {
                 bool which = image(x, y);
 
@@ -103,9 +103,9 @@ namespace crisp
         sf::Image temp;
         temp.create(image.get_size().x(), image.get_size().y());
 
-        for (long x = 0; x < image.get_size().x(); ++x)
+        for (size_t x = 0; x < image.get_size().x(); ++x)
         {
-            for (long y = 0; y < image.get_size().y(); ++y)
+            for (size_t y = 0; y < image.get_size().y(); ++y)
             {
                 auto intensity = image(x, y);
                 temp.setPixel(x, y, sf::Color(intensity * 255.f, intensity * 255.f, intensity * 255.f, 255.f));
@@ -122,9 +122,9 @@ namespace crisp
         sf::Image temp;
         temp.create(image.get_size().x(), image.get_size().y());
 
-        for (long x = 0; x < image.get_size().x(); ++x)
+        for (size_t x = 0; x < image.get_size().x(); ++x)
         {
-            for (long y = 0; y < image.get_size().y(); ++y)
+            for (size_t y = 0; y < image.get_size().y(); ++y)
             {
                 auto color = image(x, y);
                 temp.setPixel(x, y, sf::Color(color.red() * 255, color.green() * 255, color.blue() * 255, 255));
@@ -144,9 +144,9 @@ namespace crisp
         sf::Image temp;
         temp.create(image.get_size().x(), image.get_size().y());
 
-        for (long x = 0; x < image.get_size().x(); ++x)
+        for (size_t x = 0; x < image.get_size().x(); ++x)
         {
-            for (long y = 0; y < image.get_size().y(); ++y)
+            for (size_t y = 0; y < image.get_size().y(); ++y)
             {
                 auto value = image(x, y);
                 temp.setPixel(x, y, sf::Color(float(value) * 255, float(value) * 255, float(value) * 255, 255));
@@ -163,9 +163,9 @@ namespace crisp
         sf::Image temp;
         temp.create(filter.get_size().x(), filter.get_size().y());
 
-        for (long x = 0; x < filter.get_size().x(); ++x)
+        for (size_t x = 0; x < filter.get_size().x(); ++x)
         {
-            for (long y = 0; y < filter.get_size().y(); ++y)
+            for (size_t y = 0; y < filter.get_size().y(); ++y)
             {
                 auto value = filter(x, y);
                 temp.setPixel(x, y, sf::Color(float(value) * 255, float(value) * 255, float(value) * 255, 255));
@@ -182,9 +182,9 @@ namespace crisp
         sf::Image temp;
         temp.create(kernel.rows(), kernel.cols());
 
-        for (long x = 0; x < kernel.rows(); ++x)
+        for (size_t x = 0; x < kernel.rows(); ++x)
         {
-            for (long y = 0; y < kernel.cols(); ++y)
+            for (size_t y = 0; y < kernel.cols(); ++y)
             {
                 auto value = kernel(x, y);
                 temp.setPixel(x, y, sf::Color(float(value) * 255, float(value) * 255, float(value) * 255, 255));
@@ -241,9 +241,9 @@ namespace crisp
         sf::Image temp;
         temp.create(se.rows(), se.cols());
 
-        for (long x = 0; x < se.rows(); ++x)
+        for (size_t x = 0; x < se.rows(); ++x)
         {
-            for (long y = 0; y < se.cols(); ++y)
+            for (size_t y = 0; y < se.cols(); ++y)
             {
                 float value = se(x, y).has_value() ? (se(x, y).value() ? 1.f : 0.5f) : 0.f;
                 temp.setPixel(x, y, sf::Color(float(value) * 255, float(value) * 255, float(value) * 255, 255));

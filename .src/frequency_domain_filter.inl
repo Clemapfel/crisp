@@ -25,6 +25,21 @@ namespace crisp
         return _values;
     }
 
+    template<typename Image_t>
+    inline Image_t FrequencyDomainFilter::as_image() const
+    {
+        static_assert(Image_t::Value_t::size() == 1);
+
+        GrayScaleImage image;
+        image.create(get_size().x(), get_size().y());
+
+        for (size_t x = 0; x < get_size().x(); ++x)
+            for (size_t y = 0; y < get_size().y(); ++y)
+                image(x, y) = operator()(x, y);
+
+        return image;
+    }
+
     inline void FrequencyDomainFilter::set_function(std::function<double(size_t, size_t)>&& f)
     {
         _function = f;
@@ -170,6 +185,8 @@ namespace crisp
 
     inline auto && FrequencyDomainFilter::butterworth_lowpass(double cutoff_frequency, size_t order, double pass_factor, double reject_factor)
     {
+        assert(order > 0);
+
         static auto f =[this, cutoff_frequency, order, pass_factor, reject_factor](int x, int y) -> double {
             auto res = 1 / (1 + pow(distance(x, y) / cutoff_frequency, 2 * order));
             return project<double>(reject_factor, pass_factor, res);
@@ -181,6 +198,8 @@ namespace crisp
 
     inline auto && FrequencyDomainFilter::butterworth_highpass(double cutoff_frequency, size_t order, double pass_factor, double reject_factor)
     {
+        assert(order > 0);
+
         static auto f =[this, cutoff_frequency, order, pass_factor, reject_factor](int x, int y) -> double {
             auto res = (1 / (1 + pow(distance(x, y) / cutoff_frequency, 2 * order)));
             return 1 - project<double>(pass_factor, reject_factor, res);
@@ -191,6 +210,8 @@ namespace crisp
 
     inline auto && FrequencyDomainFilter::butterworth_bandreject(double lower_cutoff, double higher_cutoff, size_t order, double pass_factor, double reject_factor)
     {
+        assert(order > 0);
+
         static auto f =[this, lower_cutoff, higher_cutoff, order, pass_factor, reject_factor](int x, int y) -> double {
             auto dist = distance(x, y);
             auto width = higher_cutoff - lower_cutoff;

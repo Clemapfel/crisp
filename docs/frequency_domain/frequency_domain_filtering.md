@@ -8,6 +8,15 @@ Fourier- and Discrete Cosine Transforms and their Filters
 
 ## Table of Content
 
+1. [Introduction](#1-introduction)<br>
+2. [Fourier Transform](#2-fourier-transform)<br>
+    2.1 [Fourier Transform Performance Mode](#21-fourier-transform-performance-mode)<br>
+    2.2 [Creating the Transform](#22-creating-the-transform)<br>
+    2.3 [Visualizing the Spectrum](#23-visualizing-the-spectrum)<br>
+    2.4 [Accessing Coefficients](#24-accessing-coefficients)<br>
+    2.5 [Transforming Back into an Image](#25-transforming-back-into-an-image)<br>
+3. []()
+
 ## 1. Introduction
 
 While working on images themself in the so called *spatial domain* provides a variety of advantages some techniques are much easier to accomplish in the *frequency domain*. These *spectral* techniques, in ``crisp`` are performed on two transforms of images: 
@@ -54,7 +63,7 @@ auto phase_angle_image = fourier.phase_angle_as_image();
 // render or save to disk
 ```
 
-This is the image we started out with, a simple cube: <br>
+This is the image we started out with, a simple rectangle: <br>
 ![](./cube.png)
 
 This is it's spectrum:<br>
@@ -66,7 +75,7 @@ We note that the spectrum is four times the size of the image and that it is alr
 
 When rendering the spectrum the coefficients magnitudes are log-scaled and normalized into [0,1] *only for viewing*. This is to make inspection easier, the actual dc component is commonly 1000x high than any other components which in image form would make it very hard to inspect the full spectrum.
 
-## 2.4 Accessing Coefficients
+### 2.4 Accessing Coefficients
 
 Now that we know what the data looks like, this is how we access it:
 
@@ -95,7 +104,7 @@ auto dc_two = fourier.get_component(fourier.get_size().x() / 2, fourier.get_size
 assert(dc_one == dc_two);
 ```
 
-## 2.5 Transforming Back Into an Image
+### 2.5 Transforming Back Into an Image
 
 We can transform the spectrum back into an image using ``Image<Inner_t, 1> transform_to() const`` but before we do that let's alter the spectrum so we can notice it's effects. We set part of the spectrum to zero resulting in a modified spectrum that looks like this:
 
@@ -122,6 +131,64 @@ auto result = spectrum.transform_to<GrayScaleImage>();
 ![](cube_modified.png)
 
 The original image is unrecognizable but we do note the typical periodicity that is inherent to all spectral techniques.
+
+## 2. Spectral Filters
+## 2.1 Creating and Visualizing Filters
+
+Spectral filters can be best thought of as floating point valued matrices of the same size as the fourier spectrum (2*m*2*n as mentioned before) we're trying to filter. Applying the filter usually means multiplying it by the spectrum. 
+
+Similar to spatial filters, ``crisp`` offers a class called ``FrequencyDomainFilter``. We create a filter by specifying it's size:
+
+```cpp
+auto filter = FrequencyDomainFilter(2*m, 2*n);
+
+// or let the filter determine the size from a spectrum
+auto filter = FrequencyDomainFilter(spectrum);
+```
+
+We then need to specify the filters *shape* via ``set_function``. Remember that our filters are 2d matrices so (like everything in crisp) we can visualize them by binding them to a ``crisp::Sprite``:
+
+```cpp
+auto sprite = Sprite();
+sprite.create_from(filter);
+// render
+
+// or
+
+auto image = filter.as_image<GrayScaleImage>();
+// save to disk
+```
+## 2.2 Filter Shapes
+
+The simplest filter shape is ``FrequencyDomainFilter::identity()``. In order to not modify the spectrum after applying (multiplying) the filter we would expect the filter to be valued 1 at all positions:
+
+```
+filter.set_function(filter.identity());
+```
+
+![](./identity.png)
+
+Visualization confirms this is indeed the case.
+
+## 2.2.1 Low-Pass Filters
+
+Low-Pass filters attenuate (diminish) higher frequencies and pass (do not modify) lower frequencies. For our fourier spectrum the lower frequency is the dc component at the center, the higher frequencies are more towards the outer edges of it. 
+
+``crisp`` provides three types of low-pass filters:
+
++ ``ideal_lowpass`` has a sharp cutoff point between is attenuating and passing regions:<br>
+![](./ideal_lowpass.png)<br><br>
++ ``gaussian_lowpass`` has a smooth transition between attenuating and passing regions that follows a [gaussian distribution](https://en.wikipedia.org/wiki/Gaussian_filter) :<br>
+![](./gaussian_lowpass.png)<br><br>
++ ``butterworth_lowpass`` of order n is a filter that also has a smooth distribution that follows the [butterworth distribution of order n](https://en.wikipedia.org/wiki/Butterworth_filter). This filter approaches the ideal lowpass for order n -> infinity and approaches the gaussian lowpass for order n -> 0:
+![](./butterworth_0_lowpass.png)<br>
+![](./butterworth_2_lowpass.png)<br>
+![](./butterworth_10_lowpass.png)<br>
+
+
+
+
+
 
 
 

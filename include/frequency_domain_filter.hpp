@@ -102,6 +102,9 @@ namespace crisp
             /// @returns const reference to the filters values
             const std::vector<double>& get_values() const;
 
+            template<typename Image_t>
+            Image_t as_image() const;
+
             // pre-build functions, use with set_function
 
             /// @brief identity filter
