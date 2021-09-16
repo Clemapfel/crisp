@@ -200,7 +200,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    size_t Vector<T, N>::size()
+    constexpr size_t Vector<T, N>::size()
     {
         return N;
     }

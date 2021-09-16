@@ -1,4 +1,10 @@
+
+[<< Back to Index](../index.md)
+
+---
 # Color
+
+Colors in RGB, HSV, HSL and Intensity Representation
 
 ## Table of Contents
 
@@ -300,3 +306,5 @@ color_deer = PseudoColor::value_ranges_to_hue_ranges(ranges, deer);
 
 As we can see the deer are even easier to spot now while the tree ands grass can be made out much better than with just a gray image.
 
+---
+[<< Back to Index](../index.md)

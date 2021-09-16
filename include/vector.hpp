@@ -115,7 +115,7 @@ namespace crisp
             bool operator>=(T) const;
 
             /// @brief get number of components
-            static size_t size();
+            static constexpr size_t size();
 
             /// @brief access elements
             using Eigen::Array<T, 1, N>::x;

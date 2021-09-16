@@ -99,7 +99,7 @@ namespace crisp
     template<FourierTransformMode Mode>
     typename FourierTransform<Mode>::Value_t FourierTransform<Mode>::get_dc_component() const
     {
-        return get_component(0, 0);
+        return get_component(_size.x() / 2.f, _size.y() / 2.f);
     }
 
     template<FourierTransformMode Mode>
@@ -176,10 +176,12 @@ namespace crisp
     }
 
     template<>
-    template<typename Inner_t>
-    Image<Inner_t, 1> FourierTransform<SPEED>::transform_to() const
+    template<typename Image_t>
+    Image_t FourierTransform<SPEED>::transform_to() const
     {
-        Image<Inner_t, 1> image_out;
+        static_assert(Image_t::Value_t::size() == 1);
+
+        Image_t image_out;
         image_out.create(get_size().x() / 2, get_size().y() / 2);
 
         size_t m = get_size().x();
@@ -205,7 +207,7 @@ namespace crisp
         {
             for (size_t y = 0; y < n/2; ++y, ++i)
             {
-                image_out(x, y) = values[i][0] / (m * n) * (dither ? 1 : -1);
+                image_out(x, y) = static_cast<typename Image_t::Value_t>(values[i][0] / (m * n) * (dither ? 1 : -1));
                 dither = not dither;
             }
             dither = not dither;
@@ -273,10 +275,12 @@ namespace crisp
     }
 
     template<FourierTransformMode Mode>
-    template<typename Inner_t>
-    Image<Inner_t, 1> FourierTransform<Mode>::transform_to() const
+    template<typename Image_t>
+    Image_t FourierTransform<Mode>::transform_to() const
     {
-        Image<Inner_t, 1> image_out;
+        static_assert(Image_t::Value_t::size() == 1);
+
+        Image_t image_out;
         image_out.create(get_size().x() / 2, get_size().y() / 2);
 
         size_t m = get_size().x();
@@ -302,7 +306,7 @@ namespace crisp
         {
             for (size_t y = 0; y < n/2; ++y, ++i)
             {
-                image_out(x, y) = values[i][0] / (m * n) * (dither ? 1 : -1);
+                image_out(x, y) = static_cast<typename Image_t::Value_t>(values[i][0] / (m * n) * (dither ? 1 : -1));
                 dither = not dither;
             }
             dither = not dither;

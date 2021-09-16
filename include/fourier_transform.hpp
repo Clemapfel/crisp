@@ -50,8 +50,8 @@ namespace crisp
 
             /// @brief transform back into an image, this does not modify the transform
             /// @returns resulting image
-            template<typename Inner_t>
-            Image<Inner_t, 1> transform_to() const;
+            template<typename Image_t>
+            Image_t transform_to() const;
 
             /// @brief visualizes the transforms spectrum as an image
             /// @returns log(1+x)-scaled grayscale image of size m*n*2 where m, n size of the original transformed image
@@ -90,7 +90,6 @@ namespace crisp
             /// @param y: the column index, range [0, 2*n]
             /// @returns reference to phase angle in radians, float if in SPEED mode, double otherwise
             Value_t& get_phase_angle(size_t x, size_t y);
-
 
             /// @brief access the dc-component (the value at the spectrums center)
             /// @returns float if in SPEED mode, double otherwise

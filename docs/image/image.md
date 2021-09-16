@@ -1,4 +1,10 @@
+[<< Back to Index](../index.md)
+
+---
+
 # Images
+
+Multi Dimensional Images of Arbitrary Type
 
 ## Table of Content
 
@@ -506,17 +512,5 @@ And we're done.
 
 You may ask how we got that arbitrary seeming value of 0.035f. It was determined experimentally by writing and interactive program where pressing up adds 0.005 to the value and pressing down substracts it and then simply feeling around which one was best. This is the true advantage of crisp, thanks to the game-like interactivity you can do it truly interactively, not just by changing a value and recompiling again. The full script for our entire example can be found here:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+---
+[<< Back to Index](../index.md)

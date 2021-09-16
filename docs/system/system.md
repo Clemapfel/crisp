@@ -1,3 +1,6 @@
+[<< Back to Index](../index.md)
+
+---
 # System Module
 
 The system module handles interfacing with the OS and disk. 
@@ -110,3 +113,6 @@ Sprites can be scaled and moved around the window, it's position is relative to 
 Calling ``crisp::RenderWindow::update`` automatically updates the ``InputComponent`` which handles all user input through mouse and keyboard. This includes minimizing or closing the window, so be sure to call ``RenderWindow::update`` during your renderloop or you have no way to exit your program.
 
 The Input component 
+
+---
+[<< Back to Index](../index.md)
