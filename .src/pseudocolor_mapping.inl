@@ -27,12 +27,12 @@ namespace crisp
     auto && PseudoColorMapping::identity()
     {
         static auto f = [](float x) -> RGB {return RGB(x);};
-        return f;
+        return std::move(f);
     }
 
     auto && PseudoColorMapping::value_range_to_hue_range(float min_gray, float max_gray, float min_hue, float max_hue)
     {
-        static auto f = [min_gray, max_gray, min_hue, max_hue](float x) -> RGB {
+        auto f = [min_gray, max_gray, min_hue, max_hue](float x) -> RGB {
 
             assert(min_gray <= max_gray and min_hue <= max_hue);
 
@@ -50,12 +50,12 @@ namespace crisp
             }
         };
 
-        return f;
+        return std::move(f);
     }
 
     auto && PseudoColorMapping::value_range_to_inverse_hue_range(float min_gray, float max_gray, float min_hue, float max_hue)
     {
-        static auto f = [min_gray, max_gray, min_hue, max_hue](float x) -> RGB {
+        auto f = [min_gray, max_gray, min_hue, max_hue](float x) -> RGB {
 
             assert(min_gray <= max_gray);
 
@@ -74,7 +74,7 @@ namespace crisp
             }
         };
 
-        return f;
+        return std::move(f);
     }
 
     auto&& PseudoColorMapping::value_ranges_to_hue_ranges(PseudoColorMapping::RangeMapping& mapping)
@@ -123,7 +123,7 @@ namespace crisp
             return RGB(x);
         };
 
-        return f;
+        return std::move(f);
     }
     
     auto && PseudoColorMapping::value_to_hue(float gray, float hue)
@@ -139,7 +139,6 @@ namespace crisp
     void PseudoColorMapping::RangeMapping::add_value_to_hue(float gray, float hue)
     {
         _gray_to_hue.push_back({{gray, gray}, {hue, hue}});
-
     }
 
     void PseudoColorMapping::RangeMapping::add_value_range_to_hue(float min_gray, float max_gray, float hue)
