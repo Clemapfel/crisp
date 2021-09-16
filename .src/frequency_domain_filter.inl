@@ -9,12 +9,15 @@ namespace crisp
 {
     inline FrequencyDomainFilter::FrequencyDomainFilter(size_t width, size_t height)
         : _size{width, height}
-    {}
+    {
+        as_identity();
+    }
 
     template<FourierTransformMode Mode>
     inline FrequencyDomainFilter::FrequencyDomainFilter(const FourierTransform<Mode>& transform)
     {
         _size = Vector2ui{transform.get_size().x(), transform.get_size().y()};
+        as_identity();
     }
 
     inline const std::vector<double> & FrequencyDomainFilter::get_values() const
@@ -38,12 +41,6 @@ namespace crisp
                 image(x, y) = operator()(x, y);
 
         return image;
-    }
-
-    inline void FrequencyDomainFilter::set_function(std::function<double(size_t, size_t)>&& f)
-    {
-        _function = f;
-        _values_initialized = false;
     }
 
     inline void FrequencyDomainFilter::set_offset(size_t x_dist_from_center, size_t y_dist_from_center, bool force_symmetry)
@@ -83,80 +80,76 @@ namespace crisp
         return sqrt(x*x + y*y);
     }
 
-    inline auto && FrequencyDomainFilter::identity()
+    inline void FrequencyDomainFilter::as_identity()
     {
-        static auto f =[](int x, int y) -> double {return 1;};
-        
-        return f;
+        _values_initialized = false;
+        _function = [](int x, int y) -> double {return 1;};
     }
 
     // IDEAL
-    inline auto && FrequencyDomainFilter::ideal_lowpass(double cutoff_frequency, double pass_factor, double reject_factor)
+    inline void FrequencyDomainFilter::as_ideal_lowpass(double cutoff_frequency, double pass_factor, double reject_factor)
     {
-        static auto f =[this, cutoff_frequency, pass_factor, reject_factor](int x, int y) -> double {
+        _values_initialized = false;
+        _function = [this, cutoff_frequency, pass_factor, reject_factor](int x, int y) -> double {
             return distance(x, y) < cutoff_frequency ? pass_factor : reject_factor;
         };
-        
-        return f;
     }
 
-    inline auto && FrequencyDomainFilter::ideal_highpass(double cutoff_frequency, double pass_factor, double reject_factor)
+    inline void FrequencyDomainFilter::as_ideal_highpass(double cutoff_frequency, double pass_factor, double reject_factor)
     {
-        static auto f =[this, cutoff_frequency, pass_factor, reject_factor](int x, int y) -> double {return distance(x, y) < cutoff_frequency ? reject_factor : pass_factor;};
-        
-        return f;
+        _values_initialized = false;
+        _function = [this, cutoff_frequency, pass_factor, reject_factor](int x, int y) -> double {return distance(x, y) < cutoff_frequency ? reject_factor : pass_factor;};
     }
 
-    inline auto&& FrequencyDomainFilter::ideal_bandreject(double lower_cutoff, double higher_cutoff, double pass_factor, double reject_factor)
+    inline void FrequencyDomainFilter::as_ideal_bandreject(double lower_cutoff, double higher_cutoff, double pass_factor, double reject_factor)
     {
-        static auto f =[this, lower_cutoff, higher_cutoff, pass_factor, reject_factor](int x, int y) -> double {
+        _values_initialized = false;
+        _function = [this, lower_cutoff, higher_cutoff, pass_factor, reject_factor](int x, int y) -> double {
             auto dist = distance(x, y);
             return dist > lower_cutoff and dist < higher_cutoff ? reject_factor : pass_factor;
         };
-        
-        return f;
     }
 
-    inline auto&& FrequencyDomainFilter::ideal_bandpass(double lower_cutoff, double higher_cutoff, double pass_factor, double reject_factor)
+    inline void FrequencyDomainFilter::as_ideal_bandpass(double lower_cutoff, double higher_cutoff, double pass_factor, double reject_factor)
     {
-        static auto f =[this, lower_cutoff, higher_cutoff, pass_factor, reject_factor](int x, int y) -> double {
+        _values_initialized = false;
+        _function = [this, lower_cutoff, higher_cutoff, pass_factor, reject_factor](int x, int y) -> double {
             auto dist = distance(x, y);
             return dist > lower_cutoff and dist < higher_cutoff ? pass_factor : reject_factor;
         };
-        
-        return f;
     }
 
     // GAUSSIAN
 
-    inline auto && FrequencyDomainFilter::gaussian_lowpass(double cutoff_frequency, double pass_factor, double reject_factor)
+    inline void FrequencyDomainFilter::as_gaussian_lowpass(double cutoff_frequency, double pass_factor, double reject_factor)
     {
-        static auto f =[this, cutoff_frequency, pass_factor, reject_factor](int x, int y) -> double {
+        _values_initialized = false;
+        _function = [this, cutoff_frequency, pass_factor, reject_factor](int x, int y) -> double {
 
             auto dist = distance(x, y);
             auto res = exp(-0.5 * pow(distance(x, y) / cutoff_frequency, 2));
             return project<double>(reject_factor, pass_factor, res);
         };
         
-        return f;
     }
 
-    inline auto && FrequencyDomainFilter::gaussian_highpass(double cutoff_frequency, double pass_factor, double reject_factor)
+    inline void FrequencyDomainFilter::as_gaussian_highpass(double cutoff_frequency, double pass_factor, double reject_factor)
     {
-        static auto f =[this, cutoff_frequency, pass_factor, reject_factor](int x, int y) -> double {
+        _values_initialized = false;
+        _function = [this, cutoff_frequency, pass_factor, reject_factor](int x, int y) -> double {
 
             auto dist = distance(x, y);
             auto res = exp(-0.5 * pow(distance(x, y) / cutoff_frequency, 2));
             return 1 - project<double>(pass_factor, reject_factor, res);
         };
         
-        return f;
     }
 
-    inline auto&& FrequencyDomainFilter::gaussian_bandreject(double lower_cutoff, double higher_cutoff, double pass_factor,
+    inline void FrequencyDomainFilter::as_gaussian_bandreject(double lower_cutoff, double higher_cutoff, double pass_factor,
                                                     double reject_factor)
     {
-        static auto f =[this, lower_cutoff, higher_cutoff, pass_factor, reject_factor](int x, int y) -> double {
+        _values_initialized = false;
+        _function = [this, lower_cutoff, higher_cutoff, pass_factor, reject_factor](int x, int y) -> double {
             auto dist = distance(x, y);
             auto width = higher_cutoff - lower_cutoff;
             auto center = lower_cutoff + width/2;
@@ -164,13 +157,13 @@ namespace crisp
             return project<double>(reject_factor, pass_factor, res);
         };
         
-        return f;
     }
 
-    inline auto&& FrequencyDomainFilter::gaussian_bandpass(double lower_cutoff, double higher_cutoff, double pass_factor,
+    inline void FrequencyDomainFilter::as_gaussian_bandpass(double lower_cutoff, double higher_cutoff, double pass_factor,
                                                     double reject_factor)
     {
-        static auto f =[this, lower_cutoff, higher_cutoff, pass_factor, reject_factor](int x, int y) -> double {
+        _values_initialized = false;
+        _function = [this, lower_cutoff, higher_cutoff, pass_factor, reject_factor](int x, int y) -> double {
             auto dist = distance(x, y);
             auto width = higher_cutoff - lower_cutoff;
             auto center = lower_cutoff + width/2;
@@ -178,41 +171,40 @@ namespace crisp
             return project<double>(reject_factor, pass_factor, res);
         };
         
-        return f;
     }
 
     // BUTTERWORTH
 
-    inline auto && FrequencyDomainFilter::butterworth_lowpass(double cutoff_frequency, size_t order, double pass_factor, double reject_factor)
+    inline void FrequencyDomainFilter::as_butterworth_lowpass(double cutoff_frequency, size_t order, double pass_factor, double reject_factor)
     {
         assert(order > 0);
 
-        static auto f =[this, cutoff_frequency, order, pass_factor, reject_factor](int x, int y) -> double {
+        _values_initialized = false;
+        _function = [this, cutoff_frequency, order, pass_factor, reject_factor](int x, int y) -> double {
             auto res = 1 / (1 + pow(distance(x, y) / cutoff_frequency, 2 * order));
             return project<double>(reject_factor, pass_factor, res);
         };
-        
-        return f;
     }
 
 
-    inline auto && FrequencyDomainFilter::butterworth_highpass(double cutoff_frequency, size_t order, double pass_factor, double reject_factor)
+    inline void FrequencyDomainFilter::as_butterworth_highpass(double cutoff_frequency, size_t order, double pass_factor, double reject_factor)
     {
         assert(order > 0);
 
-        static auto f =[this, cutoff_frequency, order, pass_factor, reject_factor](int x, int y) -> double {
+        _values_initialized = false;
+        _function = [this, cutoff_frequency, order, pass_factor, reject_factor](int x, int y) -> double {
             auto res = (1 / (1 + pow(distance(x, y) / cutoff_frequency, 2 * order)));
             return 1 - project<double>(pass_factor, reject_factor, res);
         };
         
-        return f;
     }
 
-    inline auto && FrequencyDomainFilter::butterworth_bandreject(double lower_cutoff, double higher_cutoff, size_t order, double pass_factor, double reject_factor)
+    inline void FrequencyDomainFilter::as_butterworth_bandreject(double lower_cutoff, double higher_cutoff, size_t order, double pass_factor, double reject_factor)
     {
         assert(order > 0);
 
-        static auto f =[this, lower_cutoff, higher_cutoff, order, pass_factor, reject_factor](int x, int y) -> double {
+        _values_initialized = false;
+        _function = [this, lower_cutoff, higher_cutoff, order, pass_factor, reject_factor](int x, int y) -> double {
             auto dist = distance(x, y);
             auto width = higher_cutoff - lower_cutoff;
             auto center = lower_cutoff + width/2;
@@ -221,12 +213,12 @@ namespace crisp
             return project<double>(reject_factor, pass_factor, res);
         };
         
-        return f;
     }
 
-    inline auto && FrequencyDomainFilter::butterworth_bandpass(double lower_cutoff, double higher_cutoff, size_t order, double pass_factor, double reject_factor)
+    inline void FrequencyDomainFilter::as_butterworth_bandpass(double lower_cutoff, double higher_cutoff, size_t order, double pass_factor, double reject_factor)
     {
-        static auto f =[this, lower_cutoff, higher_cutoff, order, pass_factor, reject_factor](int x, int y) -> double {
+        _values_initialized = false;
+        _function = [this, lower_cutoff, higher_cutoff, order, pass_factor, reject_factor](int x, int y) -> double {
             auto dist = distance(x, y);
             auto width = higher_cutoff - lower_cutoff;
             auto center = lower_cutoff + width/2;
@@ -235,7 +227,6 @@ namespace crisp
             return project<double>(reject_factor, pass_factor, 1 - res);
         };
         
-        return f;
     }
 
     template<FourierTransformMode Mode>

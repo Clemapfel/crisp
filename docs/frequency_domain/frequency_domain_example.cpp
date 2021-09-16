@@ -54,7 +54,7 @@ int main()
     save_to_disk(modified_cube, "/home/clem/Workspace/crisp/docs/frequency_domain/cube_modified.png");
      */
 
-    filter.set_function(filter.identity());
+    filter.as_identity();
     auto filter_img = filter.as_image<GrayScaleImage>();
     save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/identity.png");
 
@@ -62,25 +62,24 @@ int main()
            y_size = spectrum.get_size().y();
 
     // low pass
-    filter.set_function(filter.ideal_lowpass(0.25 * x_size));
+    filter.as_ideal_lowpass(0.25 * x_size);
     filter_img = filter.as_image<GrayScaleImage>();
     save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/ideal_lowpass.png");
 
-    filter.set_function(filter.gaussian_lowpass(0.25 * x_size));
+    filter.as_gaussian_lowpass(0.25 * x_size);
     filter_img = filter.as_image<GrayScaleImage>();
     save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/gaussian_lowpass.png");
 
-    filter.set_function(filter.butterworth_lowpass(0.25 * x_size, 1));
+    filter.as_butterworth_lowpass(0.25 * x_size, 1);
     filter_img = filter.as_image<GrayScaleImage>();
     save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/butterworth_1_lowpass.png");
 
-    filter.set_function(filter.butterworth_lowpass(0.25 * x_size, 2));
+    filter.as_butterworth_lowpass(0.25 * x_size, 2);
     filter_img = filter.as_image<GrayScaleImage>();
     save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/butterworth_2_lowpass.png");
 
-    filter.set_function(filter.butterworth_lowpass(0.25 * x_size, 10));
+    filter.as_butterworth_lowpass(0.25 * x_size, 3);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/butterworth_10_lowpass.png");
-
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/butterworth_3_lowpass.png");
 }
 

@@ -36,10 +36,6 @@ namespace crisp
             /// @returns vector where .x is the width, .y the height of the filter
             Vector2ui get_size() const;
 
-            /// @brief set the function that determines the shape of the filter (identity by default)
-            /// @param lambda: function that takes the x- and y-coordinate and returns an appropraite value
-            void set_function(std::function<double(size_t, size_t)>&& lambda);
-
             /// @brief move the center of the function relative to the filters center origin
             /// @param x_dist_from_center: x-distance, values in [-width/2, +width/2]
             /// @param y_dist_from_center: y-distance, values in [-height/2, +height/2]
@@ -109,49 +105,49 @@ namespace crisp
 
             /// @brief identity filter
             /// @returns filter where all elements are 1
-            auto&& identity();
+            void as_identity();
 
             /// @brief shape into an ideal-lowpass filter. The resulting filter will pass lower frequencies closer to the center of the spectrum and reject higher frequencies
             /// @param cutoff_frequency: the radius of the passing region
             /// @param pass_factor: the maximum value of the filter in the passing region
             /// @param reject_factor: the minimum value of the filter in the rejecting region
             /// @return lambda bindable via FrequencyDomainFilter::set_function
-            auto&& ideal_lowpass(double cutoff_frequency, double pass_factor = 1, double reject_factor = 0);
+            void as_ideal_lowpass(double cutoff_frequency, double pass_factor = 1, double reject_factor = 0);
 
             /// @brief shape into a gaussian lowpass filter. The resulting filter will pass lower frequencies closer to the center of the spectrum and reject higher frequencies
             /// @param cutoff_frequency: the standard deviation of the resulting gaussian curve
             /// @param pass_factor: the maximum value of the filter in the passing region
             /// @param reject_factor: the minimum value of the filter in the rejecting region
             /// @return lambda bindable via FrequencyDomainFilter::set_function
-            auto&& gaussian_lowpass(double cutoff_frequency, double pass_factor = 1, double reject_factor = 0);
+            void as_gaussian_lowpass(double cutoff_frequency, double pass_factor = 1, double reject_factor = 0);
 
             /// @brief shape into a butterworth lowpass filter of specified order. The resulting filter will pass lower frequencies closer to the center of the spectrum and reject higher frequencies
             /// @param cutoff_frequency: the maximum passed frequency
             /// @param pass_factor: the maximum value of the filter in the passing region
             /// @param reject_factor: the minimum value of the filter in the rejecting region
             /// @return lambda bindable via FrequencyDomainFilter::set_function
-            auto&& butterworth_lowpass(double cutoff_frequency, size_t order, double pass_factor = 1, double reject_factor = 0);
+            void as_butterworth_lowpass(double cutoff_frequency, size_t order, double pass_factor = 1, double reject_factor = 0);
 
             /// @brief shape into an ideal-highpass filter. The resulting filter will reject lower frequencies closer to the center of the spectrum and pass higher frequencies
             /// @param cutoff_frequency: the radius of the rejecting region
             /// @param pass_factor: the maximum value in the passing region
             /// @param reject_factor: the maximum value in the rejecting region
             /// @returns lambda bindable via FrequencyDomainFilter::set_function
-            auto&& ideal_highpass(double cutoff_frequency, double pass_factor = 1, double reject_factor = 0);
+            void as_ideal_highpass(double cutoff_frequency, double pass_factor = 1, double reject_factor = 0);
 
             /// @brief shape into a gaussian highpass filter. The resulting filter will reject lower frequencies closer to the center of the spectrum and pass higher frequencies
             /// @param cutoff_frequency: the standard deviation of the gaussian curve modeling the rejecting region
             /// @param pass_factor: the maximum value in the passing region
             /// @param reject_factor: the maximum value in the rejecting region
             /// @returns lambda bindable via FrequencyDomainFilter::set_function
-            auto&& gaussian_highpass(double cutoff_frequency, double pass_factor = 1, double reject_factor = 0);
+            void as_gaussian_highpass(double cutoff_frequency, double pass_factor = 1, double reject_factor = 0);
 
             /// @brief shape into a butterworth highpass filter of specified order. The resulting filter will reject lower frequencies closer to the center of the spectrum and pass higher frequencies
             /// @param cutoff_frequency: the maximum rejected frequency
             /// @param pass_factor: the maximum value in the passing region
             /// @param reject_factor: the maximum value in the rejecting region
             /// @returns lambda bindable via FrequencyDomainFilter::set_function
-            auto&& butterworth_highpass(double cutoff_frequency, size_t order, double pass_factor = 1, double reject_factor = 0);
+            void as_butterworth_highpass(double cutoff_frequency, size_t order, double pass_factor = 1, double reject_factor = 0);
 
             /// @brief shape into an ideal bandpass filter. The resulting filter will pass frequencies inside the band interval and reject others
             /// @param lower_cutoff: the lowest frequency passed
@@ -159,7 +155,7 @@ namespace crisp
             /// @param pass_factor: the maximum value in the passing region
             /// @param reject_factor: the maximum value in the rejecting region
             /// @returns lambda bindable via FrequencyDomainFilter::set_function
-            auto&& ideal_bandpass(double lower_cutoff, double higher_cutoff, double pass_factor = 1, double reject_factor = 0);
+            void as_ideal_bandpass(double lower_cutoff, double higher_cutoff, double pass_factor = 1, double reject_factor = 0);
 
             /// @brief shape into a gaussian bandpass filter. The resulting filter will pass frequencies inside the band interval and reject others
             /// @param lower_cutoff: the lowest frequency not attenuated
@@ -167,7 +163,7 @@ namespace crisp
             /// @param pass_factor: the maximum value in the passing region
             /// @param reject_factor: the maximum value in the rejecting region
             /// @returns lambda bindable via FrequencyDomainFilter::set_function
-            auto&& gaussian_bandpass(double lower_cutoff, double higher_cutoff, double pass_factor = 1, double reject_factor = 0);
+            void as_gaussian_bandpass(double lower_cutoff, double higher_cutoff, double pass_factor = 1, double reject_factor = 0);
 
             /// @brief shape into a butterworth bandpass filter of specified order. The resulting filter will pass frequencies inside the band interval and reject others
             /// @param lower_cutoff: the lowest frequency not attenuated
@@ -175,7 +171,7 @@ namespace crisp
             /// @param pass_factor: the maximum value in the passing region
             /// @param reject_factor: the maximum value in the rejecting region
             /// @returns lambda bindable via FrequencyDomainFilter::set_function
-            auto&& butterworth_bandpass(double lower_cutoff, double higher_cutoff, size_t order, double pass_factor = 1, double reject_factor = 0);
+            void as_butterworth_bandpass(double lower_cutoff, double higher_cutoff, size_t order, double pass_factor = 1, double reject_factor = 0);
 
             /// @brief shape into an ideal bandreject filter. The resulting filter will reject frequencies inside the band and pass others
             /// @param lower_cutoff: the lowest frequency rejected
@@ -183,7 +179,7 @@ namespace crisp
             /// @param pass_factor: the maximum value in the passing region
             /// @param reject_factor: the maximum value in the rejecting region
             /// @returns lambda bindable via FrequencyDomainFilter::set_function
-            auto&& ideal_bandreject(double lower_cutoff, double higher_cutoff, double pass_factor = 1, double reject_factor = 0);
+            void as_ideal_bandreject(double lower_cutoff, double higher_cutoff, double pass_factor = 1, double reject_factor = 0);
 
             /// @brief shape into a gaussian bandreject filter. The resulting filter will reject frequencies inside the band and pass others
             /// @param lower_cutoff: the lowest frequency attenuated to the maximum degree
@@ -191,7 +187,7 @@ namespace crisp
             /// @param pass_factor: the maximum value in the passing region
             /// @param reject_factor: the maximum value in the rejecting region
             /// @returns lambda bindable via FrequencyDomainFilter::set_function
-            auto&& gaussian_bandreject(double lower_cutoff, double higher_cutoff, double pass_factor = 1, double reject_factor = 0);
+            void as_gaussian_bandreject(double lower_cutoff, double higher_cutoff, double pass_factor = 1, double reject_factor = 0);
 
             /// @brief shape into a butterworth bandreject filter. The resulting filter will reject frequencies inside the band and pass others
             /// @param lower_cutoff: the lowest frequency attenuated to the maximum degree
@@ -199,13 +195,13 @@ namespace crisp
             /// @param pass_factor: the maximum value in the passing region
             /// @param reject_factor: the maximum value in the rejecting region
             /// @returns lambda bindable via FrequencyDomainFilter::set_function
-            auto&& butterworth_bandreject(double lower_cutoff, double higher_cutoff, size_t order, double pass_factor = 1, double reject_factor = 0);
+            void as_butterworth_bandreject(double lower_cutoff, double higher_cutoff, size_t order, double pass_factor = 1, double reject_factor = 0);
 
         private:
             Vector2ui _size;
             bool _offset_symmetrical = true;
             Vector2ui _offset = {0,0};
-            std::function<double(size_t, size_t)> _function = [](int x, int y) -> double {return 1;};
+            std::function<double(size_t, size_t)> _function; // = [](int x, int y) -> double {return 1;};
 
             double distance(size_t x, size_t y);
 
