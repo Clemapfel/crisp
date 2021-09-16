@@ -11,6 +11,42 @@ using namespace crisp;
 
 int main()
 {
+    auto image = load_grayscale_image("/home/clem/Workspace/crisp/docs/frequency_domain/color_opal.png");
+
+    auto spectrum = FourierTransform<BALANCED>();
+    spectrum.transform_from(image);
+
+    /*
+    auto spectrum_img = spectrum.as_image();
+    save_to_disk(spectrum_img, "/home/clem/Workspace/crisp/docs/frequency_domain/opal_spectrum.png");
+
+    double max = 0;
+
+    for (long x = 0; x < spectrum.get_size().x(); ++x)
+    for (long y = 0; y < spectrum.get_size().y(); ++y)
+    {
+        if (abs(y - spectrum.get_size().y() * 0.5) < 5 or abs(x - spectrum.get_size().x() * 0.5) < 5)
+            continue;
+
+        if (spectrum.get_component(x, y) > max)
+            max = spectrum.get_component(x, y);
+    }
+
+    /*
+    for (long x = 0; x < spectrum.get_size().x(); ++x)
+    for (long y = 0; y < spectrum.get_size().y(); ++y)
+    {
+        //if (spectrum.get_component(x, y) > 0.99 * max)
+            spectrum.get_component(x, y) = 0.9 * spectrum.get_component(x, y);
+    }*/
+
+    auto spectrum_img = spectrum.as_image();
+    save_to_disk(spectrum_img, "/home/clem/Workspace/crisp/docs/frequency_domain/opal_spectrum_modified.png");
+
+    auto result = spectrum.transform_to<GrayScaleImage>();
+    save_to_disk(result, "/home/clem/Workspace/crisp/docs/frequency_domain/opal_spectrum_result.png");
+
+    /*
     auto cube_img = GrayScaleImage(300, 300);
 
     for (size_t x = 0; x < cube_img.get_size().x(); ++x)
@@ -52,7 +88,7 @@ int main()
 
     auto modified_cube = spectrum.transform_to<GrayScaleImage>();
     save_to_disk(modified_cube, "/home/clem/Workspace/crisp/docs/frequency_domain/cube_modified.png");
-     */
+
 
     filter.as_identity();
     auto filter_img = filter.as_image<GrayScaleImage>();
@@ -60,7 +96,7 @@ int main()
 
     size_t x_size = spectrum.get_size().x(),
            y_size = spectrum.get_size().y();
-    /*
+
     // low pass
     filter.as_ideal_lowpass(0.25 * x_size);
     filter_img = filter.as_image<GrayScaleImage>();
@@ -145,7 +181,6 @@ int main()
     filter.as_butterworth_bandreject(0.15 * x_size, 0.3 * x_size, 3);
     filter_img = filter.as_image<GrayScaleImage>();
     save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/butterworth_3_bandreject.png");
-    */
 
     // offset
     filter.as_butterworth_bandpass(
@@ -162,6 +197,7 @@ int main()
     filter.set_offset(-0.2 * spectrum.get_size().x(), -0.1 * spectrum.get_size().y(), true);
     filter_img = filter.as_image<GrayScaleImage>();
     save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/with_symmetry.png");
+     */
 
 
 }

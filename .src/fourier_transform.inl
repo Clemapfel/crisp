@@ -207,7 +207,7 @@ namespace crisp
         {
             for (size_t y = 0; y < n/2; ++y, ++i)
             {
-                image_out(x, y) = static_cast<typename Image_t::Value_t>(values[i][0] / (m * n) * (dither ? 1 : -1));
+                image_out(x, y) = values[i][0] / (m * n) * (dither ? 1 : -1);
                 dither = not dither;
             }
             dither = not dither;
@@ -306,7 +306,7 @@ namespace crisp
         {
             for (size_t y = 0; y < n/2; ++y, ++i)
             {
-                image_out(x, y) = static_cast<typename Image_t::Value_t>(values[i][0] / (m * n) * (dither ? 1 : -1));
+                image_out(x, y) = values[i][0] / (m * n) * (dither ? 1 : -1);
                 dither = not dither;
             }
             dither = not dither;

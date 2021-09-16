@@ -389,6 +389,34 @@ filter.set_offset(
 
 ![](./with_symmetry.png)
 
+Note that when moving a filters center out of bounds no wrapping will take place. 
+
+## 3.5 Applying a Filter
+
+## 4. A final example
+
+We conclude this section with an example illustrating the spectral techniques discussed thus far. Let's consider the following image of a bird:
+
+![](./opal_interference.png)
+
+The image exhibits a significant sinusoidal interference. Removing this element in the spatial domain would be hard and laborous so we will now try if we can do so in an easier way using spectral techniques. We compute the images fourier transform like so:
+
+```cpp
+auto image = load_grayscale_image(/*...*/ + "/crisp/docs/frequency_domain/opal_interference.png");
+
+auto spectrum = FourierTransform<BALANCED>();
+spectrum.transform_from(image);
+
+auto spectrum_img = spectrum.as_image();
+// render or save to disk
+```
+
+![](./opal_spectrum.png)
+
+Looking closely at the center we notice a series of white dots, bursts of energy along the +45° axis of the spectrum. We want to filter these 
+
+
+
 
 
 
