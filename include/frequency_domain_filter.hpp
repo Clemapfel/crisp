@@ -42,6 +42,11 @@ namespace crisp
             /// @param force_symmetry: should the filter be mirrored across it's origin
             void set_offset(size_t x_dist_from_center, size_t y_dist_from_center, bool force_symmetry = true);
 
+            /// @brief normalize all values in the filter to specified interval
+            /// @param min: minimum value in filter
+            /// @param max: maximum value in filter
+            void normalize(double min = 0, double max = 1);
+
             /// @brief element-wise add one filter to another
             /// @param : other filter
             /// @returns resulting filter

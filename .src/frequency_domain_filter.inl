@@ -50,6 +50,27 @@ namespace crisp
         _values_initialized = false;
     }
 
+    inline void FrequencyDomainFilter::normalize(double new_min, double new_max)
+    {
+        if (not _values_initialized)
+            initialize();
+
+        double min = std::numeric_limits<double>::max();
+        double max = std::numeric_limits<double>::min();
+
+        for (auto& px : _values)
+        {
+            min = std::min(px, min);
+            max = std::max(px, max);
+        }
+
+        for (auto& px : _values)
+        {
+            px = (px - min) / (max - min);
+            px = project(new_min, new_max, px);
+        }
+    }
+
     inline Vector2ui FrequencyDomainFilter::get_size() const
     {
         return _size;
@@ -70,7 +91,7 @@ namespace crisp
             for (size_t y = 0; y < _size.y(); ++y, ++i)
                 _values.emplace_back(_function(
                         std::max<int>(x - _offset.x(), 0),
-                        std::max<int>(y - _offset.y(), 0)) + (_offset_symmetrical ? _function(std::min(x + _offset.x(), get_size().x()), std::min(y + _offset.y(), get_size().y())) : 1));
+                        std::max<int>(y - _offset.y(), 0)) * (_offset_symmetrical ? _function(std::min(x + _offset.x(), get_size().x()), std::min(y + _offset.y(), get_size().y())) : 1));
 
         _values_initialized = true;
     }

@@ -6,57 +6,53 @@
 #include <fourier_transform.hpp>
 #include <system.hpp>
 #include <image/grayscale_image.hpp>
+#include <whole_image_transform.hpp>
 
 using namespace crisp;
 
 int main()
 {
-    auto image = load_grayscale_image("/home/clem/Workspace/crisp/docs/frequency_domain/cube.png");
+    /*
+    auto image = load_grayscale_image("/home/clem/Workspace/crisp/docs/frequency_domain/color_opal.png");
+
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/frequency_domain/grayscale_opal.png");
 
     auto spectrum = FourierTransform<SPEED>();
     spectrum.transform_from(image);
 
-    /*
     auto spectrum_img = spectrum.as_image();
     save_to_disk(spectrum_img, "/home/clem/Workspace/crisp/docs/frequency_domain/opal_spectrum.png");
 
-    double max = 0;
+    auto filter = FrequencyDomainFilter(spectrum);
+    filter.as_ideal_highpass(0.4 * spectrum.get_size().x(), 1, 0);
 
-    for (long x = 0; x < spectrum.get_size().x(); ++x)
-    for (long y = 0; y < spectrum.get_size().y(); ++y)
-    {
-        if (abs(y - spectrum.get_size().y() * 0.5) < 5 or abs(x - spectrum.get_size().x() * 0.5) < 5)
-            continue;
+    auto other = FrequencyDomainFilter(spectrum);
+    other.as_gaussian_lowpass(0.1 * spectrum.get_size().x(), 1, 0);
 
-        if (spectrum.get_component(x, y) > max)
-            max = spectrum.get_component(x, y);
-    }
+    filter += other;
+    filter.normalize();
 
-    /*
-    for (long x = 0; x < spectrum.get_size().x(); ++x)
-    for (long y = 0; y < spectrum.get_size().y(); ++y)
-    {
-        //if (spectrum.get_component(x, y) > 0.99 * max)
-            spectrum.get_component(x, y) = 0.9 * spectrum.get_component(x, y);
-    }*/
+    auto filter_img = filter.as_image<GrayScaleImage>();
+    normalize(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/combined_filter.png");
 
-    auto spectrum_img = spectrum.as_image();
-    save_to_disk(spectrum_img, "/home/clem/Workspace/crisp/docs/frequency_domain/opal_spectrum_modified.png");
+    filter.apply_to(spectrum);
 
-    auto result = spectrum.transform_to<GrayScaleImage>();
-    save_to_disk(result, "/home/clem/Workspace/crisp/docs/frequency_domain/opal_spectrum_result.png");
+    spectrum_img = spectrum.as_image();
+    save_to_disk(spectrum_img, "/home/clem/Workspace/crisp/docs/frequency_domain/opal_spectrum_filtered.png");
 
-    /*
+    image = spectrum.transform_to<GrayScaleImage>();
+    normalize(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/frequency_domain/opal_filtered.png");
+
     auto cube_img = GrayScaleImage(300, 300);
 
     for (size_t x = 0; x < cube_img.get_size().x(); ++x)
     for (size_t y = 0; y < cube_img.get_size().y(); ++y)
     {
-        if (x > cube_img.get_size().x() * 0.45 and x < cube_img.get_size().x() * 0.255 and
-            y > cube_img.get_size().y() * 0.3 and y < cube_img.get_size().y() * 0.6)
-        {
+        if (x > 0.35 * cube_img.get_size().x() and x < 0.45 * cube_img.get_size().x() and
+            y > 0.45 * cube_img.get_size().y() and y < 0.75 * cube_img.get_size().y())
             cube_img(x, y) = 1.f;
-        }
         else
             cube_img(x, y) = 0.f;
     }
@@ -68,7 +64,6 @@ int main()
 
     auto filter = FrequencyDomainFilter(spectrum);
 
-    /*
     auto magnitude_img = spectrum.as_image();
     save_to_disk(magnitude_img, "/home/clem/Workspace/crisp/docs/frequency_domain/cube_spectrum.png");
 
@@ -76,11 +71,19 @@ int main()
     save_to_disk(angle_img, "/home/clem/Workspace/crisp/docs/frequency_domain/cube_angle.png");
 
     auto dc = spectrum.get_dc_component();
+
+    auto center_x = spectrum.get_size().x() * 0.5;
+    auto center_y = spectrum.get_size().y() * 0.5;
+
     for (size_t x = 0; x < spectrum.get_size().x(); ++x)
     for (size_t y = 0; y < spectrum.get_size().y(); ++y)
     {
-        if (x == spectrum.get_size().x() * 0.25 or y == spectrum.get_size().y() * 0.25)
-            spectrum.get_component(x, y) = dc;
+        if (x == center_x or y == center_y)
+        {
+            auto dist = sqrt((center_x - x) * (center_x - x) + (center_y - y) * (center_y - y));
+            if (dist > 0.1 * center_x);
+                spectrum.get_component(x, y) *= dist;
+        }
     }
 
     auto modified_spectrum = spectrum.as_image();
@@ -88,14 +91,14 @@ int main()
 
     auto modified_cube = spectrum.transform_to<GrayScaleImage>();
     save_to_disk(modified_cube, "/home/clem/Workspace/crisp/docs/frequency_domain/cube_modified.png");
-
+    */
 
     filter.as_identity();
     auto filter_img = filter.as_image<GrayScaleImage>();
     save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/identity.png");
 
-    size_t x_size = spectrum.get_size().x(),
-           y_size = spectrum.get_size().y();
+    size_t x_size = spectrum.get_size().x() * 0.5,
+           y_size = spectrum.get_size().y() * 0.5;
 
     // low pass
     filter.as_ideal_lowpass(0.25 * x_size);
@@ -193,12 +196,10 @@ int main()
     filter_img = filter.as_image<GrayScaleImage>();
     save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/no_offset.png");
 
-
     filter.set_offset(-0.2 * spectrum.get_size().x(), -0.1 * spectrum.get_size().y(), true);
+    filter.normalize();
     filter_img = filter.as_image<GrayScaleImage>();
     save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/with_symmetry.png");
-     */
-
 
 }
 

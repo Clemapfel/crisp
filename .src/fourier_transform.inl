@@ -99,7 +99,7 @@ namespace crisp
     template<FourierTransformMode Mode>
     typename FourierTransform<Mode>::Value_t FourierTransform<Mode>::get_dc_component() const
     {
-        return get_component(0, 0);
+        return get_component(get_size().x() / 2, get_size().y() / 2);
     }
 
     template<FourierTransformMode Mode>

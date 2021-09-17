@@ -22,7 +22,7 @@ Fourier- and Discrete Cosine Transforms and their Filters
         3.2.2 [High-Pass Filters](#322-high-pass-filters)<br>
         3.2.3 [Band-Pass Filters](#323-band-pass-filters)<br>
         3.2.4 [Band-Reject Filters](#324-band-reject-filters)<br>
-   3.3 [Modifying Filter]()
+   3.3 [Modifying Filter](#33-modifying-filter)
    
 
 ## 1. Introduction
@@ -40,13 +40,13 @@ Computing the fourier transform is taxing and can be quite slow, to alleviate th
 ```cpp
 enum FourierTransformMode {SPEED, BALANCED, ACCURACY};
 
-template<FourierTransformMode Mode>
+template<FourierTransformMode Mode = BALANCED>
 class FourierTransform
 {
 ```
 
 + ``SPEED`` is the most optimal version offered by crisp, it uses 32-bit float coefficients and employs a suboptimal heuristic. While artifacting due to low precision is common, this is the only mode that can realistically be run in real time on most at-home machines.
-+ ``BALANCE`` is about 2 times slower than ``SPEED`` and uses 64-bit double coefficients. It's heuristic is also suboptimal, however is much closer to optimum than ``SPEED``s. For applications where easier a high performance CPU is available or for smaller images this mode is recommended
++ ``BALANCE`` is about 1.5 times slower than ``SPEED`` and uses 64-bit double coefficients. It's heuristic is also suboptimal, however is much closer to optimum than ``SPEED``s. For applications where easier a high performance CPU is available or for smaller images this mode is recommended and thus specified as default
 + ``ACCURACY`` is about 10 times slower than ``SPEED`` and uses 64-bit double coefficients, like ``BALANCE``. The significant slow down comes from first computing the optimal heuristic, this assures that results are as accurate as possible, however the difference between it's results and ``BALANCED``s result are often not noticeable. Nonetheless in situations that do not care about real-time interactivie and where high precision is necessary, this is the mode of choice
 
 ### 2.2 Creating the Transform
@@ -56,7 +56,7 @@ To transforme a 1-dimensional image (henceforth assumed to be a ``crisp::GraySca
 ```cpp
 auto image = load_grayscale_image(/*...*/ + "/crisp/docs/frequency_domain/cube.png");
 
-auto fourier = FourierTransform<BALANCED>();
+auto fourier = FourierTransform();  // equivalent to FourierTransform<BALANCED>();
 fourier.transform_from(image);
 ```
 
@@ -125,7 +125,7 @@ for (size_t y = 0; y < spectrum.get_size().y(); ++y)
         spectrum.get_component(x, y) = dc;
 }
 ```
-Here we set each component along the center axis to the same value as the dc component. The spectrum now looks like this:
+Here we multiply each component along the center axis that by factor that increases the farther away from the dc component it is. The spectrum now looks like this:
 
 ![](cube_spectrum_modified.png)
 
@@ -138,7 +138,7 @@ auto result = spectrum.transform_to<GrayScaleImage>();
 
 ![](cube_modified.png)
 
-The original image is unrecognizable but we do note the typical periodicity that is inherent to all spectral techniques.
+The original image is unrecognizable but we do note both that it roughly adheres to the original boundary of the rectangle and the typical periodicity that is inherent to many spectral techniques.
 
 ## 3. Spectral Filters
 ## 3.1 Creating and Visualizing Filters
@@ -335,6 +335,13 @@ FrequencyDomainFilter& operator/=(const FrequencyDomainFilter&);
 
 The fact these are defined and the fact both the attenuating and passing factor are freely choosable lends a huge amount of freedom in filter design. To truly achieve full flexibility however we need to also be able to move a filters center.
 
+After modification, especially addition or subtraction it is common for a filter to have values below 0 or above 1, which in certain circumstances is undiserable. In response to this ``crisp`` offers a member function that projects all filter values into the specified interval:
+
+```cpp
+void normalize(double min = 0, double max = 1)
+``` 
+This function linearly projects all resulting values of the filter into the specified interval or [0, 1] by default.
+
 ## 3.4 Filter Offset and Symmetry
 
 ``crisp::FrequencyDomainFilter`` uses the following function:
@@ -393,58 +400,76 @@ Note that when moving a filters center out of bounds no wrapping will take place
 
 ## 3.5 Applying a Filter
 
-## 4. A final example
+We conclude this section with a final example. Let's again consider familiar image of a bird:<br>
 
-We conclude this section with an example illustrating the spectral techniques discussed thus far. Let's consider the following image of a bird:
+![](./grayscale_opal.png)
 
-![](./opal_interference.png)
-
-The image exhibits a significant sinusoidal interference. Removing this element in the spatial domain would be hard and laborous so we will now try if we can do so in an easier way using spectral techniques. We compute the images fourier transform like so:
+To filter this image we first compute it's fourier spectrum:
 
 ```cpp
-auto image = load_grayscale_image(/*...*/ + "/crisp/docs/frequency_domain/opal_interference.png");
+auto image = load_grayscale_image(/*...*/ + "/crisp/docs/frequency_domain_filtering/grayscale_opal.png");
 
-auto spectrum = FourierTransform<BALANCED>();
+auto spectrum = FourierSpectrum();
 spectrum.transform_from(image);
-
-auto spectrum_img = spectrum.as_image();
-// render or save to disk
 ```
 
 ![](./opal_spectrum.png)
 
-Looking closely at the center we notice a series of white dots, bursts of energy along the +45° axis of the spectrum. We want to filter these 
+We can now continue on with filter design. We first create a new ideal highpass filter. Because highpass filters attenuate lower frequencies towards the center of the spectrum, an unmodified highpass filter will inevitably modify the dc component. This would result in an overall lowering of the brightness of the image, to alleviate this we can combine the highpass filter with a lowpass filter, in this case a gaussian lowpass:
 
+```cpp 
+auto filter = FrequencyDomainFilter();
+filter.as_ideal_highpass(0.4 * spectrum.get_size().x());
 
+auto lowpass = FrequencyDomainFilter();
+lowpass.as_gaussian_lowpass(0.1 * spectrum.get_size().x());
 
+filter += lowpass;
+filter.normalize();
+``` 
+After normalizing the filter we can render it to an image to inspect it:
 
+![](./combined_filter.png)
 
+We now apply the filter to the spectrum using ``apply_to`` and then transform the spectrum back into an image:
 
+```cpp
+filter.apply_to(spectrum);
+image = spectrum.transform_to<GrayScaleImage>();
+``` 
+The filtered spectrum now looks like this:<br>
 
+![](./opal_spectrum_filtered.png)<br>
 
+And the resulting image is:<br>
+![](./opal_filtered.png)
 
+We note expected blurring as highpass filters tend to eliminate lower frequencies. Inspecting the image closely we note "ringing" around the letters:<br>
 
+![](./opal_ringing_closeup.png)<br><br>
 
-  
-
-
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
+ This is because higher frequencies tend to correspond to fine detail, the image is overall relatively noise and even but the letters specifically are well-contrasted against the background which is why the effect of the ideal highpass cutoff is most notable for them.
 
 ---
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+---
+
 #### Cube Phase Angle
 ![](./cube_angle.png)<br>
 [back to section](#23-visualizing-the-spectrum)
