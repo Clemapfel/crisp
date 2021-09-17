@@ -27,60 +27,15 @@ using namespace crisp;
 
 int main()
 {
-    auto image = load_color_image("/home/clem/Workspace/crisp/docs/image/color_opal.png");
-    GrayScaleImage plane = image.get_nths_plane<1>();
+    auto image = load_grayscale_image("/home/clem/Workspace/crisp/docs/frequency_domain/color_opal.png");
 
-    // corrupt
-    auto noise = SaltAndPepperNoise(0.1, 0);
-    for (auto& px : plane)
-        px += noise();
+    auto fourier = FourierTransform<SPEED>();
+    fourier.transform_from(image);
+    auto res = fourier.transform_to<GrayScaleImage>();
 
-    image.set_nths_plane<1>(plane);
-    save_to_disk(image, "/home/clem/Workspace/crisp/docs/image/opal_corrupted.png");
-    return 0;
-
-    // investigate planes
-    plane = image.get_nths_plane<0>();
-    save_to_disk(plane, "/home/clem/Workspace/crisp/docs/image/opal_corrupted_0.png");
-
-    plane = image.get_nths_plane<1>();
-    save_to_disk(plane, "/home/clem/Workspace/crisp/docs/image/opal_corrupted_1.png");
-
-    plane = image.get_nths_plane<2>();
-    save_to_disk(plane, "/home/clem/Workspace/crisp/docs/image/opal_corrupted_2.png");
-
-    // restore
-    auto median_filter = SpatialFilter();
-    median_filter.set_kernel(median_filter.box(3, 1));
-    median_filter.set_evaluation_function(SpatialFilter::MEDIAN);
-    median_filter.apply_to(plane);
-    normalize(plane);
-
-    save_to_disk(plane, "/home/clem/Workspace/crisp/docs/image/opal_restored_1.png");
-
-    image.set_nths_plane<1>(plane);
-    save_to_disk(image, "/home/clem/Workspace/crisp/docs/image/opal_restored_2.png");
-
-    auto plan_backup = plane;
     auto sprite = Sprite();
+    sprite.create_from(res);
     sprite.set_scale(2);
-
-    float value = 0.075f;
-    auto update = [&]()
-    {
-        plane = plan_backup;
-        std::cout << value << std::endl;
-
-        for (auto& px : plane)
-            px = crisp::clamp<float>(0.f, 1.f, px - value);
-
-        image.set_nths_plane<1>(plane);
-        save_to_disk(image, "/home/clem/Workspace/crisp/docs/image/opal_restored_3.png");
-
-        sprite.create_from(image);
-    };
-
-    update();
 
     auto size = sprite.get_size();
     auto window = RenderWindow(sprite.get_size().x(), sprite.get_size().y());
@@ -88,18 +43,6 @@ int main()
     while (window.is_open())
     {
         auto time = window.update();
-
-        if (InputHandler::was_key_pressed(UP))
-        {
-            value += 0.005;
-            update();
-        }
-
-        if (InputHandler::was_key_pressed(DOWN))
-        {
-            value -= 0.005;
-            update();
-        }
 
         window.clear();
         window.draw(sprite);

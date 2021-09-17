@@ -99,7 +99,7 @@ namespace crisp
     template<FourierTransformMode Mode>
     typename FourierTransform<Mode>::Value_t FourierTransform<Mode>::get_dc_component() const
     {
-        return get_component(_size.x() / 2.f, _size.y() / 2.f);
+        return get_component(0, 0);
     }
 
     template<FourierTransformMode Mode>
@@ -132,12 +132,12 @@ namespace crisp
         auto* values = fftwf_alloc_complex(m*n);
         auto plan = fftwf_plan_dft_2d(m, n, values, values, FFTW_FORWARD, FFTW_ESTIMATE);
 
-        bool dither = false;
-        for (size_t x = 0, i = 0; x < m; ++x)
+        bool dither = true;
+        for (size_t y = 0, i = 0; y < n; ++y)
         {
-            for (size_t y = 0; y < n; ++y, ++i)
+            for (size_t x = 0; x < n; ++x, ++i)
             {
-                values[i][0] = float(image_in(x, y)) * (dither ? 1 : -1);
+                values[i][0] = static_cast<long double>(image_in(x, y)) * (dither ? 1 : -1);
                 values[i][1] = 0;
                 dither = not dither;
             }
@@ -151,13 +151,13 @@ namespace crisp
         _max_spectrum = std::numeric_limits<Value_t>::min();
 
         _spectrum.clear();
-        _spectrum.reserve(m * n);
+        _spectrum.reserve(m*n);
         _phase_angle.clear();
         _phase_angle.reserve(m*n);
 
-        for (size_t x = 0, i = 0; x < m; ++x)
+        for (size_t y = 0, i = 0; y < n; ++y)
         {
-            for (size_t y = 0; y < n; ++y, ++i)
+            for (size_t x = 0; x < n; ++x, ++i)
             {
                 auto f = std::complex<double>(values[i][0], values[i][1]);
                 auto magnitude = abs(f);
@@ -179,8 +179,6 @@ namespace crisp
     template<typename Image_t>
     Image_t FourierTransform<SPEED>::transform_to() const
     {
-        static_assert(Image_t::Value_t::size() == 1);
-
         Image_t image_out;
         image_out.create(get_size().x() / 2, get_size().y() / 2);
 
@@ -190,9 +188,9 @@ namespace crisp
         auto* values = fftwf_alloc_complex(m*n);
         auto plan = fftwf_plan_dft_2d(m, n, values, values, FFTW_BACKWARD, FFTW_ESTIMATE);
 
-        for (size_t x = 0, i = 0; x < m; ++x)
+        for (size_t y = 0, i = 0; y < n; ++y)
         {
-            for (size_t y = 0; y < n; ++y, ++i)
+            for (size_t x = 0; x < m; ++x, ++i)
             {
                 auto f = std::polar<float>(_spectrum.at(i), _phase_angle.at(i));
                 values[i][0] = f.real();
@@ -202,15 +200,14 @@ namespace crisp
 
         fftwf_execute(plan);
 
-        bool dither = false;
-        for (size_t x = 0, i = 0; x < m/2; ++x, i += m/2)
+        bool dither = true; // inverted
+        for (size_t y = 0, i = 0; y < n/2; ++y, i += m/2)
         {
-            for (size_t y = 0; y < n/2; ++y, ++i)
+            for (size_t x = 0; x < m/2; ++x, i++)
             {
-                image_out(x, y) = values[i][0] / (m * n) * (dither ? 1 : -1);
+                image_out(x, y) = values[i][0] / float(m * n) * (dither ? 1.f : -1.f);
                 dither = not dither;
             }
-            dither = not dither;
         }
 
         fftwf_destroy_plan(plan);
@@ -229,14 +226,14 @@ namespace crisp
         _size = {m, n};
 
         auto* values = fftwl_alloc_complex(m*n);
-        auto plan = fftwl_plan_dft_2d(m, n, values, values, FFTW_FORWARD, int(Mode) == 1 ? FFTW_ESTIMATE_PATIENT : FFTW_MEASURE);   // partial specialization handles speed mode
+        auto plan = fftwl_plan_dft_2d(m, n, values, values, FFTW_FORWARD, int(Mode) == 1 ? FFTW_ESTIMATE_PATIENT : FFTW_MEASURE);   // SFINAE handles speed
 
         bool dither = false;
         for (size_t x = 0, i = 0; x < m; ++x)
         {
             for (size_t y = 0; y < n; ++y, ++i)
             {
-                values[i][0] = double(image_in(x, y)) * (dither ? 1 : -1);
+                values[i][0] = static_cast<long double>(image_in(x, y)) * (dither ? 1 : -1);
                 values[i][1] = 0;
                 dither = not dither;
             }
@@ -278,8 +275,6 @@ namespace crisp
     template<typename Image_t>
     Image_t FourierTransform<Mode>::transform_to() const
     {
-        static_assert(Image_t::Value_t::size() == 1);
-
         Image_t image_out;
         image_out.create(get_size().x() / 2, get_size().y() / 2);
 

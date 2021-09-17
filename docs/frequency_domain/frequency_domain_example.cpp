@@ -11,9 +11,9 @@ using namespace crisp;
 
 int main()
 {
-    auto image = load_grayscale_image("/home/clem/Workspace/crisp/docs/frequency_domain/color_opal.png");
+    auto image = load_grayscale_image("/home/clem/Workspace/crisp/docs/frequency_domain/cube.png");
 
-    auto spectrum = FourierTransform<BALANCED>();
+    auto spectrum = FourierTransform<SPEED>();
     spectrum.transform_from(image);
 
     /*
