@@ -31,8 +31,7 @@ namespace crisp
                         if (i + s < 0 or j + t < 0 or i + s >= left.rows() or j + t >= left.cols())
                             continue;
 
-                        auto test = right(a + s, b + t);
-                        auto test2 = left(i + s, j + t);
+                        current_sum += right(a + s, b + t) * left(i + s, j + t);
                     }
                 }
                 result(i, j) = current_sum;
@@ -244,15 +243,15 @@ namespace crisp
 
         double sum = 0;
         double sigma_sq = double(dimension);
-        double gauss_factor = 1.f / sqrt(2 * M_PI + sigma_sq);
-        double center = ceil(double(dimension) / 2.f);
+        double gauss_factor = 1; //1.f / sqrt(2 * M_PI + sigma_sq);
+        double center = double(dimension) / 2.f;
 
         for (size_t x = 0; x < dimension; ++x)
         {
             for (size_t y = 0; y < dimension; ++y)
             {
                 double length = sqrt(square(x - center) + square(y - center));
-                matrix(x, y) = gauss_factor * exp(-1 * length / (2 * sigma_sq));
+                matrix(x, y) = gauss_factor * exp( (length / sigma_sq));
                 sum += matrix(x, y);
             }
         }
@@ -541,26 +540,31 @@ namespace crisp
              cols_even = _kernel.cols() % 2 != 0;
 
         using Value_t = typename Image_t::Value_t;
+        using Inner_t = typename Image_t::Value_t::Value_t;
 
         for (int y = 0; y < in.get_size().y(); ++y)
         {
             for (int x = 0; x < in.get_size().x(); ++x)
             {
-                Value_t current_sum = Value_t(0.f);
-                for (int s = -a; s <= a; ++s)
+                Value_t result;
+                for (size_t i = 0; i < Value_t::size(); ++i)
                 {
-                    for (int t = -b; t <= b; ++t)
+                    Inner_t current_sum = Inner_t(0);
+                    for (int s = -a; s <= a; ++s)
                     {
-                        if (a + s > _kernel.rows() or b + t > _kernel.cols())
-                            continue;
+                        for (int t = -b; t <= b; ++t)
+                        {
+                            if (a + s > _kernel.rows() or b + t > _kernel.cols())
+                                continue;
 
-                        Value_t image = in(x + s, y + t);
-                        float kernel = _kernel(a + s, b + t);
-                        current_sum += _kernel(a + s, b + t) * in(x + s, y + t);
+                            current_sum += _kernel(a + s, b + t) * in(x + s, y + t).at(i);
+                        }
                     }
+
+                    result.at(i) = current_sum;
                 }
 
-                out(x, y) = current_sum;
+                out(x, y) = result;
             }
         }
     }
@@ -577,27 +581,29 @@ namespace crisp
         using Value_t = typename Image_t::Value_t;
         using Inner_t = typename Image_t::Value_t::Value_t;
 
-        float min = std::numeric_limits<float>::max();
-        float max = float(0);
-
-        for (size_t y = 0; y < in.get_size().y(); ++y)
+        for (int y = 0; y < in.get_size().y(); ++y)
         {
-            for (size_t x = 0; x < in.get_size().x(); ++x)
+            for (int x = 0; x < in.get_size().x(); ++x)
             {
-                Value_t current_sum = Value_t(0.f);
-                for (int s = -a; s <= a; ++s)
+                Value_t result;
+                for (size_t i = 0; i < Value_t::size(); ++i)
                 {
-                    for (int t = -b; t <= b; ++t)
+                    Inner_t current_sum = Inner_t(0);
+                    for (int s = -a; s <= a; ++s)
                     {
-                        if (a + s >= _kernel.rows() or b + t >= _kernel.cols() or _kernel(a + s, b + t) == 0)
-                            continue;
+                        for (int t = -b; t <= b; ++t)
+                        {
+                            if (a + s > _kernel.rows() or b + t > _kernel.cols())
+                                continue;
 
-                        float value = in(x + s, y + t);
-                        current_sum += _kernel(a + s, b + t) * in(x + s, y + t);
+                            current_sum += _kernel(a + s, b + t) * in(x + s, y + t).at(i);
+                        }
                     }
+
+                    result.at(i) = current_sum;
                 }
 
-                out(x, y) = current_sum / (_kernel_sum == 0 ? 1 : _kernel_sum);
+                out(x, y) = result / (_kernel_sum != 0 ? _kernel_sum : 1);
             }
         }
     }

@@ -34,9 +34,9 @@ namespace crisp
     /// @param kernel: kernel to be normalized
     void normalize(Kernel&);
 
-    /// @brief rotate a kernel by 90° n times
+    /// @brief rotate a kernel by 90° n times counter-clockwise
     /// @param kernel: kernel to be rotated
-    /// @param n_90_degrees: number of 90° clockwise rotations
+    /// @param n_90_degrees: number of 90° rotations
     void rotate(Kernel&, size_t n_90_degrees);
 
     /// @brief object representing a filter operating in the spatial domain
