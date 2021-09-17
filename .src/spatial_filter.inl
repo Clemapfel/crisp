@@ -236,33 +236,27 @@ namespace crisp
     Kernel SpatialFilter::gaussian(size_t dimension)
     {
         assert(dimension != 0);
-        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> matrix;
-        matrix.resize(dimension, dimension);
+        Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> out;
+        out.resize(dimension, dimension);
 
-        auto square = [](double value) {return value * value;};
+        float sum = 0;
+        float sigma_sq = float(dimension);
+        float gauss_factor = 1.f / sqrt(2 * M_PI + sigma_sq);
+        float center = dimension / 2;
 
-        double sum = 0;
-        double sigma_sq = double(dimension);
-        double gauss_factor = 1; //1.f / sqrt(2 * M_PI + sigma_sq);
-        double center = double(dimension) / 2.f;
-
-        for (size_t x = 0; x < dimension; ++x)
+        for (int x = 0; x < dimension; ++x)
         {
-            for (size_t y = 0; y < dimension; ++y)
+            for (int y = 0; y < dimension; ++y)
             {
-                double length = sqrt(square(x - center) + square(y - center));
-                matrix(x, y) = gauss_factor * exp( (length / sigma_sq));
-                sum += matrix(x, y);
+                float length = sqrt(abs(x - center) + abs(y - center));
+                out(x, y) = exp(-0.5 * (length / sigma_sq));
+                sum += out(x, y);
             }
         }
 
-        Kernel out;
-        out.resize(dimension, dimension);
-
-        // normalize and convert
-        for (size_t x = 0; x < dimension; ++x)
-            for (size_t y = 0; y < dimension; ++y)
-                out(x, y) = matrix(x, y) / sum;
+        for (int x = 0; x < dimension; ++x)
+        for (int y = 0; y < dimension; ++y)
+            out(x, y) = float(out(x, y)) / float(sum);
 
         return out;
     }
@@ -499,34 +493,9 @@ namespace crisp
     Kernel SpatialFilter::laplacian_of_gaussian(size_t dimension)
     {
         assert(dimension != 0);
-        Kernel matrix;
-        matrix.resize(dimension, dimension);
-
-        auto square = [](double value) {return value * value;};
-
-        double sum = 0;
-        double sigma_sq = dimension * 2;
-        double center = ceil(double(dimension) / 2.f);
-
-        float min = std::numeric_limits<float>::max(),
-              max = std::numeric_limits<float>::min();
-
-        for (int x = 0; x < dimension; ++x)
-        {
-            for (int y = 0; y < dimension; ++y)
-            {
-                float x_sq = (x - center)*(x - center);
-                float y_sq = (y - center)*(y - center);
-
-                matrix(x, y) = -1*((x_sq + y_sq - 2*sigma_sq) / (sigma_sq * sigma_sq)) * exp(-(x_sq + y_sq) / (2*sigma_sq));
-                sum += matrix(x, y);
-
-                min = std::min(min, matrix(x, y));
-                max = std::max(max, matrix(x, y));
-            }
-        }
-
-        return matrix;
+        auto out = gaussian(dimension);
+        out = convolute(out, laplacian_first_derivative());
+        return out;
     }
 
 

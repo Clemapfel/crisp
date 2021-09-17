@@ -163,6 +163,8 @@ std::cout << kernel << std::endl;
 ```
 ``crisp`` happened to find a different seperation, yet validating it by computing ``left * right`` (A*B) confirms that it is also valid. *Seperations are not unique* because a) we're numerically approximating them. For this reason it is often preferrable to find an analytical seperation on that uses simpler values on paper if possible, if not then we can use ``crisp::seperate`` to automate the process.
 
+For beginners in the field of image processing or linear algebra or for kernels that are very big or numerically assembled it is often unclear wether they are seperable or not. ``crisp::seperate`` will immediately exit once it determined that a kernel is not seperable so it can also be used to simply determine if it can be done with not performance overhead.
+
 ## 2.4 Combining two Kernels
 
 Convolution is associative, that is for Kernels K1, K2 and Image I where ``°`` is the convolution operator:
@@ -194,6 +196,19 @@ Now that we know how to create and modify a kernel we can assign it to a filter.
 auto filter = SpatialFilter();
 filter.set_kernel(kernel);
 ``` 
+
+After binding the kernel to the filter we can modify it using:
+
+float& operator()(size_t x, size_t y);
+
+```cpp
+// members of crisp::SpatialFilter
+float& operator()(size_t x, size_t y);
+float operator()(size_t x, size_t y) const;
+``` 
+
+These are simply the same access operators as those use on the kernel itself. 
+
 ### 3.2 Specifying the Evaluation Function
 
 Before we can apply this kernel to an image we need to specify the evaluation function. By default this is the familiar convolution however ``crisp`` offers 4 other functions in addition to that. To illustrate how they work consider the following 3x3 kernel, image segment of image ``in`` and resulting image ``out``
@@ -314,6 +329,99 @@ filter.apply_to(image);
 ```
 
 Literally nothing else changes, all kernels are applicable to all images. The result is exactly what we expect it to be, each plane of the image was blurred individually:
+
+![](./opal_initial_filter_color.png)
+
+# 4. Filter Kernel Types
+
+It would of course be quite laborious to specify each kernel manually, instead ``crisp`` provides a breadth of kernels such that users can conveniently access the most used ones. Instead of listing them all, as the names can be quite hard to recognize for people who aren't as familiar with the literature, a demonstration of each available kernel will follow here. Each kernel is assumed to be of size n*n unless stated otherwise. We're furthermore applying ``_CONVOLUTION`` (with no normalization) in each of these examples unless stated otherwise. Furthermore we will state for each kernel wether they can be seperated and again emphasize how necessary it is to do so if performance is of importance
+
+## 4.1 Identity
+
+(is seperable)
+
+The simplest kernel is the identity kernel, it projects and image onto itself. It takes one argument: n, such that the resulting kernel will be of size n*n
+
+```cpp
+filter.set_kernel(filter.identity(3));
+
+0 0 0
+0 1 0
+0 0 0
+```
+![](./identity.png)
+
+## 4.2 One
+
+(is seperable)
+
+This kernel is again of size n*n and each element is assigned as 1. This filter is sometimes also called "box filter" or "box blur" because it tends to blur images it is applied to (after normalization). We can intensify the blur by increasing the kernels size, for n = 3 the blur is very slight.
+
+```cpp
+filter.set_kernel(filter.one(3));
+
+1 1 1
+1 1 1
+1 1 1
+
+normalize(image)
+```
+
+![](./one.png)
+
+## 4.3 Zero
+
+(is seperable)
+
+This kernel is similar to ``one`` but instead of all elements being 1, all elements are instead set to 0. This filter is rarely applied to an image as it will simply result in an all-black result.
+
+```cpp
+filter.set_kernel(filter.zero(3));
+
+0 0 0
+0 0 0
+0 0 0
+``` 
+
+![](./zero.png)
+
+## 4.4 Box
+
+(is seperable)
+
+Not to be confused with ``one``. ``box`` takes two arguments, it's dimensions n and a constant c such that all elements will be set to c. This means ``box(n, 1)`` is equivalent to ``one(n)`` and ``box(n, 0)`` is equivalent to ``zero(n)``.
+
+To illustrate the difference between ``box`` and the following ``normalized_box`` the following picture was generated using ``CONVOLUTION`` with no normalization.
+
+```cpp
+filter.set_kernel(filter.box(3, 0.5f));
+
+0.5 0.5 0.5
+0.5 0.5 0.5
+0.5 0.5 0.5
+
+normalize(image)
+``` 
+
+![](./box.png)
+
+## 4.5 Normalized box
+
+(is seperable)
+
+Unlike the box kernel, the normalized box kernel takes only n as the argument, all components are assigned such that the sum of components is 1
+
+```cpp
+filter.set_kernel(filter.normalized_box(3));
+
+0.333333 0.333333 0.333333
+0.333333 0.333333 0.333333
+0.333333 0.333333 0.333333
+
+normalize(image)
+```
+
+![](./normalized_box.png)
 
 
 

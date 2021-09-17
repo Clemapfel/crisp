@@ -6,31 +6,144 @@
 #include <spatial_filter.hpp>
 #include <system/image_io.hpp>
 #include <iostream>
+#include <whole_image_transform.hpp>
 
 using namespace crisp;
 
 int main()
 {
-    auto image = load_color_image("/home/clem/Workspace/crisp/docs/spatial_filters/color_opal.png");
-
-    auto kernel = Kernel();
-    kernel.resize(5, 5);
-    kernel.setConstant(1);  // 5x5 kernel where all values are 1
+    auto original = load_grayscale_image("/home/clem/Workspace/crisp/docs/spatial_filters/color_opal.png");
+    auto image = original;
 
     auto filter = SpatialFilter();
-    filter.set_kernel(kernel);
     filter.set_evaluation_function(filter.CONVOLUTION);
+    Kernel kernel;
 
+    kernel = SpatialFilter::identity(3);
+    std::cout << "// identity\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
     filter.apply_to(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/identity.png");
 
-    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/opal_initial_filter_color.png");
-    return 0;
+    kernel = SpatialFilter::one(3);
+    std::cout << "// one\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
+    filter.apply_to(image);
+    normalize(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/one.png");
 
+    kernel = SpatialFilter::zero(3);
+    std::cout << "// zero\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
+    filter.apply_to(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/zero.png");
 
+    kernel = SpatialFilter::box(3, 0.5f);
+    std::cout << "// box\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
+    filter.apply_to(image);
+    normalize(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/box.png");
 
+    kernel = SpatialFilter::normalized_box(3);
+    std::cout << "// normalized_box\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
+    filter.apply_to(image);
+    normalize(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/normalized_box.png");
+
+    kernel = SpatialFilter::gaussian(5);
+    std::cout << "// gaussian\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
+    filter.apply_to(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/gaussian.png");
+
+    kernel = SpatialFilter::laplacian_first_derivative();
+    std::cout << "// laplace 1\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
+    filter.apply_to(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/laplacian_first.png");
+
+    kernel = SpatialFilter::laplacian_second_derivative();
+    std::cout << "// laplace 2\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
+    filter.apply_to(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/laplacian_second.png");
+
+    kernel = SpatialFilter::laplacian_of_gaussian(5);
+    std::cout << "// log\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
+    filter.apply_to(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/log.png");
+
+    kernel = SpatialFilter::simple_gradient_x();
+    std::cout << "// simple gradient x\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
+    filter.apply_to(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/simple_gradient_x.png");
+
+    kernel = SpatialFilter::simple_gradient_y();
+    std::cout << "// simple gradient y\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
+    filter.apply_to(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/simple_gradient_y.png");
+
+    kernel = SpatialFilter::roberts_gradient_x();
+    std::cout << "// roberts x\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
+    filter.apply_to(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/roberts_x.png");
+
+    kernel = SpatialFilter::prewitt_gradient_x();
+    std::cout << "// prewitt x\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
+    filter.apply_to(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/prewitt_x.png");
+
+    kernel = SpatialFilter::sobel_gradient_x();
+    std::cout << "// sobel x\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
+    filter.apply_to(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/sobel_x.png");
+
+    kernel = SpatialFilter::kirsch_compass_n();
+    std::cout << "// kirsch n\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
+    filter.apply_to(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/kirsch_n.png");
+
+    kernel = SpatialFilter::kirsch_compass_e();
+    std::cout << "// kirsch e\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
+    filter.apply_to(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/kirsch_e.png");
+
+    kernel = SpatialFilter::kirsch_compass_ne();
+    std::cout << "// kirsch ne\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
+    filter.apply_to(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/kirsch_ne.png");
 
 
     /*
+
     kernel.resize(3, 3);
     kernel << 1, 1, 1,
               1, 1, 1,
@@ -73,12 +186,12 @@ int main()
     kernel = left * right;
 
     std::cout << kernel << std::endl;
-    */
 
     Kernel k1 = SpatialFilter::laplacian_first_derivative();
     std::cout << k1 << "\n" << std::endl;
 
     Kernel res = convolute(k1, k1);
     std::cout << res << "\n" << std::endl;
+     */
 }
 
