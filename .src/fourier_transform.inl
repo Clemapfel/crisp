@@ -135,7 +135,7 @@ namespace crisp
         bool dither = true;
         for (size_t y = 0, i = 0; y < n; ++y)
         {
-            for (size_t x = 0; x < n; ++x, ++i)
+            for (size_t x = 0; x < m; ++x, ++i)
             {
                 values[i][0] = static_cast<long double>(image_in(x, y)) * (dither ? 1 : -1);
                 values[i][1] = 0;
@@ -157,7 +157,7 @@ namespace crisp
 
         for (size_t y = 0, i = 0; y < n; ++y)
         {
-            for (size_t x = 0; x < n; ++x, ++i)
+            for (size_t x = 0; x < m; ++x, ++i)
             {
                 auto f = std::complex<double>(values[i][0], values[i][1]);
                 auto magnitude = abs(f);
@@ -208,6 +208,9 @@ namespace crisp
                 image_out(x, y) = values[i][0] / float(m * n) * (dither ? 1.f : -1.f);
                 dither = not dither;
             }
+
+            if (m/2 % 2 == 0)
+                dither = not dither;
         }
 
         fftwf_destroy_plan(plan);
@@ -216,6 +219,7 @@ namespace crisp
         return image_out;
     }
 
+    /*
     template<FourierTransformMode Mode>
     template<typename Inner_t>
     void FourierTransform<Mode>::transform_from(const Image<Inner_t, 1>& image_in)
@@ -312,4 +316,5 @@ namespace crisp
 
         return image_out;
     }
+     */
 }
