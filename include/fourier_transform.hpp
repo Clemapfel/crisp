@@ -37,7 +37,7 @@ namespace crisp
     class FourierTransform
     {
         friend class FrequencyDomainFilter;
-        using Value_t = typename std::conditional<Mode == SPEED, float, double>::type;
+        using Value_t = typename std::conditional<Mode == SPEED, float, typename std::conditional<Mode == ACCURACY, long double, double>::type>::type;
 
         public:
             /// @brief default ctor

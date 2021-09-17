@@ -29,9 +29,11 @@ int main()
 {
     auto image = load_grayscale_image("/home/clem/Workspace/crisp/docs/frequency_domain/color_opal.png");
 
-    auto fourier = FourierTransform<SPEED>();
+    sf::Clock clock;
+    auto fourier = FourierTransform<ACCURACY>();
     fourier.transform_from(image);
     auto res = fourier.transform_to<GrayScaleImage>();
+    std::cout << clock.restart().asSeconds() << std::endl;
 
     auto sprite = Sprite();
     sprite.create_from(res);
