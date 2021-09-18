@@ -7,6 +7,35 @@ Filter Kernels & Convolution
 
 ## Table of Contents
 
+1. [Introduction](#1-introduction)
+2. [Kernel](#2-kernels)<br>
+    2.1 [Kernel Normalizationl](#21-normalize-a-kernel)<br>
+    2.2 [Kernel Rotation](#22-rotate-a-kernel)<br>
+    2.3 [Kernel Seperation](#23-seperate-a-kernel)<br>
+    2.4 [Combining two Kernels](#24-combining-two-kernels)<br>
+3. [crisp::SpatialFilter](#3-crispspatialfilter)<br>
+    3.1 [Setting the Kernel](#31-specifying-the-kernel)<br>
+    3.2 [Specifying the Evaluation Function](#32-specifying-the-evaluation-function)<br>
+    3.3 [Applying the Filter](#33-applying-the-filter)<br>
+    3.4 [Applying the Filter in Mutiple Dimensions](#34-applying-the-filter-in-all-dimensions)<br>
+4. [Types of Kernels](#4-filter-kernel-types)<br>
+    4.1 [Identity](#41-identity)<br>
+    4.2 [One](#42-one)<br>
+    4.3 [Zero](#43-zero)<br>
+    4.4 [Box](#44-box)<br>
+    4.5 [Normalized Box](#45-normalized-box)<br>
+    4.6 [Gaussian](#46-gaussian)<br>[](#46-gaussian)
+    4.7.1 [Laplacian First Derivative](#471-laplacian-first-derivative)<br>
+    4.7.2 [Laplacian Second Derivative](#472-laplacian-second-derivative)<br>
+    4.8 [Laplacian of Gaussian (LoG)](#48-laplacian-of-gaussian)<br>
+    4.9 [Gradients](#49-gradient-kernels)<br>
+        4.9.1 [Simple Gradient](#491-simple-gradient)<br>
+        4.9.2 [Roberts](#492-roberts-gradient)<br>
+        4.9.3 [Prewitt](#493-prewitt-gradient)<br>
+        4.9.4 [Sobel](#494-sobel)<br>
+        4.9.5 [Kirsch Compass](#495-kirsch-compass)<br>
+5. [Image Restoration using other Evaluation Functions](#5-using-other-evaluation-functions-for-image-restoration)<br
+
 # 1. Introduction
 
 Spatial filters are central to the field of image processing and features in many of the most use algorithms both in the literature and in ``crisp``. They are represented by ``crisp::SpatialFilter``. A filter in ``crisp`` has to components: it's *kernel* and *evaluation function*. 
@@ -449,7 +478,7 @@ Applying the 5x5 filter above to the image we get:<br>
 
 ![](./gaussian.png)
 
-## 4.6 Laplacian First Derivative
+## 4.7.1 Laplacian First Derivative
 
 (not seperable)
 
@@ -471,7 +500,7 @@ But after normalization:<br>
 ![](laplacian_first_normalized.png)<br>
 We note the typical sharp mask. Multipliying this image with the original result in sharpening of the original.
 
-## 4.6 Laplacian Second Derivative
+## 4.7.2 Laplacian Second Derivative
 
 (not seperable)
 
@@ -493,7 +522,7 @@ But after normalization:<br>
 
 ![](./laplacian_second_normalized.png)
 
-## 4.7 Laplacian of Gaussian
+## 4.8 Laplacian of Gaussian
 
 (not seperable)
 
@@ -516,11 +545,11 @@ filter.set_kernel(filter.laplacian_of_gaussian(5));
 After normalization: <br>
 ![](./log_normalized.png)
 
-## 4.8 Gradient Kernels
+## 4.9 Gradient Kernels
 
 Gradient kernels attempt to compute the [image gradient](https://en.wikipedia.org/wiki/Image_gradient) best understood as the rate of change along a specified direction. There are multiple kernels to do this and it is important to keep in mind that we always have to specify the direction of the gradient. In ``crisp`` "x-direction" referers the left-to-right gradient, "y-direction" to top-to-bottom
 
-## 4.8.1 Simple Gradient
+## 4.9.1 Simple Gradient
 
 (not seperable)
 
@@ -544,7 +573,7 @@ filter.set_kernel(filter.simple_gradient_y())
 <br>
 White or black areas correspond to a strong positive or negative increase in intensity respectively while grey (around 0.5) corresponds to relatively constant areas. 
 
-### 4.8.2 Roberts Gradient
+### 4.9.2 Roberts Gradient
 
 (is seperable)
 
@@ -566,7 +595,7 @@ filter.set_kernel(filter.roberts_y());
 ```
 ![](./roberts_y.png)
 
-### 4.8.3 Prewitt Gradient
+### 4.9.3 Prewitt Gradient
 
 (is seperable)
 
@@ -590,7 +619,7 @@ filter.set_kernel(filter.prewitt_y());
 -1  0  1
 ```
 
-### 4.8.4 Sobel
+### 4.9.4 Sobel
 
 (is seperable)
 
@@ -618,7 +647,7 @@ filter.set_kernel(filter.sobel_y());
 
 In the end it is up to the end user to decide which of these gradients should be user. When bleeding edge performance isn't necessary, ``crisp`` prefers to use the sobel kernel over roberts or prewitt due to it's comparable gradient response while being more stable in noisy conditions
 
-### 4.8.5 Kirsch Compass
+### 4.9.5 Kirsch Compass
 
 (is seperable)
 
