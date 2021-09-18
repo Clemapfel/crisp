@@ -141,6 +141,9 @@ namespace crisp
                 apply_max_to(image, result);
                 break;
 
+            case MEAN:
+                apply_mean_to(image, result);
+
             case MEDIAN:
                 apply_median_to(image, result);
         }
@@ -230,7 +233,7 @@ namespace crisp
     Kernel SpatialFilter::normalized_box(size_t dimension)
     {
         assert(dimension != 0);
-        return box(dimension, 1.f / float(dimension));
+        return box(dimension, 1.f / float(dimension * dimension));
     }
 
     Kernel SpatialFilter::gaussian(size_t dimension)
@@ -248,7 +251,7 @@ namespace crisp
         {
             for (int y = 0; y < dimension; ++y)
             {
-                float length = sqrt(abs(x - center) + abs(y - center));
+                float length = sqrt((x - center) * (x - center) + (y - center) * (y - center));
                 out(x, y) = exp(-0.5 * (length / sigma_sq));
                 sum += out(x, y);
             }
@@ -288,7 +291,7 @@ namespace crisp
     }
 
     
-    Kernel SpatialFilter::simple_gradient_x()
+    Kernel SpatialFilter::simple_gradient_y()
     {
         Kernel out;
         out.resize(1, 2);
@@ -299,7 +302,7 @@ namespace crisp
     }
 
     
-    Kernel SpatialFilter::simple_gradient_y()
+    Kernel SpatialFilter::simple_gradient_x()
     {
         Kernel out;
         out.resize(2, 1);
@@ -360,7 +363,7 @@ namespace crisp
     }
 
     
-    Kernel SpatialFilter::sobel_gradient_y()
+    Kernel SpatialFilter::sobel_gradient_x()
     {
         Kernel out;
         out.resize(3, 3);
@@ -373,7 +376,7 @@ namespace crisp
     }
 
     
-    Kernel SpatialFilter::sobel_gradient_x()
+    Kernel SpatialFilter::sobel_gradient_y()
     {
         Kernel out;
         out.resize(3, 3);
@@ -386,7 +389,7 @@ namespace crisp
     }
 
     
-    Kernel SpatialFilter::kirsch_compass_n()
+    Kernel SpatialFilter::kirsch_compass_s()
     {
         Kernel out;
         out.resize(3, 3);
@@ -399,7 +402,7 @@ namespace crisp
     }
 
     
-    Kernel SpatialFilter::kirsch_compass_nw()
+    Kernel SpatialFilter::kirsch_compass_sw()
     {
         Kernel out;
         out.resize(3, 3);
@@ -425,7 +428,7 @@ namespace crisp
     }
 
     
-    Kernel SpatialFilter::kirsch_compass_sw()
+    Kernel SpatialFilter::kirsch_compass_nw()
     {
         Kernel out;
         out.resize(3, 3);
@@ -438,7 +441,7 @@ namespace crisp
     }
 
     
-    Kernel SpatialFilter::kirsch_compass_s()
+    Kernel SpatialFilter::kirsch_compass_n()
     {
         Kernel out;
         out.resize(3, 3);
@@ -451,7 +454,7 @@ namespace crisp
     }
 
     
-    Kernel SpatialFilter::kirsch_compass_se()
+    Kernel SpatialFilter::kirsch_compass_ne()
     {
         Kernel out;
         out.resize(3, 3);
@@ -477,7 +480,7 @@ namespace crisp
     }
 
     
-    Kernel SpatialFilter::kirsch_compass_ne()
+    Kernel SpatialFilter::kirsch_compass_se()
     {
         Kernel out;
         out.resize(3, 3);
@@ -523,7 +526,7 @@ namespace crisp
                     {
                         for (int t = -b; t <= b; ++t)
                         {
-                            if (a + s > _kernel.rows() or b + t > _kernel.cols())
+                            if (a + s >= _kernel.rows() or b + t >= _kernel.cols())
                                 continue;
 
                             current_sum += _kernel(a + s, b + t) * in(x + s, y + t).at(i);
@@ -562,7 +565,7 @@ namespace crisp
                     {
                         for (int t = -b; t <= b; ++t)
                         {
-                            if (a + s > _kernel.rows() or b + t > _kernel.cols())
+                            if (a + s >= _kernel.rows() or b + t >= _kernel.cols())
                                 continue;
 
                             current_sum += _kernel(a + s, b + t) * in(x + s, y + t).at(i);
@@ -639,6 +642,39 @@ namespace crisp
                 }
 
                 out(x, y) = max_vec;
+            }
+        }
+    }
+
+        template<typename Image_t>
+    void SpatialFilter::apply_mean_to(Image_t& in, Image_t& out)
+    {
+        int a = floor(_kernel.rows() / 2);
+        int b = floor(_kernel.cols() / 2);
+
+        bool rows_even = _kernel.rows() % 2 == 0,
+             cols_even = _kernel.cols() % 2 == 0;
+
+        using ImageValue_t = typename Image_t::Value_t;
+        using Inner_t = typename Image_t::Value_t::Value_t;
+
+        for (size_t y = 0; y < in.get_size().y(); ++y)
+        {
+            for (size_t x = 0; x < in.get_size().x(); ++x)
+            {
+                ImageValue_t mean_vec;
+                for (size_t i = 0; i < ImageValue_t::size(); ++i)
+                {
+                    Inner_t sum = 0;
+
+                    for (int s = -a; s <= a; ++s)
+                        for (int t = -b; t <= b; ++t)
+                            sum += _kernel(s + a, t + b) * in(x + s, y + t).at(i);
+
+                    mean_vec.at(i) = sum / (_kernel.rows() * _kernel.cols());
+                }
+
+                out(x, y) = mean_vec;
             }
         }
     }

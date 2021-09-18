@@ -148,7 +148,7 @@ namespace crisp
         Image<InnerValue_t, N> out;
 
         for (long y = 0; y < _data.cols(); ++y)
-            for (long x = 0; x < _data.cols(); ++x)
+            for (long x = 0; x < _data.rows(); ++x)
                 out(x, y) = at(x, y) + other.at(x, y);
 
         return out;
@@ -162,7 +162,7 @@ namespace crisp
         Image<InnerValue_t, N> out;
 
         for (long y = 0; y < _data.cols(); ++y)
-            for (long x = 0; x < _data.cols(); ++x)
+            for (long x = 0; x < _data.rows(); ++x)
                 out(x, y) = at(x, y) - other.at(x, y);
 
         return out;
@@ -176,7 +176,7 @@ namespace crisp
         Image<InnerValue_t, N> out;
 
         for (long y = 0; y < _data.cols(); ++y)
-            for (long x = 0; x < _data.cols(); ++x)
+            for (long x = 0; x < _data.rows(); ++x)
                 out(x, y) = at(x, y) * other.at(x, y);
 
         return out;
@@ -190,7 +190,7 @@ namespace crisp
         Image<InnerValue_t, N> out;
 
         for (long y = 0; y < _data.cols(); ++y)
-            for (long x = 0; x < _data.cols(); ++x)
+            for (long x = 0; x < _data.rows(); ++x)
                 out(x, y) = at(x, y) / other.at(x, y);
 
         return out;
@@ -202,7 +202,7 @@ namespace crisp
         assert(get_size() == other.get_size());
 
         for (long y = 0; y < _data.cols(); ++y)
-            for (long x = 0; x < _data.cols(); ++x)
+            for (long x = 0; x < _data.rows(); ++x)
                 this->at(x, y) += other.at(x, y);
 
         return *this;
@@ -214,7 +214,7 @@ namespace crisp
         assert(get_size() == other.get_size());
 
         for (long y = 0; y < _data.cols(); ++y)
-            for (long x = 0; x < _data.cols(); ++x)
+            for (long x = 0; x < _data.rows(); ++x)
                 this->at(x, y) -= other.at(x, y);
 
         return *this;
@@ -226,7 +226,7 @@ namespace crisp
         assert(get_size() == other.get_size());
 
         for (long y = 0; y < _data.cols(); ++y)
-            for (long x = 0; x < _data.cols(); ++x)
+            for (long x = 0; x < _data.rows(); ++x)
                 this->at(x, y) *= other.at(x, y);
 
         return *this;
@@ -238,7 +238,7 @@ namespace crisp
         assert(get_size() == other.get_size());
 
         for (long y = 0; y < _data.cols(); ++y)
-            for (long x = 0; x < _data.cols(); ++x)
+            for (long x = 0; x < _data.rows(); ++x)
                 this->at(x, y) /= other.at(x, y);
         return *this;
     }

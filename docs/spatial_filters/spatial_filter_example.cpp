@@ -7,6 +7,7 @@
 #include <system/image_io.hpp>
 #include <iostream>
 #include <whole_image_transform.hpp>
+#include <noise_generator.hpp>
 
 using namespace crisp;
 
@@ -19,6 +20,31 @@ int main()
     filter.set_evaluation_function(filter.CONVOLUTION);
     Kernel kernel;
 
+    // corrupt
+    auto noise = crisp::SaltAndPepperNoise(0.05, 0.05);
+    for (auto& px : image)
+        px += px * 5 * noise();
+
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/opal_salt_and_pepper.png");
+
+    filter.set_evaluation_function(filter.MEAN);
+    filter.set_kernel(filter.one(3));
+    filter.apply_to(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/opal_salt_and_pepper_mean.png");
+
+    image = original;
+    for (auto& px : image)
+        px += px * noise();
+
+    filter.set_evaluation_function(filter.MEDIAN);
+    filter.set_kernel(filter.one(3));
+    filter.apply_to(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/opal_salt_and_pepper_median.png");
+
+    filter.apply_to(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/opal_salt_and_pepper_median_2.png");
+
+    /*
     kernel = SpatialFilter::identity(3);
     std::cout << "// identity\n" << kernel << "\n" << std::endl;
     image = original;
@@ -31,8 +57,9 @@ int main()
     image = original;
     filter.set_kernel(kernel);
     filter.apply_to(image);
-    normalize(image);
     save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/one.png");
+    normalize(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/one_normalized.png");
 
     kernel = SpatialFilter::zero(3);
     std::cout << "// zero\n" << kernel << "\n" << std::endl;
@@ -46,15 +73,15 @@ int main()
     image = original;
     filter.set_kernel(kernel);
     filter.apply_to(image);
-    normalize(image);
     save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/box.png");
+    normalize(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/box_normalized.png");
 
     kernel = SpatialFilter::normalized_box(3);
     std::cout << "// normalized_box\n" << kernel << "\n" << std::endl;
     image = original;
     filter.set_kernel(kernel);
     filter.apply_to(image);
-    normalize(image);
     save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/normalized_box.png");
 
     kernel = SpatialFilter::gaussian(5);
@@ -64,12 +91,24 @@ int main()
     filter.apply_to(image);
     save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/gaussian.png");
 
+    kernel = SpatialFilter::gaussian(150);
+    GrayScaleImage kernel_visualization;
+    kernel_visualization.create(150, 150);
+    for (size_t x = 0; x < kernel.rows(); ++x)
+        for (size_t y = 0; y < kernel.cols(); ++y)
+            kernel_visualization(x, y) = kernel(x, y);
+
+    normalize(kernel_visualization);
+    save_to_disk(kernel_visualization, "/home/clem/Workspace/crisp/docs/spatial_filters/gaussian_visualized.png");
+
     kernel = SpatialFilter::laplacian_first_derivative();
     std::cout << "// laplace 1\n" << kernel << "\n" << std::endl;
     image = original;
     filter.set_kernel(kernel);
     filter.apply_to(image);
     save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/laplacian_first.png");
+    normalize(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/laplacian_first_normalized.png");
 
     kernel = SpatialFilter::laplacian_second_derivative();
     std::cout << "// laplace 2\n" << kernel << "\n" << std::endl;
@@ -77,6 +116,8 @@ int main()
     filter.set_kernel(kernel);
     filter.apply_to(image);
     save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/laplacian_second.png");
+    normalize(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/laplacian_second_normalized.png");
 
     kernel = SpatialFilter::laplacian_of_gaussian(5);
     std::cout << "// log\n" << kernel << "\n" << std::endl;
@@ -84,12 +125,25 @@ int main()
     filter.set_kernel(kernel);
     filter.apply_to(image);
     save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/log.png");
+    normalize(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/log_normalized.png");
+
+    kernel = SpatialFilter::laplacian_of_gaussian(150);
+    kernel_visualization;
+    kernel_visualization.create(150, 150);
+    for (size_t x = 0; x < kernel.rows(); ++x)
+        for (size_t y = 0; y < kernel.cols(); ++y)
+            kernel_visualization(x, y) = kernel(x, y);
+
+    normalize(kernel_visualization);
+    save_to_disk(kernel_visualization, "/home/clem/Workspace/crisp/docs/spatial_filters/log_visualized.png");
 
     kernel = SpatialFilter::simple_gradient_x();
     std::cout << "// simple gradient x\n" << kernel << "\n" << std::endl;
     image = original;
     filter.set_kernel(kernel);
     filter.apply_to(image);
+    normalize(image);
     save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/simple_gradient_x.png");
 
     kernel = SpatialFilter::simple_gradient_y();
@@ -97,6 +151,7 @@ int main()
     image = original;
     filter.set_kernel(kernel);
     filter.apply_to(image);
+    normalize(image);
     save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/simple_gradient_y.png");
 
     kernel = SpatialFilter::roberts_gradient_x();
@@ -104,46 +159,83 @@ int main()
     image = original;
     filter.set_kernel(kernel);
     filter.apply_to(image);
+    normalize(image);
     save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/roberts_x.png");
+
+    kernel = SpatialFilter::roberts_gradient_y();
+    std::cout << "// roberts y\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
+    filter.apply_to(image);
+    normalize(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/roberts_y.png");
 
     kernel = SpatialFilter::prewitt_gradient_x();
     std::cout << "// prewitt x\n" << kernel << "\n" << std::endl;
     image = original;
     filter.set_kernel(kernel);
     filter.apply_to(image);
+    normalize(image);
     save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/prewitt_x.png");
+
+    kernel = SpatialFilter::prewitt_gradient_y();
+    std::cout << "// prewitt y\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
+    filter.apply_to(image);
+    normalize(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/prewitt_y.png");
 
     kernel = SpatialFilter::sobel_gradient_x();
     std::cout << "// sobel x\n" << kernel << "\n" << std::endl;
     image = original;
     filter.set_kernel(kernel);
     filter.apply_to(image);
+    normalize(image);
     save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/sobel_x.png");
+
+    kernel = SpatialFilter::sobel_gradient_y();
+    std::cout << "// sobel y\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
+    filter.apply_to(image);
+    normalize(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/sobel_y.png");
 
     kernel = SpatialFilter::kirsch_compass_n();
     std::cout << "// kirsch n\n" << kernel << "\n" << std::endl;
     image = original;
     filter.set_kernel(kernel);
     filter.apply_to(image);
+    normalize(image);
     save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/kirsch_n.png");
+
+    kernel = SpatialFilter::kirsch_compass_s();
+    std::cout << "// kirsch s\n" << kernel << "\n" << std::endl;
+    image = original;
+    filter.set_kernel(kernel);
+    filter.apply_to(image);
+    normalize(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/kirsch_s.png");
 
     kernel = SpatialFilter::kirsch_compass_e();
     std::cout << "// kirsch e\n" << kernel << "\n" << std::endl;
     image = original;
     filter.set_kernel(kernel);
     filter.apply_to(image);
+    normalize(image);
     save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/kirsch_e.png");
 
-    kernel = SpatialFilter::kirsch_compass_ne();
-    std::cout << "// kirsch ne\n" << kernel << "\n" << std::endl;
+    kernel = SpatialFilter::kirsch_compass_w();
+    std::cout << "// kirsch w\n" << kernel << "\n" << std::endl;
     image = original;
     filter.set_kernel(kernel);
     filter.apply_to(image);
-    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/kirsch_ne.png");
-
+    normalize(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/spatial_filters/kirsch_w.png");
+    */
 
     /*
-
     kernel.resize(3, 3);
     kernel << 1, 1, 1,
               1, 1, 1,

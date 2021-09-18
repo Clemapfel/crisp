@@ -363,11 +363,14 @@ filter.set_kernel(filter.one(3));
 1 1 1
 1 1 1
 1 1 1
-
-normalize(image)
 ```
 
-![](./one.png)
+![](./one.png)<br>
+
+And after normalization:<br>
+![](./one_normalized.png)
+
+
 
 ## 4.3 Zero
 
@@ -391,19 +394,18 @@ filter.set_kernel(filter.zero(3));
 
 Not to be confused with ``one``. ``box`` takes two arguments, it's dimensions n and a constant c such that all elements will be set to c. This means ``box(n, 1)`` is equivalent to ``one(n)`` and ``box(n, 0)`` is equivalent to ``zero(n)``.
 
-To illustrate the difference between ``box`` and the following ``normalized_box`` the following picture was generated using ``CONVOLUTION`` with no normalization.
-
 ```cpp
 filter.set_kernel(filter.box(3, 0.5f));
 
 0.5 0.5 0.5
 0.5 0.5 0.5
 0.5 0.5 0.5
-
-normalize(image)
 ``` 
 
-![](./box.png)
+![](./box.png)<br>
+
+And after normalization:<br>
+![](./box_normalized.png)
 
 ## 4.5 Normalized box
 
@@ -417,11 +419,315 @@ filter.set_kernel(filter.normalized_box(3));
 0.333333 0.333333 0.333333
 0.333333 0.333333 0.333333
 0.333333 0.333333 0.333333
-
-normalize(image)
 ```
 
 ![](./normalized_box.png)
+
+## 4.6 Gaussian
+
+(is seperable)
+
+The gaussian kernel is popular for smoothly blurring images, while it does incurr a performance overhead due to floating point values, the resulting blurred image is less "blocky" compared to a box filter.
+
+The function takes 1 argument, it's size n and returns an already normalized kernel sampling a gaussian distribution, with it's center being the center of the kernel.
+
+```cpp
+filter.set_kernel(filter.gaussian(5))
+
+0.0362704 0.0384838 0.0394031 0.0384838 0.0362704
+0.0384838 0.0417802 0.0435471 0.0417802 0.0384838
+0.0394031 0.0435471  0.048127 0.0435471 0.0394031
+0.0384838 0.0417802 0.0435471 0.0417802 0.0384838
+0.0362704 0.0384838 0.0394031 0.0384838 0.0362704
+```
+As the number can be quite hard to parse visually, we create a 150x150 kernel and render it via ``crisp::Sprite``:<br>
+
+![](./gaussian_visualized.png)<br>
+
+We note the expected gaussian dome.
+Applying the 5x5 filter above to the image we get:<br>
+
+![](./gaussian.png)
+
+## 4.6 Laplacian First Derivative
+
+(not seperable)
+
+Also called "laplacian" computes the discrete first derivative of a 2d image functnormalize(image)
+ion. Because it is the derivative ewe expect it to be zero in areas of constant intensity, non-zero at the start of an intensity ramp and nonzero along said ramps. This is identical to the analytical first derivative.  normalize(image)
+
+```cpp
+filter.set_kernel(filter.laplacian_first_derivate());
+
+-1 -1 -1
+-1  8 -1
+-1 -1 -1
+``` 
+
+The resulting image is initially hard to read: <br>
+![](laplacian_first.png)<br>
+
+But after normalization:<br>
+![](laplacian_first_normalized.png)<br>
+We note the typical sharp mask. Multipliying this image with the original result in sharpening of the original.
+
+## 4.6 Laplacian Second Derivative
+
+(not seperable)
+
+The second derivative is the derivative of the first derivative. Just like in analysis we expect the second derivative to be zero in areas of constant intensity, nonzero at the onset *and* end of intensity ramps, zero along inensity ramps. These properties make it quite useful for edge detection.
+
+```cpp
+filter.set_kernel(filter.laplacian_second_derivative())
+
+-9 -1 -9
+-1 72 -1
+-9 -1 -9
+```
+
+Due to the overall noisyness of the image the image is almost illegible:
+
+![](./laplacian_second.png)<br>
+
+But after normalization:<br>
+
+![](./laplacian_second_normalized.png)
+
+## 4.7 Laplacian of Gaussian
+
+(not seperable)
+
+The Laplacian of Guassian, often called "LoG" is a commonly used kernel that is the derivative of a guassian:<br>
+
+![](https://homepages.inf.ed.ac.uk/rbf/HIPR2/figs/logcont.gif)<br>
+source: [https://homepages.inf.ed.ac.uk/rbf/HIPR2/log.htm](https://homepages.inf.ed.ac.uk/rbf/HIPR2/log.htm)
+
+Applying it by multiplying the resulting image with original can be interpreted as first blurring, then sharpening the image. It thus finds wide applicability in edge enhancement. Just like the gaussian, the LoG kernel can have arbitrary size:
+
+```cpp
+filter.set_kernel(filter.laplacian_of_gaussian(5));
+
+0.171415  0.108386    0.111149   0.108386    0.171415
+0.108386  0.00697621  0.0132247  0.00697621  0.108386
+0.111149  0.0132247   0.0437069  0.0132247   0.111149
+0.108386  0.00697622  0.0132247  0.00697622  0.108386
+0.171415  0.108386    0.111149   0.108386    0.171415
+```
+After normalization: <br>
+![](./log_normalized.png)
+
+## 4.8 Gradient Kernels
+
+Gradient kernels attempt to compute the [image gradient](https://en.wikipedia.org/wiki/Image_gradient) best understood as the rate of change along a specified direction. There are multiple kernels to do this and it is important to keep in mind that we always have to specify the direction of the gradient. In ``crisp`` "x-direction" referers the left-to-right gradient, "y-direction" to top-to-bottom
+
+## 4.8.1 Simple Gradient
+
+(not seperable)
+
+The simplest gradient kernels in the x and y direction respectively are:
+
+```cpp
+filter.set_kernel(filter.simple_gradient_x())
+
+-1
+ 1
+``` 
+![](simple_gradient_x.png)
+
+```cpp
+filter.set_kernel(filter.simple_gradient_y())
+
+-1  1
+``` 
+![](simple_gradient_y.png)
+
+<br>
+White or black areas correspond to a strong positive or negative increase in intensity respectively while grey (around 0.5) corresponds to relatively constant areas. 
+
+### 4.8.2 Roberts Gradient
+
+(is seperable)
+
+Roberts tried to iterate on the gradient by specifying two kernels that represent change in 4 instead of two:
+
+```cpp
+filter.set_kernel(filter.roberts_x());
+
+-1  0
+ 0  1
+```
+![](./roberts_x.png)
+
+```cpp
+filter.set_kernel(filter.roberts_y());
+
+ 0 -1
+ 1  0
+```
+![](./roberts_y.png)
+
+### 4.8.3 Prewitt Gradient
+
+(is seperable)
+
+Prewitt improved on Robets with a bigger kernel in an attempt to get a more detailed gradient response:
+
+```cpp
+filter.set_kernel(filter.prewitt_x());
+
+-1 -1 -1
+ 0  0  0
+ 1  1  1
+```
+
+![](./prewitt_x.png)
+
+```cpp
+filter.set_kernel(filter.prewitt_y());
+
+-1  0  1
+-1  0  1
+-1  0  1
+```
+
+### 4.8.4 Sobel
+
+(is seperable)
+
+Sobel combined the roberts kernel with a smoothing kernel in an attempt to get a gradient response less susceptible to noise
+
+```cpp
+filter.set_kernel(filter.sobel_x());
+
+ 1  2  1
+ 0  0  0
+-1 -2 -1
+```
+
+![](./sobel_x.png)
+
+```cpp
+filter.set_kernel(filter.sobel_y());
+
+ 1  0 -1
+ 2  0 -2
+ 1  0 -1
+```
+
+![](./sobel_y.png)<br>
+
+In the end it is up to the end user to decide which of these gradients should be user. When bleeding edge performance isn't necessary, ``crisp`` prefers to use the sobel kernel over roberts or prewitt due to it's comparable gradient response while being more stable in noisy conditions
+
+### 4.8.5 Kirsch Compass
+
+(is seperable)
+
+Kirsch designed a set of kernels that measure the gradient response in a direction. The direction is given similar to the directions on a compass: north (n), north east (ne), east (e), south east (se), south (s), south west(sw) and west (w)). This set of kernel is useful if the direction of the gradient is of importance to the curren task
+
+```cpp
+// north
+filter.set_kernel(filter.kirsch_compass_n());
+
+ 5 -3 -3
+ 5  0 -3
+ 5 -3 -3
+```
+
+![](./kirsch_n.png)
+
+```cpp
+// south
+filter.set_kernel(filter.kirsch_compass_s());
+
+-3 -3  5
+-3  0  5
+-3 -3  5
+```
+
+![](./kirsch_s.png)
+
+```cpp
+// east
+filter.set_kernel(filter.kirsch_compass_e());
+
+-3 -3 -3
+-3  0 -3
+ 5  5  5
+```
+
+![](./kirsch_e.png)
+
+```cpp
+// west
+filter.set_kernel(filter.kirsch_compass_w());
+
+ 5  5  5
+-3  0 -3
+-3 -3 -3
+```
+
+![](./kirsch_e.png)
+
+## 4.9 In Summary
+
+This concludes the overview of kernels available in crisp. Common operations such as image blurring, sharpening and edge detection and gradient direction are covered out of the box while optimization through seperation or combining kernels is made not only possible but easy. 
+
+## 5. Using Other Evaluation Functions for Image Restoration
+
+So far we have dealt with kernels that were applied via convolution or normalized convolution. This is the most common way to alter and image however as mentioned ``crisp`` supports other types of evaluation functions and their use will be illustrated in this section. 
+
+Consider the following image, [manually corrupted](../../include/noise_generator.hpp) with noise:
+
+![](./opal_salt_and_pepper.png)
+
+The image is heavily with non-uniform noise. Closer examination reveals that the black and white dots are peaks of negative and positive intensitiy of up to 5 times the previous maximum sensor response. We could blur this image using a gaussian filter but the results would be poor as it does not address the noise directly. 
+
+Instead we can use one of ``crisp``s other evaluation functions like so:
+
+```cpp
+auto image = /* corrupted image */;
+
+auto filter = SpatialFilter();
+filter.evaluation_function(filter.MEAN);
+filter.set_kernel(filter.one(3));
+filter.apply_to(image);
+
+// render or save to disk
+```
+
+Here we're using a 3x3 kernel of all ones and using it to compute the mean of a all pixels in a 3x3 neighborhood. We choose ``one`` because we don't want the kernel to weight the image in any way. The resulting image looks much better:
+
+![](./opal_salt_and_pepper_mean.png)
+
+However on close examinatin we still not some noise representing, one particular noticeable one is around the lower abdomen of the bird. This is because taking the mean of a limited dataset tends to be quite sensitive to high spikes in intensity. If instead we apply the median, which tends to be more resistant:
+
+```cpp
+filter.evaluation_function(filter.MEDIAN);
+filter.set_kernel(filter.one(3));
+filter.apply_to(image);
+```
+
+![](./opal_salt_and_pepper_median.png)
+
+We get a much better result with minimal distortion. There are still some pixels left, we can eliminate these by simply applying the same median-filter again:
+
+```cpp
+filter.apply_to(image);
+filter.apply_to(image);
+```
+
+![](./opal_salt_and_pepper_median_2.png)
+
+resulting in a fully noise-free image.
+
+While not used here, ``MAXIMUM`` and ``MINIMUM`` also have their applications, most notably in non-maxima surpression and for certain types of image signal distortions.
+
+---
+
+
+
+
+
 
 
 

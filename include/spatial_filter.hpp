@@ -58,8 +58,11 @@ namespace crisp
                 /// @brief compute maximum of elements weighted by kernel in kernel-sized neighborhood
                 MAXIMUM = 3,
 
+                /// @brief compute mean of elements weighted by kernel in kernel-sized neighborhood
+                MEAN = 4,
+
                 /// @brief compute median of elements weighted by kernel in kernel-sized neighborhood
-                MEDIAN = 4
+                MEDIAN = 5
             };
 
             SpatialFilter();
@@ -218,6 +221,9 @@ namespace crisp
 
             template<typename Image_t>
             void apply_max_to(Image_t& in, Image_t& out);
+
+            template<typename Image_t>
+            void apply_mean_to(Image_t& in, Image_t& out);
 
             template<typename Image_t>
             void apply_median_to(Image_t& in, Image_t& out);
