@@ -4,6 +4,28 @@ Erosion, Dilation, Opening, Closing, Hit-or-Miss-Transforms with flat and non-fl
 
 ## Table of Contents
 
+1. [Introduction](#1-introduction)<br>
+2. [Structuring Elements](#2-structuring-element)<br>
+    2.1 [Foreground, Background, "Don't Care" elements](#21-foreground-background-and-dont-care-elements)<br>
+    2.2 [Binding a Structuring Element](#22-binding-an-structuring-element)<br>
+    2.3 [Origin of a Structuring Element](#23-origin)<br>
+    2.4 [Types of Structuring Elements](#24-types-of-structuring-elements)<br>
+    2.4.1 [All Foreground](#241-all-foreground)<br>
+    2.4.2 [All Background](#242-all-background)<br>
+    2.4.3 [All "don't care"](#243-all-dont-care)<br>
+    2.4.4 [Circle](#244-circle)<br>
+    2.4.5 [Diamond](#245-diamond)<br>
+    2.4.6 [Cross](#246-cross)<br>
+3. [Transform Functions](#3-tranform-functions)<br>
+    3.1 [Erosion](#31-erosion)<br>
+    3.2 [Dilation](#32-dilation)<br>
+    3.3 [Geodesic Erosion](#33-geodesic-erosion)<br>
+    3.4 [Geodesic Dilation](#34-geodesic-dilation)<br>
+    3.5 [Closing](#35-closing)<br>
+    3.6 [Opening](#36-opening)<br>
+
+
+
 ## 1. Introduction
 
 A morphological transform is a function in mathematical morphology that alters the topology of a function. In image processing it does this by sliding what's called a *structuring element* accross an image and altering the image at each spot depending on which transform is used. We will learn more about the different transforms later on but for now we should focus on just the structuring element
