@@ -7,6 +7,7 @@
 
 #include <image_segment.hpp>
 #include <image/multi_plane_image.hpp>
+#include <image/binary_image.hpp>
 
 #include <vector>
 

@@ -10,7 +10,7 @@ namespace crisp
     template<size_t N>
     Histogram<N>::Histogram()
     {
-        for (size_t i = 0; i < N; ++i)
+        for (size_t i = 0; i <= N; ++i)
             _data.emplace(i, 0);
     }
 
@@ -37,7 +37,8 @@ namespace crisp
             value = clamp<float>(0, 1, value);
 
             value *= N;
-            _data.at(size_t(floor(value))) += 1;
+            value = floor(value);
+            _data.at(size_t(value)) += 1;
 
             sum += value;
             n += 1;

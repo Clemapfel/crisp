@@ -5,8 +5,10 @@
 
 #include <vector.hpp>
 #include <histogram.hpp>
+#include <whole_image_transform.hpp>
 
-#include <unordered_map>
+#include <map>
+#include <iostream>
 #include <deque>
 #include <list>
 
@@ -36,7 +38,7 @@ namespace crisp
         std::vector<ImageSegment> out;
         for (auto& s : segments)
             if (s.size() > min_segment_size)
-                out.push_back(std::move(s));
+                out.push_back(s);
 
         return out;
     }
@@ -378,8 +380,8 @@ namespace crisp
         auto xy_distance = [&](const auto& a, const auto& b) -> float
         {
             float distance = 0;
-            distance += abs<float>(a.x() - b.x());
-            distance += abs<float>(a.y() - b.y());
+            distance += fabs(a.x() - b.x());
+            distance += fabs(a.y() - b.y());
 
             return distance / (2 * spacing * spacing);
         };
@@ -414,7 +416,7 @@ namespace crisp
         auto gradient_img = compute_gradient_magnitude(image);
 
         float per_row = ceil(sqrt(n_superpixels));
-        spacing = max(image.get_size().x() / per_row, image.get_size().y() / per_row);
+        spacing = std::max(image.get_size().x() / per_row, image.get_size().y() / per_row);
         spacing = ceil(spacing);
 
         // initialize
@@ -497,7 +499,7 @@ namespace crisp
                         if (new_dist < old_dist)
                         {
                             n_changed += 1;
-                            out(x, y) = cluster_i;
+                            out(x, y).at(0) = float(cluster_i);
 
                             cluster.color_sum += image(x, y);
                             cluster.xy_sum += Vector2f{float(x), float(y)};
@@ -696,7 +698,6 @@ namespace crisp
                     cluster.mean_color = cluster.color_sum / cluster.n;
             }
 
-            std::cout << n_iterations << ": " << n_changed << std::endl;
             n_iterations++;
         }
 

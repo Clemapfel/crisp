@@ -17,6 +17,9 @@ namespace crisp
     class MorphologicalTransform
     {
         public:
+            /// @brief default ctor
+            MorphologicalTransform() = default;
+
             /// @brief set a structuring element, all "don't care" by default
             /// @param structuring_element
             void set_structuring_element(StructuringElement);
@@ -101,8 +104,8 @@ namespace crisp
             /// @returns structuring element bindable with set_structuring_element
             static StructuringElement all_background(long nrows, long ncols);
 
-            /// @brief structuring element of specified size where horizontal and vertical line that intersect in the center are foreground, rest "don't care"
-            /// @param dimensions: x- and y-dimensions, has to be unever
+            /// @brief structuring element of specified size where 1/3 * size wide horizontal and vertical line that intersect in the center are foreground, rest "don't care"
+            /// @param dimensions: x- and y-dimensions, has to be uneven
             /// @returns structuring element bindable with set_structuring_element
             static StructuringElement cross(long dimensions);
 

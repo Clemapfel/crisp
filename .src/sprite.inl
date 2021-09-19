@@ -245,7 +245,7 @@ namespace crisp
         {
             for (size_t y = 0; y < se.cols(); ++y)
             {
-                float value = se(x, y).has_value() ? (se(x, y).value() ? 1.f : 0.5f) : 0.f;
+                float value = se(x, y).has_value() ? (se(x, y).value() ? 1.f : 0.f) : 0.5f;
                 temp.setPixel(x, y, sf::Color(float(value) * 255, float(value) * 255, float(value) * 255, 255));
             }
         }

@@ -7,6 +7,7 @@ namespace crisp
 {
     void MorphologicalTransform::set_structuring_element(StructuringElement se)
     {
+        _origin = Vector2ui{size_t(se.rows()) / 2, size_t(se.cols()) / 2};
         _structuring_element = std::move(se);
     }
 
@@ -60,14 +61,14 @@ namespace crisp
                     for (size_t i = 0; i < ImageValue_t::size(); ++i)
                     {
                         bool missed = false;
-                        for (int a = -origin.x(); a < n -origin.x(); ++a)
+                        for (int a = 0; a < n; ++a)
                         {
-                            for (int b = -origin.y(); b < m -origin.y(); ++b)
+                            for (int b = 0; b < m; ++b)
                             {
-                                if (not se(a + origin.x(), b + origin.y()).has_value())
+                                if (not se(a, b).has_value())
                                     continue;
 
-                                if (se(a + origin.x(), b + origin.y()) and not img_in(x + a, y + b).at(i))
+                                if (se(a, b) and not img_in(x + a - origin.x(), y + b - origin.y()).at(i))
                                 {
                                     missed = true;
                                     goto skip;
@@ -85,16 +86,16 @@ namespace crisp
                     for (size_t i = 0; i < ImageValue_t::size(); ++i)
                     {
                         auto min = img_in(x, y).at(i);
-                        for (int a = -origin.x(); a < n - origin.x(); ++a)
+                        for (int a = 0; a < n; ++a)
                         {
-                            for (int b = -origin.y(); b < m - origin.y(); ++b)
+                            for (int b = 0; b < m ; ++b)
                             {
-                                if (not se(a + origin.x(), b + origin.y()).has_value())
+                                if (not se(a, b).has_value())
                                     continue;
 
-                                if (se(a + origin.x(), b + origin.y()))
+                                if (se(a, b))
                                 {
-                                    min = std::min(img_in(x + a, y + b).at(i), min);
+                                    min = std::min(img_in(x + a - origin.x(), y + b - origin.y()).at(i), min);
                                 }
                             }
                         }
@@ -133,14 +134,14 @@ namespace crisp
                     for (size_t i = 0; i < ImageValue_t::size(); ++i)
                     {
                         bool found = false;
-                        for (int a = -origin.x(); a < n -origin.x(); ++a)
+                        for (int a = 0; a < n; ++a)
                         {
-                            for (int b = -origin.y(); b < m -origin.y(); ++b)
+                            for (int b = 0; b < m; ++b)
                             {
-                                if (not se(a + origin.x(), b + origin.y()).has_value())
+                                if (not se(a, b).has_value())
                                     continue;
 
-                                if (se(a + origin.x(), b + origin.y()) and img_in(x + a, y + b).at(i))
+                                if (se(a, b) and img_in(x + a - origin.x(), y + b - origin.x()).at(i))
                                 {
                                     found = true;
                                     goto skip;
@@ -158,16 +159,16 @@ namespace crisp
                     for (size_t i = 0; i < ImageValue_t::size(); ++i)
                     {
                         auto max = img_in(x, y).at(i);
-                        for (int a = -origin.x(); a < n - origin.x(); ++a)
+                        for (int a = 0; a < n; ++a)
                         {
-                            for (int b = -origin.y(); b < m - origin.y(); ++b)
+                            for (int b = 0; b < m; ++b)
                             {
-                                if (not se(a + origin.x(), b + origin.y()).has_value())
+                                if (not se(a, b).has_value())
                                     continue;
 
-                                if (se(a + origin.x(), b + origin.y()))
+                                if (se(a, b))
                                 {
-                                    max = std::max(img_in(x + a, y + b).at(i), max);
+                                    max = std::max(img_in(x + a - origin.x(), y + b - origin.x()).at(i), max);
                                 }
                             }
                         }
@@ -218,8 +219,13 @@ namespace crisp
         erode_aux(image, result);
 
         for (long x = 0; x < image.get_size().x(); ++x)
+        {
             for (long y = 0; y < image.get_size().x(); ++y)
-                image(x, y) = std::max(result(x, y), mask(x, y));
+            {
+                if (mask(x, y) <= image(x, y))
+                    image(x, y) = std::max(result(x, y), mask(x, y));
+            }
+        }
     }
 
     template<typename Image_t>
@@ -234,7 +240,12 @@ namespace crisp
 
         for (long x = 0; x < image.get_size().x(); ++x)
             for (long y = 0; y < image.get_size().x(); ++y)
-                image(x, y) = std::min(result(x, y), mask(x, y));
+            {
+                if (image(x, y) == result(x, y))
+                    continue;
+                else
+                    image(x, y) = std::min(result(x, y), mask(x, y));
+            }
     }
 
     template<typename Image_t>
@@ -280,17 +291,23 @@ namespace crisp
 
         return out;
     }
+
+    StructuringElement MorphologicalTransform::square(long size)
+    {
+        return all_foreground(size, size);
+    }
     
     StructuringElement MorphologicalTransform::cross(long size)
     {
-        assert(size % 2 == 1 && "dimensions have to be odd for the structuring element to be rotationally symmetrical");
-
         StructuringElement out = all_dont_care(size, size);
         
         for (size_t i = 0; i < size; ++i)
         {
-            out((out.rows() - 1) / 2, i) = true;
-            out(i, (out.rows() - 1) / 2) = true;
+            for (int offset = -(float(size)/3/2); offset <= (float(size)/3/2); offset++)
+            {
+                out((out.rows() - 1) / 2 + offset,  i) = true;
+                out(i, (out.rows() - 1) / 2 + offset) = true;
+            }
         }
 
         return out;
@@ -319,6 +336,7 @@ namespace crisp
             offset += 1;
         }
 
+        out(size / 2, size / 2) = true;
         return out;
     }
 
