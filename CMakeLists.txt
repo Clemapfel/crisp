@@ -117,6 +117,9 @@ target_link_libraries(EXAMPLE_SPATIAL_FILTER crisp)
 add_executable(EXAMPLE_SYSTEM docs/system/system_example.cpp)
 target_link_libraries(EXAMPLE_SYSTEM crisp)
 
+add_executable(EXAMPLE_FEATURE_EXTRACTION docs/feature_extraction/feature_extraction_example.cpp)
+target_link_libraries(EXAMPLE_FEATURE_EXTRACTION crisp)
+
 ### TESTS #######################################################################################
 
 add_executable(TEST .test/main.cpp)
