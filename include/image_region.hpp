@@ -131,6 +131,10 @@ namespace crisp
             /// @returns number of holes
             size_t get_n_holes() const;
 
+            /// @brief get boundaries for holes
+            /// @returns vector of vectors where each of them is the closed boundary of a hole, enumerated in counter-clockwise direction
+            const std::vector<std::vector<Vector2ui>> get_hole_boundaries() const;
+
             /// @brief get the nths moment invariant
             /// @param n: n in {1, 2, ..., 6, 7}
             /// @returns value of invariant
@@ -158,6 +162,8 @@ namespace crisp
             std::vector<Vector2ui> _boundary;
             std::vector<uint8_t> _boundary_direction;
             std::vector<Vector2ui> _boundary_polygon;
+
+            std::vector<std::vector<Vector2ui>> _hole_boundaries;
 
             Vector2f _centroid;
 

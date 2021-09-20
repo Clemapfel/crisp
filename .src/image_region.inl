@@ -211,6 +211,10 @@ namespace crisp
 
         _n_holes = boundaries_out.size() - 1;
 
+        _hole_boundaries.clear();
+        for (size_t i = 1; i < boundaries_out.size(); ++i)
+            _hole_boundaries.push_back(boundaries_out.at(i));
+
         auto turn_type = [&](size_t i_a, size_t i_b) -> int
         {
             auto point_a = _boundary.at(i_a),

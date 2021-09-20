@@ -205,17 +205,31 @@ We can generate it using ``ImageRegion::farther_point_signature``.
 
 ## 4. Whole Region Descriptors
 
-## 4.1 Centroid
+When trying to classify the shape of a region we want to somehow quantify a certain aspect about it in a way that makes it so that value is uniqe to the specific shape and that if two regions are close in that value, they close in shape. This section deals with many properties of not only a regions shape but the region including it's values. Whille only one specific property may not be too notable, combining many of them increases the specificity of classification.
 
-As already mentioned a regions centroid in ``crisp`` is defined as the mean of it's boundary points, this differes slightly from the usual definition because crisp allows the regions boundary to be intersecting, and the regions to have holes.  
+## 4.1 Area & Perimeter, Compactness
+
+One of the easiest descripters are *area*, the number of pixels in a region and *perimeter* the length of the regions boundary. Note that perimeter only deals with the outer most boundary, so increasing the number of holes in a region will decrease its area but leave it's perimeter unchanged. Area and perimeter usually are not very useful unless they are normalized or by quantifying the areas *compactness* which is equal to the square of the perimeter divided by the area. A region that has no holes will have maximum compactness while a region that has many or very big holes has a higher compactness. We can access, area, perimeter and compactness using:
+
+```
+float get_perimter() const;
+float get_area() const;
+float get_compactness() const;
+```
+
+## 4.2 Centroid
+
+A regions *centroid* in ``crisp`` is defined as the mean of the value of it's boundary points coordinates. while sometimes in literature the centroid is the average of *all* points in an area, this is not the case in ``crisp``. Adding holes to a region while leaving it's boundary unchanged does not alter the position of the regions centroid.
+
+We access a region centroid at any time using ``get_centroid()``:
 
 ![](./pepper_centroid.png)
 
 Where the centroid is highligted using a red rgb(1, 0, 0) cross.
 
-## 4.1 AABB
+## 4.2 AABB
 
-The axis aligned bounding box of a region is the smallest rectangle whos sides align with the x- and y-axis that completely encloses the region. We can access it like so:
+The *axis aligned bounding box* (AABB) of a region is the smallest rectangle whos sides align with the x- and y-axis that completely encloses the region. We can access it like so:
 
 ```cpp
 std::vector<Vector2ui, 4> aabb_vertcies = pepper.get_axis_aligned_bounding_box(); 
@@ -241,9 +255,51 @@ Each of the axis is given as two point. Visualizing the axis properly is difficu
 
 ![](./pepper_eigenvectors_modified.png)
 
-Where magenta is the major, green the minor axis and in yellow we have the ellipses modeled.
+Where magenta is the major, green the minor axis and in yellow the ellipses modeled. 
 
-We 
+## 4.3 Eccentricity
+Using the minor and major axis we can furthermore compute the regions *eccentricity* which is quantifying how "conical" the region is, if the eccentricity is 0 the shape modeled by the major and minor axis is a perfect circle, the closer to 1 the eccentricity is, the more elliptical the region.
+
+We can access the eccentricity using ``ImageRegion::get_eccentricity()``.
+
+## 4.4 Circularity
+
+While eccentricity measures how closely the shape of a region approximates a non-circular ellipses, *circularity* quantifies how closely the shape approximates a perfect circle. Regions with tend to have smooth features and not many sharp edges tend to have high circularity towards 1 while angular shapes or shapes with a high eccentricity tend to have a circularity closer towards 0.
+
+We can access circularity using ``ImageRegion::get_circularity()``.
+
+## 4.5 Holes
+
+While already mentioned it is instructional to define what a hole is. A hole is an area of pixels who are *not* part of the region, where that are is enclosed by the region. When boundary tracing ``crisp`` implicitely computes the boundaries of each hole and thus the number of holes. We can access either using:
+
+```cpp
+size_t get_n_holes() const;
+const std::vector<std::vector<Vector2ui>> get_hole_boundaries() const;
+```
+
+## 4.6 Moment Invariants
+
+We've seen earlier that somehow respresenting a regions unique shape in a way that is invariant to scale, translation and rotation is highly valuable. A very powerful way to achieve is with the *nths moment invariant*. While some of them have a conceptual meaning it is best to just think of them as properties that may not be useful to humans but do represent the shape of a region uniquely. ``crisp`` offers the first 7 moment invariants, accessed with ``ImageRegion::get_nths_moment_invariant(size_t n)`` where n in {1, 2, 3, ..., 7}.
+
+The following table summarizes the response of a moment invariant to translation, scale, rotation and mirroring. "Unchanged" means the value of the moment does not change, "does change" means the value is altered after the corresponding transformation:
+
+```cpp
+N       translation     scale           rotation        mirroring
+--------------------------------------------------------------------
+1       unchanged       unchanged       unchanged       unchanged
+2       unchanged       unchanged       unchanged       unchanged
+3       unchanged       unchanged       unchanged       unchanged
+4       unchanged       unchanged       unchanged       unchanged
+5       unchanged       does change     unchanged       unchanged
+6       unchanged       does change     unchanged       does change
+7       unchanged       does change     slight change   changes sign
+```
+
+We note that all first 4 moments are completely independent of translation, scale, rotation and mirroring of the region and are thus highly valuable in representing a region
+
+
+
+
 
 
 
