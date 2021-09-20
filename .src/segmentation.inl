@@ -109,14 +109,11 @@ namespace crisp
     {
         BinaryImage out;
         out.create(image.get_size().x(), image.get_size().y());
-        
+
         for (size_t x = 0; x < image.get_size().x(); ++x)
             for (size_t y = 0; y < image.get_size().y(); ++y)
-                if (image(x, y) > threshold)
-                    out(x, y) = true;
-                else
-                    out(x, y) = false;
-                
+                out(x, y) = image(x, y) > threshold;
+
         return out;
     }
     
@@ -354,7 +351,7 @@ namespace crisp
                     mean += image(x + i - half_spread, y + i - half_spread);
                 }
                 mean /= (8 * neighborhood_size);
-                out(x, y) = float(image(x, y)) > mean;
+                out(x, y) = float(image(x, y)) < mean;
             }
         }
 

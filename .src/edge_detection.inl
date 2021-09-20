@@ -7,80 +7,13 @@
 
 namespace crisp::EdgeDetection 
 {
-    BinaryImage threshold_gradient(const GrayScaleImage& original, float threshold)
-    {
-        auto kernel_x = SpatialFilter::simple_gradient_x();
-        auto kernel_y = SpatialFilter::simple_gradient_y();
-
-        BinaryImage out;
-
-        bool should_measure = threshold == MEASURE_THRESHOLD;
-        GrayScaleImage magnitude_img;
-        float total_sum = 0;
-        float max = 0;
-
-        if (should_measure)
-            magnitude_img.create(original.get_size().x(), original.get_size().y());
-        else
-            threshold *= 2;
-        out.create(original.get_size().x(), original.get_size().y());
-
-        for (long x = 0; x < original.get_size().x(); ++x)
-        {
-            for (long y = 0; y < original.get_size().y(); ++y)
-            {
-                float x_sum = 0;
-                for (long s = 0; s < kernel_x.rows(); ++s)
-                {
-                    for (long t = 0; t < kernel_x.cols(); ++t)
-                    {
-                        float first = kernel_x(s, t);
-                        float second = original(x + s, y + t);
-                        x_sum = first * second;
-                    }
-                }
-
-                float y_sum = 0;
-                for (long s = 0; s < kernel_y.rows(); ++s)
-                {
-                    for (long t = 0; t < kernel_y.cols(); ++t)
-                    {
-                        float first = kernel_y(s, t);
-                        float second = original(x + s, y + t);
-                        y_sum += first * second;
-                    }
-                }
-
-                if (should_measure)
-                {
-                    magnitude_img(x, y) = sqrt(x_sum * x_sum + y_sum * y_sum);
-                    total_sum += magnitude_img(x, y);
-                    max = std::max<float>(max, magnitude_img(x, y));
-                }
-                else
-                    out(x, y) = sqrt(x_sum * x_sum + y_sum * y_sum) >= threshold;
-            }
-        }
-
-        if (not should_measure)
-            return out;
-
-        threshold = 0.05 * max;
-
-        for (long x = 0; x < original.get_size().x(); ++x)
-            for (long y = 0; y < original.get_size().y(); ++y)
-                out(x, y) = magnitude_img(x, y) >= threshold;
-
-        return out;
-    }
-
     // @brief detects edges via computing the sobel gradient, then thresholding the resulting image. Moderatly fast and moderately accurate
     // @param original: the image to be transformed
     // @param threshold: threshold for the gradient, range [0, 1] where 1 excludes all possible edges, 0 includes all
     // @returns binary image with edges
     //
     // @note no pre-processing such a smoothing or morphological post-processing is applied
-    BinaryImage threshold_sobel(const GrayScaleImage& original, float threshold)
+    BinaryImage threshold_gradient(const GrayScaleImage& original, float threshold)
     {
         auto kernel_x = SpatialFilter::sobel_gradient_x();
         auto kernel_y = SpatialFilter::sobel_gradient_y();
@@ -131,20 +64,14 @@ namespace crisp::EdgeDetection
                     max = std::max<float>(max, magnitude_img(x, y));
                 }
                 else
-                    out(x, y) =  sqrt(x_sum * x_sum + y_sum * y_sum) >= threshold;
+                    out(x, y) = (sqrt(x_sum * x_sum + y_sum * y_sum) / sqrt(2)) >= threshold;
             }
         }
 
         if (not should_measure)
             return out;
-
-        threshold = 0.05 * max;
-
-        for (long x = 0; x < original.get_size().x(); ++x)
-            for (long y = 0; y < original.get_size().y(); ++y)
-                out(x, y) = magnitude_img(x, y) >= threshold;
-
-        return out;
+        else
+            return otsu_threshold(magnitude_img);
     }
 
     BinaryImage canny(const GrayScaleImage& original, float lower_threshold, float upper_threshold)

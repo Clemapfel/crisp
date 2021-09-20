@@ -33,6 +33,12 @@ namespace crisp
     }
 
     template<typename Image_t>
+    void histogram_equalize(Image_t& image)
+    {
+        assert(false);
+    }
+
+    template<typename Image_t>
     GrayScaleImage compute_gradient_magnitude(const Image_t& image)
     {
         using Value_t = typename Image_t::Value_t;

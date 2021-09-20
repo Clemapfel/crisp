@@ -20,7 +20,7 @@ Multi Dimensional Images of Arbitrary Type
     3.5 [Image-Image arithmetic operators](#35-image-arithmetics)</br>
 4. [**Multi Dimensional Images**](#4-multi-dimensional-images)</br>
     4.1 [Accessing Planes Directly](#41-accessing-planes-directly)</br>
-5. [**A Final Example**](#5-a-final-example)</br>
+5. [**While Image Transforms**](#5-whole-image-transforms)</br>
 
 ## 1. Introduction
 
@@ -438,79 +438,8 @@ After we modified the isolated plane we can reinsert it into the image by using:
 image.set_nths_plane<2>(blue_plane);
 ```
 
-## 5. A Final Example
+## 5. Whole Image Transforms
 
-To summarize all functions available for images let's consider the following familiar but corrupted image of a bird:
-
-![](./opal_corrupted.png)
-
-We observe very noticable change, the overall image has a green tint and in numerous spots we see isolated magenta drops in intensity. Since both of these artifacts are colored, we investigate each color plane individually:
-
-```cpp
-#include <images.hpp>
-
-// in main.cpp
-auto image = load_color_image(/*...*/ + "/crisp/docs/image/opal_blue_corrupted.png");
-
-// investigate planes
-auto red_plane = (image.get_nths_plane<0>());
-save_to_disk(red_plane, /*...*/);
-
-auto green_plane = (image.get_nths_plane<1>());
-save_to_disk(green_plane, /*...*/);
-
-auto blue_plane = (image.get_nths_plane<2>());
-save_to_disk(blue_plane, /*...*/);
-```
-
-![](opal_corrupted_0.png)
-![](opal_corrupted_1.png)
-![](opal_corrupted_2.png)
-
-Both the red and blue plane look fine but green shows clear problems. Even in parts where the image isn't corrupted by noise we observe that it is significantly lighter in terms of intensity. If the green component of color is lowered we would expect the final color to go closer to it's complement: magenta. This is indeed the case so we can ascertain that the magenta dots in the original assembled image are what's called "drop-out-noise", small spots where at that point the value of only green goes way down.
-
-Both of these issues, the overall higher values and the drop-out-noise, can be fixed with a single filter operation. If you're not sure what this means, please reference the [tutorial on filters](TODO):
-
-```cpp
-// median filter the green plane
-auto median_filter = SpatialFilter();
-median_filter.set_kernel(median_filter.box(3, 1));
-median_filter.set_evaluation_function(SpatialFilter::MEDIAN);
-median_filter.apply_to(green_plane);
-
-// and normalize the results to remove artifacting
-normalize(green_plane);
-```
-
-![](opal_restored_1.png)
-
-This is what our green plane now looks like. Much better; not perfect, but better. Now we can reassemble the entire image again:
-
-```cpp
-image.set_nths_plane<1>(green_plane);
-```
-
-![](opal_restored_2.png)
-![](color_opal.png)
-On the left (top depending on your devices screen) we have the restored picture, on the right (bottom) the restored one. The restored picture looks much more like the original, but we still note a slight green tint. We also notice small artifacting around the boundaries of the letters but overall the major issues have been fixed by a simple filter operation on only one of the 3 planes.
-
-To clean up the tint we can simply do:
-
-```cpp
-for (auto& px : green_plane)
-    px -= 0.035f
-```
-
-before reassembling:
-
-![](opal_restored_3.png)
-![](color_opal.png)
-
-And we're done.
-
-# Post Scriptum
-
-You may ask how we got that arbitrary seeming value of 0.035f. It was determined experimentally by writing and interactive program where pressing up adds 0.005 to the value and pressing down substracts it and then simply feeling around which one was best. This is the true advantage of crisp, thanks to the game-like interactivity you can do it truly interactively, not just by changing a value and recompiling again. The full script for our entire example can be found here:
 
 ---
 [<< Back to Index](../index.md)

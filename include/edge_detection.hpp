@@ -12,17 +12,11 @@ namespace crisp::EdgeDetection
     /// @brief if handed as an argument to edge detection algorithms, will employ a heuristic to measure the corresponding threshold
     constexpr float MEASURE_THRESHOLD = -1.f;
 
-    /// @brief compute simple gradient of image and threshold it
-    /// @param origin: image
-    /// @param threshold: threshold, a heuristic will be employed if not specified
-    /// @returns binary image containing the edges
-    BinaryImage threshold_gradient(const GrayScaleImage& original, float threshold = MEASURE_THRESHOLD);
-
     /// @brief compute sobel gradient of image and threshold it
     /// @param origin: image
     /// @param threshold: threshold, a heuristic will be employed if not specified
     /// @returns binary image containing the edges
-    BinaryImage threshold_sobel(const GrayScaleImage& original, float threshold = MEASURE_THRESHOLD);
+    BinaryImage threshold_gradient(const GrayScaleImage& original, float threshold = MEASURE_THRESHOLD);
 
     /// @brief employ canny algorithm to comput high-quality 1-pixel thick edges
     /// @param origin: image
