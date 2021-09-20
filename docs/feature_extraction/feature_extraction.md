@@ -164,5 +164,73 @@ Using this approach we reduce the number of boundary points from 472 to only 193
 
 Now that we reduced the entire information contained in the region in the shape of a pepper to just 193 pixels some may think we are done but thanks to more math we can reduce it even further and/or increase it's generality.
 
-## 
+## 3. Boundary Signatures
+
+A signature is a mathematical transform of the boundary points of a shape that aims to, in some way, make the description of the boundary more widely applicable. One of these ways is to make it *independent of rotation*, a signature that accomplishes this describes not only our upright pepper but all possible rotation of it at the same time. Another form of generality is *scale invariance*, meaning that the signature describes our pepper at scale 1 and the same pepper scaled by any factor > 0. Lastly *independence of translation* means that it does not matter if we were to translate all points of the signature by a constant (x, y), the signature represents all of those peppers just the same. ``crisp`` offers the following signatures:
+
+## 3.1 Vertex Polygon
+
+This is the simplest signature, as already mentioned it reduces the boundary to the vertices of it's polygon. It is neither scale nor rotationally invariant, it can however be computed in amortized o(1) using:
+
+```cpp
+auto polygon_signature = pepper.get_boundary_polygon();
+```
+
+## 3.2 Slope Chain Code Signature
+
+We can generate the slope-chain-signature by simply iterating through all boundary polygon vertices and storing the *angle* of the line that connects our current polygon vertex to the next (recall that the vertices are ordered counter-clockwise). We can then transform this signature to be rotationally and translation invariant by computing the difference of angle from one vertex to the next, this way we can start at point and complete the full chain to create the shape by just drawing a line at that angle
+
+We can generate the slop-chain-code-signature using ``std::vector<float> ImageRegion::slope_chain_code_signature() const``, it returns the angles in radian in order of boundary polygon vertices. Computing the difference from this is a trivial operation.
+
+## 3.3 Radial Distance Signature
+
+The radial distance signature is the distance of each vertex from the regions centroid. The centroid of a region in ``crisp`` is defined as the mean of all boundary coordinates and can be intuitively thought of as the center of mass of a region if all pixels have the same weight. This signature is translation and rotationally invariant. We can generate it using ``std::vector<float> ImageRegin::radial_distance_signature() const`` in amortized o(m) (where m the number of boundary vertices).
+
+## 3.4 Complex Coordinate Signature
+
+(as proposed by [El-Ghazal, Basir, Belkasim (2007)](https://ieeexplore.ieee.org/abstract/document/4378916))
+
+This signature transforms each point in the boundary polygon into a complex number, for a point (x, y) the signature of the point is the complex number x + i*y where i is the imaginare constant, so the x-coordinate is treated as the real part and the y-coordinate is treated as the y-part. While this signature is neither invariant to scale or rotation, we can now fourier-transform the complex number achieving scale, rotational and translational invariance.
+
+We can access the complex coordinates in O(m) (where m the number of boundary polygon points) using ``ImageRegion::complex_coordinate_signature()``. To then transform it into it's fourier descriptors we can use the fourier transform functions provided by ``crisp::FourierTransform``.
+
+## 3.5 Farthest Point Signature
+
+(as proposed again by [El-Ghazal, Basir, Belkasim (2009)](https://www.sciencedirect.com/science/article/abs/pii/S0923596509000393))
+
+This signature computes for each boundary the maximum distance to any other boundary point. This signature performs betters when used for fourier descriptors [1] and achieves translational and rotational invariance.
+We can generate it using ``ImageRegion::farther_point_signature``. 
+
+[1] (Y. Hu, Z. Li, (2013): [available here](http://www.jsoftware.us/vol8/jsw0811-31.pdf)
+
+## 4. Whole Region Descriptors
+
+## 4.1 Centroid
+
+As already mentioned a regions centroid in ``crisp`` is defined as the mean of it's boundary points, this differes slightly from the usual definition because crisp allows the regions boundary to be intersecting, and the regions to have holes.  
+
+![](./pepper_centroid.png)
+
+Where the centroid is highligted using a red rgb(1, 0, 0) cross.
+
+## 4.1 AABB
+
+The axis aligned bounding box of a region is the smallest rectangle whos sides align with the x- and y-axis that completely encloses the region. We can access it like so:
+
+```cpp
+std::vector<Vector2ui, 4> aabb_vertcies = pepper.get_axis_aligned_bounding_box(); 
+```
+
+Where the vertices are in the following order: top-left, top-right, bottom-right, bottom-left.
+
+The value of the vertices of the rectangle are relative to the top-left corner of the image the region is from, translating them to the origin is a trivial operation.
+
+![](./pepper_aabb.png)
+
+## 4.2 
+
+
+
+
+
 

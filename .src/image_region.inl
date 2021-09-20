@@ -3,6 +3,9 @@
 // Created on 13.09.21 by clem (mail@clemens-cords.com)
 //
 
+#include <image_region.hpp>
+#include <Eigenvalues>
+
 namespace crisp
 {
     template<typename Image_t>
@@ -347,6 +350,23 @@ namespace crisp
     }
 
     template<typename Image_t>
+    std::array<Vector2ui, 4> ImageRegion<Image_t>::get_axis_aligned_bounding_box() const
+    {
+        auto out = std::array<Vector2ui, 4>();
+        auto min_x = _x_bounds.x();
+        auto max_x = _x_bounds.y();
+        auto min_y = _y_bounds.x();
+        auto max_y = _y_bounds.y();
+
+        out.at(0) = {min_x, min_y};
+        out.at(1) = {max_x, min_y};
+        out.at(2) = {max_x, max_y};
+        out.at(3) = {min_x, max_y};
+
+        return out;
+    }
+
+    template<typename Image_t>
     float ImageRegion<Image_t>::get_area() const
     {
         return _elements.size();
@@ -488,5 +508,60 @@ namespace crisp
     const std::vector<Vector2ui>& ImageRegion<Image_t>::get_boundary_polygon() const
     {
         return _boundary_polygon;
+    }
+
+    template<typename Image_t>
+    const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&
+    ImageRegion<Image_t>::get_covariance_matrix() const
+    {
+        float mean_x = 0, mean_y = 0;
+
+        for (auto& px : _boundary)
+        {
+            mean_x += px.x();
+            mean_y += px.y();
+        }
+
+        mean_x /= _boundary.size();
+        mean_y /= _boundary.size();
+
+        Eigen::Matrix<float, 2, 2> covar;
+
+        for (auto& px : _boundary)
+        {
+            Eigen::Matrix<float, 2, 1> current;
+            current << (px.x() - mean_x),
+                       (px.y() - mean_y);
+
+            auto current_covar = (current * current.transpose());
+            covar += current_covar;
+        }
+
+        covar /= _elements.size();
+
+        auto eigens = Eigen::EigenSolver<decltype(covar)>(covar);
+
+        auto e1 = Eigen::Vector2f(eigens.eigenvectors()(0, 0).real(), eigens.eigenvectors()(0, 1).real());
+        e1.normalize();
+        auto e2 = Eigen::Vector2f(eigens.eigenvectors()(1, 0).real(), eigens.eigenvectors()(1, 1).real());
+        e2.normalize();
+
+        auto l1 = eigens.eigenvalues()( 0).real();
+        auto l2 = eigens.eigenvalues()( 1).real();
+
+        auto centroid= Eigen::Vector2f(_centroid.x(), _centroid.y());
+
+        auto to_crisp_vec = [](auto eigen)
+        {
+            return Vector2f{eigen(0), eigen(1)};
+        };
+
+        _major_axis.first = to_crisp_vec(centroid - l1 * e1);
+        _major_axis.second = to_crisp_vec(centroid + l1 * e1);
+
+        _minor_axis.first = to_crisp_vec(centroid - l2 * e2);
+        _minor_axis.second = to_crisp_vec(centroid + l2 * e2);
+
+        return covar;
     }
 }

@@ -87,21 +87,25 @@ namespace crisp
             /// @returns vector of angles in radian
             std::vector<float> slope_chain_code_signature() const;
 
+            /// @brief get covariance matrix of position
+            /// @returns covariance matrix of the position of each element
+            const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& get_covariance_matrix() const;
+
             /// @brief get the major axis, the longer axis along the eigenvalues of the ellipses fitting the region
             /// @return pair of points that model the line
-            const std::pair<Vector2ui, Vector2ui>& get_major_axis();
+            const std::pair<Vector2ui, Vector2ui>& get_major_axis() const;
 
             /// @brief get the minor axis, the shorter axis along the eigenvalues of the ellipses fitting the region
             /// @return pair of points that model the line
-            const std::pair<Vector2ui, Vector2ui>& get_minor_axis();
+            const std::pair<Vector2ui, Vector2ui>& get_minor_axis() const;
 
             /// @brief get bounding box where each side is parallel to the corresponding minor/major axis
             /// @returns array of four points that model the box
-            std::array<Vector2ui, 4> get_bounding_box();
+            std::array<Vector2ui, 4> get_bounding_box() const;
 
             /// @brief get the axis aligned bounding box where each side is parallel to the x/y axis
             /// @returns array of four points that model the box
-            std::array<Vector2ui, 4> get_axis_aligned_bounding_box();
+            std::array<Vector2ui, 4> get_axis_aligned_bounding_box() const;
 
             /// @brief get length of the regions boundary
             /// @returns legnth
@@ -126,10 +130,6 @@ namespace crisp
             /// @brief get number of holes
             /// @returns number of holes
             size_t get_n_holes() const;
-
-            /// @brief get covariance matrix, quantized to 256x256
-            /// @returns matrix as 1d image
-            Image<float, 1> get_covariance_matrix() const;
 
             /// @brief get the nths moment invariant
             /// @param n: n in {1, 2, ..., 6, 7}
@@ -160,6 +160,9 @@ namespace crisp
             std::vector<Vector2ui> _boundary_polygon;
 
             Vector2f _centroid;
+
+            std::pair<Vector2f, Vector2f> _major_axis,
+                                          _minor_axis;
 
             Vector2ui _x_bounds,
                       _y_bounds;
