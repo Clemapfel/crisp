@@ -5,7 +5,6 @@
 
 namespace crisp
 {
-
     template<typename Image_t>
     ImageRegion<Image_t>::ImageRegion(const ImageSegment& segment, const Image_t& image)
     {
@@ -15,43 +14,234 @@ namespace crisp
     template<typename Image_t>
     void ImageRegion<Image_t>::create_from(const ImageSegment& segment, const Image_t& image)
     {
+        // init
         _elements.clear();
-        ImageSegment strong_pixels; // confirmed boundary pixels
-        ImageSegment weak_pixels;   // candidate boundary pixels
 
         unsigned int min_x = image.get_size().x(),
-                     max_x = 0;
+                max_x = 0;
         unsigned int min_y = image.get_size().y(),
-                     max_y = 0;
+                max_y = 0;
 
-        _expected_value = Value_t(0);
+        ImageSegment strong_pixels;
+        ImageSegment weak_pixels;
 
         for (auto& px : segment)
         {
+            _elements.insert(Element{px, image(px.x(), px.y())});
+
             size_t n_unconnected = 0;
-            for (long i = -1; i <= +1; ++i)
-                for (long j = -1; j <= +1; ++j)
-                    if (not (i == 0 and j == 0) and segment.find(Vector2ui(px.x() + i, px.y() + j)) == segment.end())
+            for (int i = -1; i <= +1; ++i)
+            {
+                for (int j = -1; j <= +1; ++j)
+                {
+                    // outer edge of image is always boundary
+                    if (px.x() + i < 0 or px.x() + i > image.get_size().x() or px.y() + j < 0 or
+                        px.y() + j > image.get_size().y())
                         n_unconnected++;
 
-            _elements.emplace(Element(px, image(px.x(), px.y()), n_unconnected));
-            _expected_value += image(px.x(), px.y());
+                    else if (not (i == 0 and j == 0) and
+                             segment.find(Vector2ui{px.x() + i, px.y() + j}) == segment.end())
+                        n_unconnected++;
 
-            min_x = std::min<unsigned int>(min_x, px.x());
-            max_x = std::max<unsigned int>(max_x, px.x());
-            min_y = std::min<unsigned int>(min_y, px.y());
-            max_y = std::max<unsigned int>(max_y, px.y());
+                    min_x = std::min<unsigned int>(min_x, px.x());
+                    max_x = std::max<unsigned int>(max_x, px.x());
+                    min_y = std::min<unsigned int>(min_y, px.y());
+                    max_y = std::max<unsigned int>(max_y, px.y());
+                }
+            }
+
+            if (n_unconnected > 1)
+                strong_pixels.insert(px);
+            else if (n_unconnected == 1)
+                weak_pixels.insert(px);
         }
-
-        _expected_value /= _elements.size();
 
         _x_bounds = {min_x, max_x};
         _y_bounds = {min_y, max_y};
 
-        _boundary.reserve(strong_pixels.size());
-        _boundary_directions.reserve(strong_pixels.size());
+        // trace boundary
+        _boundary.clear();
 
-        _porosity = (strong_pixels.size() + weak_pixels.size()) / _elements.size();
+        auto translate_in_direction = [&](Vector2ui c, uint8_t direction) -> Vector2ui {
+            direction = direction % 8;
+            int x_offset, y_offset;
+            switch (direction)
+            {
+                case 0: // WEST
+                    x_offset = -1;
+                    y_offset = 0;
+                    break;
+
+                case 1: // SOUTH WEST
+                    x_offset = -1;
+                    y_offset = +1;
+                    break;
+
+                case 2: // SOUTH
+                    x_offset = 0;
+                    y_offset = +1;
+                    break;
+
+                case 3: // SOUTH EAST
+                    x_offset = +1;
+                    y_offset = +1;
+                    break;
+
+                case 4: // EAST
+                    x_offset = +1;
+                    y_offset = 0;
+                    break;
+
+                case 5: // NORTH EAST
+                    x_offset = +1;
+                    y_offset = -1;
+                    break;
+
+                case 6: // NORTH
+                    x_offset = 0;
+                    y_offset = -1;
+                    break;
+
+                case 7: // NORTH_WEST
+                    x_offset = -1;
+                    y_offset = -1;
+                    break;
+
+                default:
+                    assert(false);
+            }
+
+            return Vector2ui{c.x() + x_offset, c.y() + y_offset};
+        };
+
+        std::vector<std::vector<Vector2ui>> boundaries_out;
+        std::vector<std::vector<uint8_t>> directions_out;
+
+        while (not strong_pixels.empty())
+        {
+            boundaries_out.emplace_back();
+            directions_out.emplace_back();
+
+            auto& boundary = boundaries_out.back();
+            auto& direction = directions_out.back();
+
+            auto top_left = *strong_pixels.begin();
+            boundary.push_back(top_left);
+            strong_pixels.erase(top_left);
+            direction.push_back(0);
+
+            size_t current_i = 0;
+            bool finished_maybe = false;
+            do
+            {
+                auto current = boundary.at(current_i);
+                auto current_direction = direction.at(current_i);
+
+                bool found = false;
+
+                // check strong candidates
+                for (int dir = current_direction - 1, n = 0; n < 8; ++dir, ++n)
+                {
+                    auto to_check = translate_in_direction(current, dir);
+
+                    if (to_check.x() < _x_bounds.x() or to_check.x() > _x_bounds.y() or
+                        to_check.y() < _y_bounds.x() or to_check.y() > _y_bounds.y())
+                        continue;
+
+                    if (to_check == top_left)
+                        finished_maybe = true;
+
+                    if (strong_pixels.find(to_check) != strong_pixels.end())
+                    {
+                        boundary.push_back(to_check);
+                        direction.push_back(dir);
+                        strong_pixels.erase(to_check);
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (found)
+                {
+                    current_i = boundary.size() - 1;
+                    continue;
+                }
+
+                // check weak candidates
+                for (int dir = current_direction - 1, n = 0; n < 8; ++dir, ++n)
+                {
+                    auto to_check = translate_in_direction(current, dir);
+
+                    if (to_check.x() < _x_bounds.x() or to_check.x() > _x_bounds.y() or
+                        to_check.y() < _y_bounds.x() or to_check.y() > _y_bounds.y())
+                        continue;
+
+                    if (weak_pixels.find(to_check) != weak_pixels.end())
+                    {
+                        boundary.push_back(to_check);
+                        direction.push_back(dir);
+                        weak_pixels.erase(to_check);
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (found)
+                {
+                    current_i = boundary.size() - 1;
+                    continue;
+                }
+                else if (finished_maybe)
+                    break;
+                else
+                {
+                    if (current_i == 0)
+                        break;
+                    else
+                        current_i--;
+                }
+            } while (true);
+        }
+
+        _boundary = boundaries_out.at(0);
+        _boundary_direction = directions_out.at(0);
+
+        _n_holes = boundaries_out.size() - 1;
+
+        auto turn_type = [&](size_t i_a, size_t i_b) -> int
+        {
+            auto point_a = _boundary.at(i_a),
+                 point_b = _boundary.at(i_b);
+
+            // warp point
+            if (abs(int(point_a.x()) - int(point_b.x())) > 1 or
+                abs(int(point_a.y()) - int(point_b.y())) > 1)
+                return 0;
+
+            auto dir_a = _boundary_direction.at(i_a),
+                 dir_b = _boundary_direction.at(i_b);
+
+            if (dir_b > dir_a or (dir_a == 7 and dir_b == 0))
+                return -1; // left-hand turn
+            else if (dir_b < dir_a or (dir_a == 0 and dir_b == 7))
+                return +1; // right-hand turn
+            else
+                return 0; // colinear
+        };
+
+        _boundary_polygon.clear();
+
+        Vector2f mean_pos = Vector2f{0, 0};
+
+        for (size_t i = 0; i < _boundary.size() - 1; ++i)
+        {
+            mean_pos += Vector2f{float(_boundary.at(i).x()), float(_boundary.at(i).y())};
+
+            if (turn_type(i, i+1) != 0)
+                _boundary_polygon.push_back(_boundary.at(i));
+        }
+
+        _centroid = mean_pos / float(_boundary.size());
     }
 
     template<typename Image_t>
@@ -160,12 +350,6 @@ namespace crisp
     float ImageRegion<Image_t>::get_area() const
     {
         return _elements.size();
-    }
-
-    template<typename Image_t>
-    float ImageRegion<Image_t>::get_porosity() const
-    {
-        return _porosity;
     }
 
     template<typename Image_t>
@@ -292,233 +476,17 @@ namespace crisp
             return (3 * m_21 - m_03) * (m_30 + m_12) * (pow(m_30 + m_12, 2) - 3 * pow(m_21 + m_03, 2)) +
                     (3 * m_12 - m_30) * (m_21 + m_03) * (3 * pow(m_30 + m_12, 2) - pow(m_21 + m_03, 2));
         }
-
-
     }
 
     template<typename Image_t>
-    GrayScaleImage ImageRegion<Image_t>::get_covariance_matrix() const
+    const std::vector<Vector2ui>& ImageRegion<Image_t>::get_boundary() const
     {
-        // TODO
-        assert(false);
-    }
-
-    template<typename Image_t>
-    void ImageRegion<Image_t>::compute_boundary()
-    {
-        if (_boundary_initialized)
-            return;
-
-        ImageSegment strong_pixels,
-                     weak_pixels;
-
-        for (auto& element : _elements)
-        {
-            if (element.n_unconnected > 1)
-                strong_pixels.insert(element.position);
-            else if (element.n_unconnected == 1)
-                weak_pixels.insert(element.position);
-        }
-
-        auto translate_in_direction = [&](Vector2ui c, uint8_t direction) -> Vector2ui
-        {
-            direction = direction % 8;
-            int x_offset, y_offset;
-            switch (direction)
-            {
-                case 0: // WEST
-                    x_offset = -1;
-                    y_offset = 0;
-                    break;
-
-                case 1: // SOUTH WEST
-                    x_offset = -1;
-                    y_offset = +1;
-                    break;
-
-                case 2: // SOUTH
-                    x_offset = 0;
-                    y_offset = +1;
-                    break;
-
-                case 3: // SOUTH EAST
-                    x_offset = +1;
-                    y_offset = +1;
-                    break;
-
-                case 4: // EAST
-                    x_offset = +1;
-                    y_offset = 0;
-                    break;
-
-                case 5: // NORTH EAST
-                    x_offset = +1;
-                    y_offset = -1;
-                    break;
-
-                case 6: // NORTH
-                    x_offset = 0;
-                    y_offset = -1;
-                    break;
-
-                case 7: // NORTH_WEST
-                    x_offset = -1;
-                    y_offset = -1;
-                    break;
-
-                default:
-                    assert(false);
-            }
-
-            return Vector2ui(c.x() + x_offset, c.y() + y_offset);
-        };
-
-        std::vector<std::vector<Vector2ui>> boundaries_out;
-        std::vector<std::vector<uint8_t>> directions_out;
-
-        while (strong_pixels.size() > 0)
-        {
-            boundaries_out.emplace_back();
-            directions_out.emplace_back();
-
-            auto& boundary = boundaries_out.back();
-            auto& direction = directions_out.back();
-
-            auto top_left = *strong_pixels.begin();
-            boundary.push_back(top_left);
-            strong_pixels.erase(top_left);
-            direction.push_back(0);
-
-            size_t current_i = 0;
-            bool finished_maybe = false;
-            do
-            {
-                auto current = boundary.at(current_i);
-                auto current_direction = direction.at(current_i);
-
-                bool found = false;
-
-                // check strong candidates
-                for (int dir = current_direction - 1, n = 0; n < 8; ++dir, ++n)
-                {
-                    auto to_check = translate_in_direction(current, dir);
-
-                    if (to_check.x() < _x_bounds.x() or to_check.x() > _x_bounds.y() or
-                        to_check.y() < _y_bounds.x() or to_check.y() > _y_bounds.y())
-                        continue;
-
-                    if (to_check == top_left)
-                        finished_maybe = true;
-
-                    if (strong_pixels.find(to_check) != strong_pixels.end())
-                    {
-                        boundary.push_back(to_check);
-                        direction.push_back(dir);
-                        strong_pixels.erase(to_check);
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (found)
-                {
-                    current_i = boundary.size() - 1;
-                    continue;
-                }
-
-                // check weak candidates
-                for (int dir = current_direction - 1, n = 0; n < 8; ++dir, ++n)
-                {
-                    auto to_check = translate_in_direction(current, dir);
-
-                    if (to_check.x() < _x_bounds.x() or to_check.x() > _x_bounds.y() or
-                        to_check.y() < _y_bounds.x() or to_check.y() > _y_bounds.y())
-                        continue;
-
-                    if (weak_pixels.find(to_check) != weak_pixels.end())
-                    {
-                        boundary.push_back(to_check);
-                        direction.push_back(dir);
-                        weak_pixels.erase(to_check);
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (found)
-                {
-                    current_i = boundary.size() - 1;
-                    continue;
-                }
-                else if (finished_maybe)
-                    break;
-                else
-                {
-                    if (current_i == 0)
-                        break;
-                    else
-                        current_i--;
-                }
-            } while (true);
-        }
-
-        _boundary = boundaries_out.at(0);
-        _boundary_directions = directions_out.at(0);
-
-        _n_holes = boundaries_out.size() - 1;
-
-        auto turn_type = [&](size_t i_a, size_t i_b) -> int
-        {
-            auto point_a = _boundary.at(i_a),
-                 point_b = _boundary.at(i_b);
-
-            // warp point
-            if (abs(int(point_a.x()) - int(point_b.x())) > 1 or
-                abs(int(point_a.y()) - int(point_b.y())) > 1)
-                return 0;
-
-            auto dir_a = _boundary_directions.at(i_a),
-                 dir_b = _boundary_directions.at(i_b);
-
-            if (dir_b > dir_a or (dir_a == 7 and dir_b == 0))
-                return -1; // left-hand turn
-            else if (dir_b < dir_a or (dir_a == 0 and dir_b == 7))
-                return +1; // right-hand turn
-            else
-                return 0; // colinear
-        };
-
-        _boundary_polygon.clear();
-
-        Vector2f mean_pos = Vector2f(0, 0);
-
-        for (size_t i = 0; i < _boundary.size() - 1; ++i)
-        {
-            mean_pos += Vector2f(_boundary.at(i).x(), _boundary.at(i).y());
-
-            if (turn_type(i, i+1) != 0)
-                _boundary_polygon.push_back(_boundary.at(i));
-        }
-
-        _centroid = mean_pos / float(_boundary.size());
-        _boundary_initialized = true;
-    }
-
-    template<typename Image_t>
-    const std::vector<Vector2ui>& ImageRegion<Image_t>::get_boundary()
-    {
-        if (not _boundary_initialized)
-            compute_boundary();
-
         return _boundary;
     }
 
     template<typename Image_t>
-    const std::vector<Vector2ui>& ImageRegion<Image_t>::get_boundary_polygon()
+    const std::vector<Vector2ui>& ImageRegion<Image_t>::get_boundary_polygon() const
     {
-        if (not _boundary_initialized)
-            compute_boundary();
-
         return _boundary_polygon;
     }
 }

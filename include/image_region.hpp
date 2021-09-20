@@ -21,7 +21,7 @@ namespace crisp
     {
         public:
             /// @brief expose images value_t as member
-            using Value_t = typename Image_t::value_t;
+            using Value_t = typename Image_t::Value_t;
 
             /// @brief non-const iterator, iterates left-to-right, top-to-bottom
             class Iterator;
@@ -61,6 +61,14 @@ namespace crisp
             /// @brief const end
             /// @returns const iterator pointing to past-the-end element
             auto end() const;
+
+            /// @brief get all boundary pixel positions
+            /// @returns const reference to stored vector of positions
+            const std::vector<Vector2ui>& get_boundary() const;
+
+            /// @brief get all boundary polygon vertex positions
+            /// @returns const reference to stored vector of positions
+            const std::vector<Vector2ui>& get_boundary_polygon() const;
 
             /// @brief compute farthers point signature as proposed by El-ghazal, Basir, Belkasim (2009) in counter-clockwise order
             /// @returns vector of distances
@@ -145,8 +153,11 @@ namespace crisp
 
             std::set<Element, ElementCompare> _elements;
 
+            void compute_boundary();
+
             std::vector<Vector2ui> _boundary;
             std::vector<uint8_t> _boundary_direction;
+            std::vector<Vector2ui> _boundary_polygon;
 
             Vector2f _centroid;
 
@@ -154,9 +165,12 @@ namespace crisp
                       _y_bounds;
 
             size_t _n_holes;
-
-
-
-
     };
+
+    /// @brief split a segment into multiple closed, 4-connected regions
+    template<typename Image_t>
+    std::vector<ImageRegion<Image_t>> decompose_into_regions(const ImageSegment&, const Image_t&);
+
 }
+
+#include ".src/image_region.inl"
