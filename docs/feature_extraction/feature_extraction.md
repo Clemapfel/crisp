@@ -227,7 +227,23 @@ The value of the vertices of the rectangle are relative to the top-left corner o
 
 ![](./pepper_aabb.png)
 
-## 4.2 
+## 4.2 Major & Minor Axis
+
+The major and minor axis of a region is defined as the ellipses formed by the eigen vectors multiplied with their respective eigenvalues of the positional covariance matrix of the boundary of a region. It's not important to understand what this means, we can think of the major and minor axis as the "orientation" of an object, where the major axis is along the highest variance (in terms of spacial position) and both axis intersect with a centroid. We access the minor and major access using:
+
+```cpp
+const std::pair<Vector2f, Vector2f>& get_major_axis() const;
+
+const std::pair<Vector2f, Vector2f>& get_minor_axis() const;
+```
+
+Each of the axis is given as two point. Visualizing the axis properly is difficult as they are sub-pixel precision. By scaling the image of the pepper we can get an idea of what they represent:
+
+![](./pepper_eigenvectors_modified.png)
+
+Where magenta is the major, green the minor axis and in yellow we have the ellipses modeled.
+
+We 
 
 
 

@@ -93,11 +93,11 @@ namespace crisp
 
             /// @brief get the major axis, the longer axis along the eigenvalues of the ellipses fitting the region
             /// @return pair of points that model the line
-            const std::pair<Vector2ui, Vector2ui>& get_major_axis() const;
+            const std::pair<Vector2f, Vector2f>& get_major_axis() const;
 
             /// @brief get the minor axis, the shorter axis along the eigenvalues of the ellipses fitting the region
             /// @return pair of points that model the line
-            const std::pair<Vector2ui, Vector2ui>& get_minor_axis() const;
+            const std::pair<Vector2f, Vector2f>& get_minor_axis() const;
 
             /// @brief get bounding box where each side is parallel to the corresponding minor/major axis
             /// @returns array of four points that model the box
@@ -163,6 +163,7 @@ namespace crisp
 
             std::pair<Vector2f, Vector2f> _major_axis,
                                           _minor_axis;
+            double _eccentricity;
 
             Vector2ui _x_bounds,
                       _y_bounds;

@@ -20,11 +20,20 @@ int main()
     auto pepper_segment = segments.at(1);
     auto pepper = ImageRegion(pepper_segment, image);
 
-    auto covar = pepper.get_covariance_matrix();
+    auto major = pepper.get_major_axis();
+    auto minor = pepper.get_minor_axis();
 
-    return 0;
     for (auto& px : image)
         px *= 0.5;
+
+    image(major.first.x(), major.first.y()) = RGB{1, 0, 1};
+    image(major.second.x(), major.second.y()) = RGB{1, 0, 1};
+
+    image(minor.first.x(), minor.first.y()) = RGB{0, 1, 0};
+    image(minor.second.x(), minor.second.y()) = RGB{0, 1, 0};
+
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/feature_extraction/pepper_eigenvectors.png");
+    return 0;
 
     /*
     size_t bad_n = 0;

@@ -245,6 +245,71 @@ namespace crisp
         }
 
         _centroid = mean_pos / float(_boundary.size());
+
+        // compute minor and major axis
+        float mean_x = 0, mean_y = 0;
+
+        for (auto& px : _boundary)
+        {
+            mean_x += px.x();
+            mean_y += px.y();
+        }
+
+        mean_x /= _boundary.size();
+        mean_y /= _boundary.size();
+
+        Eigen::Matrix<float, 2, 2> covar;
+
+        for (auto& px : _boundary)
+        {
+            Eigen::Matrix<float, 2, 1> current;
+            current << (px.x() - mean_x),
+                       (px.y() - mean_y);
+
+            auto current_covar = (current * current.transpose());
+            covar += current_covar;
+        }
+
+        covar /= _elements.size();
+
+        auto eigens = Eigen::EigenSolver<decltype(covar)>(covar);
+
+        auto e1 = Eigen::Vector2f(eigens.eigenvectors()(0, 0).real(), eigens.eigenvectors()(0, 1).real());
+        e1.normalize();
+        auto e2 = Eigen::Vector2f(eigens.eigenvectors()(1, 0).real(), eigens.eigenvectors()(1, 1).real());
+        e2.normalize();
+
+        auto l1 = eigens.eigenvalues()( 0).real();
+        auto l2 = eigens.eigenvalues()( 1).real();
+
+        auto centroid= Eigen::Vector2f(_centroid.x(), _centroid.y());
+
+        auto to_crisp_vec = [](auto eigen)
+        {
+            return Vector2f{eigen(0), eigen(1)};
+        };
+
+        if (l1 > l2)
+        {
+            _major_axis.first = to_crisp_vec(centroid - l1 * e1);
+            _major_axis.second = to_crisp_vec(centroid + l1 * e1);
+
+            _minor_axis.first = to_crisp_vec(centroid - l2 * e2);
+            _minor_axis.second = to_crisp_vec(centroid + l2 * e2);
+
+            _eccentricity = sqrt(1 - (l1 / l2) * (l1 / l2));
+        }
+        else
+        {
+            _major_axis.first = to_crisp_vec(centroid - l2 * e2);
+            _major_axis.second = to_crisp_vec(centroid + l2 * e2);
+
+            _minor_axis.first = to_crisp_vec(centroid - l1 * e1);
+            _minor_axis.second = to_crisp_vec(centroid + l1 * e1);
+
+            _eccentricity = sqrt(1 - (l2 / l1) * (l2 / l1));
+        }
+
     }
 
     template<typename Image_t>
@@ -514,54 +579,17 @@ namespace crisp
     const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&
     ImageRegion<Image_t>::get_covariance_matrix() const
     {
-        float mean_x = 0, mean_y = 0;
+    }
 
-        for (auto& px : _boundary)
-        {
-            mean_x += px.x();
-            mean_y += px.y();
-        }
+    template<typename Image_t>
+    const std::pair<Vector2f, Vector2f> & ImageRegion<Image_t>::get_major_axis() const
+    {
+        return _major_axis;
+    }
 
-        mean_x /= _boundary.size();
-        mean_y /= _boundary.size();
-
-        Eigen::Matrix<float, 2, 2> covar;
-
-        for (auto& px : _boundary)
-        {
-            Eigen::Matrix<float, 2, 1> current;
-            current << (px.x() - mean_x),
-                       (px.y() - mean_y);
-
-            auto current_covar = (current * current.transpose());
-            covar += current_covar;
-        }
-
-        covar /= _elements.size();
-
-        auto eigens = Eigen::EigenSolver<decltype(covar)>(covar);
-
-        auto e1 = Eigen::Vector2f(eigens.eigenvectors()(0, 0).real(), eigens.eigenvectors()(0, 1).real());
-        e1.normalize();
-        auto e2 = Eigen::Vector2f(eigens.eigenvectors()(1, 0).real(), eigens.eigenvectors()(1, 1).real());
-        e2.normalize();
-
-        auto l1 = eigens.eigenvalues()( 0).real();
-        auto l2 = eigens.eigenvalues()( 1).real();
-
-        auto centroid= Eigen::Vector2f(_centroid.x(), _centroid.y());
-
-        auto to_crisp_vec = [](auto eigen)
-        {
-            return Vector2f{eigen(0), eigen(1)};
-        };
-
-        _major_axis.first = to_crisp_vec(centroid - l1 * e1);
-        _major_axis.second = to_crisp_vec(centroid + l1 * e1);
-
-        _minor_axis.first = to_crisp_vec(centroid - l2 * e2);
-        _minor_axis.second = to_crisp_vec(centroid + l2 * e2);
-
-        return covar;
+    template<typename Image_t>
+    const std::pair<Vector2f, Vector2f> & ImageRegion<Image_t>::get_minor_axis() const
+    {
+        return _minor_axis;
     }
 }
