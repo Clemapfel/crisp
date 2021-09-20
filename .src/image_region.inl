@@ -166,6 +166,8 @@ namespace crisp
                     current_i = boundary.size() - 1;
                     continue;
                 }
+                else if (finished_maybe)
+                    break;
 
                 // check weak candidates
                 for (int dir = current_direction - 1, n = 0; n < 8; ++dir, ++n)
@@ -191,8 +193,6 @@ namespace crisp
                     current_i = boundary.size() - 1;
                     continue;
                 }
-                else if (finished_maybe)
-                    break;
                 else
                 {
                     if (current_i == 0)

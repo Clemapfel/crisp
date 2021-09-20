@@ -118,15 +118,51 @@ Mathematically, ``crisp``s regions are *closed, simply connected regions*. This 
 
 Now that we assured that our region is indeed handed a 4-connected segment we can concern ourselfs with the second and (in terms of feature recognition) most important property: it's boundary. In ``crisp`` boundaries have the following properties:
 
-Let B = {b1, b2, ..., bm} be the set of boundary points, then:
-+ i) for each bi there exists a b_i-1, b_i+1 in B such that b_i-1 is 8-connected to b_i, b_i+1 is 8-connected to b_i and b_i-1 is not 8-connected to b_i+1
-+ ii) the set B is minimal in terms of cardinality under i), meaning if we were to remove any b_i in B, property i) would be violated
+Let ``B = {b_0, b_1, b_2, ..., bm}`` be the set of boundary points, then:
++ i) for each ``b_i`` there exists a ``b_i-1``, ``b_i+1`` in ``B`` such that ``b_i-1`` is 8-connected to ``b_i``, ``b_i+1`` is 8-connected to ``b_i`` and ``b_i-1`` is not 8-connected to ``b_i+1``
++ ii) the set ``B`` is minimal in terms of cardinality under i), meaning if we were to remove any ``b_i`` in ``B``, property i) would be violated
 
-``crisp`` prides itself on being somewhat easy to understand to people less proficient in math so lets visually explore each of these property:
+``crisp`` prides itself on being somewhat easy to understand to people less proficient in math so lets explore each of these property visually:
 
-### 2.1 8-Connectivity
+### 2.1 8-Connectivity and Minimal Cardinality
 
-Property i) means the region is an unbroken chain of 8-connected pixels and that the boundary forms and unbroken path so that you can jump from b_0 to b_1, b_1 to b_2, ... b_i to b_i+1, ... b_m-1 to b_m and, crucially, b_m back to b_0. 
+Property i) means the region is an unbroken chain of 8-connected pixels and that the boundary forms an unbroken path such that one can jump from ``b_0`` to ``b_1``, ``b_1`` to ``b_2``, etc. up to ``b_m-1`` to ``b_m`` (the last point) and then, crucially, from ``b_m`` back to ``b_0`` completing the circle. 
 
+Let's again consider the region of our pepper:<br>
 
+![](./pepper_segment.png)
+
+A simple way of tracing it's boundary would be to highlight all pixels that have at least one neighbor that is not in the region (black, in our case).
+
+![](./pepper_boundary_bad.png)
+
+This is a boundary that fullfills condition i), however inspecting the boundary closely we notice many redundant points:
+
+![](./pepper_boundary_bad_zoom.png)
+
+If we were to ask a human to remove as many points as possible without compromising condition i) we would get the following boundary, where necessary pixels are highlighted in magenta, redundant pixels in cyan:
+
+![](./pepper_boundary_good_zoom.png)
+
+This is what condition ii) represents, we want all pixels to be non-redundant. This vastly increases performance as for our pepper example we go from 3854 pixels for our trivial boundary to only 472 pixels using a minimal boundary:
+
+![](./pepper_boundary.png)
+
+``crisp``s proprietary boundary tracing algorithm assures that the computed boundary is always minimal. We can access it using: ``std::vector<Vector2ui> ImageRegion::get_boundary() const``.
+
+### 2.2 Boundary Polygon
+
+We can even further reduce the number of points by treating the boundary as a polygon that has vertices and straight, non-intersecting lines connecting exactly two of the vertices. Consider this part of our pepper boundary:
+
+![](./pepper_line_zoom.png)
+
+We note multiple straight lines, each of these lines can be respresented by just two pixels at the start and beginning of the line, shown in green ``rgb(0, 1, 0)`` here:
+
+![](./pepper_line_zoom_polygon.png)
+
+Using this approach we reduce the number of boundary points from 472 to only 193, again without loosing any information. The information is retained by the fact that the polygon vertices are ordered in counter-clockwise direction, this way we know exactly where to draw the straight line to the next point. 
+
+Now that we reduced the entire information contained in the region in the shape of a pepper to just 193 pixels some may think we are done but thanks to more math we can reduce it even further and/or increase it's generality.
+
+## 
 
