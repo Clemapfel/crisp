@@ -297,11 +297,54 @@ N       translation     scale           rotation        mirroring
 
 We note that all first 4 moments are completely independent of translation, scale, rotation and mirroring of the region and are thus highly valuable in representing a region
 
+## 5. Texture Descriptors
 
+Until now we have used descpritors that either describe a regions shape or, both it's shape and values. In this section we will deal with only a regions value. *Texture* has no agreed on definition but we can intuitively describe it as rate of change, value range and periodicity of the intensity values of a region. 
 
+## 5.1 Co-Occurence Matrix
 
+To quantify texture we first need to construct the *co-occurence matrix*. The co-occurence matrix is a matrix of size 256x256. It counts for each intensity pair i_a, i_b the number of times two pixels a, b that are next to each other have the corresponding intensities. When constructing the co-occurence matrix we need to supply a direction. Let a = (x, y) and b = (x + i, y + j) the pixels of the corresponding intensities i_a, i_b then the direction are as follow:
 
+```cpp
+Direction           a           b
+-------------------------------------
+PLUS_MINUS_ZERO    (x,y)        (x,   y-1)
+PLUS_45            (x,y)        (x+1, y-1)
+PLUS_90            (x,y)        (x+1, y)
+PLUS_125           (x,y)        (x+1, y+1)
+PLUS_MINUS_180     (x,y)        (x,   y+1)
+MINUS_125          (x,y)        (x-1, y+1)
+MINUS_90           (x,y)        (x-1, y)
+MINUS_45           (x,y)        (x-1, y-1)
+```
 
+Intuitive the represents the pattern in on direction. We can quantify the distribution of intensity value pairs occurences using the following three descriptors:
+
+## 5.2 Maximum Response
+
+The maximum response is the probability of the most common intensity value pair. It is a number in [0, 1], where 1 is a region that only has a single value.
+
+We can get the maximum response directly using ``ImageRegion::get_maximum_intensity_probability(CoOccurenceDirection)``
+
+## 5.3 Intensity Correlation
+
+A measure of how correlated the intensities are is defined as the mean over all intensities pairs respective correlation. This measure can be thought of as quantifying how regular a pattern is, the higher the mean correlation, the more often the same intensitiy values pairs in that direction occurr. It's values are in [-1, 1]
+
+We can the mean intensity correlation using ``get_intensity_correlation(CoOccurenceDirection)``.
+
+## 5.4 Uniformity
+
+Uniformity is a measure of how constant the intensity values are. For a constant region the uniformity is 1, for a more divers region the values are closer to 0.
+
+We can access uniformity using ``get_uniformity(CoOccurenceDirection)``
+
+## 5.5 Homogenity
+
+In the co-occurence matrix the diagonal resprents occurences of intensity pair i_a, i_b where i_a = i_b. Homogenity quantifies how many of the intensity pairs like this they are and how close the overall region is to achieving full homogenity. It's value is in [0, 1] and we can access the value using ``get_homogenity(CoOccurenceDirection)``. 
+
+## 5.6 Entropy
+
+Just like in statistics, this measures the randomness of the co-occurence distribution where a value of 1 means all pairings are uniformly distributed, the less uniform the distribution the closer the value is to 0. We compute the entropy using ``get_entropy(CoOccurenceDirection)``.
 
 
 

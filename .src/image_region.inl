@@ -314,6 +314,7 @@ namespace crisp
             _eccentricity = sqrt(1 - (l2 / l1) * (l2 / l1));
         }
 
+        _co_occurence_matrices.clear();
     }
 
     template<typename Image_t>
@@ -595,5 +596,109 @@ namespace crisp
     const std::pair<Vector2f, Vector2f> & ImageRegion<Image_t>::get_minor_axis() const
     {
         return _minor_axis;
+    }
+
+    template<typename Image_t>
+    const Eigen::Matrix<size_t, 256, 256>& ImageRegion<Image_t>::get_co_occurence_matrix(CoOccurenceDirection direction) const
+    {
+        assert(false && "DEBUG");
+
+        using Value_t = typename Image_t::Value_t;
+        using Inner_t = typename Image_t::Value_t::Value_t;
+
+        Eigen::Matrix<size_t, 256, 256> out;
+
+        auto process = [&](size_t x, size_t y, size_t x_2, size_t y_2)
+        {
+            auto& current = out.back();
+
+            const Element* first = nulltpr;
+            const Element* second = nulltpr;
+
+            for (const auto& element : _elements)
+            {
+                if (element.position == Vector2ui{x, y})
+                    first = &element;
+                else if (element.position = Vector2ui{x_2, y_2})
+                    second = &element;
+
+                if (first != nullptr and second != nullptr)
+                    break;
+            }
+
+            if (first == nullptr or second == nullptr)
+                return;
+
+            float first_value = 0, second_value = 0;
+            for (size_t i = 0; i < Value_t::size(); ++i)
+            {
+                first_value += first->value.at(i);
+                second_value += second->value.at(i);
+            }
+
+            first_value = (first_value / Value_t::size()) * 255;
+            second_value = (second_value / Value_t::size()) * 255;
+
+            out(size_t(first_value), size_t(second_value)) += 1;
+        };
+
+
+        for (size_t i = 0; i < Value_t::size(); ++i)
+        {
+            for (auto& element : _elements)
+            {
+                size_t x = element.position.x();
+                size_t y = element.position.y();
+
+                switch (direction)
+                {
+                    case PLUS_MINUS_ZERO:
+                        process(x, y, x, y - 1);
+                        break;
+                    case PLUS_45:
+                        process(x, y, x+1, y-1);
+                        break;
+                    case PLUS_90:
+                        process(x, y, x+1, y);
+                        break;
+                    case PLUS_125:
+                        process(x, y, x+1, y+1);
+                        break;
+                    case PLUS_MINUS_180:
+                        process(x, y, x, y+1);
+                        break;
+                    case MINUS_125:
+                        process(x, y, x-1, y+1);
+                        break;
+                    case MINUS_90:
+                        process(x, y, x-1, y);
+                        break;
+                    case MINUS_45:
+                        process(x, y, x-1, y-1);
+                        break;
+                }
+            }
+        }
+
+        _co_occurence_matrices.insert(std::make_pair(direction, out));
+        return _co_occurence_matrices.at(direction);
+    }
+
+    template<typename Image_t>
+    float ImageRegion<Image_t>::get_maximum_intensity_probability() const
+    {
+        assert(false);
+    }
+
+    template<typename Image_t>
+    float ImageRegion<Image_t>::get_intensity_correlation() const
+    {
+        assert(false);
+    }
+
+    template<typename Image_t>
+    float ImageRegion<Image_t>::get_uniformity() const
+    {
+        assert(false);
     }
 }
