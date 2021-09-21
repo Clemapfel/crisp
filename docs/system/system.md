@@ -3,7 +3,9 @@
 ---
 # System Module
 
-The system module handles interfacing with the OS and disk. 
+Keyboard/Mouse Input, Loading and Saving Images 
+
+## Table of Contents
 
 # 1. Image I/O
 

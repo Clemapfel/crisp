@@ -1,9 +1,13 @@
 ###[[<< back to index]](../index.md)
 
 ---
-# Vectors
+# [Vectors](../../include/vector.hpp)
 
 n-dimensional vectors of artihmetic value type, vector-vector and vector-scalar arithmetics and comparison operators
+
+```cpp
+#include <vector.hpp>
+```
 
 ## Table of Contents
 
@@ -13,9 +17,9 @@ n-dimensional vectors of artihmetic value type, vector-vector and vector-scalar 
 4. [**Typedefs for Convenience**](#4-typedefs)<br>
 5. [**Arithmetics & Comparison Operators**](#5-arithmetics-and-comparison-operators)<br>
     5.1 [Vector-Vector Arithmetics](#51-vector-vector-arithmetics)<br>
-   5.2 [Vector-Scalar Arithmetics](#52-vector-scalar-arithmetics)<br>
-   5.3 [Vector-Vector Comparison](#53-vector-vector-comparison)<br>
-   5.4 [Vector-Scalar Comparison](#54-vector-scalar-comparison)<br>
+    5.2 [Vector-Scalar Arithmetics](#52-vector-scalar-arithmetics)<br>
+    5.3 [Vector-Vector Comparison](#53-vector-vector-comparison)<br>
+    5.4 [Vector-Scalar Comparison](#54-vector-scalar-comparison)<br>
    
 
 ## 1. Introduction
@@ -38,6 +42,8 @@ We can access a vectors component types using the exposed public member typedef 
 We can create a vector in multiple ways
 
 ```cpp
+#include <vector.hpp>
+
 // default ctor
 auto vec = Vector<float, 3>();
 
