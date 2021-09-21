@@ -37,6 +37,10 @@ namespace crisp
             /// @param image
             ImageRegion(const ImageSegment& segment, const Image_t& image);
 
+            /// @brief construct region from entire image
+            /// @param image:
+            ImageRegion(const Image_t& image);
+
             /// @brief construct from segment and image
             /// @param segment: set of pixel coordinates
             /// @param image
@@ -147,14 +151,22 @@ namespace crisp
             /// @brief direction of co-occurence when traveling from index (x,y) to index (x+a,y+b) with a, b in {-1, 0, 1}
             enum CoOccurenceDirection : uint16_t
             {
-                PLUS_MINUS_ZERO = 0,    // (x,y) -> (x,   y-1)
-                PLUS_45 = 1,            // (x,y) -> (x+1, y-1)
-                PLUS_90 = 2,            // (x,y) -> (x+1, y)
-                PLUS_125 = 3,           // (x,y) -> (x+1, y+1)
-                PLUS_MINUS_180 = 4,     // (x,y) -> (x,   y+1)
-                MINUS_125 = 5,          // (x,y) -> (x-1, y+1)
-                MINUS_90 = 6,           // (x,y) -> (x-1, y)
-                MINUS_45 = 7            // (x,y) -> (x-1, y-1)
+                /// (x,y) -> (x,   y-1)
+                PLUS_MINUS_ZERO = 0,
+                /// (x,y) -> (x+1, y-1)
+                PLUS_45 = 1,
+                /// (x,y) -> (x+1, y)
+                PLUS_90 = 2,
+                /// (x,y) -> (x+1, y+1)
+                PLUS_125 = 3,
+                /// (x,y) -> (x,   y+1)
+                PLUS_MINUS_180 = 4,
+                /// (x,y) -> (x-1, y+1)
+                MINUS_125 = 5,
+                /// (x,y) -> (x-1, y)
+                MINUS_90 = 6,
+                /// (x,y) -> (x-1, y-1)
+                MINUS_45 = 7
             };
 
             /// @brief get co-occurence matrix (the number of occurences of a pair of intensities) in specified direction. For images with multiple planes, the co-occurence matrix of each plane is returned
@@ -177,6 +189,11 @@ namespace crisp
             /// @brief get co-occurence matrices entropy
             /// @returns float in [0, ]1
             float get_entropy(CoOccurenceDirection) const;
+
+            /// @brief get measure of difference between co-occuring pixels
+            /// @returns float in [0, 1]
+            float get_contrast(CoOccurenceDirection) const;
+
 
         private:
             struct Element
@@ -214,6 +231,8 @@ namespace crisp
 
             size_t _n_holes;
 
+            float _max_probability = 0;
+            std::map<CoOccurenceDirection, size_t> _sum_of_elements;
             std::map<CoOccurenceDirection, Eigen::Matrix<size_t, 256, 256>> _co_occurence_matrices;
     };
 

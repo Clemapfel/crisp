@@ -15,6 +15,17 @@ namespace crisp
     }
 
     template<typename Image_t>
+    ImageRegion<Image_t>::ImageRegion(const Image_t& image)
+    {
+        auto segment = ImageSegment();
+        for (size_t x = 0; x < image.get_size().x(); ++x)
+            for (size_t y = 0; y < image.get_size().y(); ++y)
+                segment.insert(Vector2ui{x, y});
+
+        create_from(segment, image);
+    }
+
+    template<typename Image_t>
     void ImageRegion<Image_t>::create_from(const ImageSegment& segment, const Image_t& image)
     {
         // init
@@ -27,6 +38,9 @@ namespace crisp
 
         ImageSegment strong_pixels;
         ImageSegment weak_pixels;
+
+        std::map<size_t, size_t> hash_to_n_occurences;
+        size_t max_n_occurence = 0;
 
         for (auto& px : segment)
         {
@@ -46,6 +60,13 @@ namespace crisp
                              segment.find(Vector2ui{px.x() + i, px.y() + j}) == segment.end())
                         n_unconnected++;
 
+                    auto hash = px.to_hash();
+                    if (hash_to_n_occurences.find(hash) == hash_to_n_occurences.end())
+                        hash_to_n_occurences.emplace(hash, 0);
+
+                    hash_to_n_occurences.at(hash) += 1;
+                    max_n_occurence = std::max(max_n_occurence, hash_to_n_occurences.at(hash));
+
                     min_x = std::min<unsigned int>(min_x, px.x());
                     max_x = std::max<unsigned int>(max_x, px.x());
                     min_y = std::min<unsigned int>(min_y, px.y());
@@ -58,6 +79,8 @@ namespace crisp
             else if (n_unconnected == 1)
                 weak_pixels.insert(px);
         }
+
+        _max_probability = float(max_n_occurence) / float(_elements.size());
 
         _x_bounds = {min_x, max_x};
         _y_bounds = {min_y, max_y};
@@ -687,18 +710,117 @@ namespace crisp
     template<typename Image_t>
     float ImageRegion<Image_t>::get_maximum_intensity_probability() const
     {
-        assert(false);
+        return _max_probability;
     }
 
     template<typename Image_t>
-    float ImageRegion<Image_t>::get_intensity_correlation() const
+    float ImageRegion<Image_t>::get_intensity_correlation(CoOccurenceDirection direction) const
     {
-        assert(false);
+        auto& occurence = get_co_occurence_matrix(direction);
+        float sum_of_elements = occurence.sum();
+
+        float col_mean = 0;
+        float row_mean = 0;
+        float col_stddev = 0;
+        float row_stddev = 0;
+
+        for (size_t i = 0; i < occurence.rows(); ++i)
+            for (size_t j = 0; j < occurence.cols(); ++j)
+                row_mean += i * (occurence(i, j) / sum_of_elements);
+
+        for (size_t i = 0; i < occurence.rows(); ++i)
+            for (size_t j = 0; j < occurence.cols(); ++j)
+                row_stddev += (i - row_mean) * (i - row_mean) * (occurence(i, j) / sum_of_elements);
+
+        if (row_stddev == 0)
+            return std::numeric_limits<float>::infinity();
+
+        row_stddev = sqrt(row_stddev);
+
+        for (size_t j = 0; j < occurence.cols(); ++j)
+            for (size_t i = 0; i < occurence.rows(); ++i)
+                col_mean += j * (occurence(i, j) / sum_of_elements);
+
+        for (size_t j = 0; j < occurence.cols(); ++j)
+            for (size_t i = 0; i < occurence.rows(); ++i)
+                col_stddev += (j - col_mean) * (j - col_mean) * (occurence(i, j) / sum_of_elements);
+
+        if (col_stddev == 0)
+            return std::numeric_limits<float>::infinity();
+
+        col_stddev = sqrt(col_stddev);
+
+        float correlation = 0;
+        for (size_t i = 0; i < occurence.rows(); ++i)
+            for (size_t j = 0; j < occurence.cols(); ++j)
+                correlation += ((i - row_mean) * (j - col_mean) * occurence(i, j) / sum_of_elements) / (row_stddev * col_stddev);
+
+        assert(correlation >= -1 and correlation <= 1);
+        return correlation;
     }
 
     template<typename Image_t>
-    float ImageRegion<Image_t>::get_uniformity() const
+    float ImageRegion<Image_t>::get_uniformity(CoOccurenceDirection direction) const
     {
-        assert(false);
+        auto& occurence = get_co_occurence_matrix(direction);
+        size_t sum_of_elements = occurence.sum();
+
+        float sum = 0;
+        for (size_t i = 0; i < occurence.rows(); ++i)
+            for (size_t j = 0; j < occurence.cols(); ++j)
+            {
+                float p_ij = float(occurence(i, j)) / float(sum_of_elements);
+                sum += p_ij * p_ij;
+            }
+
+        return sum;
+    }
+
+    template<typename Image_t>
+    float ImageRegion<Image_t>::get_homogenity(CoOccurenceDirection direction) const
+    {
+        auto& occurence = get_co_occurence_matrix(direction);
+        size_t sum_of_elements = occurence.sum();
+
+        float sum = 0;
+        for (size_t i = 0; i < occurence.rows(); ++i)
+            for (size_t j = 0; j < occurence.cols(); ++j)
+                sum += float(occurence(i, j)) / float(sum_of_elements) / (1.f + abs(int(i) - int(j)));
+
+        return sum;
+    }
+
+    template<typename Image_t>
+    float ImageRegion<Image_t>::get_entropy(CoOccurenceDirection direction) const
+    {
+        auto& occurence = get_co_occurence_matrix(direction);
+        size_t sum_of_elements = occurence.sum();
+
+        float sum = 0;
+        for (size_t i = 0; i < occurence.rows(); ++i)
+            for (size_t j = 0; j < occurence.cols(); ++j)
+            {
+                float p_ij = float(occurence(i, j)) / float(sum_of_elements);
+                sum += p_ij * log2(p_ij);
+            }
+
+        return sum / (2 * log2(256));
+    }
+
+    template<typename Image_t>
+    float ImageRegion<Image_t>::get_contrast(ImageRegion::CoOccurenceDirection direction) const
+    {
+        auto& occurence = get_co_occurence_matrix(direction);
+
+        size_t sum_of_elements = occurence.sum();
+
+        float sum = 0;
+        for (size_t i = 0; i < occurence.rows(); ++i)
+            for (size_t j = 0; j < occurence.cols(); ++j)
+            {
+                sum += std::abs(int(i) - int(j)) * occurence(i, j) / float(sum_of_elements);
+            }
+
+        return sum / (255*255);
     }
 }
