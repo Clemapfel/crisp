@@ -11,7 +11,7 @@
 
 #include <vector>
 
-namespace crisp
+namespace crisp::Segmentation
 {
     /// @brief extract all pixels of identical value results in number of segments equal to the number of pairwise different pixel values
     /// @param image

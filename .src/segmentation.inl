@@ -12,7 +12,7 @@
 #include <deque>
 #include <list>
 
-namespace crisp
+namespace crisp::Segmentation
 {
     template<typename Image_t>
     std::vector<ImageSegment> decompose_into_segments(const Image_t& image, size_t min_segment_size)
