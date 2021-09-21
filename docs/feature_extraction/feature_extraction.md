@@ -4,6 +4,35 @@ Image Regions, Boundary Tracing, Region Signature & other Descriptors
 
 ## Table of Contents
 
+1. [Introduction](#1-introduction)<br>
+    1.1 [Extracting a Region](#11-an-example)<br>
+2. [Region Boundary](#2-a-regions-boundary)<br>
+    2.1 [Definition](#21-8-connectivity-and-minimal-cardinality)<br>
+   2.2 [Boundary Polygon](#22-boundary-polygon)<br>
+3. [Boundary Signature](#3-boundary-signatures)<br>
+    3.1 [Vertex Polygon](#31-vertex-polygon)<br>
+    3.2 [Slope Chain Code Signature](#32-slope-chain-code-signature)<br>
+    3.3 [Radial Distance Signature](#33-radial-distance-signature)<br>
+    3.4 [Complex Coordinate Signature](#34-complex-coordinate-signature)<br>
+    3.5 [Farthest Point Signature](#35-farthest-point-signature)<br>
+4. [Whole Region Descriptors](#4-whole-region-descriptors)<br>
+    4.1 [Area, Perimeter, Compactness](#41-area--perimeter-compactness)<br>
+    4.2 [Centroid](#42-centroid)<br>
+    4.3 [Axis Aligned Bounding Box](#43-aabb)<br>
+    4.4 [Major and Minor Axis](#44-major--minor-axis)<br>
+   4.5 [Eccentricity](#45-eccentricity)<br>
+   4.6 [Circularity](#46-circularity)<br>
+   4.7 [Holes](#47-holes)<br>
+   4.8 [N-ths Moment Invariant](#48-moment-invariants)<br>
+5. [Texture Descriptors](#5-texture-descriptors)<br>
+    5.1 [Co-Occurence Matrix](#51-co-occurence-matrix)<br>
+   5.2 [Maximum Intensity Response](#52-maximum-response)<br>
+   5.3 [Correlation](#53-intensity-correlation)<br>
+   5.4 [Uniformity](#54-uniformity)<br>
+   5.5 [Homogeneity](#55-homogeneity)<br>
+   5.6 [Entropy](#56-entropy)<br>
+   5.7 [Contrast](#57-contrast)<br>
+
 ## 1. Introduction
 
 In the [tutorial on segmentation](../segmentation/segmentation.md) we discussed how to extract part of an image, now we find out what to do with them. Recall that an image region is a set of pixel coordinates ``Vector2ui``:
@@ -227,7 +256,7 @@ We access a region centroid at any time using ``get_centroid()``:
 
 Where the centroid is highligted using a red rgb(1, 0, 0) cross.
 
-## 4.2 AABB
+## 4.3 AABB
 
 The *axis aligned bounding box* (AABB) of a region is the smallest rectangle whos sides align with the x- and y-axis that completely encloses the region. We can access it like so:
 
@@ -241,7 +270,7 @@ The value of the vertices of the rectangle are relative to the top-left corner o
 
 ![](./pepper_aabb.png)
 
-## 4.2 Major & Minor Axis
+## 4.4 Major & Minor Axis
 
 The major and minor axis of a region is defined as the ellipses formed by the eigen vectors multiplied with their respective eigenvalues of the positional covariance matrix of the boundary of a region. It's not important to understand what this means, we can think of the major and minor axis as the "orientation" of an object, where the major axis is along the highest variance (in terms of spacial position) and both axis intersect with a centroid. We access the minor and major access using:
 
@@ -257,18 +286,18 @@ Each of the axis is given as two point. Visualizing the axis properly is difficu
 
 Where magenta is the major, green the minor axis and in yellow the ellipses modeled. 
 
-## 4.3 Eccentricity
+## 4.5 Eccentricity
 Using the minor and major axis we can furthermore compute the regions *eccentricity* which is quantifying how "conical" the region is, if the eccentricity is 0 the shape modeled by the major and minor axis is a perfect circle, the closer to 1 the eccentricity is, the more elliptical the region.
 
 We can access the eccentricity using ``ImageRegion::get_eccentricity()``.
 
-## 4.4 Circularity
+## 4.6 Circularity
 
 While eccentricity measures how closely the shape of a region approximates a non-circular ellipses, *circularity* quantifies how closely the shape approximates a perfect circle. Regions with tend to have smooth features and not many sharp edges tend to have high circularity towards 1 while angular shapes or shapes with a high eccentricity tend to have a circularity closer towards 0.
 
 We can access circularity using ``ImageRegion::get_circularity()``.
 
-## 4.5 Holes
+## 4.7 Holes
 
 While already mentioned it is instructional to define what a hole is. A hole is an area of pixels who are *not* part of the region, where that are is enclosed by the region. When boundary tracing ``crisp`` implicitely computes the boundaries of each hole and thus the number of holes. We can access either using:
 
@@ -277,7 +306,7 @@ size_t get_n_holes() const;
 const std::vector<std::vector<Vector2ui>> get_hole_boundaries() const;
 ```
 
-## 4.6 Moment Invariants
+## 4.8 Moment Invariants
 
 We've seen earlier that somehow respresenting a regions unique shape in a way that is invariant to scale, translation and rotation is highly valuable. A very powerful way to achieve is with the *nths moment invariant*. While some of them have a conceptual meaning it is best to just think of them as properties that may not be useful to humans but do represent the shape of a region uniquely. ``crisp`` offers the first 7 moment invariants, accessed with ``ImageRegion::get_nths_moment_invariant(size_t n)`` where n in {1, 2, 3, ..., 7}.
 
@@ -338,13 +367,17 @@ Uniformity is a measure of how constant the intensity values are. For a constant
 
 We can access uniformity using ``get_uniformity(CoOccurenceDirection)``
 
-## 5.5 Homogenity
+## 5.5 Homogeneity
 
 In the co-occurence matrix the diagonal resprents occurences of intensity pair i_a, i_b where i_a = i_b. Homogenity quantifies how many of the intensity pairs like this they are and how close the overall region is to achieving full homogenity. It's value is in [0, 1] and we can access the value using ``get_homogenity(CoOccurenceDirection)``. 
 
 ## 5.6 Entropy
 
 Just like in statistics, this measures the randomness of the co-occurence distribution where a value of 1 means all pairings are uniformly distributed, the less uniform the distribution the closer the value is to 0. We compute the entropy using ``get_entropy(CoOccurenceDirection)``.
+
+## 5.7 Contrast
+
+Contrast measures the difference between co-occuring pixels. ``get_contrast(CoOccurenceDirection)`` computes it for the given direction and returns a value in [0, 1]
 
 
 
