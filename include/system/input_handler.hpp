@@ -17,8 +17,9 @@
 namespace crisp
 {
     class RenderWindow;
+    using Time = sf::Time;
 
-    /// @brief static handler that allows accesing the keyboard/mouse state
+    /// @brief static handler that allows accessing the keyboard/mouse state
     class InputHandler
     {
         friend class RenderWindow;
@@ -51,10 +52,10 @@ namespace crisp
             /// @param key_id
             /// @returns time since key was registered as pressed
             /// @note the duration only updates after each render cycles because it is tied to the operating systems window updating
-            static sf::Time get_hold_duration(KeyID key_id);
+            static Time get_hold_duration(KeyID key_id);
 
             /// @brief get position of mouse cursor relative to the windows origin
-            /// @returns position relatived to top left corner of window which is treated as {0, 0}. Positions outside the window are allowed
+            /// @returns position relative to top left corner of window which is treated as {0, 0}. Positions outside the window are allowed
             static Vector2f cursor_position();
 
         protected:

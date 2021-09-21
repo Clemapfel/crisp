@@ -90,6 +90,11 @@ namespace crisp
             template<size_t N>
             void create_from(const Histogram<N>&);
 
+            /// @brief load from matrix
+            /// @param matrix
+            template<typename Value_t, size_t N, size_t M>
+            void create_from(const Eigen::Matrix<Value_t, N, M>&);
+
         protected:
             void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
