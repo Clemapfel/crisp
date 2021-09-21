@@ -1,25 +1,41 @@
+###[[<< back to index]](../index.md)
+
+---
 # Vectors
 
-###[[<<< back to index]](../index.md)
+n-dimensional vectors of artihmetic value type, vector-vector and vector-scalar arithmetics and comparison operators
 
 ## Table of Contents
 
+1. [**Introduction**](#1-introduction)<br>
+2. [**Construction**](#2-construction)<br>
+3. [**Component Access**](#3-component-access)<br>
+4. [**Typedefs for Convenience**](#4-typedefs)<br>
+5. [**Arithmetics & Comparison Operators**](#5-arithmetics-and-comparison-operators)<br>
+    5.1 [Vector-Vector Arithmetics](#51-vector-vector-arithmetics)<br>
+   5.2 [Vector-Scalar Arithmetics](#52-vector-scalar-arithmetics)<br>
+   5.3 [Vector-Vector Comparison](#53-vector-vector-comparison)<br>
+   5.4 [Vector-Scalar Comparison](#54-vector-scalar-comparison)<br>
+   
+
 ## 1. Introduction
 
-Vectors are at the heart of linear algebra and thus at the heart of crisp. One central design goal of crisp is to make all algorithms work with all types of images. This is possible through ``crisp::Vector`` which not only supports all arithmetic operations a scalar would but does so implicitely without the user having to manually convert things. While this is convenient it is still important to understand ``crisp::Vector`` especially if we're going to implement our own algorithms and need to know how things work under the hood
+Vectors are at the heart of linear algebra and thusly at the heart of crisp. One central design goal of crisp is to make as many methods and algorithms as possible work with all image types. This is made possible by ``crisp::Vector`` which behaves exactly like a scalar in notation and indeed may implicitely handle all conversions between scalar and itself. While this happens automatically it's still important to understand how ``crisp::Vector`` works so we don't get caught up when the difference between it and scalar does matter.
 
-### 2 Construction
+## 2. Construction
 
-``crisp::Vector`` is a template that accepts two arguments:
+``crisp::Vector`` is a template that accepts two arguments
 
 ```cpp
 template<typename T, size_t N>
 class Vector : public Eigen::Array</*...*/>
 {
 ``` 
-where ``T`` is the vectors *value type*, and ``N`` is what we'll call the vectors *dimension*. `T` is any arithmetic type, that is it must support all artithmetic operators that ``crisp::Vector`` supplies. 
+where ``T`` is the vectors *value type*, and ``N`` is what we'll call the vectors *dimension* (sometimes called rank in the literature). `T` can be any arithmetic type such as `int`, `float`, `double`, `bool`, `boost::uint256_t`, etc..
 
-We can create a vector multiple ways:
+We can access a vectors component types using the exposed public member typedef `Value_t`.
+
+We can create a vector in multiple ways
 
 ```cpp
 // default ctor
@@ -32,25 +48,25 @@ auto vec = Vector<Value_t, 3>{1.f, 1.f, 1.f};
 auto vec = Vector<Value_t, 3>(1.f);
 ```
 
-Where the one argument constructor assigns all components of the vector the specified value.
+Where the one argument constructor assigns all components of the vector the same value as specified.
 
-The initializer list ctor is enforced to a) only have elements of type ``Value_t`` (float in our above exmaple) and b) is exactly N long. 
+The initializer list constructor is enforced to only have elements of type ``Value_t`` (``float`` in our above exmaple) and to be exactly ``N`` long. 
 
 A note for people less familiar with C++:
 
 ```cpp
-// not valid code, will report error on compilation:
+// not valid code, will report "no valid constructor" on compilation
 auto vec = Vector<float, 3>(1.f, 2.f, 3.f);
         
-// instead use:
-auto vec = Vector<float, 3>{1.f, 2. 3.f};
+// valid
+auto vec = Vector<float, 3>{1.f, 2.f 3.f};
 ``` 
 
 Note the use of ``{}`` braces instead of ``()``. This is called [list initialization](https://en.cppreference.com/w/cpp/language/list_initialization) and while the specifics are not important for now do keep in mind that you want to always use ``{}`` when initializing ``crisp::Vector`` this way.
 
-### 3. Element Access
+## 3. Component Access
 
-We can access a vectors elements using the following methods:
+We can access a vectors components using the following methods:
 
 ```cpp
 T& operator[](size_t i);
@@ -71,11 +87,11 @@ T y() const;
 T& z();
 T z() const;
 ```
-As by convention ``at`` will throw an error when the index is out of bounds, ``operator[]`` will not.
+As by convention ``at`` will throw an error when the index is out of bounds, ``operator[]`` will not. Operators ``x()``, `y()`, `z()` and `w()` are available as specified as syntatic sugar.
 
 ## 4. Typedefs
 
-For convenience the following typedefs for commonly used vector value types are provided and used henceforth when appropriate:
+For convenience the following typedefs for commonly used value types are provided:
 
 ```cpp
 using Vector2f = Vector<float, 2>;
@@ -91,9 +107,11 @@ using Vector4i = Vector<int, 4>;
 using Vector4ui = Vector<size_t, 4>;
 ```
 
-## 5.1 Vector-Vector Arithmetics
+## 5. Arithmetics and Comparison Operators
 
-``crisp::Vector`` supplies the following operators for vector-vector arithmetics. Recall that our vectors are not matrices, as such all operations are *elementwise*
+### 5.1 Vector-Vector Arithmetics
+
+``crisp::Vector`` offers the following operators for vector-vector arithmetics. Recall that our vectors are not matrices, as such all operations are scalar-operations applied *elementwise*. 
 
 ```cpp
 // arithmetic
@@ -112,7 +130,7 @@ Vector<T, N> operator&&(const Vector<T, N>& other) const;
 Vector<T, N> operator||(const Vector<T, N>& other) const;
 ```
 
-similarly the corresponding assignment operators are provided
+The corresponding assignment operators are also provided
 
 ```cpp
 Vector<T, N>& operator+=(const Vector<T, N>&);
@@ -125,11 +143,7 @@ Vector<T, N>& operator|=(const Vector<T, N>&);
 Vector<T, N>& operator^=(const Vector<T, N>&);
 ```
 
-To illustate the property of being element-wise, a small example:
-
-TODO
-
-## 5.2 Vector-Scalar Arithmetics
+### 5.2 Vector-Scalar Arithmetics
 
 Vector-Scalar arithmetics can be best understood by the following equivalency:
 
@@ -141,6 +155,7 @@ vector = vector * scalar;
 // is equivalent to:
 vector = vector * Vector3f{scalar, scalar, scalar};
 ```
+That is the scalar-operators are applied to all components at the same time.
 All vector-vector operators are likewise available as vector-scalar:
 
 ```cpp
@@ -169,24 +184,39 @@ Vector<T, N>& operator|=(T scalar);
 Vector<T, N>& operator^=(const Vector<T, N>&);
 ```
 
-This is important as it means that a ``crisp::Vector<T, 1>`` is notationally equivalent to ``T``. Furthermore specifically for N = 1 the following additional methods are defined:
+Furthermore specifically for `N = 1` the following additional methods are defined:
 
 ```cpp
 // only for Vector<T, 1>
 Vector(T);
 operator T();
 ``` 
-neither of which are explicit which means ``crisp::Vector<T, 1>`` tends to decay to it's value type during usage. This is intended behavior and is what makes all of crisps algorithms so generically employable. 
+neither of which are explicit which means ``crisp::Vector<T, 1>`` is notationally equivalent to `T`. The 1-component vector tends to decay to it's value type during usage so we can use it like so:
 
-## 6.1 Vector-Vector Comparison
+```cpp
+float scalar = 1.f;
+Vector<float, 1> vector = 1.f;
 
-So this one might be unusual, while mathematically comparing a vector ``{1, 3, 2}`` with vector ``{3, 2, 1}`` doesn't really make sense, in ``crisp`` this is a valid operations. While the order of vectors cannot be predicted, there is always a unique and unambigous order which means we can use vectors in ordered sets or as keys. This is possible because the following hash function is defined:
+scalar = vector;
+vector = scalar;
+vector = vector * scalar;
+scalar += vector * vector;
+//etc.
+```
+
+This is what makes all of crisps algorithms generically employable.
+
+### 5.3 Vector-Vector Comparison
+
+While mathematically comparing vector ``{1, 3, 2}`` with vector ``{3, 2, 1}`` is usually undefined, in ``crisp`` this is a valid operations. While which of these vectors is larged than the other one cannot necessarily be predicted, there is always a unique and unambigous answer which means we can use vectors in ordered sets, as keys or sort them. To make this possible the following hash function is first defined:
 
 ```cpp
 template<typename T, size_t N>
 struct std::hash<crisp::Vector<T, N>>;
 ```
-The exact implementation of this is available [here](../../.src/vector.inl) but for now just know that if we're ordering vectors, we're ordering them based on their hashs. The following comparison operators are available:
+Note that the hash is defined for all (arithmetic) `T` including floating point. The exact implementation is available [here](../../.src/vector.inl) but for now it is enough to know that if we're comparing vectors, we're comparing them based on their hash values. 
+
+The following comparison operators are available:
 
 ```cpp
 // elementwise equality works exactly as normal
@@ -200,7 +230,7 @@ bool operator>(const Vector<T, N>&) const;
 bool operator>=(const Vector<T, N>&) const;
 ```
 
-## 6.2 Vector-Scalar Comparison
+### 5.4 Vector-Scalar Comparison
 
 Similarly to vector-scalar arithmetics we can also compare vectors with scalars, this is again best imagined like so:
 
@@ -212,7 +242,7 @@ a < 1.f
 a < Vector3f{1.f, 1.f, 1.f}
 ```
 
-As such the following operators are provided:
+Therefore the following operators are provided:
 
 ```cpp
 bool operator==(T) const;
@@ -224,4 +254,7 @@ bool operator>(T) const;
 bool operator>=(T) const;
 ```
 
-Again, this allows ``crisp::Vector<T, 1>`` to be notationally equivalent to a scalar of the same value type 
+This means that for `N = 1`, `crisp::Vector` again behaves just like a scalar even in comparisons.
+
+---
+###[[<< back to index]](../index.md)
