@@ -33,12 +33,6 @@ namespace crisp
     }
 
     template<typename Image_t>
-    void histogram_equalize(Image_t& image)
-    {
-        assert(false);
-    }
-
-    template<typename Image_t>
     GrayScaleImage compute_gradient_magnitude(const Image_t& image)
     {
         using Value_t = typename Image_t::Value_t;
@@ -82,6 +76,64 @@ namespace crisp
             }
 
         return out;
+    }
+
+    template<typename T>
+    std::array<Image<bool, 1>, 8> bitplane_decompose(const Image<T, 1>& image)
+    {
+        std::array<Image<bool, 1>, 8> out;
+
+        for (size_t i = 0; i < 8; ++i)
+            out.at(i).create(image.get_size().x(), image.get_size().y());
+
+        for (size_t x = 0; x < image.get_size().x(); ++x)
+        {
+            for (size_t y = 0; y < image.get_size().y(); ++y)
+            {
+                auto as_char = static_cast<uint8_t>(clamp(0.f, 1.f, static_cast<float>(image(x, y))) * 255);
+
+                for (size_t i = 0; i < 8; ++i)
+                    out.at(i)(x, y) = static_cast<bool>((as_char >> i) & 1);
+            }
+        }
+
+        return out;
+    }
+
+    template<typename T>
+    Image<T, 1> bitplane_assemble(const std::array<Image<bool, 1>, 8>& in)
+    {
+        Image<T, 1> out;
+        out.create(in.at(0).get_size().x(), in.at(0).get_size().y());
+
+        for (size_t x = 0; x < image.get_size().x(); ++x)
+        {
+            for (size_t y = 0; y < image.get_size().y(); ++y)
+            {
+                auto as_char = 0;
+
+                for (size_t i = 0; i < 8; ++i)
+                    as_char |= uint8_t(1) << i;
+
+                T as_t = static_cast<T>(as_char) / T(255);
+
+                out(x, y) = as_t;
+            }
+        }
+
+        return out;
+    }
+
+    template<typename Image_t>
+    void histogram_equalize(Image_t& in)
+    {
+        using Value_t = typename Image_t::Value_t;
+        for (size_t i = 0; i < Value_t::size(); ++i)
+        {
+            auto histogram = Histogram<255>(in.get_nths_plane(i));
+
+
+        }
     }
 
 }

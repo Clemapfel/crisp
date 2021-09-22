@@ -54,6 +54,10 @@ namespace crisp
             /// @returns std::unordered_map<size_t, size_t>::iterator where .first is the bin index, .second is the number of elements
             auto end() const;
 
+            /// @brief transform to N_Bins x N_Bins image
+            /// @return grayscale image
+            ColorImage to_image() const;
+
         private:
             double _mean;
             std::unordered_map<size_t, size_t> _data;

@@ -28,12 +28,13 @@ namespace crisp
     /// @brief quantize into 8-bit, then split into bitplanes
     /// @param image
     /// @returns bitplanes as vector of 1d binary images
-    std::vector<Image<bool, 1>> bitplane_decompose(const Image<float, 1>&);
+    template<typename T>
+    std::array<Image<bool, 1>, 8> bitplane_decompose(const Image<T, 1>&);
 
     /// @brief assemble from n bitplanes where n in {8, 16, 32, 64}
     /// @param bitplanes: vector of 1-d binary images
     /// @returns assembled image
-    Image<float, 1> bitplane_assemble(const std::vector<Image<bool, 1>>&);
+    Image<float, 1> bitplane_assemble(const std::array<Image<bool, 1>, 8>&);
 
     /// @brief wavelet transform
     /// @param image

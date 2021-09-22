@@ -125,13 +125,11 @@ namespace crisp
             
             /// @brief access all pixels nth component as a picture
             /// @returns new 1d image holding copied values of the component
-            template<size_t PlaneIndex>
-            Image<InnerValue_t, 1> get_nths_plane() const;
+            Image<InnerValue_t, 1> get_nths_plane(size_t i) const;
 
             /// @brief set the nths component of each pixel
             /// @param plane: image holding the new values
-            template<size_t PlaneIndex>
-            void set_nths_plane(const Image<InnerValue_t, 1>&);
+            void set_nths_plane(const Image<InnerValue_t, 1>&, size_t i);
 
             /// @brief non-const begin
             /// @return non-const iterator to top-left element

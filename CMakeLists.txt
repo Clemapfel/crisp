@@ -96,13 +96,13 @@ include_directories("./")
 
 ### EXAMPLES ####################################################################################
 
-add_executable(EXAMPLE_COLOR docs/color/color_example.cpp)
+add_executable(EXAMPLE_COLOR docs/color/.resources/color_example.cpp)
 target_link_libraries(EXAMPLE_COLOR crisp)
 
 add_executable(EXAMPLE_FREQUENCY_DOMAIN docs/frequency_domain/frequency_domain_example.cpp)
 target_link_libraries(EXAMPLE_FREQUENCY_DOMAIN crisp)
 
-add_executable(EXAMPLE_IMAGE docs/image/image_example.cpp)
+add_executable(EXAMPLE_IMAGE docs/image/.resources/image_example.cpp)
 target_link_libraries(EXAMPLE_IMAGE crisp)
 
 add_executable(EXAMPLE_MORPHOLOGICAL_TRANSFORM docs/morphological_transform/morphological_transform_example.cpp)
@@ -119,6 +119,9 @@ target_link_libraries(EXAMPLE_SYSTEM crisp)
 
 add_executable(EXAMPLE_FEATURE_EXTRACTION docs/feature_extraction/feature_extraction_example.cpp)
 target_link_libraries(EXAMPLE_FEATURE_EXTRACTION crisp)
+
+add_executable(EXAMPLE_NOISE docs/noise/.resources/noise_main.cpp)
+target_link_libraries(EXAMPLE_NOISE crisp)
 
 ### TESTS #######################################################################################
 

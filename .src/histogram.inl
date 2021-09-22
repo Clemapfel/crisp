@@ -82,4 +82,39 @@ namespace crisp
     {
         return _data.end();
     }
+
+    template<size_t N>
+    ColorImage Histogram<N>::to_image() const
+    {
+        ColorImage out;
+        out.create(N+1, N+1);
+
+        float n = 0;
+        float mean = 0;
+        size_t max = 0;
+        for (const auto& pair : _data)
+        {
+            max = std::max(max, pair.second);
+            mean += pair.first * pair.second;
+            n += pair.second;
+        }
+
+        mean /= n;
+
+        size_t step = ceil(float(max) / (0.85 * N));
+
+        for (size_t x = 0; x <= N; ++x)
+        {
+            if (x == mean)
+                for (size_t y = 0; y < out.get_size().y(); ++y)
+                    out(x, y) = RGB{1, 0, 0};
+
+            for (size_t y = 1; y * step < _data.at(x); ++y)
+            {
+                out(x, out.get_size().y() - y) = RGB{1, 1, 1};
+            }
+        }
+
+        return out;
+    }
 }

@@ -71,7 +71,7 @@ namespace crisp
         /// @param alpha: the shape parameter of the distribution
         /// @param beta: the scale parameter of the distribution
         /// @param seed: the seed to initialize the rng with
-        GammaNoise(float alpha, float beta, size_t seed = initialize_seed());
+        GammaNoise(float shape, float scale, size_t seed = initialize_seed());
 
         /// @overload c.f. NoiseGenerator<...>::operator()()
         float operator()() override;

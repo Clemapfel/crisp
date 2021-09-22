@@ -15,9 +15,9 @@ Colors in RGB, HSV, HSL and GrayScale Representation, Converting between Represe
 
 1. [Introduction](#1-introduction)<br>
 2. [RGB](#2-rgb)<br>
-3. [HSV](#4-hsv)<br>
-4. [HSL](#5-hsl)<br>
-5. [GrayScale](#3-grayscale)<br>
+3. [HSV](#3-hsv)<br>
+4. [HSL](#4-hsl)<br>
+5. [GrayScale](#5-grayscale)<br>
 6. [In Summary](#6-in-summary)<br>
 7. [Pseudo Color](#7-pseudo-color)<br>
     7.1 [crisp::PseudoColor](#71-crisppseudocolor)<br>
@@ -43,7 +43,7 @@ We note that any color in crisp is a vector of 32-bit floats. All values of the 
 ## 2. RGB
 Colors in RGB representation have 3 components: red, green and blue. Each component represents a fraction of red, green and blue light respectively where if all components are 0 the color becomes black, if all components are 1 it becomes white. ``crisp::ColorImage``s pixels are in RGB as most people are familiar with this format. 
 
-![](./rgb_cube_wiki.png)<br>
+![](./.resources/rgb_cube_wiki.png)<br>
 (source: wikipedia)
 
 Other than functions inherited from ``crisp::ColorRepresentation<3>``, ``RGB`` offers the following functions:
@@ -87,7 +87,7 @@ for (size_t y = 0; y < specturm.get_size().y(); ++y)
 
 (Recall that ``crisp::ColorImage`` assumes values are in RGB so we need to convert HSV to RGB before assigning it to the image data)
 
-![](./hue_spectrum.png)
+![](./.resources/hue_spectrum.png)
 
 We note the typical rainbow. 
 
@@ -107,11 +107,11 @@ for (size_t y = 0; y < specturm.get_size().y(); ++y)
 }
 ```
 
-![](./saturation_spectrum.png)
+![](./.resources/saturation_spectrum.png)
 
 Lastly we have *value*, sometimes also called *brightness* in the literature. This component can be conceptualized similarly to saturation but instead of white we are now mixing black paint with a colored pigment. Let's again assume we're mixing red, a value of 0 means 100% black paint, no red paint. A value of 1 means all red, no black and a value of 0.5 is equal parts red and black. We again visualize it in the way outlined above:
 
-![](./value_spectrum.png)
+![](./.resources/value_spectrum.png)
 
 Hopefully this made clearer what each component of HSV represents.
 
@@ -154,7 +154,7 @@ for (size_t y = 0; y < specturm.get_size().y(); ++y)
     color.hue() += step;
 }
 ```
-![](./hue_spectrum.png)
+![](./.resources/hue_spectrum.png)
 
 ```cpp
 auto color = HSL{0, 0, 1}
@@ -169,7 +169,7 @@ for (size_t y = 0; y < specturm.get_size().y(); ++y)
     color.saturation() += step;
 }
 ```
-![](./saturation_spectrum.png)
+![](./.resources/saturation_spectrum.png)
 
 Lightness however behaves differently, a lightness value of 0 corresponds to black, a lightness value of 1 corresponds to white and a lightness value of 0.5 corresponds to what would've been in our HSV example no black paint, not white pain, only red paint:
 
@@ -185,7 +185,7 @@ for (size_t y = 0; y < specturm.get_size().y(); ++y)
 }
 ```
 
-![](./lightness_spectrum.png)
+![](./.resources/lightness_spectrum.png)
 
 # 5. GrayScale
 GrayScale is a color representation with only a single value called *intensity*. ``crisp::GrayScaleImage`` uses this representation and while it can be thought of as just a `float` it can be helpful to keep in mind that all functions from both ``crisp::Vector<float, 1>`` and ``ColorRepresentation<1>`` are of course available.
@@ -234,7 +234,7 @@ for (size_t y = 0; y < grayscale_spectrum.get_size().y(); ++y)
 }
 ```
 
-![](./grayscale_spectrum.png)
+![](./.resources/grayscale_spectrum.png)
 
 GrayScale is attractive for it's computational simplicity and the fact it's easy to convert to and from other color representations. For RGB, we would simply average all color components while HSV and HSL the GrayScale intensity is equivalent to the `value` and `lightness` component respectively.
 
@@ -246,13 +246,13 @@ Differentiating between some color representations can be difficult and especial
 
 "Pseudo Color" is a term describing a transform function that maps grayscale values onto a different color representation, often to aid humans in visually parsing images easier. Let's consider an example first:
 
-![](./infrared_deer.png)<br>
+![](./.resources/infrared_deer.png)<br>
 (source: texasoutdoors)
 
 Here we have a noisy, low-resolution infrared image of deer. Infrared cameras only record light in a spectrum band not visible to humans, thus it is customary to translate the equipments response into grayscale instead. Human brains don't do very well at parsing different shades of gray so to aid in visual confirmation we can do the following:
 
 
-![](./final_deer.png)
+![](./.resources/final_deer.png)
 
 No segmentation algorithm was performed here, all we did was map higher (lighter)
  intensity values to a range of color values. Because the deer are much warmer than their surrounding, the infrared response to their bodies will be higher. With the new color image it's much easier to differentiate the deer from surrounding foliage. 
@@ -261,22 +261,22 @@ Pseudocolor has many applications in medicine and any field where single-intensi
 
 ## 7.1 ``crisp::PseudoColor``
 
-In ``crisp`` pseudocolor transformations are handled by functions of [``crisp::PseudoColor``](../include/pseudocolor_mapping.hpp). This is a class with only static members so it behaves exactly like a namespace. For each function (or *linear map*, in more exact terms) we want to specify a range of floating point intensity values ``[g_min, g_max]`` that is mapped onto a range of hue values ``[h_min, h_max]`` in a way that is unambigous. The following functions for this are provided:
+In ``crisp`` pseudocolor transformations are handled by functions of [``crisp::PseudoColor``](../../include/pseudocolor_mapping.hpp). This is a class with only static members so it behaves exactly like a namespace. For each function (or *linear map*, in more exact terms) we want to specify a range of floating point intensity values ``[g_min, g_max]`` that is mapped onto a range of hue values ``[h_min, h_max]`` in a way that is unambigous. The following functions for this are provided:
 
 + ``identity()`` maps all gray values onto themself resulting in a color image that is visually identical to the grayscale image<br>
-  ![](./infrared_deer.png)<br><br>
+  ![](./.resources/infrared_deer.png)<br><br>
   
 + ``value_to_hue(float g, flat h)`` maps a single gray value onto a single hue values, that is ``{g} -> {h}``<br>
-![](./gray_value_to_hue_value.png)<br><br>
+![](./.resources/gray_value_to_hue_value.png)<br><br>
   
 + ``value_range_to_hue(float g_min, float g_max, float h)`` maps a range of gray values onto a single hue, that is ``[g_min, g_max] -> {h}``<br>
-![](./gray_range_to_hue_value.png)<br><br>
+![](./.resources/gray_range_to_hue_value.png)<br><br>
   
 + ``value_range_to_hue_range(float g_min, float g_max, float h_min, float h_max)`` maps a range of gray values onto a range of hue values, that is ``[g_min, g_max] -> [h_min, h_max]``<br>
-![](./gray_range_to_hue_range.png)<br><br>
+![](./.resources/gray_range_to_hue_range.png)<br><br>
   
 + ``value_range_to_inverse_hue_range(float g_min, float g_max, float h_min, float h_max)`` maps a range of gray values onto an *inverted* range of hue values, that is ``[g_min, g_max] -> [h_max, h_min]``<br>
-![](./gray_range_to_inverse_hue_range.png)<br><br>
+![](./.resources/gray_range_to_inverse_hue_range.png)<br><br>
   
 To illustrate the usage in actual code we try to recreate the image shown at the start of this chapter (after noting that all objects with an intensity > 0.6 are likely to be warmblooded):
 
@@ -288,7 +288,7 @@ ColorImage as_color = PseudoColor::value_range_to_hue_range(0.6, 1, 0, 1, deer);
 
 // save to disk or render here
 ```
-![](./final_deer.png)
+![](./.resources/final_deer.png)
 
 ## 7.2 Multi Range Mapping
 
@@ -319,7 +319,7 @@ color_deer = PseudoColor::value_ranges_to_hue_ranges(ranges, deer);
 
 // save to disk or render
 ``` 
-![](./gray_ranges_to_hue_ranges.png)
+![](./.resources/gray_ranges_to_hue_ranges.png)
 
 As we can see the deer are even easier to spot now while the tree ands grass can be made out much better than with just a gray image.
 

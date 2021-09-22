@@ -7,17 +7,17 @@ namespace crisp
 {
     Image<float, 1> ColorImage::get_red_plane()
     {
-        return get_nths_plane<0>();
+        return get_nths_plane(0);
     }
 
     Image<float, 1> ColorImage::get_blue_plane()
     {
-        return get_nths_plane<1>();
+        return get_nths_plane(1);
     }
 
     Image<float, 1> ColorImage::get_green_plane()
     {
-        return get_nths_plane<2>();
+        return get_nths_plane(2);
     }
 
     Image<float, 1> ColorImage::get_hue_plane()
