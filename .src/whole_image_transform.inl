@@ -106,9 +106,9 @@ namespace crisp
         Image<T, 1> out;
         out.create(in.at(0).get_size().x(), in.at(0).get_size().y());
 
-        for (size_t x = 0; x < image.get_size().x(); ++x)
+        for (size_t x = 0; x < out.get_size().x(); ++x)
         {
-            for (size_t y = 0; y < image.get_size().y(); ++y)
+            for (size_t y = 0; y < out.get_size().y(); ++y)
             {
                 auto as_char = 0;
 

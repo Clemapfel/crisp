@@ -4,7 +4,7 @@
 
 # Images
 
-Multi-Dimensional Images of Arbitrary Type, Plane-Wise and Whole-Image Processing
+Multi-Dimensional Images of Arbitrary Type, Plane-Wise and Whole-Image Processing, Creating and Rendering Image Histograms
 
 ```cpp
 #include <image/multi_plane_image.hpp>
@@ -16,8 +16,9 @@ Multi-Dimensional Images of Arbitrary Type, Plane-Wise and Whole-Image Processin
 // all of the above collected in:
 #include <image.hpp>
 
-// seperate:
+// separate:
 #include <whole_image_processing.hpp>
+#include <histogram.hpp>
 ```
 
 ## Table of Content
@@ -34,12 +35,13 @@ Multi-Dimensional Images of Arbitrary Type, Plane-Wise and Whole-Image Processin
     3.5 [Image-Image arithmetic operators](#35-image-arithmetics)</br>
 4. [**Multi Dimensional Images**](#4-multi-dimensional-images)</br>
     4.1 [Accessing Planes Directly](#41-accessing-planes-directly)</br>
-5. [**Whole Image Transforms**](#5-whole-image-transforms)</br>
-    5.1 [Normalize](#51-normalize)<br>
-    5.2 [Histogram Equalization](#52-histogram-equalization)<br>
-    5.3 [Gradient Magnitude](#53-compute-gradient-magnitude)<br>
-    5.4 [Bitplane Decomposition](#54-bitplane-decomposition)<br>
-    <strike>5.5 [Wavelet Transform](#55-wavelet-transform)</strike>
+5. [**Image Histograms**](#5-histograms)<br>
+6. [**Whole Image Transforms**](#5-whole-image-transforms)</br>
+    6.1 [Normalize](#51-normalize)<br>
+    6.2 [Histogram Equalization](#52-histogram-equalization)<br>
+    6.3 [Gradient Magnitude](#53-compute-gradient-magnitude)<br>
+    6.4 [Bitplane Decomposition](#54-bitplane-decomposition)<br>
+    <strike>6.5 [Wavelet Transform](#55-wavelet-transform)</strike>
    
 
 ## 1. Introduction
@@ -474,17 +476,107 @@ An example may be instructive to reinforce these concepts. Consider the followin
 
 We notice a 
 
-## 5. Whole Image Transforms
+## 5. Histograms
 
-### 5.1 Normalize
+It's often useful to inspect the distribution of intensity values in an image. To make this easy, `crisp` offers a histogram class that just like everything else in `crisp` can be rendered for visual inspection or exported to an image and saved to a disk (or even processed). 
 
-### 5.2 Histogram Equalization
+```cpp
+template<size_t N_Bins = 256>
+class Histogram
+{
+```
 
-### 5.3 Compute Gradient Magnitude
+We see that the histogram class takes a template argument that is a number. This number is the number of *bins*, because intensity values are floating point we need to quantize them into integers. How many integers are used is governed by this template argument. It is defaulted to 256 which would be equivalent to the accuracy of a 8-bit image but any number is valid.
 
-### 5.4 Bitplane Decomposition
+We construct a histogram like so:
+```cpp
+auto image = load_grayscale_image(/*...*/);
 
-### 5.5 Wavelet Transform
+auto histogram = Histogram(image);
+
+// or equivalently
+auto histogram = Histogram<256>();
+histogram.create_from(image);
+```
+Once `create_from` is called the image is parsed and the histogram is created. We can iterate through the bins using `Histogram<N>::Iterator` or we can target a specific bin using `Histogram<N>::at(size_t i)` where i is the *bin index*. We can transform and intensity value `v` to it's bin index by simply using `floor(v * N)`.
+
+Once the histogram is created we can either bind it to a sprite for rendering or transform it to an image:
+
+```cpp
+auto histogram = /*...*/;
+
+auto sprite = Sprite();
+sprite.create_from(histogram);
+
+// or:
+auto as_image = histogram.to_image();
+```
+
+The resulting image is of size NxN where N is the number of bins. The vertical bars of the histogram are normalized into the range [0, N] which means that one pixel does not necessarily represent 1 occurence, the sprite or image is purely a visual aid meant to give a human a rough estimate of the histograms shape.
+
+![](./.resources/grayscale_opal.png)<br>
+![](./.resources/histogram.png)<br>
+<br>
+We note the two large spikes corresponding to the letters of the word "sample" (in black on the very left of the histogram) and the white, relatively even intensity background.
+
+For a good example of using histograms to inspect images, consider visiting the [noise tutorial](../noise/noise.md).
+
+
+## 6. Whole Image Transforms
+
+The header `whole_image_transform.hpp` provides miscellanous operations and algorithms that are applied to an entire image. We will detail each of the functions and it's uses in this section.
+
+### 6.1 Normalize
+
+```cpp
+template<typename Image_t>
+void normalize(Image_t&);
+```
+
+We've already used this function earlier but let's explore what it does in deatil: for an image with minimum intensity value `min` and maximum intensity value `max` the function projects all intensity values in the image from [min, max] into [0, 1]. This is useful either for addressing artifacting that happenes because the values were outside of [0,1] or to increase the dynamic range of an image. Consider the following example
+
+![](../color/.resources/infrared_deer.png)<br>
+(source: texasoutdoors)
+
+This is a infrared image of some deer that we used for our [pseudocolor tutorial](../color/color.md). We note that the gray tones intensity in the image are fairly close together and that there are neither very bright nor truly dark spots. Indeed the minimum intensity value in this image is `0.32` while the maximum is `0.7` so we only have 30% of the dynamic range. To fix this we simply use:
+
+```cpp
+auto deer = load_grayscale_image(/*...*/ + "/crisp/docs/color/.resources/infrared_deer.png");
+normalize(deer);
+
+// render or save to disk
+```
+
+The maximum and minimum are now closer to [0, 1] and the effect on the image is very noticable.<br>
+
+![](./.resources/deer_normalized.png)<br>
+
+### 6.2 Histogram Equalization
+
+(this feature is not yet implemented)
+
+### 6.3 Compute Gradient Magnitude
+
+The gradient of an image can be thought of as the rate of change in a specific direction. If we go from an intensity of 0 to a neighbouring pixel in a specified direction that has an intensity of 1 we would see a high gradient while going from 0.5 to 0.51 would have result in a low gradient response. The *gradient magnitude* then is the length of the gradient vector in all directions.
+
+To compute the gradient magnitude we could filter the image with the sobel operator and then reassemble it, however `crisp` gives us a one-stop-shop function that does the filtering, assembling and kernel seperation all automatically. Using our already normalized deer from the previous section:
+
+```cpp
+auto deer = /* see above */;
+auto deer_gradient = compute_gradient_magnitude(deer);
+
+// render or save to disk
+```
+
+![](./.resources/deer_gradient.png)<br>
+
+As expected the gradient response is low (darker) for the noisy foliage and high (lighter) around the outline of the deer. The gradient magnitude is used in many algorithm and 3 segmentation functions are based on computing and thresholding it. We can learn more about this in the [segmentation tutorial](../segmentation/segmentation.md).
+
+### 6.4 Bitplane Decomposition
+
+(this feature is not yet implemented)
+
+### 6.5 Wavelet Transform
 
 (this feature is not yet implemented)
 
