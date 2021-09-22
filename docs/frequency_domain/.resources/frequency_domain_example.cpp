@@ -12,16 +12,14 @@ using namespace crisp;
 
 int main()
 {
-    /*
-    auto image = load_grayscale_image("/home/clem/Workspace/crisp/docs/frequency_domain/color_opal.png");
-
-    save_to_disk(image, "/home/clem/Workspace/crisp/docs/frequency_domain/grayscale_opal.png");
+    auto image = load_grayscale_image("/home/clem/Workspace/crisp/docs/frequency_domain/.resources/grayscale_opal.png");
 
     auto spectrum = FourierTransform<SPEED>();
     spectrum.transform_from(image);
+    /*
 
     auto spectrum_img = spectrum.as_image();
-    save_to_disk(spectrum_img, "/home/clem/Workspace/crisp/docs/frequency_domain/opal_spectrum.png");
+    save_to_disk(spectrum_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/opal_spectrum.png");
 
     auto filter = FrequencyDomainFilter(spectrum);
     filter.as_ideal_highpass(0.4 * spectrum.get_size().x(), 1, 0);
@@ -34,16 +32,16 @@ int main()
 
     auto filter_img = filter.as_image<GrayScaleImage>();
     normalize(filter_img);
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/combined_filter.png");
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/combined_filter.png");
 
     filter.apply_to(spectrum);
 
     spectrum_img = spectrum.as_image();
-    save_to_disk(spectrum_img, "/home/clem/Workspace/crisp/docs/frequency_domain/opal_spectrum_filtered.png");
+    save_to_disk(spectrum_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/opal_spectrum_filtered.png");
 
     image = spectrum.transform_to<GrayScaleImage>();
     normalize(image);
-    save_to_disk(image, "/home/clem/Workspace/crisp/docs/frequency_domain/opal_filtered.png");
+    save_to_disk(image, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/opal_filtered.png");
 
     auto cube_img = GrayScaleImage(300, 300);
 
@@ -57,18 +55,17 @@ int main()
             cube_img(x, y) = 0.f;
     }
 
-    save_to_disk(cube_img, "/home/clem/Workspace/crisp/docs/frequency_domain/cube.png");
+    save_to_disk(cube_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/cube.png");
 
     auto spectrum = FourierTransform<BALANCED>();
     spectrum.transform_from(cube_img);
-
     auto filter = FrequencyDomainFilter(spectrum);
 
     auto magnitude_img = spectrum.as_image();
-    save_to_disk(magnitude_img, "/home/clem/Workspace/crisp/docs/frequency_domain/cube_spectrum.png");
+    save_to_disk(magnitude_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/cube_spectrum.png");
 
     auto angle_img = spectrum.phase_angle_as_image();
-    save_to_disk(angle_img, "/home/clem/Workspace/crisp/docs/frequency_domain/cube_angle.png");
+    save_to_disk(angle_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/cube_angle.png");
 
     auto dc = spectrum.get_dc_component();
 
@@ -87,104 +84,126 @@ int main()
     }
 
     auto modified_spectrum = spectrum.as_image();
-    save_to_disk(modified_spectrum, "/home/clem/Workspace/crisp/docs/frequency_domain/cube_spectrum_modified.png");
+    save_to_disk(modified_spectrum, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/cube_spectrum_modified.png");
 
     auto modified_cube = spectrum.transform_to<GrayScaleImage>();
-    save_to_disk(modified_cube, "/home/clem/Workspace/crisp/docs/frequency_domain/cube_modified.png");
-    */
+    save_to_disk(modified_cube, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/cube_modified.png");
+*/
 
+    auto filter = FrequencyDomainFilter(spectrum);
     filter.as_identity();
     auto filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/identity.png");
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/identity.png");
 
     size_t x_size = spectrum.get_size().x() * 0.5,
            y_size = spectrum.get_size().y() * 0.5;
 
+    /*
     // low pass
     filter.as_ideal_lowpass(0.25 * x_size);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/ideal_lowpass.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/ideal_lowpass.png");
 
     filter.as_gaussian_lowpass(0.25 * x_size);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/gaussian_lowpass.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/gaussian_lowpass.png");
 
     filter.as_butterworth_lowpass(0.25 * x_size, 1);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/butterworth_1_lowpass.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/butterworth_1_lowpass.png");
 
     filter.as_butterworth_lowpass(0.25 * x_size, 2);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/butterworth_2_lowpass.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/butterworth_2_lowpass.png");
 
     filter.as_butterworth_lowpass(0.25 * x_size, 3);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/butterworth_3_lowpass.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/butterworth_3_lowpass.png");
 
     // high pass
     filter.as_ideal_highpass(0.25 * x_size);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/ideal_highpass.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/ideal_highpass.png");
 
     filter.as_gaussian_highpass(0.25 * x_size);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/gaussian_highpass.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/gaussian_highpass.png");
 
     filter.as_butterworth_highpass(0.25 * x_size, 1);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/butterworth_1_highpass.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/butterworth_1_highpass.png");
 
     filter.as_butterworth_highpass(0.25 * x_size, 2);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/butterworth_2_highpass.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/butterworth_2_highpass.png");
 
     filter.as_butterworth_highpass(0.25 * x_size, 3);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/butterworth_3_highpass.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/butterworth_3_highpass.png");
 
 
     // bandpass
     filter.as_ideal_bandpass(0.15 * x_size, 0.3 * x_size);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/ideal_bandpass.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/ideal_bandpass.png");
 
     filter.as_gaussian_bandpass(0.15 * x_size, 0.3 * x_size);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/gaussian_bandpass.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/gaussian_bandpass.png");
 
     filter.as_butterworth_bandpass(0.15 * x_size, 0.3 * x_size, 1);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/butterworth_1_bandpass.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/butterworth_1_bandpass.png");
 
     filter.as_butterworth_bandpass(0.15 * x_size, 0.3 * x_size, 2);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/butterworth_2_bandpass.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/butterworth_2_bandpass.png");
 
     filter.as_butterworth_bandpass(0.15 * x_size, 0.3 * x_size, 3);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/butterworth_3_bandpass.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/butterworth_3_bandpass.png");
 
     // bandreject
     filter.as_ideal_bandreject(0.15 * x_size, 0.3 * x_size);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/ideal_bandreject.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/ideal_bandreject.png");
 
     filter.as_gaussian_bandreject(0.15 * x_size, 0.3 * x_size);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/gaussian_bandreject.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/gaussian_bandreject.png");
 
     filter.as_butterworth_bandreject(0.15 * x_size, 0.3 * x_size, 1);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/butterworth_1_bandreject.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/butterworth_1_bandreject.png");
 
     filter.as_butterworth_bandreject(0.15 * x_size, 0.3 * x_size, 2);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/butterworth_2_bandreject.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/butterworth_2_bandreject.png");
 
     filter.as_butterworth_bandreject(0.15 * x_size, 0.3 * x_size, 3);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/butterworth_3_bandreject.png");
-
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/butterworth_3_bandreject.png");
+    */
     // offset
     filter.as_butterworth_bandpass(
         0.25 * spectrum.get_size().x(), // lower cutoff
@@ -193,13 +212,21 @@ int main()
         1,  // passing factor
         0   // attenuating factor
     );
+    auto backup = filter;
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/no_offset.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/no_offset.png");
 
-    filter.set_offset(-0.2 * spectrum.get_size().x(), -0.1 * spectrum.get_size().y(), true);
-    filter.normalize();
+    filter.set_offset(-0.2 * spectrum.get_size().x(), -0.1 * spectrum.get_size().y(), false);
     filter_img = filter.as_image<GrayScaleImage>();
-    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/with_symmetry.png");
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/with_offset.png");
+
+    filter = backup;
+    filter.set_offset(-0.2 * spectrum.get_size().x(), -0.1 * spectrum.get_size().y(), true);
+    filter_img = filter.as_image<GrayScaleImage>();
+    clamp(filter_img);
+    save_to_disk(filter_img, "/home/clem/Workspace/crisp/docs/frequency_domain/.resources/with_symmetry.png");
 
 }
 

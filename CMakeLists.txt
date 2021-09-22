@@ -99,7 +99,7 @@ include_directories("./")
 add_executable(EXAMPLE_COLOR docs/color/.resources/color_example.cpp)
 target_link_libraries(EXAMPLE_COLOR crisp)
 
-add_executable(EXAMPLE_FREQUENCY_DOMAIN docs/frequency_domain/frequency_domain_example.cpp)
+add_executable(EXAMPLE_FREQUENCY_DOMAIN docs/frequency_domain/.resources/frequency_domain_example.cpp)
 target_link_libraries(EXAMPLE_FREQUENCY_DOMAIN crisp)
 
 add_executable(EXAMPLE_IMAGE docs/image/.resources/image_example.cpp)

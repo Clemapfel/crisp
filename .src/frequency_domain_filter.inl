@@ -89,9 +89,17 @@ namespace crisp
 
         for (size_t x = 0, i = 0; x <_size.x(); ++x)
             for (size_t y = 0; y < _size.y(); ++y, ++i)
-                _values.emplace_back(_function(
-                        std::max<int>(x - _offset.x(), 0),
-                        std::max<int>(y - _offset.y(), 0)) * (_offset_symmetrical ? _function(std::min(x + _offset.x(), get_size().x()), std::min(y + _offset.y(), get_size().y())) : 1));
+            {
+                if (_offset_symmetrical)
+                {
+                    _values.emplace_back(std::max(_function(std::max<int>(x - _offset.x(), 0), std::max<int>(y - _offset.y(), 0)), _function(std::max<int>(x + _offset.x(), 0), std::max<int>(y + _offset.y(), 0))));
+                }
+                else
+                {
+                    _values.emplace_back(
+                            _function(std::max<int>(x - _offset.x(), 0), std::max<int>(y - _offset.y(), 0)));
+                }
+            }
 
         _values_initialized = true;
     }

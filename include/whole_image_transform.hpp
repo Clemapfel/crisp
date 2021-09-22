@@ -19,6 +19,11 @@ namespace crisp
     template<typename Image_t>
     void normalize(Image_t&);
 
+    /// @brief cutoff all values outside of [0, 1] to 0 or 1 respectively
+    /// @param image
+    template<typename Image_t>
+    void clamp(Image_t&);
+
     /// @brief compute gradient magnitude using sobel gradient
     /// @param image
     /// @returns gradient as normalized grayscale image

@@ -78,6 +78,20 @@ namespace crisp
         return out;
     }
 
+    template<typename Image_t>
+    void clamp(Image_t& image)
+    {
+        using Value_t = typename Image_t::Value_t;
+        for (auto& px : image)
+        {
+            for (size_t i = 0; i < Value_t::size(); ++i)
+                if (px.at(i) < 0)
+                    px.at(i) = 0;
+                else if (px.at(i) > 1)
+                    px.at(i) = 1;
+        }
+    }
+
     template<typename T>
     std::array<Image<bool, 1>, 8> bitplane_decompose(const Image<T, 1>& image)
     {
