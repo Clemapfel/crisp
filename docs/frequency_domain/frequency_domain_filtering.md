@@ -4,7 +4,7 @@
 
 # Frequency Domain
 
-2d Discrete Fourier-Transform and Filtering it
+2D Discrete Fourier-Transform and Filtering it
 
 ```cpp
 #include <fourier_transform.hpp>
@@ -16,10 +16,10 @@
 1. [Introduction](#1-introduction)<br>
 2. [Fourier Transform](#2-fourier-transform)<br>
     2.1 [Fourier Transform Performance Mode](#21-fourier-transform-performance-mode)<br>
-    2.2 [Creating the Transform](#22-creating-the-transform)<br>
+    2.2 [Transforming an Image into it's Spectrum](#22-transforming-an-image-into-the-spectrum)<br>
     2.3 [Visualizing the Spectrum](#23-visualizing-the-spectrum)<br>
     2.4 [Accessing Coefficients](#24-accessing-coefficients)<br>
-    2.5 [Transforming Back into an Image](#25-transforming-back-into-an-image)<br>
+    2.5 [Transforming a Spectrum back into an Image](#25-transforming-the-spectrum-back-into-an-image)<br>
 3. [Spectral Filters](#3-spectral-filters)<br>
     3.1 [Creating & Visualizing Filters](#31-creating-and-visualizing-filters)<br>
     3.2 [Filter Shapes](#32-filter-shapes)<br>
@@ -27,7 +27,7 @@
         3.2.2 [High-Pass Filters](#322-high-pass-filters)<br>
         3.2.3 [Band-Pass Filters](#323-band-pass-filters)<br>
         3.2.4 [Band-Reject Filters](#324-band-reject-filters)<br>
-   3.3 [Modifying Filter](#33-modifying-filter)
+   3.3 [Modifying and Combining Filters](#33-modifying-filters)
    
 
 ## 1. Introduction
@@ -405,7 +405,7 @@ filter.set_offset(
 
 As expected the filters center moved towards the top left of the image.
 
-Multiplying a fourier spectrum with a filter that is not radially symmetrical, will result in it's phase angle shifting. This usually corrupts the resulting image. To prevent this, we can turn on ``force_symmetry``, which automatically mirrors the offset filter across the center, resulting in a radially symmetrical image:
+Multiplying a fourier spectrum with a filter that is not symmetrical, will result in it's phase angle shifting. This usually corrupts the resulting image. To prevent this, we can turn on ``force_symmetry``, which automatically mirrors the offset filter across the center, resulting in a symmetrical image:
 
 ```cpp
 filter.set_offset(
