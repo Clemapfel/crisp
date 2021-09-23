@@ -1,54 +1,54 @@
 # Index
 
-This page lists all major functions and their corresponding entries in the tutorials. You can navigate to each section by clicking the links right or visit `/crisp/docs/xyz` right here on github where xyz is the theme of the tutorial
+This page lists all major functions and their corresponding entries in the tutorials. You can navigate to each section by clicking the links or visiting `/crisp/docs/xyz` right here on github where xyz is the theme of the tutorial
 
-If this is your first time using `crisp`, consider reading the tutorial in the order recommended [here](../README.md).
+If this is your first time using `crisp`, consider reading the tutorial in the order recommended [here](../README.md/#tutorial).
 
 ---
 
 ## Table of Contents
-1. [Images](#imagesimageimagesmd)
-   1.1 [Modifying Images](#modifying-images)
-   1.2 [Image Planes](#image-planes)
-   1.3 [Histgroams](#image-histograms)
-   1.4 [Whole Image Transforms](#whole-image-transforms)
-2. [Spatial Domain Filtering](#filtering-in-the-spatial-domainspatial_filtersspatial_domain_filteringmd)
-    2.1 [Kernels](#kernels)
-    2.2 [crisp::SpatialFilter](#filter)
-    2.3 [Evaluation Functions](#evaluation-function)
-    2.4 [Pre-Defined Kernels](#pre-defined-kernels)
-3. [Morphological Transforms](#morphological-transformsmorphological_transformmorphological_transformmd)
-    3.1 [Structuring Element](#structuring-element)
-    3.2 [Pre-Defined Structuring Elements](#pre-defined-structuring-elements)
-    3.3 [Types of Transforms](#transforms)
-4. [Segmentation](#segmentationsegmentationsegmentationmd)
-    4.1 [crisp::ImageSegment](#crispimagesegment)
-    4.2 [Thresholding](#thresholding)
-    4.3 [Edge Detection](#edge-detection)
-    4.4 [Clustering](#clustering)
-5. [Feature Extraction](#feature-extractionfeature_extractionfeature_extractionmd)
-    5.1 [crisp::ImageRegion](#crispimageregion)
-    5.2 [Boundary](#boundary)
-    5.3 [Signatures](#boundary-signatures)
-    5.4 [Region Descriptors](#region-descriptors)
-    5.5 [Texture Descriptors](#texture-descriptors)
-6. [Frequency Domain Filtering](#frequency-domainfrequency_domainfrequency_domain_filteringmd)
-    6.1 [Fourier Transform](#fourier-transform)
-    6.2 [Spectral Filters](#spectral-filters)
-    6.3 [Pre-Defined Filter Types](#filter-types)
-7. [Vectors](#vectorsvectorvectormd)
-    7.1 [General](#general)
-    7.2 [Arithmetics & Comparison](#arithmetics--comparisons)
-8. [Color](#colorcolorcolormd)
-    8.1 [Color Representations](#color-representations)
-    8.2 [Pseudo Color](#pseudo-color)
-9. [Noise](#noisenoisenoisemd)
-    9.1 [crisp::NoiseGenerator](#general)
-    9.2 [Types of Noise](#types-of-noise)
-10. [System](#systemsystemsystemmd)
-    10.1 [Image I/O](#image-io)
-    10.2 [Rendering](#rendering)
-    10.3 [User Input](#keyboardmouse-input)
+1. [**Images**](#imagesimageimagesmd)<br>
+   1.1 [Modifying Images](#modifying-images)<br>
+   1.2 [Image Planes](#image-planes)<br>
+   1.3 [Histgroams](#image-histograms)<br>
+   1.4 [Whole Image Transforms](#whole-image-transforms)<br>
+2. [**Spatial Domain Filtering**](#filtering-in-the-spatial-domainspatial_filtersspatial_domain_filteringmd)<br>
+    2.1 [Kernels](#kernels)<br>
+    2.2 [crisp::SpatialFilter](#filter)<br>
+    2.3 [Evaluation Functions](#evaluation-function)<br>
+    2.4 [Pre-Defined Kernels](#pre-defined-kernels)<br>
+3. [**Morphological Transforms**](#morphological-transformsmorphological_transformmorphological_transformmd)<br>
+    3.1 [Structuring Element](#structuring-element)<br>
+    3.2 [Pre-Defined Structuring Elements](#pre-defined-structuring-elements)<br>
+    3.3 [Types of Transforms](#transforms)<br>
+4. [**Segmentation**](#segmentationsegmentationsegmentationmd)<br>
+    4.1 [crisp::ImageSegment](#crispimagesegment)<br>
+    4.2 [Thresholding](#thresholding)<br>
+    4.3 [Edge Detection](#edge-detection)<br>
+    4.4 [Clustering](#clustering)<br>
+5. [**Feature Extraction**](#feature-extractionfeature_extractionfeature_extractionmd)<br>
+    5.1 [crisp::ImageRegion](#crispimageregion)<br>
+    5.2 [Boundary](#boundary)<br>
+    5.3 [Signatures](#boundary-signatures)<br>
+    5.4 [Region Descriptors](#region-descriptors)<br>
+    5.5 [Texture Descriptors](#texture-descriptors)<br>
+6. [**Frequency Domain Filtering**](#frequency-domainfrequency_domainfrequency_domain_filteringmd)<br>
+    6.1 [Fourier Transform](#fourier-transform)<br>
+    6.2 [Spectral Filters](#spectral-filters)<br>
+    6.3 [Pre-Defined Filter Types](#filter-types)<br>
+7. [**Vectors**](#vectorsvectorvectormd)<br>
+    7.1 [General](#general)<br>
+    7.2 [Arithmetics & Comparison](#arithmetics--comparisons)<br>
+8. [**Color**](#colorcolorcolormd)<br>
+    8.1 [Color Representations](#color-representations)<br>
+    8.2 [Pseudo Color](#pseudo-color)<br>
+9. [**Noise**](#noisenoisenoisemd)<br>
+    9.1 [crisp::NoiseGenerator](#general)<br>
+    9.2 [Types of Noise](#types-of-noise)<br>
+10. [**System**](#systemsystemsystemmd)<br>
+    10.1 [Image I/O](#image-io)<br>
+    10.2 [Rendering](#rendering)<br>
+    10.3 [User Input](#keyboardmouse-input)<br>
     
 ---
 
