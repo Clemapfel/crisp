@@ -33,6 +33,7 @@ Multi-Dimensional Images of Arbitrary Type, Plane-Wise and Whole-Image Processin
     3.3 [Creating Images](#33-creating-images)</br>
     3.4 [Image Iterators](#34-image-iterators)</br>
     3.5 [Image-Image arithmetic operators](#35-image-arithmetics)</br>
+    3.6 [A note on Artifacting](#36-a-note-on-artifacting)<br>
 4. [**Multi Dimensional Images**](#4-multi-dimensional-images)</br>
     4.1 [Accessing Planes Directly](#41-accessing-planes-directly)</br>
 5. [**Image Histograms**](#5-histograms)<br>

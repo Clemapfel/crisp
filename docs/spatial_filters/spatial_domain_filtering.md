@@ -11,18 +11,18 @@ Filter Kernels & Convolution, Non-Maxima Surpression, Median Filtering
 
 ## Table of Contents
 
-1. [Introduction](#1-introduction)
-2. [Kernels](#2-kernels)<br>
+1. [**Introduction**](#1-introduction)
+2. [**Kernels**](#2-kernels)<br>
     2.1 [Kernel Normalizationl](#21-normalize-a-kernel)<br>
     2.2 [Kernel Rotation](#22-rotate-a-kernel)<br>
     2.3 [Kernel Seperation](#23-separate-a-kernel)<br>
     2.4 [Combining two Kernels](#24-combining-two-kernels)<br>
-3. [crisp::SpatialFilter](#3-crispspatialfilter)<br>
+3. [**crisp::SpatialFilter**](#3-crispspatialfilter)<br>
     3.1 [Setting the Kernel](#31-specifying-the-kernel)<br>
     3.2 [Specifying the Evaluation Function](#32-specifying-the-evaluation-function)<br>
     3.3 [Applying the Filter](#33-applying-the-filter)<br>
     3.4 [Applying the Filter in Mutiple Dimensions](#34-applying-the-filter-in-all-dimensions)<br>
-4. [Types of Kernels](#4-filter-kernel-types)<br>
+4. [**Types of Kernels**](#4-filter-kernel-types)<br>
     4.1 [Identity](#41-identity)<br>
     4.2 [One](#42-one)<br>
     4.3 [Zero](#43-zero)<br>
@@ -38,7 +38,7 @@ Filter Kernels & Convolution, Non-Maxima Surpression, Median Filtering
         4.9.3 [Prewitt](#493-prewitt-gradient)<br>
         4.9.4 [Sobel](#494-sobel)<br>
         4.9.5 [Kirsch Compass](#495-kirsch-compass)<br>
-5. [Image Restoration using other Evaluation Functions](#5-using-other-evaluation-functions-for-image-restoration)<br
+5. [**Image Restoration using other Evaluation Functions**](#5-using-other-evaluation-functions-for-image-restoration)<br
 
 # 1. Introduction
 
