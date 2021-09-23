@@ -3,15 +3,19 @@
 ---
 # Filtering in the Spatial Domain
 
-Filter Kernels & Convolution 
+Filter Kernels & Convolution, Non-Maxima Surpression, Median Filtering 
+
+```cpp
+#include <spatial_filter.hpp>
+```
 
 ## Table of Contents
 
 1. [Introduction](#1-introduction)
-2. [Kernel](#2-kernels)<br>
+2. [Kernels](#2-kernels)<br>
     2.1 [Kernel Normalizationl](#21-normalize-a-kernel)<br>
     2.2 [Kernel Rotation](#22-rotate-a-kernel)<br>
-    2.3 [Kernel Seperation](#23-seperate-a-kernel)<br>
+    2.3 [Kernel Seperation](#23-separate-a-kernel)<br>
     2.4 [Combining two Kernels](#24-combining-two-kernels)<br>
 3. [crisp::SpatialFilter](#3-crispspatialfilter)<br>
     3.1 [Setting the Kernel](#31-specifying-the-kernel)<br>
@@ -38,22 +42,21 @@ Filter Kernels & Convolution
 
 # 1. Introduction
 
-Spatial filters are central to the field of image processing and features in many of the most use algorithms both in the literature and in ``crisp``. They are represented by ``crisp::SpatialFilter``. A filter in ``crisp`` has to components: it's *kernel* and *evaluation function*. 
+Spatial filters are central to the field of image processing and find application in many of the most used algorithms both in the literature and in ``crisp``. A filter has 2 elements: a *kernel* and an *evaluation function* that takes that kernel and applies it to an image. We will explore of these concepts in more detail
 
 # 2. Kernels
 
-A kernel is a m*n matrix of floats. It behaves exactly like a matrix and unlike images operations on it are matrix operations. Indeed, looking in [spatial_filter.hpp] we find that filter kernels are just a typedef for ``Eigen::Matrix``:
+A kernel is a m*n matrix of floats. Unlike `crisp::Vector` and `crisp::Image` it does indeed behave like one, multipyling one kernel with another does use matrix-matrix multiplication. Indeed look closer at [spatial_filter.hpp] we find that filter kernels are just a typedef for ``Eigen::Matrix``:
 
 ```cpp
 using Kernel = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>;
 ```
+ Please consult the [eigen documentation](https://eigen.tuxfamily.org/dox/group__TutorialMatrixClass.html) in the case that their matrix class is not yet familiar. Henceforth we assume that any reader is familiar with comma initialization, element-access of most common member functions of ``Eigen::Matrix``.
 
-Keep this in mind, the link to Eigen is explicitely mentioned here because it opens a vast array of numerical techniques that are not obvious just through it's ``crisp`` interface. Please consult the [eigen documentation](https://eigen.tuxfamily.org/dox/group__TutorialMatrixClass.html) in the case that their matrix class is not yet familiar. Henceforth we assume that any reader is familiar with comma initialization and element-access of ``Eigen::Matrix``.
-
-Other than functions supplied by eigen, ``crisp`` offers these external functions for operating on them:
+Other than functions supplied by eigen, ``crisp`` offers these external functions for operating on kernels:
 
 ```cpp
-// make it sum of elements is 1
+// make it so sum of elements is 1
 void normalize(Kernel&);
 
 // rotate a kernel 90°
@@ -62,13 +65,15 @@ void rotate(Kernel&, size_t n_90_degrees);
 // convolute one kernel with another
 Kernel convolute(Kernel left, Kernel right);
 
-// seperate a kernel numerically
-bool seperate(const Kernel& original, Kernel* out_left, Kernel* out_right);
+// separate a kernel numerically
+bool separate(const Kernel& original, Kernel* out_left, Kernel* out_right);
 ```
+
+We will explore each of these function and their usage in detail.
 
 # 2.1 Normalize a Kernel
 
-``normalize`` modifies the kernels element so it's sum-of-elements is 1. This can be useful to control a spatial filters response. To use it we first contstruct a kernel
+``normalize`` modifies the kernels element so it's sum-of-elements is 1. This can be useful to control a spatial filters response, often unnormalized filters will resulst in a response that is outside the interval [0, 1]. We use `normalize()` like so:
 
 ```cpp
 // in main.cpp
@@ -105,7 +110,7 @@ sum after normalization: 1
 
 # 2.2 Rotate a Kernel
 
-We can use ``crisp::rotate`` a kernel by 90° *counter-clockwise*. We can specify a number n such that the kernel is rotate by n * 90° degree:
+We can use ``crisp::rotate`` to rotate a kernel by 90° in the counter-clockwise direction. We can also specify a number `n` such that the kernel is rotate by `n * 90°` degree:
 
 ```cpp
 kernel << 1, 2, 3,
@@ -137,16 +142,30 @@ for (size_t i = 0; i < 4; ++i)
 7 8 9
 ```
 
-## 2.3 Seperate a Kernel
+## 2.3 Separate a Kernel
 
-It is often preferrable to convolute a kernel with an image after seperating it, for a 3x3 kernel M we may seperate them into kernel A (3x1) and B (1x3) such that A * B = M (this is matrix-matrix multiplication). 
+Some kernels are *separable* which for a kernel `K` of size `m*n` means that there exists two kernel `A`, `B` of size `m*1`, `1*n` respectively such that `A * B = M` where `*` here is matrix multiplication. This follow from basic linear algebra.
 
-```crisp::seperate``` takes three arguments:
-+ ``const Kernel& original`` is the kernel we want to seperate
-+ ``Kernel* out_left`` is the left side of the expression, A in our example 
-+ ``Kernel* out_right`` is the right side of the expression, B in our example
+When applying a kernel to an image, we apply it using *convolution*. What this means exactly is not important for now, just know that to filter and image we use convolution. Here we will use the `°` operator for convolution, so for a kernel `K` and image `I`, the filtered image `R` is `R = K ° I`.
 
-The function furthermore returns ``true`` if seperation was possible in which case ``out_left`` and ``out_right`` will be assigned to, if ``false`` is returned the kernel is not seperable and both ``out_left`` and ``out_right`` will be set to ``nullptr``.
+Considering that `K` is separable we can write the above equation<br>
+`R = K ° I`<br>
+as<br>
+`R = (A * B) ° I`<br>
+Because of the property of convolution we can write this as <br>
+`R = A ° (B ° I)`<br>
+What this means in plain language is that for a separable kernel, instead of applying the entire `m*n` kernel `K` we can apply one of the separated kernels `B` to the image and then apply `A` to that result instead. This saves `m*n - (m+n)` many computations which for big kernels and especially big images is a huge increase in performance. It is therefore always a good idea to first separate kernels and apply them in sequence instead. To do this `crisp` offers a convenient function:
+
+```cpp
+bool separate(const Kernel& original, Kernel* out_left, Kernel* out_right);
+```
+
+This function takes three arguments:
++ ``const Kernel& original`` is the kernel we want to separate
++ ``Kernel* out_left`` is the left side of the seperated expression, `A` in our example 
++ ``Kernel* out_right`` is the right side of the seperated expression, `B` in our example
+
+The function furthermore returns ``true`` if seperation was possible in which case ``out_left`` and ``out_right`` will be assigned to, if ``false`` is returned the kernel is not separable and both ``out_left`` and ``out_right`` will be set to ``nullptr``.
 
 Let's consider the following kernel:
 
@@ -155,9 +174,9 @@ Let's consider the following kernel:
  2  0 -2
  1  0 -1
 ```
-This kernel is seperable, [wikipedia lists](https://en.wikipedia.org/wiki/Sobel_operator#Formulation) it's resulting A and B as {{1}, {2}, {3}} (a 1x3 kernel, A) and {+1, 0, -1} (a 3x1 kernel, B). Multiplying them in our head we can verify that this is indeed a valid seperation. 
+This kernel is separable, [wikipedia lists](https://en.wikipedia.org/wiki/Sobel_operator#Formulation) it's resulting A and B as {{1}, {2}, {3}} (a 1x3 kernel, A) and {+1, 0, -1} (a 3x1 kernel, B). Multiplying them in our head we can verify that this is indeed a valid seperation. 
 
-We now try to seperate the kernel in ``crisp``:
+We now try to separate the kernel in `crisp`:
 
 ```cpp
 kernel << 1, 0, -1,
@@ -165,8 +184,8 @@ kernel << 1, 0, -1,
           1, 0, -1;
 
 Kernel left, right;
-if (not seperate(kernel, &left, &right))
-    // handle non-seperable kernels
+if (not separate(kernel, &left, &right))
+    // handle non-separable kernels
 
 std::cout << left << "\n" << std::endl;
 std::cout << right << "\n" << std::endl;
@@ -190,17 +209,16 @@ std::cout << kernel << std::endl;
  2 -0 -2
  1 -0 -1
 ```
-``crisp`` happened to find a different seperation, yet validating it by computing ``left * right`` (A*B) confirms that it is also valid. *Seperations are not unique* because a) we're numerically approximating them. For this reason it is often preferrable to find an analytical seperation on that uses simpler values on paper if possible, if not then we can use ``crisp::seperate`` to automate the process.
-
-For beginners in the field of image processing or linear algebra or for kernels that are very big or numerically assembled it is often unclear wether they are seperable or not. ``crisp::seperate`` will immediately exit once it determined that a kernel is not seperable so it can also be used to simply determine if it can be done with not performance overhead.
+``crisp`` found a different seperation, yet validating it by computing ``left * right`` (A*B) confirms that it is also valid. *Seperations are not unique* because we're numerically approximating only one of the possibly many solutions. 
+For this reason it is often preferrable to find an analytical "clean" seperation on paper that uses simpler values. However if the kernel is very big or automatically generated `crisp` offers this automated process instead. Just remember that not all kernels are separable so it's important to listen to the boolean flag returned by `seperate`.
 
 ## 2.4 Combining two Kernels
 
 Convolution is associative, that is for Kernels K1, K2 and Image I where ``°`` is the convolution operator:
 ``K1 ° (K2 ° I) = (K1 ° K2) ° I``<br>
 
-or in plainer english: the convoluting I with kernel K1 and then convolution I with kernel K2 is the same as first convoluting the two kernels K1, K2 and then convoluting the resulting kernel with the image. 
-This is important as our kernels are usually 3x3 of size while the image is much larger so we want to combine our kernels as much as possible. We can do so with ``crisp::convolute(Kernel, Kernel)``
+or in plain english: convoluting kernel K1 with Image I and then convoluting kernel K2 with that result is the same as first convoluting kernel K1 with kernel K2 and then convoluting the resulting kernel with the image.
+This means we can save an entire step, our image is enourmous but our kernels are usually just a few elements so convoluting the two kernels instead of each kernel with the entire image offers a huge boost in performance. We can combine kernels using convolution like so:
 
 ```cpp
 kernel << -1, -1, -1, 
@@ -217,18 +235,18 @@ std::cout << kernel << std::endl;
 -14 -12 -14
 ```
 
+If a chain of kernels will be applied to an image in sequence, if possible we should always try to combin the kernels first.
+
 ## 3. ``crisp::SpatialFilter``
 ## 3.1 Specifying the Kernel
-Now that we know how to create and modify a kernel we can assign it to a filter. First we need to create the filter, then we can assign a kernel to it via ``set_kernel``
+Now that we know how to create and modify a kernel we can assign it to a filter. First we need to create the filter, then we can assign a kernel to it via ``set_kernel``:
 
 ```cpp
 auto filter = SpatialFilter();
 filter.set_kernel(kernel);
-``` 
+```
 
-After binding the kernel to the filter we can modify it using:
-
-float& operator()(size_t x, size_t y);
+We can modify an already assigned kernel using:
 
 ```cpp
 // members of crisp::SpatialFilter
@@ -236,11 +254,13 @@ float& operator()(size_t x, size_t y);
 float operator()(size_t x, size_t y) const;
 ``` 
 
-These are simply the same access operators as those use on the kernel itself. 
+These are simply the same access operators as those provided for the kernel itself.
 
 ### 3.2 Specifying the Evaluation Function
 
-Before we can apply this kernel to an image we need to specify the evaluation function. By default this is the familiar convolution however ``crisp`` offers 4 other functions in addition to that. To illustrate how they work consider the following 3x3 kernel, image segment of image ``in`` and resulting image ``out``
+Before we can apply this kernel to an image we need to specify the evaluation function. By default this is the already mentioned convolution, however ``crisp`` offers 4 other additional functions. 
+
+To illustrate how each of them works consider the following 3x3 kernel and image segment that is the 3x3 neighborhood of image `in` at position `(i, j)`. The `()` mark the origin of the kernel at it's center:
 
 ```cpp
 // Kernel
@@ -248,19 +268,19 @@ Before we can apply this kernel to an image we need to specify the evaluation fu
 0.5 (0.5) 0.5
 0.5  0.5  0.5
 
-// in(i, j) = 5
-1  2  3 
-4 (5) 6
-7  8  9
+// in(i, j) = 5, part of the image
+... 1  2  3 ... 
+... 4 (5) 6 ...
+... 7  8  9 ...
 ```
 <br>
 
-+ ``CONVOLUTION`` computes sum of elements weighted by the kernel at a specified image position, while the kernel is centered on that position<br>
++ ``CONVOLUTION`` computese th sum of elements weighted by the kernel at a specified image position:<br>
 ```  
 0.5 * 1 + 0.5 * 2 + ... + 0.5 * 9 = 22.5
 out(i, j) = 22.5
 ```
-+ ``NORMALIZED_CONVOLUTION`` computes the convolution and then devides the weighted sum by the sum of kernel elements <br>
++ ``NORMALIZED_CONVOLUTION`` computes the convolution and then divides the weighted sum by the sum of kernel elements <br>
 
 ```
 0.5 * 1 + 0.5 * 2 + ... + 0.5 * 9 = 22.5
@@ -298,11 +318,11 @@ filter.set_evaluation_function(SpatialFilter::EvaluationFunction::NORMALIZED_CON
 For most scenarios convolution or normalized convolution will be sufficient but some tasks can be simplified by using the more specialized evaluations functions.
 
 ## 3.3 Applying the Filter
-We now have all the pieces together to apply a filter. Let's consider this image of a bird:
+We are now ready to actually apply a filter. Consider this image of a bird:
 
-![](./color_opal.png)
+![](./.resources/color_opal.png)
 
-After loading it as a grayscale immage we can apply the filter to it:
+After loading this image as grayscale we can apply the filter like so:
 
 ```cpp
 // load image
@@ -313,7 +333,7 @@ auto kernel = Kernel();
 kernel.resize(5, 5);
 kernel.setConstant(1);  // 5x5 kernel where all values are 1
 
-// set filter and specify kernel
+// create filter and specify kernel
 auto filter = SpatialFilter();
 filter.set_kernel(kernel);
 filter.set_evaluation_function(filter.CONVOLUTION);
@@ -321,9 +341,9 @@ filter.set_evaluation_function(filter.CONVOLUTION);
 filter.apply_to(image);
 ```
 
-![](./opal_initial_filter_artifacting.png)
+![](./.resources/opal_initial_filter_artifacting.png)
 
-The image is completely distorted, this is because the sum of elements for the filter is not 1, rather as ever element is 1 and the filter is of size 5x5, it's sum of elements is 25. This results in the resulting image values being far outside the [0, 1] required for rendering. If we instead specify the evaluation function as 
+The image is completely distorted. This is because the kernel is not normalized (it's sum of elements is greater than 1). This makes it so  the resulting image values will be far outside [0, 1]. We can fix this by either normalizing the kernel or using `NORMALIZED_CONVOLUTION` instead of `CONVOLUTION`:
 
 ```cpp
 filter.set_evaluation_function(filter.NORMALIZED_CONVOLUTION);
@@ -334,13 +354,13 @@ filter.set_kernel(kernel);
 filter.set_evaluation_function(filter.CONVOLUTION);
 ```
 
-![](./opal_initial_filter.png)
+![](./.resources/opal_initial_filter.png)
 
-The operation results in the expected result, a blurred image
+We can now see the actual effect of the kernel is blurring the image.
 
 ## 3.4 Applying the Filter in All Dimensions
 
-We've previously loaded a colored image as grayscale and then filtered the grayscale image. In ``crisp`` we can filter all images, regardless of value type or dimensionality. For example we can repeat the previous operations but on the color image instead:
+We've previously loaded a colored image as grayscale and then filtered the grayscale image. In ``crisp`` we can filter all images, regardless of value type or dimensionality. For example we can repeat the previous operations but do so on the color image instead:
 
 ```cpp
 // load image as color
@@ -357,19 +377,21 @@ filter.set_evaluation_function(filter.NORMALIZED_CONVOLUTION);
 filter.apply_to(image);
 ```
 
-Literally nothing else changes, all kernels are applicable to all images. The result is exactly what we expect it to be, each plane of the image was blurred individually:
+Literally nothing else changes, all kernels are applicable to all images. The result is exactly what we expect it to be, each plane of the image was blurred individually:<br>
 
-![](./opal_initial_filter_color.png)
+![](./.resources/opal_initial_filter_color.png)<br>
+
+Internally `crisp` applies the filter to each plane individually, keep this in mind as with more complex kernels it may be less obvious what the effect on a multi-plane image will be.
 
 # 4. Filter Kernel Types
 
-It would of course be quite laborious to specify each kernel manually, instead ``crisp`` provides a breadth of kernels such that users can conveniently access the most used ones. Instead of listing them all, as the names can be quite hard to recognize for people who aren't as familiar with the literature, a demonstration of each available kernel will follow here. Each kernel is assumed to be of size n*n unless stated otherwise. We're furthermore applying ``_CONVOLUTION`` (with no normalization) in each of these examples unless stated otherwise. Furthermore we will state for each kernel wether they can be seperated and again emphasize how necessary it is to do so if performance is of importance
+It would of course be quite laborious to specify each kernel manually, instead ``crisp`` provides a wide selection of the most commonly used kernels. We can access them using static member functions of `crisp::SpatialFilter`. While people who are familiar with the literature will recognize most of them, for people who aren't we will be demonstrating their effect on an image by applying them using `CONVOLUTION`. We will furthermore comment on wether they are separable, in praxis one should always seperate them before computation, however for the sake of brevity this step is ommitted here.
 
 ## 4.1 Identity
 
-(is seperable)
+(not separable)
 
-The simplest kernel is the identity kernel, it projects and image onto itself. It takes one argument: n, such that the resulting kernel will be of size n*n
+The simplest kernel is the identity kernel, it projects and image onto itself. It takes one argument: `n`, such that the resulting kernel will be of size `n*n` where every element except the center is 0, the center is 1
 
 ```cpp
 filter.set_kernel(filter.identity(3));
@@ -378,13 +400,13 @@ filter.set_kernel(filter.identity(3));
 0 1 0
 0 0 0
 ```
-![](./identity.png)
+![](./.resources/identity.png)
 
 ## 4.2 One
 
-(is seperable)
+(is separable)
 
-This kernel is again of size n*n and each element is assigned as 1. This filter is sometimes also called "box filter" or "box blur" because it tends to blur images it is applied to (after normalization). We can intensify the blur by increasing the kernels size, for n = 3 the blur is very slight.
+This kernel is also of size `n*n` but each element is assigned a value of 1. This filter is sometimes also called "box filter" or "box blur" because it tends to blur images (after normalization). We can intensify the blur by increasing the kernels size, for n = 3 the blur is very slight.
 
 ```cpp
 filter.set_kernel(filter.one(3));
@@ -394,16 +416,15 @@ filter.set_kernel(filter.one(3));
 1 1 1
 ```
 
-![](./one.png)<br>
+![](./.resources/one.png)<br>
 
 And after normalization:<br>
-![](./one_normalized.png)
-
+![](./.resources/one_normalized.png)
 
 
 ## 4.3 Zero
 
-(is seperable)
+(is separable)
 
 This kernel is similar to ``one`` but instead of all elements being 1, all elements are instead set to 0. This filter is rarely applied to an image as it will simply result in an all-black result.
 
@@ -415,13 +436,13 @@ filter.set_kernel(filter.zero(3));
 0 0 0
 ``` 
 
-![](./zero.png)
+![](./.resources/zero.png)
 
 ## 4.4 Box
 
-(is seperable)
+(is separable)
 
-Not to be confused with ``one``. ``box`` takes two arguments, it's dimensions n and a constant c such that all elements will be set to c. This means ``box(n, 1)`` is equivalent to ``one(n)`` and ``box(n, 0)`` is equivalent to ``zero(n)``.
+Not to be confused with ``one``, ``box`` takes two arguments: it's dimensions `n` and a constant `c` such that all elements of the kernel will be set to `c`. This means ``box(n, 1)`` is equivalent to ``one(n)`` and ``box(n, 0)`` is equivalent to ``zero(n)``.
 
 ```cpp
 filter.set_kernel(filter.box(3, 0.5f));
@@ -431,34 +452,34 @@ filter.set_kernel(filter.box(3, 0.5f));
 0.5 0.5 0.5
 ``` 
 
-![](./box.png)<br>
+![](./.resources/box.png)<br>
 
 And after normalization:<br>
-![](./box_normalized.png)
+![](./.resources/box_normalized.png)
 
 ## 4.5 Normalized box
 
-(is seperable)
+(is separable)
 
-Unlike the box kernel, the normalized box kernel takes only n as the argument, all components are assigned such that the sum of components is 1
+Unlike the box kernel, the normalized box kernel takes only `n` as argument, all components are assigned such that the sum of components is 1
 
 ```cpp
 filter.set_kernel(filter.normalized_box(3));
 
-0.333333 0.333333 0.333333
-0.333333 0.333333 0.333333
-0.333333 0.333333 0.333333
+0.111111 0.111111 0.111111
+0.111111 0.111111 0.111111
+0.111111 0.111111 0.111111
 ```
 
-![](./normalized_box.png)
+![](./.resources/normalized_box.png)
 
 ## 4.6 Gaussian
 
-(is seperable)
+(is separable)
 
 The gaussian kernel is popular for smoothly blurring images, while it does incurr a performance overhead due to floating point values, the resulting blurred image is less "blocky" compared to a box filter.
 
-The function takes 1 argument, it's size n and returns an already normalized kernel sampling a gaussian distribution, with it's center being the center of the kernel.
+The function to generate it takes only it's size `n` as argument and returns an already normalized kernel sampling a 2d gaussian distribution, with it's center at the center of the kernel.
 
 ```cpp
 filter.set_kernel(filter.gaussian(5))
@@ -471,38 +492,47 @@ filter.set_kernel(filter.gaussian(5))
 ```
 As the number can be quite hard to parse visually, we create a 150x150 kernel and render it via ``crisp::Sprite``:<br>
 
-![](./gaussian_visualized.png)<br>
+![](./.resources/gaussian_visualized.png)<br>
 
 We note the expected gaussian dome.
 Applying the 5x5 filter above to the image we get:<br>
 
-![](./gaussian.png)
+![](./.resources/gaussian.png)
 
 ## 4.7.1 Laplacian First Derivative
 
-(not seperable)
+(not separable)
 
-Also called "laplacian" computes the discrete first derivative of a 2d image functnormalize(image)
-ion. Because it is the derivative ewe expect it to be zero in areas of constant intensity, non-zero at the start of an intensity ramp and nonzero along said ramps. This is identical to the analytical first derivative.  normalize(image)
+Also called "laplacian", computes the first derivative of a discrete 2d function (the image). Because it purports to compute the first derivative we would expect the filters response to be zero in areas of constant intensity, non-zero at the start of an intensity ramp and non-zero along said ramps. This is indeed the case and the laplacian operator can be thought of as the image-version of first derivative from basic analysis.
 
 ```cpp
-filter.set_kernel(filter.laplacian_first_derivate());
+filter.set_kernel(filter.laplacian_first_derivative());
 
 -1 -1 -1
 -1  8 -1
 -1 -1 -1
 ``` 
 
-The resulting image is initially hard to read: <br>
-![](laplacian_first.png)<br>
+The resulting image is initially hard to make sense of: <br>
+![](./.resources/laplacian_first.png)<br>
 
 But after normalization:<br>
-![](laplacian_first_normalized.png)<br>
-We note the typical sharp mask. Multipliying this image with the original result in sharpening of the original.
+![](./.resources/laplacian_first_normalized.png)<br>
+We note the typical "sharp mask". Adding this image to the original result in sharpening of the original:
+
+```cpp
+auto image = load_grayscale_image(/*...*/);
+auto sharp_mask = image;
+filter.apply_to(sharp_mask);
+image += sharp_mask;
+clamp(image);   // cutoff any values above 1
+```
+
+![](./.resources/sharpened.png)
 
 ## 4.7.2 Laplacian Second Derivative
 
-(not seperable)
+(not separable)
 
 The second derivative is the derivative of the first derivative. Just like in analysis we expect the second derivative to be zero in areas of constant intensity, nonzero at the onset *and* end of intensity ramps, zero along inensity ramps. These properties make it quite useful for edge detection.
 
@@ -516,22 +546,22 @@ filter.set_kernel(filter.laplacian_second_derivative())
 
 Due to the overall noisyness of the image the image is almost illegible:
 
-![](./laplacian_second.png)<br>
+![](./.resources/laplacian_second.png)<br>
 
 But after normalization:<br>
 
-![](./laplacian_second_normalized.png)
+![](./.resources/laplacian_second_normalized.png)
 
 ## 4.8 Laplacian of Gaussian
 
-(not seperable)
+(not separable)
 
 The Laplacian of Guassian, often called "LoG" is a commonly used kernel that is the derivative of a guassian:<br>
 
-![](https://homepages.inf.ed.ac.uk/rbf/HIPR2/figs/logcont.gif)<br>
+![](https://homepages.inf.ed.ac.uk/rbf/HIPR2/figs/logcont.gif) <br>
 source: [https://homepages.inf.ed.ac.uk/rbf/HIPR2/log.htm](https://homepages.inf.ed.ac.uk/rbf/HIPR2/log.htm)
 
-Applying it by multiplying the resulting image with original can be interpreted as first blurring, then sharpening the image. It thus finds wide applicability in edge enhancement. Just like the gaussian, the LoG kernel can have arbitrary size:
+Applying it by multiplying the resulting image with original can be interpreted as first blurring, then sharpening the blurred image. It thus finds wide applicability in image enhancement. Just like the gaussian, the LoG kernel can have arbitrary size:
 
 ```cpp
 filter.set_kernel(filter.laplacian_of_gaussian(5));
@@ -543,15 +573,15 @@ filter.set_kernel(filter.laplacian_of_gaussian(5));
 0.171415  0.108386    0.111149   0.108386    0.171415
 ```
 After normalization: <br>
-![](./log_normalized.png)
+![](./.resources/log_normalized.png)
 
 ## 4.9 Gradient Kernels
 
-Gradient kernels attempt to compute the [image gradient](https://en.wikipedia.org/wiki/Image_gradient) best understood as the rate of change along a specified direction. There are multiple kernels to do this and it is important to keep in mind that we always have to specify the direction of the gradient. In ``crisp`` "x-direction" referers the left-to-right gradient, "y-direction" to top-to-bottom
+Gradient kernels attempt to compute the [image gradient](https://en.wikipedia.org/wiki/Image_gradient) best understood as the rate of change in intensity along a specified direction. There are multiple kernels that do this and each of them has two or more version, depending on which direction of the gradient response is measured. In `crisp`, x-direction referers to left-to-right, y-direction to top-to-bottom.
 
 ## 4.9.1 Simple Gradient
 
-(not seperable)
+(not separable)
 
 The simplest gradient kernels in the x and y direction respectively are:
 
@@ -561,23 +591,23 @@ filter.set_kernel(filter.simple_gradient_x())
 -1
  1
 ``` 
-![](simple_gradient_x.png)
+![](./.resources/simple_gradient_x.png)
 
 ```cpp
 filter.set_kernel(filter.simple_gradient_y())
 
 -1  1
 ``` 
-![](simple_gradient_y.png)
+![](./.resources/simple_gradient_y.png)
 
 <br>
-White or black areas correspond to a strong positive or negative increase in intensity respectively while grey (around 0.5) corresponds to relatively constant areas. 
+Light areas correspond to a high positive rate of change, dark areas to a high negative rate of change while gray areas correspond to very little change, as we would expect with the images background.
 
 ### 4.9.2 Roberts Gradient
 
-(is seperable)
+(is separable)
 
-Roberts tried to iterate on the gradient by specifying two kernels that represent change in 4 instead of two:
+Roberts tried to iterate on the simplest gradient by specifying two kernels that represent the gradient in 4 directions instead of two:
 
 ```cpp
 filter.set_kernel(filter.roberts_x());
@@ -585,7 +615,7 @@ filter.set_kernel(filter.roberts_x());
 -1  0
  0  1
 ```
-![](./roberts_x.png)
+![](./.resources/roberts_x.png)
 
 ```cpp
 filter.set_kernel(filter.roberts_y());
@@ -593,11 +623,11 @@ filter.set_kernel(filter.roberts_y());
  0 -1
  1  0
 ```
-![](./roberts_y.png)
+![](./.resources/roberts_y.png)
 
 ### 4.9.3 Prewitt Gradient
 
-(is seperable)
+(is separable)
 
 Prewitt improved on Robets with a bigger kernel in an attempt to get a more detailed gradient response:
 
@@ -609,7 +639,7 @@ filter.set_kernel(filter.prewitt_x());
  1  1  1
 ```
 
-![](./prewitt_x.png)
+![](./.resources/prewitt_x.png)
 
 ```cpp
 filter.set_kernel(filter.prewitt_y());
@@ -619,9 +649,11 @@ filter.set_kernel(filter.prewitt_y());
 -1  0  1
 ```
 
+![](./.resources/prewitt_y.png)
+
 ### 4.9.4 Sobel
 
-(is seperable)
+(is separable)
 
 Sobel combined the roberts kernel with a smoothing kernel in an attempt to get a gradient response less susceptible to noise
 
@@ -633,7 +665,7 @@ filter.set_kernel(filter.sobel_x());
 -1 -2 -1
 ```
 
-![](./sobel_x.png)
+![](./.resources/sobel_x.png)
 
 ```cpp
 filter.set_kernel(filter.sobel_y());
@@ -643,15 +675,15 @@ filter.set_kernel(filter.sobel_y());
  1  0 -1
 ```
 
-![](./sobel_y.png)<br>
+![](./.resources/sobel_y.png)<br>
 
-In the end it is up to the end user to decide which of these gradients should be user. When bleeding edge performance isn't necessary, ``crisp`` prefers to use the sobel kernel over roberts or prewitt due to it's comparable gradient response while being more stable in noisy conditions
+While it is up to the end user to decide which of these gradient kernels is most applicable, `crisp` uses the simple gradient when performance is key and the sobel operator in all other scenarios.
 
 ### 4.9.5 Kirsch Compass
 
-(is seperable)
+(is separable)
 
-Kirsch designed a set of kernels that measure the gradient response in a direction. The direction is given similar to the directions on a compass: north (n), north east (ne), east (e), south east (se), south (s), south west(sw) and west (w)). This set of kernel is useful if the direction of the gradient is of importance to the curren task
+Kirsch designed a set of kernels that measure the gradient response in one of 8 directions. The direction is given similar to the directions on a compass: north (n), north east (ne), east (e), south east (se), south (s), south west(sw) and west (w)). This set of kernels is useful if the direction of the gradient is of importance such as during line- or edge detection.
 
 ```cpp
 // north
@@ -662,7 +694,7 @@ filter.set_kernel(filter.kirsch_compass_n());
  5 -3 -3
 ```
 
-![](./kirsch_n.png)
+![](./.resources/kirsch_n.png)
 
 ```cpp
 // south
@@ -673,7 +705,7 @@ filter.set_kernel(filter.kirsch_compass_s());
 -3 -3  5
 ```
 
-![](./kirsch_s.png)
+![](./.resources/kirsch_s.png)
 
 ```cpp
 // east
@@ -684,7 +716,7 @@ filter.set_kernel(filter.kirsch_compass_e());
  5  5  5
 ```
 
-![](./kirsch_e.png)
+![](./.resources/kirsch_e.png)
 
 ```cpp
 // west
@@ -695,7 +727,7 @@ filter.set_kernel(filter.kirsch_compass_w());
 -3 -3 -3
 ```
 
-![](./kirsch_e.png)
+![](./.resources/kirsch_e.png)
 
 ## 4.9 In Summary
 
@@ -703,13 +735,13 @@ This concludes the overview of kernels available in crisp. Common operations suc
 
 ## 5. Using Other Evaluation Functions for Image Restoration
 
-So far we have dealt with kernels that were applied via convolution or normalized convolution. This is the most common way to alter and image however as mentioned ``crisp`` supports other types of evaluation functions and their use will be illustrated in this section. 
+So far we have dealt with kernels that were applied via convolution or normalized convolution. This is one of the most common way to filter an image however as mentioned before, ``crisp`` supports other types of evaluation functions. Their use will be illustrated in this section. 
 
-Consider the following image, [manually corrupted](../../include/noise_generator.hpp) with noise:
+Consider the following image, [manually corrupted](../noise/noise.md) with noise:
 
-![](./opal_salt_and_pepper.png)
+![](./.resources/opal_salt_and_pepper.png)
 
-The image is heavily with non-uniform noise. Closer examination reveals that the black and white dots are peaks of negative and positive intensitiy of up to 5 times the previous maximum sensor response. We could blur this image using a gaussian filter but the results would be poor as it does not address the noise directly. 
+We note strong, non-uniform salt-and-pepper noise. Closer examination reveals that the black and white dots are peaks of negative and positive intensitiy of up to 5 times the previous maximum sensor response. We could blur this image using a gaussian filter but the results would be poor as it does not address the noise directly. 
 
 Instead we can use one of ``crisp``s other evaluation functions like so:
 
@@ -724,11 +756,11 @@ filter.apply_to(image);
 // render or save to disk
 ```
 
-Here we're using a 3x3 kernel of all ones and using it to compute the mean of a all pixels in a 3x3 neighborhood. We choose ``one`` because we don't want the kernel to weight the image in any way. The resulting image looks much better:
+Here we're using a 3x3 kernel of all ones and using it to compute the mean of a all pixels in a 3x3 neighborhood. We choose ``one`` because we don't want the kernel to weight the image in any way. This is called "mean-filtering" and tends to do decently well at removing noise from an otherwise clear image:
 
-![](./opal_salt_and_pepper_mean.png)
+![](./.resources/opal_salt_and_pepper_mean.png)
 
-However on close examinatin we still not some noise representing, one particular noticeable one is around the lower abdomen of the bird. This is because taking the mean of a limited dataset tends to be quite sensitive to high spikes in intensity. If instead we apply the median, which tends to be more resistant:
+Looking closely we still spot some noise, the most noticable spike is on the birds lower abdomen. Isolated spots like this happen because the mean tends to be quite sensitive to the strength of the signal, the higher the noisy spike is the more the mean will be affected. This is not the case when using the *median* however:
 
 ```cpp
 filter.evaluation_function(filter.MEDIAN);
@@ -736,23 +768,14 @@ filter.set_kernel(filter.one(3));
 filter.apply_to(image);
 ```
 
-![](./opal_salt_and_pepper_median.png)
+![](./.resources/opal_salt_and_pepper_median_2.png)
 
-We get a much better result with minimal distortion. There are still some pixels left, we can eliminate these by simply applying the same median-filter again:
+We get a much better result with minimal distortion. The resulting image is now fully noise-free.
 
-```cpp
-filter.apply_to(image);
-filter.apply_to(image);
-```
-
-![](./opal_salt_and_pepper_median_2.png)
-
-resulting in a fully noise-free image.
-
-While not used here, ``MAXIMUM`` and ``MINIMUM`` also have their applications, most notably in non-maxima surpression and for certain types of image signal distortions.
+While not used here, ``MAXIMUM`` and ``MINIMUM`` also have their applications, most notably in non-maxima surpression and for certain types pre- or post-processing steps.
 
 ---
-
+[<< Back to Index](../index.md)
 
 
 

@@ -13,6 +13,21 @@ using namespace crisp;
 
 int main()
 {
+    {
+        auto kernel = SpatialFilter::laplacian_second_derivative();
+        auto filter = SpatialFilter();
+        filter.set_kernel(kernel);
+        auto original = load_grayscale_image("/home/clem/Workspace/crisp/docs/spatial_filters/.resources/color_opal.png");
+        auto sharp_mask = original;
+        filter.apply_to(sharp_mask);
+
+        original *= sharp_mask;
+        normalize(original);
+        save_to_disk(original, "/home/clem/Workspace/crisp/docs/spatial_filters/.resources/second_sharpened.png");
+        return 0;
+    }
+
+
     auto original = load_grayscale_image("/home/clem/Workspace/crisp/docs/spatial_filters/color_opal.png");
     auto image = original;
 

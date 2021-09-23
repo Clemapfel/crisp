@@ -41,7 +41,7 @@ namespace crisp
         return result;
     }
 
-    bool seperate(const Kernel& original, Kernel* out_left, Kernel* out_right)
+    bool separate(const Kernel& original, Kernel* out_left, Kernel* out_right)
     {
         auto svd = Eigen::JacobiSVD<Kernel, Eigen::ColPivHouseholderQRPreconditioner>(original, Eigen::ComputeThinU | Eigen::ComputeThinV);
 

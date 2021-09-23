@@ -111,7 +111,7 @@ target_link_libraries(EXAMPLE_MORPHOLOGICAL_TRANSFORM crisp)
 add_executable(EXAMPLE_SEGMENTATION docs/segmentation/.resources/segmentation_example.cpp)
 target_link_libraries(EXAMPLE_SEGMENTATION crisp)
 
-add_executable(EXAMPLE_SPATIAL_FILTER docs/spatial_filters/spatial_filter_example.cpp)
+add_executable(EXAMPLE_SPATIAL_FILTER docs/spatial_filters/.resources/spatial_filter_example.cpp)
 target_link_libraries(EXAMPLE_SPATIAL_FILTER crisp)
 
 add_executable(EXAMPLE_SYSTEM docs/system/system_example.cpp)

@@ -28,7 +28,7 @@ namespace crisp
     /// @param out_right: [out] result right-hand kernel
     /// @returns bool if seperation was possible, false otherwise
     /// @note if no seperation took place, out_left and out_right will be set to nullptr
-    bool seperate(const Kernel& original, Kernel* out_left, Kernel* out_right);
+    bool separate(const Kernel& original, Kernel* out_left, Kernel* out_right);
 
     /// @brief normalize a kernel so it's elements sum to 1
     /// @param kernel: kernel to be normalized
