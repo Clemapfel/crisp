@@ -7,7 +7,7 @@ If this is your first time using `crisp`, consider reading the tutorial in the o
 ---
 
 ## Table of Contents
-1. [**Images**](#imagesimageimagesmd)<br>
+1. [**Images**](#images)<br>
    1.1 [Modifying Images](#modifying-images)<br>
    1.2 [Image Planes](#image-planes)<br>
    1.3 [Histgroams](#image-histograms)<br>
@@ -17,32 +17,32 @@ If this is your first time using `crisp`, consider reading the tutorial in the o
     2.2 [crisp::SpatialFilter](#filter)<br>
     2.3 [Evaluation Functions](#evaluation-function)<br>
     2.4 [Pre-Defined Kernels](#pre-defined-kernels)<br>
-3. [**Morphological Transforms**](#morphological-transformsmorphological_transformmorphological_transformmd)<br>
+3. [**Morphological Transforms**](#morphological-transforms)<br>
     3.1 [Structuring Element](#structuring-element)<br>
     3.2 [Pre-Defined Structuring Elements](#pre-defined-structuring-elements)<br>
     3.3 [Types of Transforms](#transforms)<br>
-4. [**Segmentation**](#segmentationsegmentationsegmentationmd)<br>
+4. [**Segmentation**](#segmentation)<br>
     4.1 [crisp::ImageSegment](#crispimagesegment)<br>
     4.2 [Thresholding](#thresholding)<br>
     4.3 [Edge Detection](#edge-detection)<br>
     4.4 [Clustering](#clustering)<br>
-5. [**Feature Extraction**](#feature-extractionfeature_extractionfeature_extractionmd)<br>
+5. [**Feature Extraction**](#feature-extractionfeature)<br>
     5.1 [crisp::ImageRegion](#crispimageregion)<br>
     5.2 [Boundary](#boundary)<br>
     5.3 [Signatures](#boundary-signatures)<br>
     5.4 [Region Descriptors](#region-descriptors)<br>
     5.5 [Texture Descriptors](#texture-descriptors)<br>
-6. [**Frequency Domain Filtering**](#frequency-domainfrequency_domainfrequency_domain_filteringmd)<br>
+6. [**Frequency Domain Filtering**](#frequency-domain)<br>
     6.1 [Fourier Transform](#fourier-transform)<br>
     6.2 [Spectral Filters](#spectral-filters)<br>
     6.3 [Pre-Defined Filter Types](#filter-types)<br>
 7. [**Vectors**](#vectorsvectorvectormd)<br>
     7.1 [General](#general)<br>
     7.2 [Arithmetics & Comparison](#arithmetics--comparisons)<br>
-8. [**Color**](#colorcolorcolormd)<br>
+8. [**Color**](#color)<br>
     8.1 [Color Representations](#color-representations)<br>
     8.2 [Pseudo Color](#pseudo-color)<br>
-9. [**Noise**](#noisenoisenoisemd)<br>
+9. [**Noise**](#noisen)<br>
     9.1 [crisp::NoiseGenerator](#general)<br>
     9.2 [Types of Noise](#types-of-noise)<br>
 10. [**System**](#systemsystemsystemmd)<br>
@@ -52,7 +52,7 @@ If this is your first time using `crisp`, consider reading the tutorial in the o
     
 ---
 
-## [Images](./image/images.md)
+## [Images](./image/image.md)
 
 ```cpp
 #include <image/multi_plane_image.hpp>
@@ -66,31 +66,31 @@ If this is your first time using `crisp`, consider reading the tutorial in the o
 ```
 
 #### Modifying Images
-+ [Loading Images](./image/images.md/#21-loading-images)
-+ [Saving Images](./image/images.md/#22-saving-images)
-+ [Rendering Images](./image/images.md/#31-rendering-images)
-+ [Accessing Pixels](./image/images.md/#32-accessing-individual-pixels)
-+ [Padding](./image/images.md/#32-accessing-individual-pixels)
-+ [Creating Images](./image/images.md/#33-creating-images)
-+ [Image Iterators](./image/images.md/#34-image-iterators)
-+ [Image-Image Arithmetics](./image/images.md/#35-image-arithmetics)
-+ [Artifacting](./image/images.md/#36-a-note-on-artifacting)
++ [Loading Images](./image/image.md/#21-loading-images)
++ [Saving Images](./image/image.md/#22-saving-images)
++ [Rendering Images](./image/image.md/#31-rendering-images)
++ [Accessing Pixels](./image/image.md/#32-accessing-individual-pixels)
++ [Padding](./image/image.md/#32-accessing-individual-pixels)
++ [Creating Images](./image/image.md/#33-creating-images)
++ [Image Iterators](./image/image.md/#34-image-iterators)
++ [Image-Image Arithmetics](./image/image.md/#35-image-arithmetics)
++ [Artifacting](./image/image.md/#36-a-note-on-artifacting)
 
 #### Image Planes
 
-+ [Multi Plane Images](./image/images.md/#4-multi-dimensional-images)
-+ [Accessing Planes](./image/images.md/#41-accessing-planes-directly)
++ [Multi Plane Images](./image/image.md/#4-multi-dimensional-images)
++ [Accessing Planes](./image/image.md/#41-accessing-planes-directly)
   
 #### Image Histograms
-+ [Image Histograms](./image/images.md/#5-histograms)
-+ [Histogram Equalization](./image/images.md/#52-histogram-equalization)
++ [Image Histograms](./image/image.md/#5-histograms)
++ [Histogram Equalization](./image/image.md/#52-histogram-equalization)
 
 #### Whole Image Transforms
 
-+ [Normalize](./image/images.md/#51-normalize)
-+ [Gradient Magnitude](./image/images.md/#53-compute-gradient-magnitude)
-+ [Bitplane Decomposition](./image/images.md/#54-bitplane-decomposition)
-+ [Wavelet Transform](./image/images.md/#55-wavelet-transform)
++ [Normalize](./image/image.md/#51-normalize)
++ [Gradient Magnitude](./image/image.md/#53-compute-gradient-magnitude)
++ [Bitplane Decomposition](./image/image.md/#54-bitplane-decomposition)
++ [Wavelet Transform](./image/image.md/#55-wavelet-transform)
 
 ---
 
