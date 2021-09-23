@@ -86,6 +86,12 @@ namespace crisp
             template<typename Image_t>
             void hit_or_miss_transform(Image_t& image);
 
+            /// @brief replace all occurrences of structuring element in picture with another structuring element
+            /// @param image: image to be modified
+            /// @param replace: structuring element that will be the replacement, has to be of same size as pattern
+            template<typename Image_t>
+            void replace_pattern(Image_t& image, const StructuringElement& replacement);
+
             /// @brief structuring element of specified size where all elements are "don't care"
             /// @param nrows: x-dimension
             /// @param ncols: y-dimension

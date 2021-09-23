@@ -6,6 +6,7 @@
 + Morphological Transform
 + Fourier Transform
 + Filter Design
++ Automated Kernel Seperation
 + Superpixel and k-Means Clustering
 + Edge Detection
 + Feature Extraction
@@ -26,8 +27,8 @@ It's called visual computing, afterall. Here's a non-exhaustive list of things y
 + `crisp::BinaryImage`
 + `crisp::GrayScaleImage`
 + `crisp::ColorImage`
-+ `crisp::Image<T, 1>` for any T
-+ `crisp::Image<T, 3>` for any T
++ `crisp::Image<T, 1>` for any numerical T
++ `crisp::Image<T, 3>` for any numerical T
 + `crisp::FourierTransform`
 + `crisp::FrequencyDomainFilter`
 + `crisp::Kernel`
@@ -35,6 +36,7 @@ It's called visual computing, afterall. Here's a non-exhaustive list of things y
 + `crisp::Histogram`
 + `Eigen::Matrix<T, /*...*/>`
 
+If you also were to list all classes supplied by `crisp` you would end up with the same list!<br>
 This makes debugging, filter design or just understanding/explaining your own algorithms much easier and more intuitive.
 
 `crisp` is **well documented**<br>
@@ -46,7 +48,7 @@ This makes debugging, filter design or just understanding/explaining your own al
 
 `crisp` is **math-less**<br>
 + Algorithms choose their own parameters heuristically
-    - no more trolling through papers trying to find out what parameter `k` does.<br>
+    - no more trolling through papers trying to find out what parameter `α` does.<br>
 + creating the fourier transform of an image is one line of code 
 + k-means clustering in n-dimensions is one line of code
 + computing the gradient magnitude is one line of code

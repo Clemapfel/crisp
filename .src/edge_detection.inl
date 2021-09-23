@@ -71,7 +71,7 @@ namespace crisp::EdgeDetection
         if (not should_measure)
             return out;
         else
-            return otsu_threshold(magnitude_img);
+            return crisp::Segmentation::otsu_threshold(magnitude_img);
     }
 
     BinaryImage canny(const GrayScaleImage& original, float lower_threshold, float upper_threshold)

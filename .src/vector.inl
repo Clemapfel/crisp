@@ -340,7 +340,7 @@ namespace crisp
     bool Vector<T, N>::operator<=(T t) const
     {
         if (N == 1)
-            return T(*this) < t;
+            return T(*this) <= t;
         else
             return (*this).to_hash() <= Vector<T, N>(t).to_hash();
     }
@@ -349,7 +349,7 @@ namespace crisp
     bool Vector<T, N>::operator>(T t) const
     {
         if (N == 1)
-            return T(*this) < t;
+            return T(*this) > t;
         else
             return (*this).to_hash() > Vector<T, N>(t).to_hash();
     }
@@ -358,7 +358,7 @@ namespace crisp
     bool Vector<T, N>::operator>=(T t) const
     {
         if (N == 1)
-            return T(*this) < t;
+            return T(*this) > t;
         else
             return (*this).to_hash() >= Vector<T, N>(t).to_hash();
     }

@@ -9,6 +9,42 @@
 using namespace crisp;
 int main()
 {
+    {
+        const auto bckp = load_binary_image("/home/clem/Workspace/crisp/docs/morphological_transform/.resources/hmt_template.png");
+        auto binary_template = bckp;
+
+        auto transform = MorphologicalTransform();
+
+        auto generate_cross = [](size_t dimensions) -> StructuringElement
+        {
+            auto out = StructuringElement();
+            out.resize(dimensions, dimensions);
+            out.setConstant(0);
+
+            for (size_t i = 0; i < dimensions; ++i)
+            {
+                out(i, dimensions/2) = 1;
+                out(dimensions/2, i) = 1;
+            }
+
+            return out;
+        };
+
+        size_t cross_size = 11;
+        transform.set_structuring_element(generate_cross(cross_size));
+
+        transform.hit_or_miss_transform(binary_template);
+        save_to_disk(binary_template, "/home/clem/Workspace/crisp/docs/morphological_transform/.resources/hmt.png");
+
+        StructuringElement replace = MorphologicalTransform::all_background(cross_size, cross_size);
+
+        binary_template = bckp;
+        transform.replace_pattern(binary_template, replace);
+        save_to_disk(binary_template, "/home/clem/Workspace/crisp/docs/morphological_transform/.resources/pattern_replace.png");
+
+        return 0;
+    }
+
     const auto binary = load_binary_image("/home/clem/Workspace/crisp/docs/morphological_transform/binary_template.png");
     const auto grayscale = load_grayscale_image("/home/clem/Workspace/crisp/docs/morphological_transform/grayscale_template.png");
     const auto binary_mask = load_binary_image("/home/clem/Workspace/crisp/docs/morphological_transform/mask.png");

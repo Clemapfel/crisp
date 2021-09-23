@@ -406,4 +406,61 @@ namespace crisp
             for (long j = 0; j < image.get_size().y(); ++j)
                 image(i, j) = result(i, j);
     }
+
+    template<typename Image_t>
+    void MorphologicalTransform::replace_pattern(Image_t& image, const StructuringElement& replacement)
+    {
+        assert(_structuring_element.rows() == replacement.rows() and _structuring_element.cols() == replacement.cols());
+
+        long n = _structuring_element.rows(),
+             m = _structuring_element.cols();
+
+        auto origin = Vector2i{int(_origin.x()), int(_origin.y())};
+
+        Image_t result = image;
+
+        using ImageValue_t = typename Image_t::Value_t;
+        using Inner_t = typename Image_t::Value_t::Value_t;
+
+        for (long x = 0; x < image.get_size().x(); ++x)
+        {
+            for (long y = 0; y < image.get_size().y(); ++y)
+            {
+                for (size_t i = 0; i < ImageValue_t::size(); ++i)
+                {
+                    for (int a = -origin.x(); a < n - origin.x(); ++a)
+                    {
+                        for (int b = -origin.y(); b < m - origin.y(); ++b)
+                        {
+                            if (not _structuring_element(a + origin.x(), b + origin.y()).has_value())
+                                continue;
+
+                            if (image(x + a, y + b).at(i) != Inner_t(_structuring_element(a + origin.x(), b + origin.y()).value()))
+                            {
+                                goto next;
+                            }
+                        }
+                    }
+
+                    // found
+                    for (int a = -origin.x(); a < n - origin.x(); ++a)
+                    {
+                        for (int b = -origin.y(); b < m - origin.y(); ++b)
+                        {
+                            if (not _structuring_element(a + origin.x(), b + origin.y()).has_value())
+                                continue;
+
+                            result(x + a, y + b).at(i) = replacement(a + origin.x(), b + origin.y()).value_or(false);
+                        }
+                    }
+
+                    next:;
+                }
+            }
+        }
+
+        for (long i = 0; i < image.get_size().x(); ++i)
+            for (long j = 0; j < image.get_size().y(); ++j)
+                image(i, j) = result(i, j);
+    }
 }

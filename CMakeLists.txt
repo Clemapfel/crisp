@@ -105,10 +105,10 @@ target_link_libraries(EXAMPLE_FREQUENCY_DOMAIN crisp)
 add_executable(EXAMPLE_IMAGE docs/image/.resources/image_example.cpp)
 target_link_libraries(EXAMPLE_IMAGE crisp)
 
-add_executable(EXAMPLE_MORPHOLOGICAL_TRANSFORM docs/morphological_transform/morphological_transform_example.cpp)
+add_executable(EXAMPLE_MORPHOLOGICAL_TRANSFORM docs/morphological_transform/.resources/morphological_transform_example.cpp)
 target_link_libraries(EXAMPLE_MORPHOLOGICAL_TRANSFORM crisp)
 
-add_executable(EXAMPLE_SEGMENTATION docs/segmentation/segmentation_example.cpp)
+add_executable(EXAMPLE_SEGMENTATION docs/segmentation/.resources/segmentation_example.cpp)
 target_link_libraries(EXAMPLE_SEGMENTATION crisp)
 
 add_executable(EXAMPLE_SPATIAL_FILTER docs/spatial_filters/spatial_filter_example.cpp)
