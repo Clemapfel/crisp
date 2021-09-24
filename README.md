@@ -1,28 +1,29 @@
-# CRISP: Clems Real-Time Interactive Signal Processing Library
+# CRISP: Real-Time Interactive Signal Processing Library
 
 ## What is `crisp`?
-`crisp` is a library that implements most major image-processing needs. This includes:
+`crisp` is a library implementing most image-processing needs from scratch. This includes:
 + Spatial Filtering
 + Morphological Transform
-+ Fourier Transform
-+ Filter Design
-+ Automated Kernel Seperation
-+ Superpixel and k-Means Clustering
++ Fourier Transform & Spectral Filtering
++ Clustering
 + Edge Detection
 + Feature Extraction
 + Boundary and Texture Descriptors
++ Fully Connected Neural Networks
++ Convolutional Neural Networks
++ Bayes Classification 
++ SIFT & Key Point Classification
 + Color Representations
 + Noise Modelling
-+ Intensity Transforms
 + Histogram Equalization & Specialization
 + Wavelet Transforms
-+ Bitplane Decomposition
++ Bitplane Decomposition & Watermarking
 
 ## Why `crisp`?
 
 `crisp` is **visual**<br>
 Render anything! Really, *anything*? <br>
-It's called visual computing, afterall. Here's a non-exhaustive list of things you can draw on your screen or save to an image at any time:
+It's called visual computing, after all. Here's a non-exhaustive list of things you can draw on your screen or save to an image at any time:
 
 + `crisp::Image` of any type
 + `crisp::FourierTransform`
@@ -31,6 +32,7 @@ It's called visual computing, afterall. Here's a non-exhaustive list of things y
 + `crisp::StructuringElement`
 + `crisp::Histogram`
 + `Eigen::Matrix<T, /*...*/>`
++ `crisp::ConvolutionalNeuralNetwork`
 + and more!
 
 This makes debugging, filter design or just understanding/explaining your own algorithms much easier and more intuitive.
@@ -42,11 +44,6 @@ This makes debugging, filter design or just understanding/explaining your own al
 + user-facing code is polished to a mirror sheen
 + language is kept simple, aimed at people without a math degree
 
-`crisp` is **math-less**<br>
-+ Algorithms choose their own parameters heuristically
-    - no more trolling through papers trying to find out what parameter `α` does.<br>
-+ complex things like k-means clustering or creating the fourier transform of an image can be done with just one line of code
-
 `crisp` is **generic**
 + filter, segment, cluster in any number of dimensions on any image value type
 + convert any image type to any other image type
@@ -55,10 +52,10 @@ This makes debugging, filter design or just understanding/explaining your own al
 
 `crisp` is **portable**<br>
 + supports Mac, Linux and Windows
-+ runs on either ram/cpu or vram/gpu
++ explicit distinction between images living in RAM, operated on by the CPU and textures living in VRAM, operated on by the GPU resulting in full flexibility with optional hardware acceleration
 
 `crisp` is **interactive**<br>
-All SFML functionality is included, this means keyboard/mouse support, rendering to a window, sound, etc.
++ All SFML functionality is included, this means keyboard/mouse support, rendering to a window, sound, etc.
 
 ## Installation
 ### Dependencies
@@ -74,15 +71,21 @@ All SFML functionality is included, this means keyboard/mouse support, rendering
 `crisp` is header only, to add it to your project, simply use:
 
 ```bash
-TODO
+git clone https://github.com/Clemapfel/crisp.git
 ```
 
-Add the corresponding include path to your cmake script and link against `crisp`:
+or if you already have a project folder:
+```
+git submodule add https://github.com/Clemapfel/crisp.git
+```
+
+Add the corresponding include path to your cmake script and link against `crisp` like so:
 ```cmake
 include_directories(/path/to/.../crisp/include/)
 add_executable(MY_EXECUTABLE path/to/my/main.cpp)
 target_link_libraries(MY_EXECUTABLE crisp)
 ```
+Be sure to compile with gcc10 or newer, as many C++20 features are not supported on older versions. You will also need to install Eigen and SFML on your system first (see [Dependencies](#dependencies))
 
 ## Tutorial
 
