@@ -86,7 +86,7 @@ add_library(crisp STATIC
 
         include/noise_generator.hpp
         .src/noise_generator.inl
-        .src/salt_and_pepper_distribution.inl)
+        .src/salt_and_pepper_distribution.inl include/classification/fully_connected_neural_network.hpp include/classification/bayes_classifier.hpp include/classification/sift.hpp include/classification/convolutional_neural_network.hpp include/classification/perceptron.hpp)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp sfml-graphics sfml-window sfml-system fftw3 fftw3l fftw3f)
@@ -117,7 +117,7 @@ target_link_libraries(EXAMPLE_SPATIAL_FILTER crisp)
 add_executable(EXAMPLE_SYSTEM docs/system/system_example.cpp)
 target_link_libraries(EXAMPLE_SYSTEM crisp)
 
-add_executable(EXAMPLE_FEATURE_EXTRACTION docs/feature_extraction/feature_extraction_example.cpp)
+add_executable(EXAMPLE_FEATURE_EXTRACTION docs/feature_extraction/.resources/feature_extraction_example.cpp)
 target_link_libraries(EXAMPLE_FEATURE_EXTRACTION crisp)
 
 add_executable(EXAMPLE_NOISE docs/noise/.resources/noise_main.cpp)
