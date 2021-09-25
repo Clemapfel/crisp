@@ -26,6 +26,10 @@ namespace crisp
             template<typename T>
             GrayScaleImage(const Image<T, 1>&);
 
+            /// @brief create from matrix of floats
+            /// @param matrix
+            GrayScaleImage(const Eigen::MatrixXf&);
+
             /// @brief convert to visually identical color image
             /// @returns new color image
             ColorImage convert_to_color() const;

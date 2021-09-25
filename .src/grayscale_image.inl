@@ -14,7 +14,7 @@ namespace crisp
     {}
 
     template<typename T>
-    inline GrayScaleImage::GrayScaleImage(const Image<T, 1>& other)
+    GrayScaleImage::GrayScaleImage(const Image<T, 1>& other)
         : Image<float, 1>(other.get_size().x(), other.get_size().y())
     {
         for (size_t x = 0; x < get_size().x(); ++x)
@@ -25,8 +25,20 @@ namespace crisp
             }
         }
     }
+    
+    GrayScaleImage::GrayScaleImage(const Eigen::MatrixXf& m)
+        : Image<float, 1>(m.rows(), m.cols())
+    {
+        for (size_t x = 0; x < get_size().x(); ++x)
+        {
+            for (size_t y = 0; y < get_size().y(); ++y)
+            {
+                at(x, y) = m(x, y);
+            }
+        }
+    }
 
-    inline ColorImage GrayScaleImage::convert_to_color() const
+    ColorImage GrayScaleImage::convert_to_color() const
     {
         ColorImage out;
         out.create(get_size().x(), get_size().y());
