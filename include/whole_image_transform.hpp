@@ -19,6 +19,10 @@ namespace crisp
     template<typename Image_t>
     void normalize(Image_t&);
 
+    /// @brief log scale all values
+    template<typename Image_t>
+    void log_scale(Image_t&);
+
     /// @brief cutoff all values outside of [0, 1] to 0 or 1 respectively
     /// @param image
     template<typename Image_t>

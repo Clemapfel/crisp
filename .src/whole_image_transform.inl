@@ -33,6 +33,32 @@ namespace crisp
     }
 
     template<typename Image_t>
+    void log_scale(Image_t& image)
+    {
+        using Value_t = typename Image_t::Value_t;
+        using Inner_t = typename Image_t::Value_t::Value_t;
+
+        float min = std::numeric_limits<Inner_t>::max();
+        float max = std::numeric_limits<Inner_t>::min();
+
+        for (const auto& px : image)
+        {
+            for (size_t i = 0; i < Value_t::size(); ++i)
+            {
+                px.at(i) = log(px.at(i));
+                min = std::min<Inner_t>(min, px.at(i));
+                max = std::max<Inner_t>(max, px.at(i));
+            }
+        }
+
+        for (auto& px : image)
+        {
+            for (size_t i = 0; i < Value_t::size(); ++i)
+                px.at(i) = (px.at(i) - min) / (max - min);
+        }
+    }
+
+    template<typename Image_t>
     GrayScaleImage compute_gradient_magnitude(const Image_t& image)
     {
         using Value_t = typename Image_t::Value_t;
