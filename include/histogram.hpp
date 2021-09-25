@@ -11,7 +11,7 @@
 
 namespace crisp
 {
-    /// @brief histogram that quantizes range of values into n bins and records them
+    /// @brief histogram that quantizes a range of values into n bins and records them
     /// @param N_Bins: number of bins, 256 by default
     template<size_t N_Bins = 256>
     class Histogram

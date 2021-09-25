@@ -10,7 +10,7 @@
 
 namespace crisp
 {
-    /// @brief color image whos pixel have crisp::RGB values
+    /// @brief color image whose pixel have crisp::RGB values
     class ColorImage : public Image<float, 3>
     {
         public:

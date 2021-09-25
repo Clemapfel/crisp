@@ -15,7 +15,7 @@ namespace crisp
     template<typename T, size_t N>
     class Vector : public Eigen::Array<T, 1, N>
     {
-        static_assert(std::is_integral<T>::value or std::is_floating_point<T>::value);
+        static_assert(std::is_arithmetic<T>::value);
 
         public:
             /// @brief expose T as member typedef
@@ -23,10 +23,10 @@ namespace crisp
 
             /// @brief get number of components
             /// @returns N
-            static constexpr size_t size();
+            static constexpr size_t size() noexcept;
 
             /// @brief default ctor
-            Vector();
+            Vector() noexcept;
 
             /// @brief construct variadic
             /// @param args: initializer list of length N
@@ -43,12 +43,12 @@ namespace crisp
             /// @brief access data without bounds checking
             /// @param index
             /// @returns reference to component
-            T& operator[](size_t i);
+            T& operator[](size_t i) noexcept;
 
             /// @brief const-access data without bounds checking
             /// @param index
             /// @returns copy of component
-            T operator[](size_t i) const;
+            T operator[](size_t i) const noexcept;
 
             /// @brief access data with bounds checking
             /// @param index: in [0, N-1]
@@ -66,12 +66,12 @@ namespace crisp
             /// @brief vector-vector element-wise addition
             /// @param other: vector of same size
             /// @returns resulting vector
-            Vector<T, N> operator+(const Vector<T, N>& other) const;
+            Vector<T, N> operator+(const Vector<T, N>& other) const noexcept;
             
             /// @brief vector-vector element-wise subtraction
             /// @param other: vector of same size
             /// @returns resulting vector
-            Vector<T, N> operator-(const Vector<T, N>& other) const;
+            Vector<T, N> operator-(const Vector<T, N>& other) const noexcept;
             
             /// @brief vector-vector element-wise multiplication
             /// @param other: vector of same size
@@ -106,109 +106,109 @@ namespace crisp
             /// @brief vector-vector element-wise modulo assignment
             /// @param other: vector of same size
             /// @returns reference to self after assignment
-            Vector<T, N>& operator%=(const Vector<T, N>& other);
+            Vector<T, N>& operator%=(const Vector<T, N>& other) noexcept;
 
             /// @brief vector-vector element-wise, bit-wise AND
             /// @param other: vector of same size
             /// @returns resulting vector
-            Vector<T, N> operator&(const Vector<T, N>& other) const;
+            Vector<T, N> operator&(const Vector<T, N>& other) const noexcept;
             
             /// @brief vector-vector element-wise, short-circuit AND
             /// @param other: vector of same size
             /// @returns resulting vector
-            Vector<T, N> operator&&(const Vector<T, N>& other) const;
+            Vector<T, N> operator&&(const Vector<T, N>& other) const noexcept;
             
             /// @brief vector-vector element-wise, bit-wise OR
             /// @param other: vector of same size
             /// @returns resulting vector
-            Vector<T, N> operator|(const Vector<T, N>& other) const;
+            Vector<T, N> operator|(const Vector<T, N>& other) const noexcept;
             
             /// @brief vector-vector element-wise, short-circuit OR
             /// @param other: vector of same size
             /// @returns resulting vector
-            Vector<T, N> operator||(const Vector<T, N>& other) const;
+            Vector<T, N> operator||(const Vector<T, N>& other) const noexcept;
             
             /// @brief vector-vector element-wise, bit-wise XOR
             /// @param other: vector of same size
             /// @returns resulting vector
-            Vector<T, N> operator^(const Vector<T, N>& other) const;
+            Vector<T, N> operator^(const Vector<T, N>& other) const noexcept;
             
             /// @brief assigns scalar to all components
-            Vector<T, N>& operator=(T);
+            Vector<T, N>& operator=(T) noexcept;
 
             /// @brief vector-scalar element-wise arithmetic addition
             /// @param scalar
             /// @returns resulting vector
-            Vector<T, N> operator+(T scalar) const;
+            Vector<T, N> operator+(T) const noexcept;
             
             /// @brief vector-scalar element-wise arithmetic subtraction
             /// @param scalar
             /// @returns resulting vector
-            Vector<T, N> operator-(T scalar) const;
+            Vector<T, N> operator-(T) const noexcept;
             
             /// @brief vector-scalar element-wise arithmetic multiplication
             /// @param scalar
             /// @returns resulting vector
-            Vector<T, N> operator*(T scalar) const;
+            Vector<T, N> operator*(T) const noexcept;
             
             /// @brief vector-scalar element-wise arithmetic division
             /// @param scalar
             /// @returns resulting vector
-            Vector<T, N> operator/(T scalar) const;
+            Vector<T, N> operator/(T) const noexcept;
             
             /// @brief vector-scalar element-wise arithmetic modulo
             /// @param scalar
             /// @returns resulting vector
-            Vector<T, N> operator%(T scalar) const;
+            Vector<T, N> operator%(T) const noexcept;
 
             /// @brief vector-scalar element-wise, bit-wise AND
             /// @param scalar
             /// @returns resulting vector
-            Vector<T, N> operator&(T scalar) const;
+            Vector<T, N> operator&(T) const noexcept;
             
             /// @brief vector-scalar element-wise, short-circuit AND
             /// @param scalar
             /// @returns resulting vector
-            Vector<T, N> operator&&(T scalar) const;
+            Vector<T, N> operator&&(T) const noexcept;
             
             /// @brief vector-scalar element-wise, bit-wise OR
             /// @param scalar
             /// @returns resulting vector
-            Vector<T, N> operator|(T scalar) const;
+            Vector<T, N> operator|(T) const noexcept;
 
             /// @brief vector-scalar element-wise, short-circuit OR
             /// @param scalar
             /// @returns resulting vector
-            Vector<T, N> operator||(T scalar) const;
+            Vector<T, N> operator||(T) const noexcept;
 
             /// @brief vector-scalar element-wise, bit-wise XOR
             /// @param scalar
             /// @returns resulting vector
-            Vector<T, N> operator^(T scalar) const;
+            Vector<T, N> operator^(T) const noexcept;
 
             /// @brief vector-scalar element-wise, bit-wise assignment AND
             /// @param scalar
             /// @returns resulting vector
-            Vector<T, N>& operator&=(T scalar);
+            Vector<T, N>& operator&=(T) noexcept;
 
             /// @brief vector-scalar element-wise, bit-wise assignment OR
             /// @param scalar
             /// @returns resulting vector
-            Vector<T, N>& operator|=(T scalar);
+            Vector<T, N>& operator|=(T) noexcept;
 
             /// @brief vector-scalar element-wise, bit-wise assignment XOR
             /// @param scalar
             /// @returns resulting vector
-            Vector<T, N>& operator^=(T scalar);
+            Vector<T, N>& operator^=(T) noexcept;
 
             /// @brief vector-scalar element-wise assignment modulo
             /// @param scalar
             /// @returns resulting vector
-            Vector<T, N>& operator%=(T scalar);
+            Vector<T, N>& operator%=(T) noexcept;
 
             /// @brief unary bitwise NOT
             /// @returns resulting vector
-            Vector<T, N> operator~() const;
+            Vector<T, N> operator~() const noexcept;
 
             /// @brief unary boolean not
             /// @returns resulting vector
@@ -217,62 +217,62 @@ namespace crisp
             /// @brief vector-vector element-wise equality
             /// @param other: vector of same size
             /// @return true if all respective components are equal, false otherwise
-            bool operator==(const Vector<T, N>& other) const;
+            bool operator==(const Vector<T, N>& other) const noexcept;
 
             /// @brief vector-vector element-wise equality
             /// @param other: vector of same size
             /// @return false if all respective components are equal, true otherwise
-            bool operator!=(const Vector<T, N>& other) const;
+            bool operator!=(const Vector<T, N>& other) const noexcept;
 
             /// @brief vector-vector element-wise less than
             /// @param other: vector of same size
             /// @returns true if hash of self is smaller than hash of other
-            bool operator<(const Vector<T, N>&) const;
+            bool operator<(const Vector<T, N>&) const noexcept;
 
             /// @brief vector-vector element-wise less than or equal
             /// @param other: vector of same size
             /// @returns true equal or if hash of self is smaller than hash of other
-            bool operator<=(const Vector<T, N>&) const;
+            bool operator<=(const Vector<T, N>&) const noexcept;
 
             /// @brief vector-vector element-wise greater than
             /// @param other: vector of same size
             /// @returns true if hash of self is greater than hash of other
-            bool operator>(const Vector<T, N>&) const;
+            bool operator>(const Vector<T, N>&) const noexcept;
 
             /// @brief vector-vector element-wise greater than or equal
             /// @param other: vector of same size
             /// @returns true if equal or if hash of self is greater than hash of other
-            bool operator>=(const Vector<T, N>&) const;
+            bool operator>=(const Vector<T, N>&) const noexcept;
 
             /// @brief vector-scalar element-wise equality
             /// @param scalar
             /// @returns true if all components are equal to scalar, false otherwise
-            bool operator==(T) const;
+            bool operator==(T) const noexcept;
 
             /// @brief vector-scalar element-wise equality
             /// @param scalar
             /// @returns false if all components are equal to scalar, true otherwise
-            bool operator!=(T) const;
+            bool operator!=(T) const noexcept;
 
             /// @brief vector-scalar element-wise less than
             /// @param scalar
             /// @returns true if all components are less than scalar, false otherwise
-            bool operator<(T) const;
+            bool operator<(T) const noexcept;
 
             /// @brief vector-scalar element-wise less than
             /// @param scalar
             /// @returns true if all components are less than or equal to scalar, false otherwise
-            bool operator<=(T) const;
+            bool operator<=(T) const noexcept;
 
             /// @brief vector-scalar element-wise less than
             /// @param scalar
             /// @returns true if all components are greater than scalar, false otherwise
-            bool operator>(T) const;
+            bool operator>(T) const noexcept;
 
             /// @brief vector-scalar element-wise less than
             /// @param scalar
             /// @returns true if all components are greater than or equal to scalar, false otherwise
-            bool operator>=(T) const;
+            bool operator>=(T) const noexcept;
 
             /// @brief access first component
             /// @returns reference to first component
@@ -289,10 +289,6 @@ namespace crisp
             /// @brief access third component
             /// @returns reference to third component
             using Eigen::Array<T, 1, N>::w;
-
-        private:
-            virtual inline void make_polymorphic_with_this_dummy()
-            {};
     };
 
     using Vector2f = Vector<float, 2>;

@@ -54,9 +54,9 @@ namespace crisp
     }
 
     template<size_t N>
-    size_t Histogram<N>::at(size_t i) const
+    size_t Histogram<N>::at(size_t bin_index) const
     {
-        return _data.at(i);
+        return _data.at(bin_index);
     }
 
     template<size_t N>

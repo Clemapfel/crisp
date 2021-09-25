@@ -14,6 +14,30 @@ namespace crisp
     /// @brief covariance matrix of float
     using CovarianceMatrix = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>;
 
+    /// @brief 256x256 co-occurrence matrix
+    using CoOccurenceMatrix = Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>;
+
+    /// @brief direction of co-occurrence when traveling from index (x,y) to index (x+a,y+b) with a, b in {-1, 0, 1}
+    enum CoOccurenceDirection : uint16_t
+    {
+        /// (x,y) -> (x,   y-1)
+        PLUS_MINUS_ZERO = 0,
+        /// (x,y) -> (x+1, y-1)
+        PLUS_45 = 1,
+        /// (x,y) -> (x+1, y)
+        PLUS_90 = 2,
+        /// (x,y) -> (x+1, y+1)
+        PLUS_125 = 3,
+        /// (x,y) -> (x,   y+1)
+        PLUS_MINUS_180 = 4,
+        /// (x,y) -> (x-1, y+1)
+        MINUS_125 = 5,
+        /// (x,y) -> (x-1, y)
+        MINUS_90 = 6,
+        /// (x,y) -> (x-1, y-1)
+        MINUS_45 = 7
+    };
+
     /// @brief a closed, simply connected region (or in less mathematical terms: a set of unique pixel coordinates and their corresponding values in an image)
     /// @param Image_t: type of image used for the values
     template<typename Image_t>
@@ -74,7 +98,7 @@ namespace crisp
             /// @returns const reference to stored vector of positions
             const std::vector<Vector2ui>& get_boundary_polygon() const;
 
-            /// @brief compute farthers point signature as proposed by El-ghazal, Basir, Belkasim (2009) in counter-clockwise order
+            /// @brief compute farthest point signature as proposed by El-ghazal, Basir, Belkasim (2009) in counter-clockwise order
             /// @returns vector of distances
             /// @notes El-ghazal, A., Basir, O., & Belkasim, S. (2009). Farthest point distance: A new shape signature for Fourier descriptors. Signal Processing: Image Communication, 24(7), 572–586. doi:10.1016/j.image.2009.04.00
             std::vector<float> farthest_point_signature() const;
@@ -144,35 +168,14 @@ namespace crisp
             /// @returns value of invariant
             float get_nths_moment_invariant(size_t n);
 
-            /// @brief get maximum propability of intensity value
+            /// @brief get maximum probability of intensity value
             /// @returns float in [0, 1]
             float get_maximum_intensity_probability() const;
 
-            /// @brief direction of co-occurence when traveling from index (x,y) to index (x+a,y+b) with a, b in {-1, 0, 1}
-            enum CoOccurenceDirection : uint16_t
-            {
-                /// (x,y) -> (x,   y-1)
-                PLUS_MINUS_ZERO = 0,
-                /// (x,y) -> (x+1, y-1)
-                PLUS_45 = 1,
-                /// (x,y) -> (x+1, y)
-                PLUS_90 = 2,
-                /// (x,y) -> (x+1, y+1)
-                PLUS_125 = 3,
-                /// (x,y) -> (x,   y+1)
-                PLUS_MINUS_180 = 4,
-                /// (x,y) -> (x-1, y+1)
-                MINUS_125 = 5,
-                /// (x,y) -> (x-1, y)
-                MINUS_90 = 6,
-                /// (x,y) -> (x-1, y-1)
-                MINUS_45 = 7
-            };
-
-            /// @brief get co-occurence matrix (the number of occurences of a pair of intensities) in specified direction. For images with multiple planes, the co-occurence matrix of each plane is returned
+            /// @brief get co-occurrence matrix (the number of occurrences of a pair of intensities) in specified direction. For images with multiple planes, the co-occurrence matrix of each plane is returned
             /// @param direction
             /// @returns 256x256 matrix, intensities are the average of all image planes, quantized to 256
-            const Eigen::Matrix<size_t, 256, 256>& get_co_occurence_matrix(CoOccurenceDirection direction) const;
+            const CoOccurenceMatrix& get_co_occurrence_matrix(CoOccurenceDirection direction) const;
 
             /// @brief get measure of correlation of the intensity values
             /// @returns float in [-1, 1]
@@ -182,18 +185,17 @@ namespace crisp
             /// @returns float in [0, 1] where 1 means the range is constant
             float get_uniformity(CoOccurenceDirection) const;
 
-            /// @brief measure homogenity, how close the elements in the co-occurence matrixs are distributed towards the diagonal
+            /// @brief measure homogeneity, how close the elements in the co-occurrence matrices are distributed towards the diagonal
             /// @returns float in [0, 1]
-            float get_homogenity(CoOccurenceDirection) const;
+            float get_homogeneity(CoOccurenceDirection) const;
 
-            /// @brief get co-occurence matrices entropy
+            /// @brief get co-occurrence matrices entropy
             /// @returns float in [0, ]1
             float get_entropy(CoOccurenceDirection) const;
 
-            /// @brief get measure of difference between co-occuring pixels
+            /// @brief get measure of difference between co-occurring pixels
             /// @returns float in [0, 1]
             float get_contrast(CoOccurenceDirection) const;
-
 
         private:
             struct Element
@@ -204,15 +206,15 @@ namespace crisp
 
             struct ElementCompare
             {
+                // sorts left-to-right, top to bottom
                 bool operator()(const Element& a, const Element& b) const
                 {
                     return a.position.x() != b.position.x() ? a.position.x() < b.position.x() : a.position.y() < b.position.y();
                 }
             };
 
-            std::set<Element, ElementCompare> _elements;
 
-            void compute_boundary();
+            std::map<Vector2ui, Value_t> _position_to_value;
 
             std::vector<Vector2ui> _boundary;
             std::vector<uint8_t> _boundary_direction;
@@ -233,13 +235,12 @@ namespace crisp
 
             float _max_probability = 0;
             std::map<CoOccurenceDirection, size_t> _sum_of_elements;
-            std::map<CoOccurenceDirection, Eigen::Matrix<size_t, 256, 256>> _co_occurence_matrices;
+            mutable std::map<CoOccurenceDirection, CoOccurenceMatrix> _co_occurrence_matrices;
     };
 
     /// @brief split a segment into multiple closed, 4-connected regions
     template<typename Image_t>
     std::vector<ImageRegion<Image_t>> decompose_into_regions(const ImageSegment&, const Image_t&);
-
 }
 
 #include ".src/image_region.inl"

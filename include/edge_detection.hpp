@@ -18,10 +18,10 @@ namespace crisp::EdgeDetection
     /// @returns binary image containing the edges
     BinaryImage threshold_gradient(const GrayScaleImage& original, float threshold = MEASURE_THRESHOLD);
 
-    /// @brief employ canny algorithm to comput high-quality 1-pixel thick edges
+    /// @brief employ canny algorithm to compute high-quality 1-pixel thick edges
     /// @param origin: image
     /// @param lower_threshold: threshold for edge candidates
-    /// @param upper_threshold: threshold for guruanteed edges
+    /// @param upper_threshold: threshold for guaranteed edges
     /// @returns binary image containing the edges
     BinaryImage canny(const GrayScaleImage& original, float lower_threshold = MEASURE_THRESHOLD, float upper_threshold = MEASURE_THRESHOLD);
 }

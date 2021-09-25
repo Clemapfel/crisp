@@ -90,10 +90,20 @@ namespace crisp
             template<size_t N>
             void create_from(const Histogram<N>&);
 
-            /// @brief load from matrix
+            /// @brief load from matrix of floats
             /// @param matrix
-            template<typename Value_t, size_t N, size_t M>
-            void create_from(const Eigen::Matrix<Value_t, N, M>&);
+            template<size_t N, size_t M>
+            void create_from(const Eigen::Matrix<float, N, M>&);
+
+            /// @brief load from matrix of Vector<float, 1>
+            /// @param matrix
+            template<size_t N, size_t M>
+            void create_from(const Eigen::Matrix<Vector<float, 1>, N, M>&);
+
+            /// @brief load from matrix of Vector<float, 3>
+            /// @param matrix
+            template<size_t N, size_t M>
+            void create_from(const Eigen::Matrix<Vector<float, 3>, N, M>&);
 
         protected:
             void draw(sf::RenderTarget& target, sf::RenderStates states) const override;

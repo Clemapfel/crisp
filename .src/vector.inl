@@ -5,11 +5,13 @@
 
 #include <cstdarg>
 #include <.src/common.inl>
+#include <vector.hpp>
+
 
 namespace crisp
 {
     template<typename T, size_t N>
-    Vector<T, N>::Vector()
+    Vector<T, N>::Vector() noexcept
             : Eigen::Array<T, 1, N>()
     {
         Eigen::Array<T, 1, N>::setConstant(0);
@@ -42,13 +44,13 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    T& Vector<T, N>::operator[](size_t i)
+    T& Vector<T, N>::operator[](size_t i) noexcept
     {
         return Eigen::Array<T, 1, N>::operator()(0, i);
     }
 
     template<typename T, size_t N>
-    T Vector<T, N>::operator[](size_t i) const
+    T Vector<T, N>::operator[](size_t i) const noexcept
     {
         return Eigen::Array<T, 1, N>::operator()(0, i);
     }
@@ -80,7 +82,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    Vector <T, N> Vector<T, N>::operator+(const Vector <T, N>& other) const
+    Vector <T, N> Vector<T, N>::operator+(const Vector <T, N>& other) const noexcept
     {
         auto out = *this;
         out += other;
@@ -88,7 +90,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    Vector <T, N> Vector<T, N>::operator-(const Vector <T, N>& other) const
+    Vector <T, N> Vector<T, N>::operator-(const Vector <T, N>& other) const noexcept
     {
         auto out = *this;
         out *= other;
@@ -96,7 +98,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    bool Vector<T, N>::operator==(const Vector <T, N>& other) const
+    bool Vector<T, N>::operator==(const Vector <T, N>& other) const noexcept
     {
         for (size_t i = 0; i < N; ++i)
             if (this->at(i) != other.at(i))
@@ -106,7 +108,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    bool Vector<T, N>::operator!=(const Vector <T, N>& other) const
+    bool Vector<T, N>::operator!=(const Vector <T, N>& other) const noexcept
     {
         for (size_t i = 0; i < N; ++i)
             if (this->at(i) == other.at(i))
@@ -116,31 +118,31 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    bool Vector<T, N>::operator<(const Vector <T, N>& other) const
+    bool Vector<T, N>::operator<(const Vector <T, N>& other) const noexcept
     {
         return (*this).to_hash() < other.to_hash();
     }
 
     template<typename T, size_t N>
-    bool Vector<T, N>::operator<=(const Vector <T, N>& other) const
+    bool Vector<T, N>::operator<=(const Vector <T, N>& other) const noexcept
     {
         return (*this).to_hash() <= other.to_hash();
     }
 
     template<typename T, size_t N>
-    bool Vector<T, N>::operator>(const Vector <T, N>& other) const
+    bool Vector<T, N>::operator>(const Vector <T, N>& other) const noexcept
     {
         return (*this).to_hash() > other.to_hash();
     }
 
     template<typename T, size_t N>
-    bool Vector<T, N>::operator>=(const Vector <T, N>& other) const
+    bool Vector<T, N>::operator>=(const Vector <T, N>& other) const noexcept
     {
         return (*this).to_hash() >= other.to_hash();
     }
 
     template<typename T, size_t N>
-    Vector <T, N> Vector<T, N>::operator+(T scalar) const
+    Vector <T, N> Vector<T, N>::operator+(T scalar) const noexcept
     {
         auto out = *this;
         for (size_t i = 0; i < N; ++i)
@@ -149,7 +151,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    Vector <T, N> Vector<T, N>::operator-(T scalar) const
+    Vector <T, N> Vector<T, N>::operator-(T scalar) const noexcept
     {
         auto out = *this;
         for (size_t i = 0; i < N; ++i)
@@ -158,7 +160,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    Vector <T, N> Vector<T, N>::operator*(T scalar) const
+    Vector <T, N> Vector<T, N>::operator*(T scalar) const noexcept
     {
         auto out = *this;
         for (size_t i = 0; i < N; ++i)
@@ -167,7 +169,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    Vector <T, N> Vector<T, N>::operator/(T scalar) const
+    Vector <T, N> Vector<T, N>::operator/(T scalar) const noexcept
     {
         auto out = *this;
         for (size_t i = 0; i < N; ++i)
@@ -176,7 +178,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    Vector <T, N> Vector<T, N>::operator%(T scalar) const
+    Vector <T, N> Vector<T, N>::operator%(T scalar) const noexcept
     {
         for (size_t i = 0; i < N; ++i)
             this->at(i) % scalar;
@@ -184,7 +186,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    Vector <T, N>& Vector<T, N>::operator%=(const Vector<T, N>& other)
+    Vector <T, N>& Vector<T, N>::operator%=(const Vector<T, N>& other) noexcept
     {
         for (size_t i = 0; i < N; ++i)
             this->at(i) %= other.at(i);
@@ -192,7 +194,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    Vector<T, N>& Vector<T, N>::operator%=(T scalar)
+    Vector<T, N>& Vector<T, N>::operator%=(T scalar) noexcept
     {
         for (size_t i = 0; i < N; ++i)
             this->at(i) %= scalar;
@@ -200,13 +202,13 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    constexpr size_t Vector<T, N>::size()
+    constexpr size_t Vector<T, N>::size() noexcept
     {
         return N;
     }
 
     template<typename T, size_t N>
-    Vector<T, N>& Vector<T, N>::operator=(T t)
+    Vector<T, N>& Vector<T, N>::operator=(T t) noexcept
     {
         for (size_t i = 0; i < N; ++i)
             this->at(i) = t;
@@ -215,7 +217,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    Vector<T, N> Vector<T, N>::operator&(T t) const
+    Vector<T, N> Vector<T, N>::operator&(T t) const noexcept
     {
         Vector<T, N> out;
 
@@ -226,7 +228,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    Vector<T, N> Vector<T, N>::operator&&(T t) const
+    Vector<T, N> Vector<T, N>::operator&&(T t) const noexcept
     {
         Vector<T, N> out;
 
@@ -237,7 +239,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    Vector<T, N> Vector<T, N>::operator|(T t) const
+    Vector<T, N> Vector<T, N>::operator|(T t) const noexcept
     {
         Vector<T, N> out;
 
@@ -248,7 +250,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    Vector<T, N> Vector<T, N>::operator||(T t) const
+    Vector<T, N> Vector<T, N>::operator||(T t) const noexcept
     {
         Vector<T, N> out;
 
@@ -259,7 +261,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    Vector<T, N> Vector<T, N>::operator^(T t) const
+    Vector<T, N> Vector<T, N>::operator^(T t) const noexcept
     {
         Vector<T, N> out;
 
@@ -270,7 +272,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    Vector<T, N> Vector<T, N>::operator~() const
+    Vector<T, N> Vector<T, N>::operator~() const noexcept
     {
         Vector<T, N> out;
 
@@ -281,7 +283,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    Vector<T, N>& Vector<T, N>::operator&=(T t)
+    Vector<T, N>& Vector<T, N>::operator&=(T t) noexcept
     {
         for (size_t i = 0; i < N; ++i)
             this->at(i) &= t->at(i);
@@ -290,7 +292,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    Vector<T, N>& Vector<T, N>::operator|=(T t)
+    Vector<T, N>& Vector<T, N>::operator|=(T t) noexcept
     {
         for (size_t i = 0; i < N; ++i)
             this->at(i) |= t->at(i);
@@ -299,7 +301,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    Vector<T, N>& Vector<T, N>::operator^=(T t)
+    Vector<T, N>& Vector<T, N>::operator^=(T t) noexcept
     {
         for (size_t i = 0; i < N; ++i)
             this->at(i) |= t->at(i);
@@ -308,7 +310,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    bool Vector<T, N>::operator==(T t) const
+    bool Vector<T, N>::operator==(T t) const noexcept
     {
         for (size_t i = 0; i < N; ++i)
             if (this->at(i) != t)
@@ -318,7 +320,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    bool Vector<T, N>::operator!=(T t) const
+    bool Vector<T, N>::operator!=(T t) const noexcept
     {
         for (size_t i = 0; i < N; ++i)
             if (this->at(i) == t)
@@ -328,7 +330,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    bool Vector<T, N>::operator<(T t) const
+    bool Vector<T, N>::operator<(T t) const noexcept
     {
         if (N == 1)
             return T(*this) < t;
@@ -337,7 +339,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    bool Vector<T, N>::operator<=(T t) const
+    bool Vector<T, N>::operator<=(T t) const noexcept
     {
         if (N == 1)
             return T(*this) <= t;
@@ -346,7 +348,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    bool Vector<T, N>::operator>(T t) const
+    bool Vector<T, N>::operator>(T t) const noexcept
     {
         if (N == 1)
             return T(*this) > t;
@@ -355,12 +357,67 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    bool Vector<T, N>::operator>=(T t) const
+    bool Vector<T, N>::operator>=(T t) const noexcept
     {
         if (N == 1)
             return T(*this) > t;
         else
             return (*this).to_hash() >= Vector<T, N>(t).to_hash();
+    }
+
+    template<typename T, size_t N>
+    Vector<T, N> Vector<T, N>::operator&(const Vector<T, N>& other) const noexcept
+    {
+        Vector<T, N> out;
+
+        for (size_t i = 0; i < N; ++i)
+            out.at(i) = (*this).at(i) & other.at(i);
+
+        return out;
+    }
+
+    template<typename T, size_t N>
+    Vector<T, N> Vector<T, N>::operator|(const Vector<T, N>& other) const noexcept
+    {
+        Vector<T, N> out;
+
+        for (size_t i = 0; i < N; ++i)
+            out.at(i) = (*this).at(i) | other.at(i);
+
+        return out;
+    }
+
+    template<typename T, size_t N>
+    Vector<T, N> Vector<T, N>::operator^(const Vector<T, N>& other) const noexcept
+    {
+        Vector<T, N> out;
+
+        for (size_t i = 0; i < N; ++i)
+            out.at(i) = (*this).at(i) ^ other.at(i);
+
+        return out;
+    }
+
+    template<typename T, size_t N>
+    Vector<T, N> Vector<T, N>::operator&&(const Vector<T, N>& other) const noexcept
+    {
+        Vector<T, N> out;
+
+        for (size_t i = 0; i < N; ++i)
+            out.at(i) = (*this).at(i) && other.at(i);
+
+        return out;
+    }
+
+    template<typename T, size_t N>
+    Vector<T, N> Vector<T, N>::operator||(const Vector<T, N>& other) const noexcept
+    {
+        Vector<T, N> out;
+
+        for (size_t i = 0; i < N; ++i)
+            out.at(i) = (*this).at(i) || other.at(i);
+
+        return out;
     }
 }
 

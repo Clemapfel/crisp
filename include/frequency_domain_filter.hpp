@@ -18,12 +18,12 @@ namespace crisp
             /// @param height: the y-dimensions of the spectrum the filter will be applied to
             FrequencyDomainFilter(size_t width, size_t height);
 
-            /// @brief construct filter of the same size as the specturm
+            /// @brief construct filter of the same size as the spectrum
             /// @param spectrum
             template<FourierTransformMode Mode>
             FrequencyDomainFilter(const FourierTransform<Mode>&);
 
-            /// @brief multiply the filter with a fourier specturm
+            /// @brief multiply the filter with a fourier spectrum
             /// @param spectrum: the spectrum to be modified
             template<FourierTransformMode Mode>
             void apply_to(FourierTransform<Mode>&) const;
@@ -115,10 +115,10 @@ namespace crisp
             /// @returns const reference to the filters values
             const std::vector<double>& get_values() const;
 
+            /// @brief transform spectrum into a 1-plane image of the same size, each coefficient is log-scaled and normalized into [0, 1]
+            /// @returns 1-plane image of specified type
             template<typename Image_t>
             Image_t as_image() const;
-
-            // pre-build functions, use with set_function
 
             /// @brief identity filter
             /// @returns filter where all elements are 1

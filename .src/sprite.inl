@@ -236,6 +236,51 @@ namespace crisp
         update();
     }
 
+    template<size_t N, size_t M>
+    void Sprite::create_from(const Eigen::Matrix<float, N, M>& matrix)
+    {
+        sf::Image temp;
+        temp.create(matrix.rows(), matrix.cols());
+
+        for (size_t x = 0; x < matrix.rows(); ++x)
+            for (size_t y = 0; y < matrix.cols(); ++y)
+                temp.setPixel(x, y, sf::Color(matrix(x, y) * 255, matrix(x, y) * 255, matrix(x, y) * 255));
+
+        _texture.loadFromImage(temp);
+        _position = _sprite.getOrigin();
+        update();
+    }
+
+    template<size_t N, size_t M>
+    void Sprite::create_from(const Eigen::Matrix<Vector<float, 1>, N, M>& matrix)
+    {
+        sf::Image temp;
+        temp.create(matrix.rows(), matrix.cols());
+
+        for (size_t x = 0; x < matrix.rows(); ++x)
+            for (size_t y = 0; y < matrix.cols(); ++y)
+                temp.setPixel(x, y, sf::Color(matrix(x, y).at(0) * 255, matrix(x, y).at(0) * 255, matrix(x, y).at(0) * 255));
+
+        _texture.loadFromImage(temp);
+        _position = _sprite.getOrigin();
+        update();
+    }
+
+    template<size_t N, size_t M>
+    void Sprite::create_from(const Eigen::Matrix<Vector<float, 3>, N, M>& matrix)
+    {
+        sf::Image temp;
+        temp.create(matrix.rows(), matrix.cols());
+
+        for (size_t x = 0; x < matrix.rows(); ++x)
+            for (size_t y = 0; y < matrix.cols(); ++y)
+                temp.setPixel(x, y, sf::Color(matrix(x, y).at(0) * 255, matrix(x, y).at(1) * 255, matrix(x, y).at(2) * 255));
+
+        _texture.loadFromImage(temp);
+        _position = _sprite.getOrigin();
+        update();
+    }
+
     void Sprite::create_from(const StructuringElement & se)
     {
         sf::Image temp;

@@ -13,8 +13,13 @@ namespace crisp
 {
     namespace detail
     {
+        /// @brief comparison functor using for ImageSegment
         struct PixelCoordCompare
         {
+            /// @brief comparison operator, orders elements right-to-left, top-to-bottom
+            /// @param a: pixel coordinate
+            /// @param b: pixel coordinate
+            /// @returns true if (a.y < b.y) or if (a.y == b.y and a.x < b.x)
             bool operator()(const Vector2ui& a, const Vector2ui& b) const
             {
                 return a.y() != b.y() ? a.y() < b.y() : a.x() < b.x();

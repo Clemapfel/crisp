@@ -32,6 +32,7 @@ It's called visual computing, after all. Here's a non-exhaustive list of things 
 + `crisp::StructuringElement`
 + `crisp::Histogram`
 + `Eigen::Matrix<T, /*...*/>`
++ `crisp::FullyConnectedNeuralNetwork`
 + `crisp::ConvolutionalNeuralNetwork`
 + and more!
 
@@ -45,17 +46,20 @@ This makes debugging, filter design or just understanding/explaining your own al
 + language is kept simple, aimed at people without a math degree
 
 `crisp` is **generic**
-+ filter, segment, cluster in any number of dimensions on any image value type
++ filter, segment, cluster in any number of dimensions, any image value type
 + convert any image type to any other image type
 + convert any color representation to any other color representation
-+ compare/combine vectors with vectors, vectors with scalars
++ compare/combine vectors with vectors, vectors with scalars, vectors with matrices all using the same operators
 
 `crisp` is **portable**<br>
 + supports Mac, Linux and Windows
-+ explicit distinction between images living in RAM, operated on by the CPU and textures living in VRAM, operated on by the GPU resulting in full flexibility with optional hardware acceleration
++ Distinction between Images and Textures:
+    - Images live in RAM and are operated upon by the CPU
+    - Textures live in vRAM and are operated upon by the GPU
++ allows for full flexibility with optional hardware acceleration
 
 `crisp` is **interactive**<br>
-+ All SFML functionality is included, this means keyboard/mouse support, rendering to a window, sound, etc.
++ All SFML functionality is included, this means keyboard/mouse support, rendering to a window, shapes, sounds, etc.
 
 ## Installation
 ### Dependencies
@@ -85,11 +89,11 @@ include_directories(/path/to/.../crisp/include/)
 add_executable(MY_EXECUTABLE path/to/my/main.cpp)
 target_link_libraries(MY_EXECUTABLE crisp)
 ```
-Be sure to compile with gcc10 or newer, as many C++20 features are not supported on older versions. You will also need to install Eigen and SFML on your system first (see [Dependencies](#dependencies))
+Be sure to compile with gcc10 or newer, as many needed C++20 features are not supported in older versions. You will also need to install Eigen and SFML on a system-level (see [Dependencies](#dependencies))
 
-## Tutorial
+## Tutorials
 
-Consider reading the tutorials in order, this will teach important principles of image processing and `crisp` step-by-step:
+Consider reading the tutorials in order, this will teach important principles of `crisp` and image processing in general step-by-step:
 
 1. [System](./docs/system/system.md)
 3. [Vector](./docs/vector/vector.md) (optional)
@@ -101,8 +105,9 @@ Consider reading the tutorials in order, this will teach important principles of
 9. [Frequency Domain Filters](./docs/frequency_domain/frequency_domain_filtering.md)
 10. [Segmentation](./docs/segmentation/segmentation.md)
 11. [Feature Extraction](./docs/feature_extraction/feature_extraction.md)
+12. [Deep Learning](./docs/deep_learning/deep_learning.md)
 
-## Documentation
+## [Documentation](./docs/index.md)
 
 Documentation is stored as interactive markdown files, right here on github. An index for easy navigation can be found [here](./docs/index.md) or in `/crisp/docs/index.md`.
 

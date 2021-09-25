@@ -24,7 +24,7 @@ namespace crisp
             /// @param structuring_element
             void set_structuring_element(StructuringElement);
 
-            /// @brief expose the strucuring element
+            /// @brief expose the structuring element
             /// @returns reference to current structuring element
             StructuringElement& get_structuring_element();
 

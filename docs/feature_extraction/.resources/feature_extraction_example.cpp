@@ -12,13 +12,23 @@ using namespace crisp;
 
 int main()
 {
-    auto image = load_color_image("/home/clem/Workspace/crisp/docs/feature_extraction/pepper.png");
+    auto image = load_color_image("/home/clem/Workspace/crisp/docs/feature_extraction/.resources/pepper.png");
     auto as_grayscale = image.get_value_plane();
 
-    auto thresholded = manual_threshold(as_grayscale, 0.01f);
-    auto segments = decompose_into_connected_segments(thresholded);
+    auto thresholded = Segmentation::manual_threshold(as_grayscale, 0.01f);
+    auto segments = Segmentation::decompose_into_connected_segments(thresholded);
     auto pepper_segment = segments.at(1);
     auto pepper = ImageRegion(pepper_segment, image);
+
+    auto cor = pepper.get_co_occurrence_matrix(CoOccurenceDirection::PLUS_90);
+
+    auto it = pepper.get_intensity_correlation(CoOccurenceDirection::PLUS_90);
+    it = pepper.get_uniformity(CoOccurenceDirection::PLUS_90);
+    it = pepper.get_homogeneity(CoOccurenceDirection::PLUS_90);
+    it = pepper.get_entropy(CoOccurenceDirection::PLUS_90);
+    it = pepper.get_contrast(CoOccurenceDirection::PLUS_90);
+
+    return 0;
 
     auto major = pepper.get_major_axis();
     auto minor = pepper.get_minor_axis();

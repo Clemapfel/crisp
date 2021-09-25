@@ -39,8 +39,8 @@ namespace crisp
         ImageSegment strong_pixels;
         ImageSegment weak_pixels;
 
-        std::map<size_t, size_t> hash_to_n_occurences;
-        size_t max_n_occurence = 0;
+        std::map<size_t, size_t> hash_to_n_occurrences;
+        size_t max_n_occurrence = 0;
 
         for (auto& px : segment)
         {
@@ -61,11 +61,11 @@ namespace crisp
                         n_unconnected++;
 
                     auto hash = px.to_hash();
-                    if (hash_to_n_occurences.find(hash) == hash_to_n_occurences.end())
-                        hash_to_n_occurences.emplace(hash, 0);
+                    if (hash_to_n_occurrences.find(hash) == hash_to_n_occurrences.end())
+                        hash_to_n_occurrences.emplace(hash, 0);
 
-                    hash_to_n_occurences.at(hash) += 1;
-                    max_n_occurence = std::max(max_n_occurence, hash_to_n_occurences.at(hash));
+                    hash_to_n_occurrences.at(hash) += 1;
+                    max_n_occurrence = std::max(max_n_occurrence, hash_to_n_occurrences.at(hash));
 
                     min_x = std::min<unsigned int>(min_x, px.x());
                     max_x = std::max<unsigned int>(max_x, px.x());
@@ -80,7 +80,7 @@ namespace crisp
                 weak_pixels.insert(px);
         }
 
-        _max_probability = float(max_n_occurence) / float(_elements.size());
+        _max_probability = float(max_n_occurrence) / float(_elements.size());
 
         _x_bounds = {min_x, max_x};
         _y_bounds = {min_y, max_y};
@@ -337,7 +337,7 @@ namespace crisp
             _eccentricity = sqrt(1 - (l2 / l1) * (l2 / l1));
         }
 
-        _co_occurence_matrices.clear();
+        _co_occurrence_matrices.clear();
     }
 
     template<typename Image_t>
@@ -604,12 +604,6 @@ namespace crisp
     }
 
     template<typename Image_t>
-    const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&
-    ImageRegion<Image_t>::get_covariance_matrix() const
-    {
-    }
-
-    template<typename Image_t>
     const std::pair<Vector2f, Vector2f> & ImageRegion<Image_t>::get_major_axis() const
     {
         return _major_axis;
@@ -622,27 +616,27 @@ namespace crisp
     }
 
     template<typename Image_t>
-    const Eigen::Matrix<size_t, 256, 256>& ImageRegion<Image_t>::get_co_occurence_matrix(CoOccurenceDirection direction) const
+    const CoOccurenceMatrix & ImageRegion<Image_t>::get_co_occurrence_matrix(CoOccurenceDirection direction) const
     {
-        assert(false && "DEBUG");
+        if (_co_occurrence_matrices.find(direction) != _co_occurrence_matrices.end())
+            return _co_occurrence_matrices.at(direction);
 
         using Value_t = typename Image_t::Value_t;
         using Inner_t = typename Image_t::Value_t::Value_t;
 
-        Eigen::Matrix<size_t, 256, 256> out;
+        CoOccurenceMatrix out;
+        out.resize(256, 256);
 
         auto process = [&](size_t x, size_t y, size_t x_2, size_t y_2)
         {
-            auto& current = out.back();
+            const Element* first = nullptr;
+            const Element* second = nullptr;
 
-            const Element* first = nulltpr;
-            const Element* second = nulltpr;
-
-            for (const auto& element : _elements)
+            for (const auto& pair : _position_to_value)
             {
-                if (element.position == Vector2ui{x, y})
+                if (element.position == (Vector2ui{x, y}))
                     first = &element;
-                else if (element.position = Vector2ui{x_2, y_2})
+                else if (element.position == (Vector2ui{x_2, y_2}))
                     second = &element;
 
                 if (first != nullptr and second != nullptr)
@@ -664,7 +658,6 @@ namespace crisp
 
             out(size_t(first_value), size_t(second_value)) += 1;
         };
-
 
         for (size_t i = 0; i < Value_t::size(); ++i)
         {
@@ -703,8 +696,8 @@ namespace crisp
             }
         }
 
-        _co_occurence_matrices.insert(std::make_pair(direction, out));
-        return _co_occurence_matrices.at(direction);
+        _co_occurrence_matrices.insert(std::make_pair(direction, out));
+        return _co_occurrence_matrices.at(direction);
     }
 
     template<typename Image_t>
@@ -716,34 +709,34 @@ namespace crisp
     template<typename Image_t>
     float ImageRegion<Image_t>::get_intensity_correlation(CoOccurenceDirection direction) const
     {
-        auto& occurence = get_co_occurence_matrix(direction);
-        float sum_of_elements = occurence.sum();
+        auto& occurrence = get_co_occurrence_matrix(direction);
+        float sum_of_elements = occurrence.sum();
 
         float col_mean = 0;
         float row_mean = 0;
         float col_stddev = 0;
         float row_stddev = 0;
 
-        for (size_t i = 0; i < occurence.rows(); ++i)
-            for (size_t j = 0; j < occurence.cols(); ++j)
-                row_mean += i * (occurence(i, j) / sum_of_elements);
+        for (size_t i = 0; i < occurrence.rows(); ++i)
+            for (size_t j = 0; j < occurrence.cols(); ++j)
+                row_mean += i * (occurrence(i, j) / sum_of_elements);
 
-        for (size_t i = 0; i < occurence.rows(); ++i)
-            for (size_t j = 0; j < occurence.cols(); ++j)
-                row_stddev += (i - row_mean) * (i - row_mean) * (occurence(i, j) / sum_of_elements);
+        for (size_t i = 0; i < occurrence.rows(); ++i)
+            for (size_t j = 0; j < occurrence.cols(); ++j)
+                row_stddev += (i - row_mean) * (i - row_mean) * (occurrence(i, j) / sum_of_elements);
 
         if (row_stddev == 0)
             return std::numeric_limits<float>::infinity();
 
         row_stddev = sqrt(row_stddev);
 
-        for (size_t j = 0; j < occurence.cols(); ++j)
-            for (size_t i = 0; i < occurence.rows(); ++i)
-                col_mean += j * (occurence(i, j) / sum_of_elements);
+        for (size_t j = 0; j < occurrence.cols(); ++j)
+            for (size_t i = 0; i < occurrence.rows(); ++i)
+                col_mean += j * (occurrence(i, j) / sum_of_elements);
 
-        for (size_t j = 0; j < occurence.cols(); ++j)
-            for (size_t i = 0; i < occurence.rows(); ++i)
-                col_stddev += (j - col_mean) * (j - col_mean) * (occurence(i, j) / sum_of_elements);
+        for (size_t j = 0; j < occurrence.cols(); ++j)
+            for (size_t i = 0; i < occurrence.rows(); ++i)
+                col_stddev += (j - col_mean) * (j - col_mean) * (occurrence(i, j) / sum_of_elements);
 
         if (col_stddev == 0)
             return std::numeric_limits<float>::infinity();
@@ -751,9 +744,9 @@ namespace crisp
         col_stddev = sqrt(col_stddev);
 
         float correlation = 0;
-        for (size_t i = 0; i < occurence.rows(); ++i)
-            for (size_t j = 0; j < occurence.cols(); ++j)
-                correlation += ((i - row_mean) * (j - col_mean) * occurence(i, j) / sum_of_elements) / (row_stddev * col_stddev);
+        for (size_t i = 0; i < occurrence.rows(); ++i)
+            for (size_t j = 0; j < occurrence.cols(); ++j)
+                correlation += ((i - row_mean) * (j - col_mean) * occurrence(i, j) / sum_of_elements) / (row_stddev * col_stddev);
 
         assert(correlation >= -1 and correlation <= 1);
         return correlation;
@@ -762,14 +755,14 @@ namespace crisp
     template<typename Image_t>
     float ImageRegion<Image_t>::get_uniformity(CoOccurenceDirection direction) const
     {
-        auto& occurence = get_co_occurence_matrix(direction);
-        size_t sum_of_elements = occurence.sum();
+        auto& occurrence = get_co_occurrence_matrix(direction);
+        size_t sum_of_elements = occurrence.sum();
 
         float sum = 0;
-        for (size_t i = 0; i < occurence.rows(); ++i)
-            for (size_t j = 0; j < occurence.cols(); ++j)
+        for (size_t i = 0; i < occurrence.rows(); ++i)
+            for (size_t j = 0; j < occurrence.cols(); ++j)
             {
-                float p_ij = float(occurence(i, j)) / float(sum_of_elements);
+                float p_ij = float(occurrence(i, j)) / float(sum_of_elements);
                 sum += p_ij * p_ij;
             }
 
@@ -777,15 +770,15 @@ namespace crisp
     }
 
     template<typename Image_t>
-    float ImageRegion<Image_t>::get_homogenity(CoOccurenceDirection direction) const
+    float ImageRegion<Image_t>::get_homogeneity(CoOccurenceDirection direction) const
     {
-        auto& occurence = get_co_occurence_matrix(direction);
-        size_t sum_of_elements = occurence.sum();
+        auto& occurrence = get_co_occurrence_matrix(direction);
+        size_t sum_of_elements = occurrence.sum();
 
         float sum = 0;
-        for (size_t i = 0; i < occurence.rows(); ++i)
-            for (size_t j = 0; j < occurence.cols(); ++j)
-                sum += float(occurence(i, j)) / float(sum_of_elements) / (1.f + abs(int(i) - int(j)));
+        for (size_t i = 0; i < occurrence.rows(); ++i)
+            for (size_t j = 0; j < occurrence.cols(); ++j)
+                sum += float(occurrence(i, j)) / float(sum_of_elements) / (1.f + abs(int(i) - int(j)));
 
         return sum;
     }
@@ -793,14 +786,14 @@ namespace crisp
     template<typename Image_t>
     float ImageRegion<Image_t>::get_entropy(CoOccurenceDirection direction) const
     {
-        auto& occurence = get_co_occurence_matrix(direction);
-        size_t sum_of_elements = occurence.sum();
+        auto& occurrence = get_co_occurrence_matrix(direction);
+        size_t sum_of_elements = occurrence.sum();
 
         float sum = 0;
-        for (size_t i = 0; i < occurence.rows(); ++i)
-            for (size_t j = 0; j < occurence.cols(); ++j)
+        for (size_t i = 0; i < occurrence.rows(); ++i)
+            for (size_t j = 0; j < occurrence.cols(); ++j)
             {
-                float p_ij = float(occurence(i, j)) / float(sum_of_elements);
+                float p_ij = float(occurrence(i, j)) / float(sum_of_elements);
                 sum += p_ij * log2(p_ij);
             }
 
@@ -808,19 +801,37 @@ namespace crisp
     }
 
     template<typename Image_t>
-    float ImageRegion<Image_t>::get_contrast(ImageRegion::CoOccurenceDirection direction) const
+    float ImageRegion<Image_t>::get_contrast(CoOccurenceDirection direction) const
     {
-        auto& occurence = get_co_occurence_matrix(direction);
+        auto& occurrence = get_co_occurrence_matrix(direction);
 
-        size_t sum_of_elements = occurence.sum();
+        size_t sum_of_elements = occurrence.sum();
 
         float sum = 0;
-        for (size_t i = 0; i < occurence.rows(); ++i)
-            for (size_t j = 0; j < occurence.cols(); ++j)
+        for (size_t i = 0; i < occurrence.rows(); ++i)
+            for (size_t j = 0; j < occurrence.cols(); ++j)
             {
-                sum += std::abs(int(i) - int(j)) * occurence(i, j) / float(sum_of_elements);
+                sum += std::abs(int(i) - int(j)) * occurrence(i, j) / float(sum_of_elements);
             }
 
         return sum / (255*255);
+    }
+
+    template<typename Image_t>
+    float ImageRegion<Image_t>::get_eccentricity() const
+    {
+        return _eccentricity;
+    }
+
+    template<typename Image_t>
+    size_t ImageRegion<Image_t>::get_n_holes() const
+    {
+        return _hole_boundaries.size();
+    }
+
+    template<typename Image_t>
+    const std::vector<std::vector<Vector2ui>> ImageRegion<Image_t>::get_hole_boundaries() const
+    {
+        return _hole_boundaries;
     }
 }

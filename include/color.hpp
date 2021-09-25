@@ -25,22 +25,22 @@ namespace crisp
         /// @brief convert to RGB format
         /// @returns RGB after conversion
         /// @note if any initial component is outside of [0, 1] the behavior is undefined
-        virtual RGB to_rgb() const = 0;
+        [[nodiscard]] virtual RGB to_rgb() const = 0;
 
         /// @brief convert to HSV format
         /// @returns HSV after conversion
         /// @note if any initial component is outside of [0, 1] the behavior is undefined
-        virtual HSV to_hsv() const = 0;
+        [[nodiscard]] virtual HSV to_hsv() const = 0;
 
         /// @brief convert to HSL format
         /// @returns HSL after conversion
         /// @note if any initial component is outside of [0, 1] the behavior is undefined
-        virtual HSL to_hsl() const = 0;
+        [[nodiscard]] virtual HSL to_hsl() const = 0;
 
         /// @brief convert to grayscale
         /// @returns equivalent GrayScale
         /// @note if any initial component is outside of [0, 1] the behavior is undefined
-        virtual GrayScale to_grayscale() const = 0;
+        [[nodiscard]] virtual GrayScale to_grayscale() const = 0;
     };
 
     /// @brief color as RGB, all components in [0, 1]
@@ -92,17 +92,25 @@ namespace crisp
         /// @returns copy of z component
         float blue() const;
 
-        // @overide c.f. ColorRepresentation
-        RGB to_rgb() const override;
+        /// @brief convert to RGB format
+        /// @returns RGB after conversion
+        /// @note if any initial component is outside of [0, 1] the behavior is undefined
+        [[nodiscard]] RGB to_rgb() const override;
 
-        // @overide c.f. ColorRepresentation
-        HSV to_hsv() const override;
+        /// @brief convert to HSV format
+        /// @returns HSV after conversion
+        /// @note if any initial component is outside of [0, 1] the behavior is undefined
+        [[nodiscard]] HSV to_hsv() const override;
 
-        // @overide c.f. ColorRepresentation
-        HSL to_hsl() const override;
+        /// @brief convert to HSL format
+        /// @returns HSL after conversion
+        /// @note if any initial component is outside of [0, 1] the behavior is undefined
+        [[nodiscard]] virtual HSL to_hsl() const override;
 
-        /// @overide c.f. ColorRepresentation
-        GrayScale to_grayscale() const override;
+        /// @brief convert to grayscale
+        /// @returns equivalent GrayScale
+        /// @note if any initial component is outside of [0, 1] the behavior is undefined
+        [[nodiscard]] virtual GrayScale to_grayscale() const override;
     };
 
     /// @brief color as HSV, all components in [0, 1]
@@ -153,17 +161,25 @@ namespace crisp
         /// @note the "value" component is sometimes called "brightness" in the literature
         float value() const;
 
-        /// @overide c.f. ColorRepresentation
-        RGB to_rgb() const override;
+        /// @brief convert to RGB format
+        /// @returns RGB after conversion
+        /// @note if any initial component is outside of [0, 1] the behavior is undefined
+        [[nodiscard]] RGB to_rgb() const override;
 
-        /// @overide c.f. ColorRepresentation
-        HSV to_hsv() const override;
+        /// @brief convert to HSV format
+        /// @returns HSV after conversion
+        /// @note if any initial component is outside of [0, 1] the behavior is undefined
+        [[nodiscard]] HSV to_hsv() const override;
 
-        /// @overide c.f. ColorRepresentation
-        HSL to_hsl() const override;
+        /// @brief convert to HSL format
+        /// @returns HSL after conversion
+        /// @note if any initial component is outside of [0, 1] the behavior is undefined
+        [[nodiscard]] HSL to_hsl() const override;
 
-        /// @overide c.f. ColorRepresentation
-        GrayScale to_grayscale() const override;
+        /// @brief convert to grayscale
+        /// @returns equivalent GrayScale
+        /// @note if any initial component is outside of [0, 1] the behavior is undefined
+        [[nodiscard]] GrayScale to_grayscale() const override;
     };
 
     /// @brief color as HSL, all components in [0, 1]
@@ -211,17 +227,25 @@ namespace crisp
         /// @returns copy of z component
         float lightness() const;
 
-        /// @overide c.f. ColorRepresentation
-        RGB to_rgb() const override;
+        /// @brief convert to RGB format
+        /// @returns RGB after conversion
+        /// @note if any initial component is outside of [0, 1] the behavior is undefined
+        [[nodiscard]] RGB to_rgb() const override;
 
-        /// @overide c.f. ColorRepresentation
-        HSV to_hsv() const override;
+        /// @brief convert to HSV format
+        /// @returns HSV after conversion
+        /// @note if any initial component is outside of [0, 1] the behavior is undefined
+        [[nodiscard]] HSV to_hsv() const override;
 
-        /// @overide c.f. ColorRepresentation
-        HSL to_hsl() const override;
+        /// @brief convert to HSL format
+        /// @returns HSL after conversion
+        /// @note if any initial component is outside of [0, 1] the behavior is undefined
+        [[nodiscard]] HSL to_hsl() const override;
 
-        /// @overide c.f. ColorRepresentation
-        GrayScale to_grayscale() const override;
+        /// @brief convert to grayscale
+        /// @returns equivalent GrayScale
+        /// @note if any initial component is outside of [0, 1] the behavior is undefined
+        [[nodiscard]] GrayScale to_grayscale() const override;
     };
 
     /// @brief color as single intensity
@@ -259,17 +283,25 @@ namespace crisp
         /// @returns copy of x component
         float intensity() const;
 
-        /// @overide c.f. ColorRepresentation
-        RGB to_rgb() const override;
+        /// @brief convert to RGB format
+        /// @returns RGB after conversion
+        /// @note if any initial component is outside of [0, 1] the behavior is undefined
+        [[nodiscard]] RGB to_rgb() const override;
 
-        /// @overide c.f. ColorRepresentation
-        HSV to_hsv() const override;
+        /// @brief convert to HSV format
+        /// @returns HSV after conversion
+        /// @note if any initial component is outside of [0, 1] the behavior is undefined
+        [[nodiscard]] HSV to_hsv() const override;
 
-        /// @overide c.f. ColorRepresentation
-        HSL to_hsl() const override;
+        /// @brief convert to HSL format
+        /// @returns HSL after conversion
+        /// @note if any initial component is outside of [0, 1] the behavior is undefined
+        [[nodiscard]] HSL to_hsl() const override;
 
-        /// @overide c.f. ColorRepresentation
-        GrayScale to_grayscale() const override;
+        /// @brief convert to grayscale
+        /// @returns equivalent GrayScale
+        /// @note if any initial component is outside of [0, 1] the behavior is undefined
+        [[nodiscard]] GrayScale to_grayscale() const override;
     };
 }
 

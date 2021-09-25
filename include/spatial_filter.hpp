@@ -22,12 +22,12 @@ namespace crisp
     /// @returns resulting kernel
     Kernel convolute(Kernel left, Kernel right);
 
-    /// @brief numerically seperate kernel
-    /// @param original: [in] kernel to be seperated
+    /// @brief numerically separate kernel
+    /// @param original: [in] kernel to be separated
     /// @param out_left: [out] resulting left-hand kernel
     /// @param out_right: [out] result right-hand kernel
-    /// @returns bool if seperation was possible, false otherwise
-    /// @note if no seperation took place, out_left and out_right will be set to nullptr
+    /// @returns bool if separation was possible, false otherwise
+    /// @note if no separation took place, out_left and out_right will be set to nullptr
     bool separate(const Kernel& original, Kernel* out_left, Kernel* out_right);
 
     /// @brief normalize a kernel so it's elements sum to 1
@@ -39,11 +39,11 @@ namespace crisp
     /// @param n_90_degrees: number of 90° rotations
     void rotate(Kernel&, size_t n_90_degrees);
 
-    /// @brief object representing a filter operating in the spatial domain
+    /// @brief filter operating in the spatial domain
     class SpatialFilter
     {
         public:
-            /// @brief evalution function used for filtering
+            /// @brief evaluation function used for filtering
             enum EvaluationFunction
             {
                 /// @brief compute sum weighted by kernel
@@ -65,6 +65,7 @@ namespace crisp
                 MEDIAN = 5
             };
 
+            /// @brief default ctor
             SpatialFilter();
 
             /// @brief apply filter to image
@@ -96,7 +97,7 @@ namespace crisp
             /// @return copy of kernel element
             float operator()(size_t x, size_t y) const;
 
-            /// @brief identiy kernel
+            /// @brief identity kernel
             /// @param dimensions: size of kernel
             /// @returns dimension*dimensions sized kernel with center element 1, 0 otherwise
             static Kernel identity(size_t dimensions);

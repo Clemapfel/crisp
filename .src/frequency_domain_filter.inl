@@ -418,10 +418,26 @@ namespace crisp
         if (not _values_initialized)
             initialize();
 
-        return _values.at(y + _size.y() * x);
+        return _values[y + _size.y() * x];
     }
 
     inline double FrequencyDomainFilter::operator()(size_t x, size_t y) const
+    {
+        if (not _values_initialized)
+            initialize();
+
+        return _values[y + _size.y() * x];
+    }
+
+    inline double & FrequencyDomainFilter::at(size_t x, size_t y)
+    {
+        if (not _values_initialized)
+            initialize();
+
+        return _values.at(y + _size.y() * x);
+    }
+
+    inline double FrequencyDomainFilter::at(size_t x, size_t y) const
     {
         if (not _values_initialized)
             initialize();

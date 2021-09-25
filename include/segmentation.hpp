@@ -48,7 +48,7 @@ namespace crisp::Segmentation
 
     /// @brief compute local threshold by iterating through the image in a spiral pattern and remember only part of values visited so far
     /// @param image
-    /// @param tail_lenght_factor: scales the number of remember elements, in [0, 1], (default: 0.05)
+    /// @param tail_length_factor: scales the number of remember elements, in [0, 1], (default: 0.05)
     /// @returns thresholded image as binary
     /// @complexity O(m * n + m * n * tail_length_factor)
     template<typename Inner_t>

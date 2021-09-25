@@ -19,15 +19,15 @@ namespace crisp
     /// @brief optimization mode of the transform
     enum FourierTransformMode : int
     {
-        /// prioritizes speed, high likelihood of rounding errors but suitable for real-time applications
+        /// @brief prioritizes speed, high likelihood of rounding errors but suitable for real-time applications
         SPEED = 0,
 
-        /// recommended, heuristic DFT fit suboptimal, minimal rounding errors
-        /// about 2 times slower than FourierTransformMode::SPEED
+        /// @brief recommended, heuristic DFT fit suboptimal, minimal rounding errors
+        /// @note about 1.5 times slower than FourierTransformMode::SPEED
         BALANCED = 1,
 
-        /// unsuitable for real-time use, heuristic DFT optimal, minimal rounding errors
-        /// about 10 times slower than FourierTransformMode::SPEED
+        /// @brief unsuitable for real-time use, heuristic DFT optimal, minimal rounding errors
+        /// @note about 10 times slower than FourierTransformMode::SPEED
         ACCURACY = 2
     };
 
@@ -55,11 +55,11 @@ namespace crisp
 
             /// @brief visualizes the transforms spectrum as an image
             /// @returns log(1+x)-scaled grayscale image of size m*n*2 where m, n size of the original transformed image
-            GrayScaleImage as_image() const;
+            [[nodiscard]] GrayScaleImage as_image() const;
 
             /// @brief visualize the transforms phase angles as an image
             /// @returns linearly scaled grayscale image of size m*n*2 where m, n size of the original transformed image
-            GrayScaleImage phase_angle_as_image() const;
+            [[nodiscard]] GrayScaleImage phase_angle_as_image() const;
 
             /// @brief get the complex coefficient at the specified position, (0,0) being the top-left origin
             /// @param x: the row index, range [0, 2*m]

@@ -85,7 +85,7 @@ namespace crisp
                 std::vector<std::pair<std::pair<float, float>, std::pair<float, float>>> _gray_to_inverse_hue;
         };
 
-        /// @brief map multiple gray intensity ranges onto multiple hue ranges simultaenously
+        /// @brief map multiple gray intensity ranges onto multiple hue ranges simultaneously
         /// @param mapping: mapping of type crisp::PseudoColor::RangeMapping
         static ColorImage value_ranges_to_hue_ranges(RangeMapping& mapping, const GrayScaleImage&);
 

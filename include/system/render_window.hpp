@@ -16,7 +16,7 @@ namespace crisp
     using Drawable = sf::Drawable;
     using Time = sf::Time;
 
-    // window that allows for rendering of sprites
+    /// @brief window that allows for rendering of sprites
     class RenderWindow : protected sf::RenderWindow
     {
         friend class InputHandler;
