@@ -15,22 +15,22 @@ namespace crisp
     }
 
     template<size_t N>
-    template<typename Inner_t>
-    Histogram<N>::Histogram(const Image<Inner_t, 1>& image)
+    template<typename Range_t>
+    Histogram<N>::Histogram(const Range_t& image)
         : Histogram()
     {
-        create_from(image);
+        create_from<Range_t>(image);
     }
 
     template<size_t N>
-    template<typename Inner_t>
-    void Histogram<N>::create_from(const Image<Inner_t, 1>& image)
+    template<typename Range_t>
+    void Histogram<N>::create_from(const Range_t& image)
     {
         for (auto& pair : _data)
             pair.second = 0;
 
         size_t n = 0;
-        Inner_t sum = 0;
+        float sum = 0;
         for (const auto& it : image)
         {
             float value = float(it);
@@ -57,6 +57,12 @@ namespace crisp
     size_t Histogram<N>::at(size_t bin_index) const
     {
         return _data.at(bin_index);
+    }
+
+    template<size_t N>
+    size_t Histogram<N>::get_n_occurrences(float intensity) const
+    {
+        return _data.at(floor(intensity * N));
     }
 
     template<size_t N>

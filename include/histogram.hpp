@@ -20,19 +20,25 @@ namespace crisp
             /// @brief default ctor
             Histogram();
 
-            /// @brief create from 1d image
-            /// @param image
-            template<typename Inner_t>
-            Histogram(const Image<Inner_t, 1>&);
+            /// @brief create from range, for example a 1-plane image
+            /// @param range
+            /// @note values outside [0, 1] will be clamped
+            template<typename Range_t>
+            Histogram(const Range_t&);
 
-            /// @brief create from 1d image
-            /// @param image
-            template<typename Inner_t>
-            void create_from(const Image<Inner_t, 1>&);
+            /// @brief create from range, for example a 1-plane image
+            /// @param range
+            /// @note values outside [0, 1] will be clamped
+            template<typename Range_t>
+            void create_from(const Range_t&);
 
             /// @brief access number of elements
             /// @param bin_index: index in [0, N_Bins]
             size_t at(size_t bin_index) const;
+
+            /// @brief access number of elements using intensity
+            /// @param intensity: intensity in [0, 1]
+            size_t get_n_occurrences(float intensity) const;
 
             /// @brief get mean intensity
             /// @returns mean as double
