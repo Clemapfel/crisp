@@ -127,10 +127,6 @@ namespace crisp
             /// @return pair of points that model the line
             const std::pair<Vector2f, Vector2f>& get_minor_axis() const;
 
-            /// @brief get bounding box where each side is parallel to the corresponding minor/major axis
-            /// @returns array of four points that model the box
-            std::array<Vector2ui, 4> get_bounding_box() const;
-
             /// @brief get the axis aligned bounding box where each side is parallel to the x/y axis
             /// @returns array of four points that model the box
             std::array<Vector2ui, 4> get_axis_aligned_bounding_box() const;
@@ -172,9 +168,29 @@ namespace crisp
             /// @returns float in [0, 1]
             float get_maximum_intensity_probability() const;
 
-            /// @brief get nths statistical moment around the mean of texture values
-            /// @returns float in
-            float get_nths_statistical_moment(size_t n);
+            /// @brief get nths statistical moment around the mean
+            /// @returns value
+            float get_nths_statistical_moment(size_t n) const;
+
+            /// @brief get standard deviation of texture
+            /// @returns value
+            float get_variance() const;
+
+            /// @brief get 3rd standardized statistical moment of texture
+            /// @returns value
+            float get_skewness() const;
+
+            /// @brief get 4th standardized statistical moment of texture
+            /// @returns value
+            float get_kurtosis() const;
+
+            /// @brief get entropy of texture
+            /// @returns value in [0, 1]
+            float get_average_entropy() const;
+
+            /// @brief get texture histogram
+            /// @returns histogram of intensity values quantized into [0, 256]
+            const Histogram<256>& get_intensity_histogram() const;
 
             /// @brief get co-occurrence matrix (the number of occurrences of a pair of intensities) in specified direction. For images with multiple planes, intensities are the average intensity per element
             /// @param direction
@@ -235,6 +251,10 @@ namespace crisp
             float _max_probability = 0;
             std::map<CoOccurenceDirection, size_t> _sum_of_elements;
             mutable std::map<CoOccurenceDirection, CoOccurenceMatrix> _co_occurrence_matrices;
+
+            float _stddev;
+
+            Histogram<256> _histogram;
     };
 
     /// @brief split a segment into multiple closed, 4-connected regions

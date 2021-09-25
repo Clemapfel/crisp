@@ -41,8 +41,8 @@ namespace crisp
 
         std::map<size_t, size_t> hash_to_n_occurrences;
         size_t max_n_occurrence = 0;
-        size_t n = 0;
-        Value_t texture_mean = 0;
+        std::vector<float> intensities;
+        intensities.reserve(segment.size());
 
         for (auto& px : segment)
         {
@@ -74,10 +74,14 @@ namespace crisp
                 hash_to_n_occurrences.emplace(hash, 0);
 
             hash_to_n_occurrences.at(hash) += 1;
-            n += 1;
             max_n_occurrence = std::max(max_n_occurrence, hash_to_n_occurrences.at(hash));
 
-            texture_mean += image(px.x(), px.y());
+            float average_to_push = 0;
+            for (size_t i = 0; i < Value_t::size(); ++i)
+                average_to_push += image(px.x(), px.y()).at(i);
+
+            average_to_push /= Value_t::size();
+            intensities.push_back(average_to_push);
 
             min_x = std::min<unsigned int>(min_x, px.x());
             max_x = std::max<unsigned int>(max_x, px.x());
@@ -85,13 +89,9 @@ namespace crisp
             max_y = std::max<unsigned int>(max_y, px.y());
         }
 
-        _mean = 0;
-        for (size_t i = 0; i < Value_t::size(); ++i)
-            _mean += texture_mean.at(i) / n;
+        _max_probability = float(max_n_occurrence) / _position_to_value.size();
 
-        _mean /= Value_t::size();
-
-        _max_probability = float(max_n_occurrence) / float(n);
+        _histogram.create_from(intensities);
 
         _x_bounds = {min_x, max_x};
         _y_bounds = {min_y, max_y};
@@ -755,7 +755,7 @@ namespace crisp
     }
 
     template<typename Image_t>
-    float ImageRegion<Image_t>::get_nths_statistical_moment(size_t n)
+    float ImageRegion<Image_t>::get_nths_statistical_moment(size_t n) const
     {
         Value_t out;
 
@@ -767,26 +767,54 @@ namespace crisp
 
             value /= Value_t::size();
 
-
+            out += pow(value - _histogram.mean(), n) * (_histogram.at(value) / _position_to_value.size());
         }
 
+        return out;
     }
 
     template<typename Image_t>
-    float ImageRegion<Image_t>::get_uniformity(CoOccurenceDirection direction) const
+    float ImageRegion<Image_t>::get_variance() const
     {
-        auto& occurrence = get_co_occurrence_matrix(direction);
-        size_t sum_of_elements = occurrence.sum();
+        return get_nths_statistical_moment(2);
+    }
 
-        float sum = 0;
-        for (size_t i = 0; i < occurrence.rows(); ++i)
-            for (size_t j = 0; j < occurrence.cols(); ++j)
-            {
-                float p_ij = occurrence(i, j);
-                sum += p_ij * p_ij;
-            }
+    template<typename Image_t>
+    float ImageRegion<Image_t>::get_skewness() const
+    {
+        return get_nths_statistical_moment(3);
+    }
 
-        return sum;
+    template<typename Image_t>
+    float ImageRegion<Image_t>::get_kurtosis() const
+    {
+        return get_nths_statistical_moment(4);
+    }
+
+    template<typename Image_t>
+    float ImageRegion<Image_t>::get_average_entropy() const
+    {
+        size_t sum_of_elements = _position_to_value.size();
+        float out = 0;
+        for (auto& pair : _position_to_value)
+        {
+            float value = 0;
+            for (size_t i = 0; i < Value_t::size(); ++i)
+                value += pair.second.value.at(i);
+
+            value /= Value_t::size();
+
+            float p = _histogram.get_n_occurrences(value) / sum_of_elements;
+            out += p + log2(p);
+        }
+
+        return (-1 * out) / (2 * log2(256));
+    }
+
+    template<typename Image_t>
+    const Histogram<256>& ImageRegion<Image_t>::get_intensity_histogram() const
+    {
+        return _histogram;
     }
 
     template<typename Image_t>

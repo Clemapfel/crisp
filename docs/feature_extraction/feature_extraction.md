@@ -348,9 +348,41 @@ We note that all first 4 moment invariants are completely independent of transla
 
 Until now we have used descpritors that either describe a regions shape or both it's shape and pixel values. In this section we will deal with only a the pixel values. *Texture* has no agreed on definition but we can intuitively describe it as rate of change, value range and periodicity of the intensity values of a region. 
 
-## 5.1 Co-Occurence Matrix
+## 5.1 Intensity Histogram
 
-To quantify texture we first need to construct the *co-occurence matrix*. The co-occurence matrix is a matrix of size 256x256. It counts for each intensity pair `i_a`, `i_b` the number of times two pixels `a`, `b` that are *next to each other* have the corresponding intensities `i_a`, `i_b`.
+Recall that the intensity of an element of an n-plane image is defined as the mean of the value of all planes. So for a color image, the intensity of pixel (x, y) is average of the red, green and blue component. 
+
+When a region is constructed, the intensity histogram is also created. The intensities are quantized into [0, 256] to keep things manageable. We can access the histogram directly using ``get_intensity_histogram()``.
+
+## 5.2 n-ths Statistical Moment
+
+The *n-ths standardized statistical moment about the mean* is an important measure of intensity distribution, it is calculated from the intensity histogram. We can compute it using ``get_nths_statistical_moment(size_t n)``. The first 4 statistical moments have a human interpretable meaning:
+
++ the **first** statistical is always 0
++ the **second** statistical moment is the *variance*. We can normalize it to the *standard deviation* by taking it's square root. For a more syntactically expressive way to compute it, `ImageRegion` also offers `get_variance()`.
++ the **third** statistical moment is called *skewness*, as it's name suggest it quantifies how much the shape of the distribution in the histogram "leans" to one side. We can also compute it using `get_skewness()`
++ the **fourth** statistical moment is called *kurtosis*, it is often described as a measure of "tailedness" which is best explained using visuals. Consider this image (source: wikipedia)<br>
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Standard_symmetric_pdfs.svg/300px-Standard_symmetric_pdfs.svg.png) <br>
+  Ignoring which color corresponds to which distribution, we see that the distributions are ordered by curtosis with red having the highest, yellow the second highest, green the third, etc..<br>
+  We can access the kurtosis directly by using `get_kurtosis()`. 
+  
+As already mentioned the higher statistical moments are not useful for human interpretation, however they can still be used to characterize the texture intensity distribution. 
+
+## 5.2 Average Entropy
+
+The average entropy is the entropy of the intensity distribution. We can compute it using `get_average_entropy()`. For convenience it is already normalized into [0, 1]. 
+
+## 5.3 Maximum Response
+
+The *maximum response* is the probability of the most common intensity. It is a number in [0, 1], where 1 only happens for a region of constant intensity.
+
+We can get the maximum response directly using ``ImageRegion::get_maximum_intensity_probability(CoOccurenceDirection)``
+
+For our pepper in +90° direction, this value is `0.304366` which is relative high. We expect a region with such a high value to be of mostly constant intensity and this is indeed the case, most (exactly 30.4366%) of the pepper is the same shade of green.
+
+## 5.3 Co-Occurence Matrix
+
+To quantify texture in a specified direction we need to construct the *co-occurence matrix*. The co-occurence matrix is a matrix of size 256x256. It counts for each intensity pair `i_a`, `i_b` the number of times two pixels `a`, `b` that are *next to each other* have the corresponding intensities `i_a`, `i_b`.
 A short example: if the co-occurence matrix for the "right" direction has a value of 6 in the row 120 and column 98 then in the image there are 6 pairs of pixels `a`, `b` such that a has intensity 120 and `b` who is **directly right** of `a` has intensity 98. To keep the size of the co-occurence matrix managable, intensities are quantized into 8-bit.  
 
 When constructing the co-occurence matrix we need to supply a direction. Let `a = (x, y)` and `b = (x + i, y + j)` then the members of the `CoOrrurenceDirection` enum have the following meaning:
@@ -383,21 +415,13 @@ The above image was log-scaled for clarity. First we note that most of the cells
 
 We can numerically quantify the distribution of intensity value pair occurences using the following descriptors:
 
-## 5.2 Maximum Response
-
-The *maximum response* is the probability of the most common intensity value pair. It is a number in [0, 1], where 1 only happens for a region of constant intensity.
-
-We can get the maximum response directly using ``ImageRegion::get_maximum_intensity_probability(CoOccurenceDirection)``
-
-For our pepper in +90° direction, this value is `0.304366` which is relative high. We expect a region with such a high value to be of mostly constant intensity and this is indeed the case, most (exactly 30.4366%) of the pepper is the same shade of green.
-
-## 5.3 Intensity Correlation
+## 5.5 Intensity Correlation
 
 *Intensity Correlation* measures how correlated the intensities in each intensity value pair are. Similar to the [pearson correlation coefficient](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient) it has a value in [-1, 1] where -1 means a a strong negative correlation, +1 means a strong positive correlation (either of which usually mean there is a regularity to the pattern) and 0 meaning no correlation. A pattern that has 0 correlation could be random noise or a region of constant intensity.
 
 We can compute the mean intensity correlation using ``get_intensity_correlation(CoOccurenceDirection)``.
 
-## 5.4 Uniformity
+## 5.6 Uniformity
 
 Uniformity is a measure of how constant the intensity values are. For a constant region the uniformity is 1, for a more diverse region the values are closer to 0.
 
