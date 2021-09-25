@@ -29,7 +29,7 @@ namespace crisp
     void ImageRegion<Image_t>::create_from(const ImageSegment& segment, const Image_t& image)
     {
         // init
-        _elements.clear();
+        _position_to_value.clear();
 
         unsigned int min_x = image.get_size().x(),
                 max_x = 0;
@@ -41,10 +41,12 @@ namespace crisp
 
         std::map<size_t, size_t> hash_to_n_occurrences;
         size_t max_n_occurrence = 0;
+        size_t n = 0;
+        Value_t texture_mean = 0;
 
         for (auto& px : segment)
         {
-            _elements.insert(Element{px, image(px.x(), px.y())});
+            _position_to_value.emplace(px.to_hash(), Element{px, image(px.x(), px.y())});
 
             size_t n_unconnected = 0;
             for (int i = -1; i <= +1; ++i)
@@ -59,18 +61,6 @@ namespace crisp
                     else if (not (i == 0 and j == 0) and
                              segment.find(Vector2ui{px.x() + i, px.y() + j}) == segment.end())
                         n_unconnected++;
-
-                    auto hash = px.to_hash();
-                    if (hash_to_n_occurrences.find(hash) == hash_to_n_occurrences.end())
-                        hash_to_n_occurrences.emplace(hash, 0);
-
-                    hash_to_n_occurrences.at(hash) += 1;
-                    max_n_occurrence = std::max(max_n_occurrence, hash_to_n_occurrences.at(hash));
-
-                    min_x = std::min<unsigned int>(min_x, px.x());
-                    max_x = std::max<unsigned int>(max_x, px.x());
-                    min_y = std::min<unsigned int>(min_y, px.y());
-                    max_y = std::max<unsigned int>(max_y, px.y());
                 }
             }
 
@@ -78,9 +68,30 @@ namespace crisp
                 strong_pixels.insert(px);
             else if (n_unconnected == 1)
                 weak_pixels.insert(px);
+
+            auto hash = image(px.x(), px.y()).to_hash();
+            if (hash_to_n_occurrences.find(hash) == hash_to_n_occurrences.end())
+                hash_to_n_occurrences.emplace(hash, 0);
+
+            hash_to_n_occurrences.at(hash) += 1;
+            n += 1;
+            max_n_occurrence = std::max(max_n_occurrence, hash_to_n_occurrences.at(hash));
+
+            texture_mean += image(px.x(), px.y());
+
+            min_x = std::min<unsigned int>(min_x, px.x());
+            max_x = std::max<unsigned int>(max_x, px.x());
+            min_y = std::min<unsigned int>(min_y, px.y());
+            max_y = std::max<unsigned int>(max_y, px.y());
         }
 
-        _max_probability = float(max_n_occurrence) / float(_elements.size());
+        _mean = 0;
+        for (size_t i = 0; i < Value_t::size(); ++i)
+            _mean += texture_mean.at(i) / n;
+
+        _mean /= Value_t::size();
+
+        _max_probability = float(max_n_occurrence) / float(n);
 
         _x_bounds = {min_x, max_x};
         _y_bounds = {min_y, max_y};
@@ -297,7 +308,7 @@ namespace crisp
             covar += current_covar;
         }
 
-        covar /= _elements.size();
+        covar /= _position_to_value.size();
 
         auto eigens = Eigen::EigenSolver<decltype(covar)>(covar);
 
@@ -462,43 +473,43 @@ namespace crisp
     template<typename Image_t>
     float ImageRegion<Image_t>::get_area() const
     {
-        return _elements.size();
+        return _position_to_value.size();
     }
 
     template<typename Image_t>
     auto ImageRegion<Image_t>::begin() const
     {
-        return _elements.begin();
+        return _position_to_value.begin();
     }
 
     template<typename Image_t>
     auto ImageRegion<Image_t>::begin()
     {
-        return _elements.begin();
+        return _position_to_value.begin();
     }
 
     template<typename Image_t>
     auto ImageRegion<Image_t>::end()
     {
-        return _elements.end();
+        return _position_to_value.end();
     }
 
     template<typename Image_t>
     auto ImageRegion<Image_t>::end() const
     {
-        return _elements.end();
+        return _position_to_value.end();
     }
 
     template<typename Image_t>
     float ImageRegion<Image_t>::get_compactness() const
     {
-        return (_boundary.size() * _boundary.size()) / float(_elements.size());
+        return (_boundary.size() * _boundary.size()) / float(_position_to_value.size());
     }
 
     template<typename Image_t>
     float ImageRegion<Image_t>::get_circularity() const
     {
-        return 4*M_PI*_elements.size() / float(_boundary.size() * _boundary.size());
+        return 4*M_PI*_position_to_value.size() / float(_boundary.size() * _boundary.size());
     }
 
     template<typename Image_t>
@@ -509,7 +520,7 @@ namespace crisp
         {
             float moment = 0,
                   value_sum = 0;
-            for (auto& element : _elements)
+            for (auto& element : _position_to_value)
             {
                 value_sum +=
                         pow(element.position.x() - _centroid.x(), p) * pow(element.position.y() - _centroid.y(), q) *
@@ -627,74 +638,66 @@ namespace crisp
         CoOccurenceMatrix out;
         out.resize(256, 256);
 
+        size_t n_pairs = 0;
         auto process = [&](size_t x, size_t y, size_t x_2, size_t y_2)
         {
-            const Element* first = nullptr;
-            const Element* second = nullptr;
+            auto a = _position_to_value.find(Vector2ui{x, y}.to_hash());
+            auto b = _position_to_value.find(Vector2ui{x_2, y_2}.to_hash());
 
-            for (const auto& pair : _position_to_value)
-            {
-                if (element.position == (Vector2ui{x, y}))
-                    first = &element;
-                else if (element.position == (Vector2ui{x_2, y_2}))
-                    second = &element;
-
-                if (first != nullptr and second != nullptr)
-                    break;
-            }
-
-            if (first == nullptr or second == nullptr)
+            if (a == _position_to_value.end() or b == _position_to_value.end())
                 return;
 
-            float first_value = 0, second_value = 0;
+            float a_value = 0, b_value = 0;
             for (size_t i = 0; i < Value_t::size(); ++i)
             {
-                first_value += first->value.at(i);
-                second_value += second->value.at(i);
+                a_value += a->second.value.at(i);
+                b_value += b->second.value.at(i);
             }
 
-            first_value = (first_value / Value_t::size()) * 255;
-            second_value = (second_value / Value_t::size()) * 255;
+            a_value = (a_value / Value_t::size()) * 255;
+            b_value = (b_value / Value_t::size()) * 255;
 
-            out(size_t(first_value), size_t(second_value)) += 1;
+            out(size_t(a_value), size_t(b_value)) += 1;
+            n_pairs += 1;
         };
 
-        for (size_t i = 0; i < Value_t::size(); ++i)
+        for (auto& pair : _position_to_value)
         {
-            for (auto& element : _elements)
-            {
-                size_t x = element.position.x();
-                size_t y = element.position.y();
+            size_t x = pair.second.position.x();
+            size_t y = pair.second.position.y();
 
-                switch (direction)
-                {
-                    case PLUS_MINUS_ZERO:
-                        process(x, y, x, y - 1);
-                        break;
-                    case PLUS_45:
-                        process(x, y, x+1, y-1);
-                        break;
-                    case PLUS_90:
-                        process(x, y, x+1, y);
-                        break;
-                    case PLUS_125:
-                        process(x, y, x+1, y+1);
-                        break;
-                    case PLUS_MINUS_180:
-                        process(x, y, x, y+1);
-                        break;
-                    case MINUS_125:
-                        process(x, y, x-1, y+1);
-                        break;
-                    case MINUS_90:
-                        process(x, y, x-1, y);
-                        break;
-                    case MINUS_45:
-                        process(x, y, x-1, y-1);
-                        break;
-                }
+            switch (direction)
+            {
+                case PLUS_MINUS_ZERO:
+                    process(x, y, x, y - 1);
+                    break;
+                case PLUS_45:
+                    process(x, y, x+1, y-1);
+                    break;
+                case PLUS_90:
+                    process(x, y, x+1, y);
+                    break;
+                case PLUS_125:
+                    process(x, y, x+1, y+1);
+                    break;
+                case PLUS_MINUS_180:
+                    process(x, y, x, y+1);
+                    break;
+                case MINUS_125:
+                    process(x, y, x-1, y+1);
+                    break;
+                case MINUS_90:
+                    process(x, y, x-1, y);
+                    break;
+                case MINUS_45:
+                    process(x, y, x-1, y-1);
+                    break;
             }
         }
+
+        for (size_t x = 0; x < out.rows(); ++x)
+            for (size_t y = 0; y < out.cols(); ++y)
+                out(x, y) /= float(n_pairs);
 
         _co_occurrence_matrices.insert(std::make_pair(direction, out));
         return _co_occurrence_matrices.at(direction);
@@ -748,8 +751,25 @@ namespace crisp
             for (size_t j = 0; j < occurrence.cols(); ++j)
                 correlation += ((i - row_mean) * (j - col_mean) * occurrence(i, j) / sum_of_elements) / (row_stddev * col_stddev);
 
-        assert(correlation >= -1 and correlation <= 1);
         return correlation;
+    }
+
+    template<typename Image_t>
+    float ImageRegion<Image_t>::get_nths_statistical_moment(size_t n)
+    {
+        Value_t out;
+
+        for (auto& pair : _position_to_value)
+        {
+            float value = 0;
+            for (size_t i = 0; i < Value_t::size(); ++i)
+                value += pair.second;
+
+            value /= Value_t::size();
+
+
+        }
+
     }
 
     template<typename Image_t>
@@ -762,7 +782,7 @@ namespace crisp
         for (size_t i = 0; i < occurrence.rows(); ++i)
             for (size_t j = 0; j < occurrence.cols(); ++j)
             {
-                float p_ij = float(occurrence(i, j)) / float(sum_of_elements);
+                float p_ij = occurrence(i, j);
                 sum += p_ij * p_ij;
             }
 
@@ -778,7 +798,7 @@ namespace crisp
         float sum = 0;
         for (size_t i = 0; i < occurrence.rows(); ++i)
             for (size_t j = 0; j < occurrence.cols(); ++j)
-                sum += float(occurrence(i, j)) / float(sum_of_elements) / (1.f + abs(int(i) - int(j)));
+                sum += occurrence(i, j) / (1.f + abs(int(i) - int(j)));
 
         return sum;
     }
@@ -793,11 +813,13 @@ namespace crisp
         for (size_t i = 0; i < occurrence.rows(); ++i)
             for (size_t j = 0; j < occurrence.cols(); ++j)
             {
-                float p_ij = float(occurrence(i, j)) / float(sum_of_elements);
-                sum += p_ij * log2(p_ij);
+                if (occurrence(i, j) == 0)
+                    continue;
+
+                sum += occurrence(i, j) * log2(occurrence(i, j));
             }
 
-        return sum / (2 * log2(256));
+        return (-1 * sum) / (2 * log2(256));
     }
 
     template<typename Image_t>

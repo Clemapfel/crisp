@@ -22,11 +22,19 @@ int main()
 
     auto cor = pepper.get_co_occurrence_matrix(CoOccurenceDirection::PLUS_90);
 
+    auto cor_img = GrayScaleImage(cor);
+    //bsave_to_disk(cor_img,"/home/clem/Workspace/crisp/docs/feature_extraction/.resources/pepper_cooccurrence_matrix.png");
+
+    std::cout << "max probability: " <<  pepper.get_maximum_intensity_probability() << std::endl;
+    std::cout << "intensity correlation: " << pepper.get_intensity_correlation(CoOccurenceDirection::PLUS_90) << std::endl;
+    std::cout << "uniformity: " << pepper.get_uniformity(CoOccurenceDirection::PLUS_90) << std::endl;
+    std::cout << "homogeneity: " << pepper.get_homogeneity(CoOccurenceDirection::PLUS_90) << std::endl;
+    std::cout << "entropy: " <<  pepper.get_entropy(CoOccurenceDirection::PLUS_90) << std::endl;
+    std::cout << "contrast: " <<  pepper.get_contrast(CoOccurenceDirection::PLUS_90) << std::endl;
+
+    return 0;
     auto it = pepper.get_intensity_correlation(CoOccurenceDirection::PLUS_90);
-    it = pepper.get_uniformity(CoOccurenceDirection::PLUS_90);
-    it = pepper.get_homogeneity(CoOccurenceDirection::PLUS_90);
-    it = pepper.get_entropy(CoOccurenceDirection::PLUS_90);
-    it = pepper.get_contrast(CoOccurenceDirection::PLUS_90);
+
 
     return 0;
 

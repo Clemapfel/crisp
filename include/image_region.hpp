@@ -15,7 +15,7 @@ namespace crisp
     using CovarianceMatrix = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>;
 
     /// @brief 256x256 co-occurrence matrix
-    using CoOccurenceMatrix = Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>;
+    using CoOccurenceMatrix = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>;
 
     /// @brief direction of co-occurrence when traveling from index (x,y) to index (x+a,y+b) with a, b in {-1, 0, 1}
     enum CoOccurenceDirection : uint16_t
@@ -172,18 +172,18 @@ namespace crisp
             /// @returns float in [0, 1]
             float get_maximum_intensity_probability() const;
 
-            /// @brief get co-occurrence matrix (the number of occurrences of a pair of intensities) in specified direction. For images with multiple planes, the co-occurrence matrix of each plane is returned
+            /// @brief get nths statistical moment around the mean of texture values
+            /// @returns float in
+            float get_nths_statistical_moment(size_t n);
+
+            /// @brief get co-occurrence matrix (the number of occurrences of a pair of intensities) in specified direction. For images with multiple planes, intensities are the average intensity per element
             /// @param direction
-            /// @returns 256x256 matrix, intensities are the average of all image planes, quantized to 256
+            /// @returns 256x256 matrix, all elements normalized to [0, 1]
             const CoOccurenceMatrix& get_co_occurrence_matrix(CoOccurenceDirection direction) const;
 
             /// @brief get measure of correlation of the intensity values
             /// @returns float in [-1, 1]
             float get_intensity_correlation(CoOccurenceDirection) const;
-
-            /// @brief measures uniformity
-            /// @returns float in [0, 1] where 1 means the range is constant
-            float get_uniformity(CoOccurenceDirection) const;
 
             /// @brief measure homogeneity, how close the elements in the co-occurrence matrices are distributed towards the diagonal
             /// @returns float in [0, 1]
@@ -213,8 +213,7 @@ namespace crisp
                 }
             };
 
-
-            std::map<Vector2ui, Value_t> _position_to_value;
+            std::map<size_t, Element> _position_to_value;
 
             std::vector<Vector2ui> _boundary;
             std::vector<uint8_t> _boundary_direction;

@@ -353,7 +353,7 @@ Until now we have used descpritors that either describe a regions shape or both 
 To quantify texture we first need to construct the *co-occurence matrix*. The co-occurence matrix is a matrix of size 256x256. It counts for each intensity pair `i_a`, `i_b` the number of times two pixels `a`, `b` that are *next to each other* have the corresponding intensities `i_a`, `i_b`.
 A short example: if the co-occurence matrix for the "right" direction has a value of 6 in the row 120 and column 98 then in the image there are 6 pairs of pixels `a`, `b` such that a has intensity 120 and `b` who is **directly right** of `a` has intensity 98. To keep the size of the co-occurence matrix managable, intensities are quantized into 8-bit.  
 
-When constructing the co-occurence matrix we need to supply a direction. Let `a = (x, y)` and `b = (x + i, y + j)` then the members of the `OcOrrurenceDirection` enum have the following meaning:
+When constructing the co-occurence matrix we need to supply a direction. Let `a = (x, y)` and `b = (x + i, y + j)` then the members of the `CoOrrurenceDirection` enum have the following meaning:
 
 ```cpp
 Direction           a           b
@@ -368,13 +368,28 @@ MINUS_90           (x,y)        (x-1, y)
 MINUS_45           (x,y)        (x-1, y-1)
 ```
 
-We can quantify the distribution of intensity value pair occurences using the following descriptors:
+Because this is `crisp` we can render the matrix like so:
+
+```cpp
+auto co_occurrence_matrix = pepper.get_co_occurence_matrix(CoOccurenceDirection::PLUS_90);
+
+auto as_image = GrayScaleImage(co_occurrence_matrix);
+// bind or save to disk
+```
+
+![](.resources/pepper_cooccurrence_matrix.png)<br>
+
+The above image was log-scaled for clarity. First we note that most of the cells are left black, this points to the peppers texture only having a relative small amount of pair-wise different intensity pairs. Confirmed with the original image, this is indeed the case. Secondly we note that most of the high-occurrence pairs (those with a light intensity in the above image) are clustered around the matrix' trace. This points to high uniformity as an occurrence along the trace means that the intensity pair `{i_a, i_b}` had identical values `i_a == i_b`. Recall that these observation only make sense in respect to the direction of the co-occurrence matrix which in our case is +90° (from left to right).
+
+We can numerically quantify the distribution of intensity value pair occurences using the following descriptors:
 
 ## 5.2 Maximum Response
 
 The *maximum response* is the probability of the most common intensity value pair. It is a number in [0, 1], where 1 only happens for a region of constant intensity.
 
 We can get the maximum response directly using ``ImageRegion::get_maximum_intensity_probability(CoOccurenceDirection)``
+
+For our pepper in +90° direction, this value is `0.304366` which is relative high. We expect a region with such a high value to be of mostly constant intensity and this is indeed the case, most (exactly 30.4366%) of the pepper is the same shade of green.
 
 ## 5.3 Intensity Correlation
 
@@ -392,16 +407,20 @@ We can access uniformity using ``get_uniformity(CoOccurenceDirection)``
 
 In the co-occurence matrix the diagonal resprents occurences of intensity pair `i_a`, `i_b` where `i_a = i_b`, so occurences where two pixels in the specified direction have the same intensity. Homogenity quantifies how many of the intensity pairs like this there are. The higher the homogeinity, the less transitions between different intensities there are in that direction.
 
-We can access the value which is in [0,1] using ``get_homogenity(CoOccurenceDirection)``. 
+We can access the value which is in [0,1] using ``get_homogeneity(CoOccurenceDirection)``. The pepper region exhibits a homogeneity of `0.625`. This may be slightly lower than expected considering the pepper is all green, however remember that we are quantifying texture, not color. The intensity (lightness) of the shades of green do vary quite a bit even though the hue does not. Nontheless `0.625` would be considered far above average so we would call the pepper a fairly homogenically textured region.
 
 ## 5.6 Entropy
 
 Just like in statistics, *entropy* measures the randomness of the co-occurence distribution. A value of 1 means all pairings are uniformly distributed, the less uniform the distribution the closer the value is to 0. We compute the entropy using ``get_entropy(CoOccurenceDirection)``.
 
+For the pepper region this value is `0.95` which is fairly high. This makes sense as the pepper is highly ordered because many parts of the regions have a constant intensity with very few harsh intensity ramps.
+
 ## 5.7 Contrast
 
 Contrast measures the difference between co-occuring pixels. A white pixel next to a black pixel (or vice-versa) would have maximum contrast while two pixels of identical color would have 0 contrast. We can compute the mean contrast in the specified direction using
-`get_contrast(CoOccurenceDirection)`, as already mentioned it's values are in [0, 1]
+`get_contrast(CoOccurenceDirection)`, as already mentioned it's values are in [0, 1].
+
+Out pepper has a contrast of `0.0002` which is extremely low, again this is expected, the shades of green transition into each other smoothly as there are no big jumps in intensity.
 
 ---
 [<< Back to Index](../index.md)
