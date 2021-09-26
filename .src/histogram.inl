@@ -102,27 +102,25 @@ namespace crisp
         ColorImage out;
         out.create(N+1, N+1);
 
-        float n = 0;
         float mean = 0;
         size_t max = 0;
         for (const auto& pair : _data)
         {
             max = std::max(max, pair.second);
             mean += pair.first * pair.second;
-            n += pair.second;
         }
 
-        mean /= n;
+        mean /= _n_sum;
 
-        size_t step = ceil(float(max) / (0.85 * N));
+        size_t step = (0.85f * N) / float(max);
 
         for (size_t x = 0; x <= N; ++x)
         {
-            if (x == mean)
+            if (x == floor(mean))
                 for (size_t y = 0; y < out.get_size().y(); ++y)
-                    out(x, y) = RGB{1, 0, 0};
+                    out(x, y) = RGB{0.5, 0, 0};
 
-            for (size_t y = 1; y * step < _data.at(x); ++y)
+            for (size_t y = 1; y < _data.at(x) * step; ++y)
             {
                 out(x, out.get_size().y() - y) = RGB{1, 1, 1};
             }

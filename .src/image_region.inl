@@ -744,6 +744,7 @@ namespace crisp
 
         Eigen::MatrixXf out;
         out.resize(QUANTIZATION_N, QUANTIZATION_N);
+        out.setConstant(0);
 
         size_t n_pairs = 0;
         auto process = [&](size_t x, size_t y, size_t x_2, size_t y_2)
@@ -810,7 +811,7 @@ namespace crisp
         return _co_occurrence_matrix.at(direction);
     }
     
-        template<typename Image_t>
+    template<typename Image_t>
     float ImageRegion<Image_t>::get_homogeneity(CoOccurrenceDirection direction) const
     {
         auto& occurrence = get_co_occurrence_matrix(direction);
@@ -834,9 +835,10 @@ namespace crisp
         for (size_t i = 0; i < occurrence.rows(); ++i)
             for (size_t j = 0; j < occurrence.cols(); ++j)
             {
-                if (occurrence(i, j) == 0)
+                if (fabs(occurrence(i, j)) < 0.0000000001)
                     continue;
 
+                std::cout << occurrence(i, j) << " * " << log2(occurrence(i, j)) << std::endl;
                 sum += occurrence(i, j) * log2(occurrence(i, j));
             }
 

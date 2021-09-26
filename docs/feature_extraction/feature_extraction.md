@@ -326,7 +326,7 @@ const std::vector<std::vector<Vector2ui>> get_hole_boundaries() const;
 
 ## 4.8 Moment Invariants
 
-We've seen earlier that somehow respresenting a regions unique shape in a way that is invariant to scale, translation and rotation is highly valuable. A very powerful way to achieve is with the *nths moment invariant*. While some of them have a conceptual meaning, for beginners it is best to just think of them as properties that may not be useful to humans but do represent the shape of a region uniquely. ``crisp`` offers the first 7 moment invariants, accessed using ``ImageRegion::get_nths_moment_invariant(size_t n)`` where n in {1, 2, 3, ..., 7}.
+We've seen earlier that somehow respresenting a regions unique shape in a way that is invariant to scale, translation and rotation is highly valuable. A very powerful way to achieve is with the *nths moment invariant*. While some of them have a conceptual meaning, for beginners it is best to just think of them as properties that may not be useful to humans but do represent the shape of a region uniquely. ``crisp`` offers the first 7 moment invariants also known as Hu Moment Invariant (Hue, 1962), accessed using ``ImageRegion::get_nths_moment_invariant(size_t n)`` where n in {1, 2, 3, ..., 7}.
 
 The following table summarizes the response of a moment invariant to translation, scale, rotation and mirroring. "Unchanged" means the value of the moment does not change when recomputed after the operation.
 
@@ -346,50 +346,63 @@ We note that all first 4 moment invariants are completely independent of transla
 
 ## 5. Texture Descriptors
 
-Until now we have used descpritors that either describe a regions shape or both it's shape and pixel values. In this section we will deal with *texture*. This construct has no agreed-on definition but we can intuitively describe it as rate of change, value range periodicity and/or distribution of the intensity values of a region. Recall that in `crisp` the intensity is the mean of all components of a multi-plane images pixel. So if we're describing the texture of an RGB color image, we're describing the distribution of pixel intensities of corresponding grayscale image.
+So far our descriptors dealt with the regions boundary, it's shape or it's correponding values. In this section we will instead deal with the regions *texture*. This construct has no agreed on definition, in `crisp` *texture* refers to the distribution of intensity values in the region where "intensity" is the mean over all planes of a pixel. An easier way to express this is that we're converting our region to grayscale, then construct a histogram using those grayscale value and use statistical techniques to describe that distribution.
 
-If we need to operate on only certain components of an images value type we can simply isolate them using `get_nths_plane(size_t)` and then construct a new region using the same segment but now only the isolated plane.
+### 5.1 Intensity Histogram
 
-## 5.1 Intensity Histogram
-
-When a region is constructed, it's intensity histogram is implicitely created. The intensities are quantized into [0, 256] to keep things manageable. We can access the histogram directly using ``get_intensity_histogram()``:
+To get a rough idea of what the distribution looks like, `ImageRegion` offers `get_intensity_histogram()`. Note that internally the intensity values are not quantized while in this histogram they are quantized into 256 intensities:
 
 ```cpp
-auto histogram = pepper.get_intensity_histogram();
-auto histogram_image = histogram.as_image();
+auto hist = pepper.get_intensity_histogram();
+auto hist_img = hist.as_image();
 ```
+
+![](./.resources/pepper_hist.png)<br>
+
+We note that the histogram has many blank spots, which means that not all intensities where represented. The histogram exhibits multiple large spikes around the 0.5 region, these correspond to many of the constant-colored regions of the pepper. Lastly we note that a lot of intensities were seemingly only represented once as this would account for the long tail of the distribution, the left tail extends all the way to 0 while the right tail stops at about 0.6.
+
+### 5.2 Maximum Response
+
+The maximum response is the probability that the intensity with the highest number of observations occurrs. The closer to 1 this value is the more likely is it that the region has only very few shades in intensity.
+
+We access it using `get_maximum_intensity_probability()` which for the pepper region returns `0.57`. This is relatively high which makes sense because most of the pepper is the same shade of green.
+
+### 5.3 Mean, Variance
+
+Two of the most basic descriptors of a data set (a set of intensities in our case) are *mean* and *variance*. We can access these using:
+
+```cpp
+auto mean = pepper.get_mean();
+auto stddev = sqrt(pepper.get_variance());
+```
+
+Our pepper regions texture has a mean of 0.45 which corresponds to the red line in the histogram and a variance of 0.015 which is very low. This is expected as, again most of the pepper is shades of green that also do not vary greatly.
+
+### 5.4 n-ths Pearson Standardized Moment around the Mean
+
+In statistics the distribution of a dataset can be quantified using [statistical moments](https://en.wikipedia.org/wiki/Standardized_moment). Each moment has an order called `n`. The first four moments have a human interpretable meaning:
+
++ the 0ths moment is always 1
++ the 1st moment is the difference between the meant and itself which is always 0
++ the 2nd moment is the ratio of the variance to itself which is always 1
++ the 3rd moment is called *skewness* which is a measure of how much a distribution leans to one side
++ the 4th moment is called *kurtosis* which is a measure of how long which tail of the distribution is.
+
+Higher order moments may not have immediate use in human interpretation but can be very useful for machine-learning application. We can access the nths moment using ``get_nths_moment(size_t n)``.
+
+The 3rd and 4th moment can furthermore be accessed using `get_skewness()` and `get_kurtosis()`. Let's again consider our pepper histogram:
 
 ![](./.resources/pepper_hist.png)
 
-For our pepper region we note a number of large spikes, these correspond to numbers of pixels with the same intensity. We also observe a number of intensities with only a single occurence in the tail of the distribution. 
+Because of the large number of singleton intensities occurrences towards 0 the distribution overall leans to the left. This is reflected in the skewness which is `-2.20965`. Negative values generally mean the distribution leans left, right for positive values.
+The kurtosis of the pepper is `8.74199` which is very high. This again was expected because both tails are very long and thin resulting from the singletons.
 
-## 5.2 n-ths Statistical Moment
+### 5.5 Average Entropy
 
-The *n-ths standardized statistical moment about the mean* is an important measure of intensity distribution, it is calculated from the intensity histogram. We can compute it using ``ImageRegion::get_nths_statistical_moment(size_t n)``. The first 4 statistical moments have a human interpretable meaning:
+The average entropy is a measure of how ordered the set of intensities is. We can compute this value using `get_average_entropy()` which returns `0.769`. `crisp` normalizes the values into [0, 1] so `~0.77` is relatively high. This is again expected, the pepper is mostly green and has large regions of constant intensit
 
-+ the **first** statistical is always 0
-+ the **second** statistical moment is the *variance*. We can normalize it to the *standard deviation* by taking it's square root. For a more syntactically expressive way to compute it, `ImageRegion` also offers `get_variance()`.
-+ the **third** statistical moment is called *skewness*, as it's name suggest it quantifies how much the shape of the distribution in the histogram "leans" to one side. We can also compute it using `get_skewness()`
-+ the **fourth** statistical moment is called *kurtosis*, it is often described as a measure of "tailedness" which is best explained using visuals. Consider this image (source: wikipedia)<br>
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Standard_symmetric_pdfs.svg/300px-Standard_symmetric_pdfs.svg.png) <br>
-  Ignoring which color corresponds to which distribution, we see that the distributions are ordered by curtosis with red having the highest, yellow the second highest, green the third, etc..<br>
-  We can access the kurtosis directly by using `get_kurtosis()`. 
-  
-As already mentioned the higher statistical moments are not useful for human interpretation, however they can still be used to characterize the texture intensity distribution. 
 
-## 5.2 Average Entropy
-
-The average entropy is the entropy of the intensity distribution. We can compute it using `get_average_entropy()`. For convenience it is already normalized into [0, 1]. 
-
-## 5.3 Maximum Response
-
-The *maximum response* is the probability of the most common intensity. It is a number in [0, 1], where 1 only happens for a region of constant intensity.
-
-We can get the maximum response directly using ``ImageRegion::get_maximum_intensity_probability(CoOccurenceDirection)``
-
-For our pepper in +90° direction, this value is `0.304366` which is relative high. We expect a region with such a high value to be of mostly constant intensity and this is indeed the case, most (exactly 30.4366%) of the pepper is the same shade of green.
-
-## 5.3 Co-Occurence Matrix
+## 5.6 Co-Occurence Matrix
 
 To quantify texture in a specified direction we need to construct the *co-occurence matrix*. The co-occurence matrix is a matrix of size 256x256. It counts for each intensity pair `i_a`, `i_b` the number of times two pixels `a`, `b` that are *next to each other* have the corresponding intensities `i_a`, `i_b`.
 A short example: if the co-occurence matrix for the "right" direction has a value of 6 in the row 120 and column 98 then in the image there are 6 pairs of pixels `a`, `b` such that a has intensity 120 and `b` who is **directly right** of `a` has intensity 98. To keep the size of the co-occurence matrix managable, intensities are quantized into 8-bit.  
@@ -424,36 +437,29 @@ The above image was log-scaled for clarity. First we note that most of the cells
 
 We can numerically quantify the distribution of intensity value pair occurences using the following descriptors:
 
-## 5.5 Intensity Correlation
+## 5.7 Intensity Correlation
 
 *Intensity Correlation* measures how correlated the intensities in each intensity value pair are. Similar to the [pearson correlation coefficient](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient) it has a value in [-1, 1] where -1 means a a strong negative correlation, +1 means a strong positive correlation (either of which usually mean there is a regularity to the pattern) and 0 meaning no correlation. A pattern that has 0 correlation could be random noise or a region of constant intensity.
 
-We can compute the mean intensity correlation using ``get_intensity_correlation(CoOccurenceDirection)``.
+We can compute the mean intensity correlation using ``get_intensity_correlation(CoOccurenceDirection)``. In our example for the left-to-right direction this returns `0.4868`. This means the texture exhibits above average positive correlation in the left-to-right direction. This is expected because of the large constant intensity regions where an intensity will transition into itself over and over. If there are no constant intensity regions then a high correlation (in terms of absolute value) could also point to a strong periodicity. We can distinguish between these two cases using the following discriptor:
 
-## 5.6 Uniformity
+## 5.9 Homogeneity
 
-Uniformity is a measure of how constant the intensity values are. For a constant region the uniformity is 1, for a more diverse region the values are closer to 0.
-
-We can access uniformity using ``get_uniformity(CoOccurenceDirection)``
-
-## 5.5 Homogeneity
-
-In the co-occurence matrix the diagonal resprents occurences of intensity pair `i_a`, `i_b` where `i_a = i_b`, so occurences where two pixels in the specified direction have the same intensity. Homogenity quantifies how many of the intensity pairs like this there are. The higher the homogeinity, the less transitions between different intensities there are in that direction.
+In the co-occurence matrix the diagonal represents occurrences of intensity pair `i_a`, `i_b` where `i_a = i_b`, so occurences where two pixels in the specified direction have the same intensity. Homogenity quantifies how many of the intensity pairs like this there are. The higher the homogeinity, the less transitions between different intensities there are in that direction.
 
 We can access the value which is in [0,1] using ``get_homogeneity(CoOccurenceDirection)``. The pepper region exhibits a homogeneity of `0.625`. This may be slightly lower than expected considering the pepper is all green, however remember that we are quantifying texture, not color. The intensity (lightness) of the shades of green do vary quite a bit even though the hue does not. Nontheless `0.625` would be considered far above average so we would call the pepper a fairly homogenically textured region.
 
-## 5.6 Entropy
+## 5.10 Entropy
 
-Just like in statistics, *entropy* measures the randomness of the co-occurence distribution. A value of 1 means all pairings are uniformly distributed, the less uniform the distribution the closer the value is to 0. We compute the entropy using ``get_entropy(CoOccurenceDirection)``.
+Similar to the average entropy we can also compute the entropy of the co-occurence matrix. This is a descriptor of how ordered the occurrence-pairs in that direction are. 
+Using ``get_entropy(CoOccurenceDirection)`` we compute a value of `0.36` (again normalized into [0, 1]).
 
-For the pepper region this value is `0.95` which is fairly high. This makes sense as the pepper is highly ordered because many parts of the regions have a constant intensity with very few harsh intensity ramps.
-
-## 5.7 Contrast
+## 5.11 Contrast
 
 Contrast measures the difference between co-occuring pixels. A white pixel next to a black pixel (or vice-versa) would have maximum contrast while two pixels of identical color would have 0 contrast. We can compute the mean contrast in the specified direction using
 `get_contrast(CoOccurenceDirection)`, as already mentioned it's values are in [0, 1].
 
-Out pepper has a contrast of `0.0002` which is extremely low, again this is expected, the shades of green transition into each other smoothly as there are no big jumps in intensity.
+Out pepper has a contrast of `0.0002` which is extremely low, again this is expected, the shades of green transition into each other smoothly as there are no big jumps in intensity and large parts of the pepper have regions where neighboring pixels have the same intensity.
 
 ---
 [<< Back to Index](../index.md)

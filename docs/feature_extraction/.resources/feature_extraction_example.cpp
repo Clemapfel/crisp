@@ -36,7 +36,8 @@ int main()
     std::cout << "intensity correlation: " << pepper.get_intensity_correlation(CoOccurrenceDirection::PLUS_90) << std::endl;
     std::cout << "homogeneity: " << pepper.get_homogeneity(CoOccurrenceDirection::PLUS_90) << std::endl;
     std::cout << "average entropy: " <<  pepper.get_average_entropy() << std::endl;
-    std::cout << "entropy: " <<  pepper.get_entropy(CoOccurrenceDirection::PLUS_90) << std::endl;
+    std::cout << "entropy +90: " <<  pepper.get_entropy(CoOccurrenceDirection::PLUS_90) << std::endl;
+    std::cout << "entropy +180: " <<  pepper.get_entropy(CoOccurrenceDirection::PLUS_MINUS_180) << std::endl;
     std::cout << "contrast: " <<  pepper.get_contrast(CoOccurrenceDirection::PLUS_90) << std::endl;
     std::cout << "variance: " << pepper.get_variance() << std::endl;
     std::cout << "mean: " << pepper.get_mean() << std::endl;
