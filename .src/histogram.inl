@@ -45,6 +45,7 @@ namespace crisp
         }
 
         _mean = double(sum) / double(n);
+        _n_sum = n;
     }
 
     template<size_t N>
@@ -63,6 +64,12 @@ namespace crisp
     size_t Histogram<N>::get_n_occurrences(float intensity) const
     {
         return _data.at(floor(intensity * N));
+    }
+
+    template<size_t N>
+    size_t Histogram<N>::get_n_total() const
+    {
+        return _n_sum;
     }
 
     template<size_t N>

@@ -40,6 +40,10 @@ namespace crisp
             /// @param intensity: intensity in [0, 1]
             size_t get_n_occurrences(float intensity) const;
 
+            /// @brief access sum of occurrences over all intensities
+            /// @returns size_t
+            size_t get_n_total() const;
+
             /// @brief get mean intensity
             /// @returns mean as double
             double mean() const;
@@ -66,6 +70,7 @@ namespace crisp
 
         private:
             double _mean;
+            size_t _n_sum;
             std::unordered_map<size_t, size_t> _data;
     };
 }
