@@ -41,9 +41,10 @@ namespace crisp
 
         std::map<size_t, size_t> hash_to_n_occurrences;
         size_t max_n_occurrence = 0;
+        size_t n = 0;
+
         std::vector<float> intensities;
         intensities.reserve(segment.size());
-
         for (auto& px : segment)
         {
             _position_to_value.emplace(px.to_hash(), Element{px, image(px.x(), px.y())});
@@ -75,6 +76,7 @@ namespace crisp
 
             hash_to_n_occurrences.at(hash) += 1;
             max_n_occurrence = std::max(max_n_occurrence, hash_to_n_occurrences.at(hash));
+            n++;
 
             float average_to_push = 0;
             for (size_t i = 0; i < Value_t::size(); ++i)
@@ -89,7 +91,7 @@ namespace crisp
             max_y = std::max<unsigned int>(max_y, px.y());
         }
 
-        _max_probability = float(max_n_occurrence) / _position_to_value.size();
+        _max_probability = float(max_n_occurrence) / n;
 
         _histogram.create_from(intensities);
 
@@ -794,21 +796,19 @@ namespace crisp
     template<typename Image_t>
     float ImageRegion<Image_t>::get_average_entropy() const
     {
-        size_t sum_of_elements = _position_to_value.size();
-        float out = 0;
-        for (auto& pair : _position_to_value)
+        size_t sum_of_elements = _histogram.get_n_total();
+
+        float sum = 0;
+        for (auto& pair : _histogram)
         {
-            float value = 0;
-            for (size_t i = 0; i < Value_t::size(); ++i)
-                value += pair.second.value.at(i);
-
-            value /= Value_t::size();
-
-            float p = _histogram.get_n_occurrences(value) / sum_of_elements;
-            out += p + log2(p);
+            if (pair.second != 0)
+            {
+                float p = float(pair.second) / float(sum_of_elements);
+                sum += p * log2(p);
+            }
         }
 
-        return (-1 * out) / (2 * log2(256));
+        return (-1 * sum) / (2 * log2(256));
     }
 
     template<typename Image_t>
@@ -880,7 +880,7 @@ namespace crisp
     }
 
     template<typename Image_t>
-    const std::vector<std::vector<Vector2ui>> ImageRegion<Image_t>::get_hole_boundaries() const
+    const std::vector<std::vector<Vector2ui>>& ImageRegion<Image_t>::get_hole_boundaries() const
     {
         return _hole_boundaries;
     }

@@ -157,7 +157,7 @@ namespace crisp
 
             /// @brief get boundaries for holes
             /// @returns vector of vectors where each of them is the closed boundary of a hole, enumerated in counter-clockwise direction
-            const std::vector<std::vector<Vector2ui>> get_hole_boundaries() const;
+            const std::vector<std::vector<Vector2ui>>& get_hole_boundaries() const;
 
             /// @brief get the nths moment invariant
             /// @param n: n in {1, 2, ..., 6, 7}
