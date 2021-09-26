@@ -26,8 +26,11 @@ int main()
     //save_to_disk(cor_img,"/home/clem/Workspace/crisp/docs/feature_extraction/.resources/pepper_cooccurrence_matrix.png");
 
     auto hist = pepper.get_intensity_histogram();
-    auto hist_as_img = hist.to_image();
+    auto hist_as_img = hist.as_image();
     save_to_disk(hist_as_img,"/home/clem/Workspace/crisp/docs/feature_extraction/.resources/pepper_hist.png");
+
+    for (size_t i = 0; i < 6; ++i)
+        std::cout << "n = " << i << ": " << pepper.get_nths_statistical_moment(i) / powf(pepper.get_variance(), i) << std::endl;
 
     std::cout << "max probability: " <<  pepper.get_maximum_intensity_probability() << std::endl;
     std::cout << "intensity correlation: " << pepper.get_intensity_correlation(CoOccurenceDirection::PLUS_90) << std::endl;

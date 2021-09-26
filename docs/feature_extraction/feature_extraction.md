@@ -346,17 +346,26 @@ We note that all first 4 moment invariants are completely independent of transla
 
 ## 5. Texture Descriptors
 
-Until now we have used descpritors that either describe a regions shape or both it's shape and pixel values. In this section we will deal with only a the pixel values. *Texture* has no agreed on definition but we can intuitively describe it as rate of change, value range and periodicity of the intensity values of a region. 
+Until now we have used descpritors that either describe a regions shape or both it's shape and pixel values. In this section we will deal with *texture*. This construct has no agreed-on definition but we can intuitively describe it as rate of change, value range periodicity and/or distribution of the intensity values of a region. Recall that in `crisp` the intensity is the mean of all components of a multi-plane images pixel. So if we're describing the texture of an RGB color image, we're describing the distribution of pixel intensities of corresponding grayscale image.
+
+If we need to operate on only certain components of an images value type we can simply isolate them using `get_nths_plane(size_t)` and then construct a new region using the same segment but now only the isolated plane.
 
 ## 5.1 Intensity Histogram
 
-Recall that the intensity of an element of an n-plane image is defined as the mean of the value of all planes. So for a color image, the intensity of pixel (x, y) is average of the red, green and blue component. 
+When a region is constructed, it's intensity histogram is implicitely created. The intensities are quantized into [0, 256] to keep things manageable. We can access the histogram directly using ``get_intensity_histogram()``:
 
-When a region is constructed, the intensity histogram is also created. The intensities are quantized into [0, 256] to keep things manageable. We can access the histogram directly using ``get_intensity_histogram()``.
+```cpp
+auto histogram = pepper.get_intensity_histogram();
+auto histogram_image = histogram.as_image();
+```
+
+![](./.resources/pepper_hist.png)
+
+For our pepper region we note a number of large spikes, these correspond to numbers of pixels with the same intensity. We also observe a number of intensities with only a single occurence in the tail of the distribution. 
 
 ## 5.2 n-ths Statistical Moment
 
-The *n-ths standardized statistical moment about the mean* is an important measure of intensity distribution, it is calculated from the intensity histogram. We can compute it using ``get_nths_statistical_moment(size_t n)``. The first 4 statistical moments have a human interpretable meaning:
+The *n-ths standardized statistical moment about the mean* is an important measure of intensity distribution, it is calculated from the intensity histogram. We can compute it using ``ImageRegion::get_nths_statistical_moment(size_t n)``. The first 4 statistical moments have a human interpretable meaning:
 
 + the **first** statistical is always 0
 + the **second** statistical moment is the *variance*. We can normalize it to the *standard deviation* by taking it's square root. For a more syntactically expressive way to compute it, `ImageRegion` also offers `get_variance()`.
