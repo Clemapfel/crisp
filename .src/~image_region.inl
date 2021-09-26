@@ -1,23 +1,13 @@
 // 
 // Copyright 2021 Clemens Cords
-// Created on 26.09.21 by clem (mail@clemens-cords.com)
+// Created on 13.09.21 by clem (mail@clemens-cords.com)
 //
+
+#include <image_region.hpp>
+#include <Eigenvalues>
 
 namespace crisp
 {
-    template<typename Image_t>
-    ImageRegion<Image_t>::Element::Element(Vector2ui position, Value_t value)
-    {
-        _position = position;
-        _value = value;
-        
-        _intensity = 0;
-        for (size_t i = 0; i < Value_t::size(); ++i)
-            _intensity += float(value.at(i));
-        
-        _intensity /= Value_t::size();
-    }
-
     template<typename Image_t>
     ImageRegion<Image_t>::ImageRegion(const ImageSegment& segment, const Image_t& image)
     {
@@ -25,79 +15,93 @@ namespace crisp
     }
 
     template<typename Image_t>
-    void ImageRegion<Image_t>::create_from(const ImageSegment& segment, const Image_t& image)
-    {
-        _elements.clear();
-        for (const auto& px : segment)
-            _elements.emplace(px, image(px.x(), px.y()));
-
-        _original_image_size = image.get_size();
-        create();
-    }
-
-    template<typename Image_t>
     ImageRegion<Image_t>::ImageRegion(const Image_t& image)
     {
-        create_from(image);
-    }
-
-    template<typename Image_t>
-    void ImageRegion<Image_t>::create_from(const Image_t& image)
-    {
-        _elements.clear();
+        auto segment = ImageSegment();
         for (size_t x = 0; x < image.get_size().x(); ++x)
             for (size_t y = 0; y < image.get_size().y(); ++y)
-                _elements[Vector2ui{x, y}.to_hash()] = Element(Vector2ui{x, y}, image(x, y));
+                segment.insert(Vector2ui{x, y});
 
-        _original_image_size = image.get_size();
-        create();
+        create_from(segment, image);
     }
 
     template<typename Image_t>
-    void ImageRegion<Image_t>::create()
+    void ImageRegion<Image_t>::create_from(const ImageSegment& segment, const Image_t& image)
     {
-        _min_x = std::numeric_limits<size_t>::max();
-        _max_x = 0;
-        _min_y = std::numeric_limits<size_t>::max();
-        _max_y = 0;
-        
-        ImageSegment strong_pixels, weak_pixels;
-        
-        for (auto& pair : _elements)
+        // init
+        _elements.clear();
+
+        unsigned int min_x = image.get_size().x(),
+                max_x = 0;
+        unsigned int min_y = image.get_size().y(),
+                max_y = 0;
+
+        ImageSegment strong_pixels;
+        ImageSegment weak_pixels;
+
+        std::map<size_t, size_t> hash_to_n_occurrences;
+        size_t max_n_occurrence = 0;
+        size_t n = 0;
+
+        std::vector<float> intensities;
+        intensities.reserve(segment.size());
+        for (auto& px : segment)
         {
-            const auto& px = pair.second._position;
-            
-            _min_x = std::min(px.x(), _min_x);
-            _min_y = std::min(px.y(), _min_y);
-            _max_x = std::max(px.x(), _max_x);
-            _max_y = std::max(px.y(), _max_y);
-            
+            _elements.emplace(px.to_hash(), Element{px, image(px.x(), px.y())});
+
             size_t n_unconnected = 0;
             for (int i = -1; i <= +1; ++i)
             {
                 for (int j = -1; j <= +1; ++j)
                 {
                     // outer edge of image is always boundary
-                    if (px.x() + i < 0 or px.x() + i > _original_image_size.x() 
-                        or px.y() + j < 0 or px.y() + j > _original_image_size.y())
+                    if (px.x() + i < 0 or px.x() + i > image.get_size().x() or px.y() + j < 0 or
+                        px.y() + j > image.get_size().y())
                         n_unconnected++;
 
-                    else if (not (i == 0 and j == 0) and _elements.find(px.to_hash()) == _elements.end())
+                    else if (not (i == 0 and j == 0) and
+                             segment.find(Vector2ui{px.x() + i, px.y() + j}) == segment.end())
                         n_unconnected++;
                 }
             }
-         
+
             if (n_unconnected > 1)
                 strong_pixels.insert(px);
             else if (n_unconnected == 1)
                 weak_pixels.insert(px);
+
+            auto hash = image(px.x(), px.y()).to_hash();
+            if (hash_to_n_occurrences.find(hash) == hash_to_n_occurrences.end())
+                hash_to_n_occurrences.emplace(hash, 0);
+
+            hash_to_n_occurrences.at(hash) += 1;
+            max_n_occurrence = std::max(max_n_occurrence, hash_to_n_occurrences.at(hash));
+            n++;
+
+            float average_to_push = 0;
+            for (size_t i = 0; i < Value_t::size(); ++i)
+                average_to_push += image(px.x(), px.y()).at(i);
+
+            average_to_push /= Value_t::size();
+            intensities.push_back(average_to_push);
+
+            min_x = std::min<unsigned int>(min_x, px.x());
+            max_x = std::max<unsigned int>(max_x, px.x());
+            min_y = std::min<unsigned int>(min_y, px.y());
+            max_y = std::max<unsigned int>(max_y, px.y());
         }
+
+        _max_probability = float(max_n_occurrence) / n;
+
+        _histogram.create_from(intensities);
+
+        _x_bounds = {min_x, max_x};
+        _y_bounds = {min_y, max_y};
 
         // trace boundary
         _boundary.clear();
 
-        auto translate_in_direction = [&](Vector2ui c, uint8_t direction) -> Vector2ui
-        {
+        auto translate_in_direction = [&](Vector2ui c, uint8_t direction) -> Vector2ui {
             direction = direction % 8;
             int x_offset, y_offset;
             switch (direction)
@@ -179,8 +183,8 @@ namespace crisp
                 {
                     auto to_check = translate_in_direction(current, dir);
 
-                    if (to_check.x() < _min_x or to_check.x() > _max_x or
-                        to_check.y() < _min_y or to_check.y() > _max_y)
+                    if (to_check.x() < _x_bounds.x() or to_check.x() > _x_bounds.y() or
+                        to_check.y() < _y_bounds.x() or to_check.y() > _y_bounds.y())
                         continue;
 
                     if (to_check == top_left)
@@ -209,8 +213,8 @@ namespace crisp
                 {
                     auto to_check = translate_in_direction(current, dir);
 
-                    if (to_check.x() < _min_x or to_check.x() > _max_x or
-                        to_check.y() < _min_y or to_check.y() > _min_y)
+                    if (to_check.x() < _x_bounds.x() or to_check.x() > _x_bounds.y() or
+                        to_check.y() < _y_bounds.x() or to_check.y() > _y_bounds.y())
                         continue;
 
                     if (weak_pixels.find(to_check) != weak_pixels.end())
@@ -239,12 +243,14 @@ namespace crisp
         }
 
         _boundary = boundaries_out.at(0);
+        _boundary_direction = directions_out.at(0);
+
+        _n_holes = boundaries_out.size() - 1;
 
         _hole_boundaries.clear();
         for (size_t i = 1; i < boundaries_out.size(); ++i)
             _hole_boundaries.push_back(boundaries_out.at(i));
 
-        // boundary polygon
         auto turn_type = [&](size_t i_a, size_t i_b) -> int
         {
             auto point_a = _boundary.at(i_a),
@@ -255,8 +261,8 @@ namespace crisp
                 abs(int(point_a.y()) - int(point_b.y())) > 1)
                 return 0;
 
-            auto dir_a = directions_out.at(0).at(i_a),
-                 dir_b = directions_out.at(0).at(i_b);
+            auto dir_a = _boundary_direction.at(i_a),
+                 dir_b = _boundary_direction.at(i_b);
 
             if (dir_b > dir_a or (dir_a == 7 and dir_b == 0))
                 return -1; // left-hand turn
@@ -267,26 +273,38 @@ namespace crisp
         };
 
         _boundary_polygon.clear();
-        _centroid = Vector2f{0, 0};
+
+        Vector2f mean_pos = Vector2f{0, 0};
 
         for (size_t i = 0; i < _boundary.size() - 1; ++i)
         {
-            _centroid += Vector2f{float(_boundary.at(i).x()), float(_boundary.at(i).y())};
+            mean_pos += Vector2f{float(_boundary.at(i).x()), float(_boundary.at(i).y())};
 
             if (turn_type(i, i+1) != 0)
                 _boundary_polygon.push_back(_boundary.at(i));
         }
 
-        _centroid /= float(_boundary.size());
+        _centroid = mean_pos / float(_boundary.size());
 
         // compute minor and major axis
+        float mean_x = 0, mean_y = 0;
+
+        for (auto& px : _boundary)
+        {
+            mean_x += px.x();
+            mean_y += px.y();
+        }
+
+        mean_x /= _boundary.size();
+        mean_y /= _boundary.size();
+
         Eigen::Matrix<float, 2, 2> covar;
 
         for (auto& px : _boundary)
         {
             Eigen::Matrix<float, 2, 1> current;
-            current << (px.x() - _centroid.x()),
-                       (px.y() - _centroid.y());
+            current << (px.x() - mean_x),
+                       (px.y() - mean_y);
 
             auto current_covar = (current * current.transpose());
             covar += current_covar;
@@ -331,26 +349,10 @@ namespace crisp
 
             _eccentricity = sqrt(1 - (l2 / l1) * (l2 / l1));
         }
+
+        _co_occurrence_matrices.clear();
     }
-    
-    template<typename Image_t>
-    Vector2f ImageRegion<Image_t>::get_centroid() const
-    {
-        return _centroid;
-    }
-    
-    template<typename Image_t>
-    const std::vector<Vector2ui>& ImageRegion<Image_t>::get_boundary() const
-    {
-        return _boundary;
-    }
-    
-    template<typename Image_t>
-    const std::vector<Vector2ui>& ImageRegion<Image_t>::get_boundary_polygon() const
-    {
-        return _boundary_polygon;
-    }
-    
+
     template<typename Image_t>
     std::vector<float> ImageRegion<Image_t>::farthest_point_signature() const
     {
@@ -366,7 +368,7 @@ namespace crisp
 
             Vector2ui farthest_point = a;
             float max_dist = 0;
-            for (const auto& point : _boundary_polygon)
+            for (const auto& point : _boundary)
             {
                 int p_x = point.x();
                 int p_y = point.y();
@@ -386,9 +388,9 @@ namespace crisp
         };
 
         std::vector<float> signature;
-        signature.reserve(_boundary_polygon.size());
+        signature.reserve(_boundary.size());
 
-        for (auto& px : _boundary_polygon)
+        for (auto& px : _boundary)
             signature.push_back(value(px));
 
         return signature;
@@ -407,9 +409,9 @@ namespace crisp
         };
 
         std::vector<float> signature;
-        signature.reserve(_boundary_polygon.size());
+        signature.reserve(_boundary.size());
 
-        for (auto& px : _boundary_polygon)
+        for (auto& px : _boundary)
             signature.push_back(value(px));
 
         return signature;
@@ -419,9 +421,9 @@ namespace crisp
     std::vector<std::complex<float>> ImageRegion<Image_t>::complex_coordinate_signature() const
     {
         std::vector<std::complex<float>> signature;
-        signature.reserve(_boundary_polygon.size());
+        signature.reserve(_boundary.size());
 
-        for (auto& px : _boundary_polygon)
+        for (auto& px : _boundary)
             signature.emplace_back(px.x() - _centroid.x(), px.y() - _centroid.y());
 
         return signature;
@@ -442,6 +444,12 @@ namespace crisp
     }
 
     template<typename Image_t>
+    Vector2f ImageRegion<Image_t>::get_centroid() const
+    {
+        return _centroid;
+    }
+
+    template<typename Image_t>
     float ImageRegion<Image_t>::get_perimeter() const
     {
         return _boundary.size();
@@ -451,11 +459,15 @@ namespace crisp
     std::array<Vector2ui, 4> ImageRegion<Image_t>::get_axis_aligned_bounding_box() const
     {
         auto out = std::array<Vector2ui, 4>();
+        auto min_x = _x_bounds.x();
+        auto max_x = _x_bounds.y();
+        auto min_y = _y_bounds.x();
+        auto max_y = _y_bounds.y();
 
-        out.at(0) = {_min_x, _min_y};
-        out.at(1) = {_max_x, _min_y};
-        out.at(2) = {_max_x, _max_y};
-        out.at(3) = {_min_x, _max_y};
+        out.at(0) = {min_x, min_y};
+        out.at(1) = {max_x, min_y};
+        out.at(2) = {max_x, max_y};
+        out.at(3) = {min_x, max_y};
 
         return out;
     }
@@ -464,6 +476,30 @@ namespace crisp
     float ImageRegion<Image_t>::get_area() const
     {
         return _elements.size();
+    }
+
+    template<typename Image_t>
+    auto ImageRegion<Image_t>::begin() const
+    {
+        return _elements.begin();
+    }
+
+    template<typename Image_t>
+    auto ImageRegion<Image_t>::begin()
+    {
+        return _elements.begin();
+    }
+
+    template<typename Image_t>
+    auto ImageRegion<Image_t>::end()
+    {
+        return _elements.end();
+    }
+
+    template<typename Image_t>
+    auto ImageRegion<Image_t>::end() const
+    {
+        return _elements.end();
     }
 
     template<typename Image_t>
@@ -488,12 +524,13 @@ namespace crisp
                   value_sum = 0;
             for (auto& element : _elements)
             {
-                value_sum += powf(element.position.x() - _centroid.x(), p) * 
-                             powf(element.position.y() - _centroid.y(), q) * 
-                             element._intensity;
+                value_sum +=
+                        pow(element.position.x() - _centroid.x(), p) * pow(element.position.y() - _centroid.y(), q) *
+                        element.value;
+                value_sum += element.value;
             }
 
-            return moment / powf(value_sum, (p+q) / 2.f + 1);
+            return moment / std::pow<float>(value_sum, (p+q) / 2.f + 1);
         };
 
         assert(i != 0 and i <= 7 && "only moments for n = {1, 2, 3, 4, 5, 6, 7} are supported");
@@ -568,6 +605,18 @@ namespace crisp
     }
 
     template<typename Image_t>
+    const std::vector<Vector2ui>& ImageRegion<Image_t>::get_boundary() const
+    {
+        return _boundary;
+    }
+
+    template<typename Image_t>
+    const std::vector<Vector2ui>& ImageRegion<Image_t>::get_boundary_polygon() const
+    {
+        return _boundary_polygon;
+    }
+
+    template<typename Image_t>
     const std::pair<Vector2f, Vector2f> & ImageRegion<Image_t>::get_major_axis() const
     {
         return _major_axis;
@@ -580,159 +629,16 @@ namespace crisp
     }
 
     template<typename Image_t>
-    const auto& ImageRegion<Image_t>::get_intensity_histogram() const
+    const CoOccurenceMatrix & ImageRegion<Image_t>::get_co_occurrence_matrix(CoOccurenceDirection direction) const
     {
-        if (_histogram_initialized)
-            return _histogram;
-
-        std::vector<float> intensities;
-        intensities.reserve(_elements.size());
-
-        for (auto& pair : _elements)
-            intensities.push_back(pair.second.intensity);
-
-        _histogram = Histogram<QUANTIZATION_N>(intensities);
-        _histogram_initialized = true;
-        return _histogram;
-    }
-
-    template<typename Image_t>
-    float ImageRegion<Image_t>::get_mean() const
-    {
-        if (_intensity_mean != -1)
-            return _intensity_mean;
-
-        float sum = 0;
-        for (auto& pair : _elements)
-            sum += pair.second._intensity;
-
-        _intensity_mean = sum / _elements.size();
-        return _intensity_mean;
-    }
-
-    template<typename Image_t>
-    float ImageRegion<Image_t>::get_variance() const
-    {
-        if (_intensity_variance != -1)
-            return _intensity_variance;
-
-        const float mean = get_mean();
-
-        float sum = 0;
-        for (auto& pair : _elements)
-            sum += (pair.second._intensity - mean) * (pair.second._intensity - mean);
-
-        _intensity_variance = sum / _elements.size();
-        return _intensity_variance;
-    }
-
-    template<typename Image_t>
-    float ImageRegion<Image_t>::get_nths_moment(size_t n) const
-    {
-        if (_nths_statistical_moment.find(n) != _nths_statistical_moment.end())
-            return _nths_statistical_moment.at(n);
-
-        const float mean = get_mean();
-        const float stddev = sqrt(get_variance());
-
-        float sum = 0;
-        for (auto& pair : _elements)
-            sum += pow((pair.second._intensity - mean) / stddev, n);
-
-        sum /= float(_elements.size());
-        _nths_statistical_moment[n] = sum;
-        return sum;
-    }
-
-    template<typename Image_t>
-    float ImageRegion<Image_t>::get_skewness() const
-    {
-        get_nths_moment(3);
-    }
-
-    template<typename Image_t>
-    float ImageRegion<Image_t>::get_kurtosis() const
-    {
-        get_nths_moment(4);
-    }
-
-    template<typename Image_t>
-    float ImageRegion<Image_t>::get_maximum_intensity_probability() const
-    {
-        if (_max_probability != -1)
-            return _average_entropy;
-
-        if (not _intensity_occurrences_initialized)
-        {
-            for (const auto& pair : _elements)
-            {
-                float intensity = pair.second._intensity;
-                if (_intensity_occurrences.find(intensity) == _intensity_occurrences.end())
-                    _intensity_occurrences.emplace(intensity, 1);
-                else
-                {
-                    _intensity_occurrences.at(intensity) += 1;
-                }
-            }
-
-            _intensity_occurrences_initialized = true;
-        }
-        else
-        {
-            size_t max_n = 0;
-            float n = 0;
-            for (const auto& pair : _intensity_occurrences)
-            {
-                max_n = std::max(pair.second, max_n);
-                n++;
-            }
-
-            return max_n / n;
-        }
-    }
-
-    template<typename Image_t>
-    float ImageRegion<Image_t>::get_average_entropy() const
-    {
-        if (_average_entropy != -1)
-            return _average_entropy;
-        
-        if (not _intensity_occurrences_initialized)
-        {
-            for (auto& pair : _elements)
-            {
-                float intensity = pair.second._intensity;
-                if (_intensity_occurrences.find(intensity) == _intensity_occurrences.end())
-                    _intensity_occurrences.emplace(intensity, 1);
-                else
-                    _intensity_occurrences.at(intensity) += 1;
-            }
-
-            _intensity_occurrences_initialized = true;
-        }
-
-        float sum = 0;
-        for (auto& pair : _intensity_occurrences)
-        {
-            float p = pair.second / float(_intensity_occurrences.size());
-            sum += p * log2(p);
-        }
-
-        _average_entropy = (-1 * sum) / log2(_intensity_occurrences.size());
-        return _average_entropy;
-    }
-    
-    template<typename Image_t>
-    const auto & ImageRegion<Image_t>::get_co_occurrence_matrix(CoOccurrenceDirection direction) const
-    {
-        if (_co_occurrence_matrix.find(direction) != _co_occurrence_matrix.end())
-            return _co_occurrence_matrix.at(direction);
+        if (_co_occurrence_matrices.find(direction) != _co_occurrence_matrices.end())
+            return _co_occurrence_matrices.at(direction);
 
         using Value_t = typename Image_t::Value_t;
         using Inner_t = typename Image_t::Value_t::Value_t;
 
-        Eigen::MatrixXf out;
-        out.resize(QUANTIZATION_N, QUANTIZATION_N);
+        CoOccurenceMatrix out;
+        out.resize(256, 256);
 
         size_t n_pairs = 0;
         auto process = [&](size_t x, size_t y, size_t x_2, size_t y_2)
@@ -750,8 +656,8 @@ namespace crisp
                 b_value += b->second.value.at(i);
             }
 
-            a_value = (a_value / Value_t::size()) * QUANTIZATION_N;
-            b_value = (b_value / Value_t::size()) * QUANTIZATION_N;
+            a_value = (a_value / Value_t::size()) * 255;
+            b_value = (b_value / Value_t::size()) * 255;
 
             out(size_t(a_value), size_t(b_value)) += 1;
             n_pairs += 1;
@@ -795,12 +701,142 @@ namespace crisp
             for (size_t y = 0; y < out.cols(); ++y)
                 out(x, y) /= float(n_pairs);
 
-        _co_occurrence_matrix.insert(std::make_pair(direction, out));
-        return _co_occurrence_matrix.at(direction);
+        _co_occurrence_matrices.insert(std::make_pair(direction, out));
+        return _co_occurrence_matrices.at(direction);
     }
-    
-        template<typename Image_t>
-    float ImageRegion<Image_t>::get_homogeneity(CoOccurrenceDirection direction) const
+
+    template<typename Image_t>
+    float ImageRegion<Image_t>::get_maximum_intensity_probability() const
+    {
+        return _max_probability;
+    }
+
+    template<typename Image_t>
+    float ImageRegion<Image_t>::get_intensity_correlation(CoOccurenceDirection direction) const
+    {
+        auto& occurrence = get_co_occurrence_matrix(direction);
+        float sum_of_elements = occurrence.sum();
+
+        float col_mean = 0;
+        float row_mean = 0;
+        float col_stddev = 0;
+        float row_stddev = 0;
+
+        for (size_t i = 0; i < occurrence.rows(); ++i)
+            for (size_t j = 0; j < occurrence.cols(); ++j)
+                row_mean += i * (occurrence(i, j) / sum_of_elements);
+
+        for (size_t i = 0; i < occurrence.rows(); ++i)
+            for (size_t j = 0; j < occurrence.cols(); ++j)
+                row_stddev += (i - row_mean) * (i - row_mean) * (occurrence(i, j) / sum_of_elements);
+
+        if (row_stddev == 0)
+            return std::numeric_limits<float>::infinity();
+
+        row_stddev = sqrt(row_stddev);
+
+        for (size_t j = 0; j < occurrence.cols(); ++j)
+            for (size_t i = 0; i < occurrence.rows(); ++i)
+                col_mean += j * (occurrence(i, j) / sum_of_elements);
+
+        for (size_t j = 0; j < occurrence.cols(); ++j)
+            for (size_t i = 0; i < occurrence.rows(); ++i)
+                col_stddev += (j - col_mean) * (j - col_mean) * (occurrence(i, j) / sum_of_elements);
+
+        if (col_stddev == 0)
+            return std::numeric_limits<float>::infinity();
+
+        col_stddev = sqrt(col_stddev);
+
+        float correlation = 0;
+        for (size_t i = 0; i < occurrence.rows(); ++i)
+            for (size_t j = 0; j < occurrence.cols(); ++j)
+                correlation += ((i - row_mean) * (j - col_mean) * occurrence(i, j) / sum_of_elements) / (row_stddev * col_stddev);
+
+        return correlation;
+    }
+
+    template<typename Image_t>
+    float ImageRegion<Image_t>::get_nths_statistical_moment(size_t n) const
+    {
+        if (_nths_moment.find(n) != _nths_moment.end())
+            return _nths_moment.at(n);
+
+        std::vector<float> intensities;
+
+        // mean
+        float mean = 0;
+        size_t n_occurrences = 0;
+        for (auto& pair : _elements)
+        {
+            float value = 0;
+            for (size_t i = 0; i < Value_t::size(); ++i)
+                value += pair.second.value.at(i);
+
+            value /= Value_t::size();
+            intensities.push_back(value);
+
+            mean += value;
+            n_occurrences++;
+        }
+
+        mean /= n_occurrences;
+
+        float out = 0;
+        for (auto value : intensities)
+        {
+            out += powf((value - mean), n);
+        }
+
+        out /= n_occurrences;
+        _nths_moment.emplace(n, out);
+        return out;
+    }
+
+    template<typename Image_t>
+    float ImageRegion<Image_t>::get_variance() const
+    {
+        return get_nths_statistical_moment(2);
+    }
+
+    template<typename Image_t>
+    float ImageRegion<Image_t>::get_skewness() const
+    {
+        return get_nths_statistical_moment(3) / powf(get_nths_statistical_moment(2), 3);
+    }
+
+    template<typename Image_t>
+    float ImageRegion<Image_t>::get_kurtosis() const
+    {
+        return get_nths_statistical_moment(4) / powf(get_nths_statistical_moment(2), 4);
+    }
+
+    template<typename Image_t>
+    float ImageRegion<Image_t>::get_average_entropy() const
+    {
+        size_t sum_of_elements = _histogram.get_n_total();
+
+        float sum = 0;
+        for (auto& pair : _histogram)
+        {
+            if (pair.second != 0)
+            {
+                float p = float(pair.second) / float(sum_of_elements);
+                sum += p * log2(p);
+            }
+        }
+
+        return (-1 * sum) / (2 * log2(256));
+    }
+
+    template<typename Image_t>
+    const Histogram<256>& ImageRegion<Image_t>::get_intensity_histogram() const
+    {
+        return _histogram;
+    }
+
+    template<typename Image_t>
+    float ImageRegion<Image_t>::get_homogeneity(CoOccurenceDirection direction) const
     {
         auto& occurrence = get_co_occurrence_matrix(direction);
         size_t sum_of_elements = occurrence.sum();
@@ -808,13 +844,13 @@ namespace crisp
         float sum = 0;
         for (size_t i = 0; i < occurrence.rows(); ++i)
             for (size_t j = 0; j < occurrence.cols(); ++j)
-                sum += occurrence(i, j) / (1.f + fabs(float(i) - float(j)));
+                sum += occurrence(i, j) / (1.f + abs(int(i) - int(j)));
 
         return sum;
     }
 
     template<typename Image_t>
-    float ImageRegion<Image_t>::get_entropy(CoOccurrenceDirection direction) const
+    float ImageRegion<Image_t>::get_entropy(CoOccurenceDirection direction) const
     {
         auto& occurrence = get_co_occurrence_matrix(direction);
         size_t sum_of_elements = occurrence.sum();
@@ -833,7 +869,7 @@ namespace crisp
     }
 
     template<typename Image_t>
-    float ImageRegion<Image_t>::get_contrast(CoOccurrenceDirection direction) const
+    float ImageRegion<Image_t>::get_contrast(CoOccurenceDirection direction) const
     {
         auto& occurrence = get_co_occurrence_matrix(direction);
 
@@ -848,19 +884,22 @@ namespace crisp
 
         return sum / (255*255);
     }
-    
+
     template<typename Image_t>
-    auto ImageRegion<Image_t>::begin() const
+    float ImageRegion<Image_t>::get_eccentricity() const
     {
-        //TODO
+        return _eccentricity;
     }
-    
+
     template<typename Image_t>
-    auto ImageRegion<Image_t>::end() const
+    size_t ImageRegion<Image_t>::get_n_holes() const
     {
-        //TODO
+        return _hole_boundaries.size();
     }
-    
-    
-    
+
+    template<typename Image_t>
+    const std::vector<std::vector<Vector2ui>>& ImageRegion<Image_t>::get_hole_boundaries() const
+    {
+        return _hole_boundaries;
+    }
 }

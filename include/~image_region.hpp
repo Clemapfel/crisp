@@ -9,37 +9,26 @@
 
 #include <set>
 
-namespace crisp 
+namespace crisp
 {
-    /// @brief direction of co-occurrence when traveling from index (x,y) to index (x+a,y+b) with a, b in {-1, 0, 1}
-    enum CoOccurrenceDirection
-    {
-        /// (x,y) -> (x,   y-1)
-        PLUS_MINUS_ZERO,
-        /// (x,y) -> (x+1, y-1)
-        PLUS_45,
-        /// (x,y) -> (x+1, y)
-        PLUS_90,
-        /// (x,y) -> (x+1, y+1)
-        PLUS_125,
-        /// (x,y) -> (x,   y+1)
-        PLUS_MINUS_180,
-        /// (x,y) -> (x-1, y+1)
-        MINUS_125,
-        /// (x,y) -> (x-1, y)
-        MINUS_90,
-        /// (x,y) -> (x-1, y-1)
-        MINUS_45
-    };
-    
+    /// @brief covariance matrix of float
+    using CovarianceMatrix = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>;
+
+    /// @brief a closed, simply connected region (or in less mathematical terms: a set of unique pixel coordinates and their corresponding values in an image)
+    /// @param Image_t: type of image used for the values
     template<typename Image_t>
     class ImageRegion
-    {   
-        using Value_t = typename Image_t::Value_t;
-        class Iterator;
-        class ConstIterator;
-            
+    {
         public:
+            /// @brief expose images value_t as member
+            using Value_t = typename Image_t::Value_t;
+
+            /// @brief non-const iterator, iterates left-to-right, top-to-bottom
+            class Iterator;
+
+            /// @brief const iterator, iterates left-to-right, top-to-bottom
+            class ConstIterator;
+
             /// @brief default ctor
             ImageRegion() = default;
 
@@ -47,20 +36,16 @@ namespace crisp
             /// @param segment: set of pixel coordinates
             /// @param image
             ImageRegion(const ImageSegment& segment, const Image_t& image);
-            
+
+            /// @brief construct region from entire image
+            /// @param image:
+            ImageRegion(const Image_t& image);
+
             /// @brief construct from segment and image
             /// @param segment: set of pixel coordinates
             /// @param image
             void create_from(const ImageSegment& segment, const Image_t& image);
-            
-            /// @brief construct region from entire image
-            /// @param image:
-            ImageRegion(const Image_t& image);
-            
-            /// @brief construct region from entire image
-            /// @param image:
-            void create_from(const Image_t& image);
-            
+
             /// @brief get the centroid, the mean of the sum of boundary elements
             /// @returns centroid as vector
             Vector2f get_centroid() const;
@@ -90,6 +75,10 @@ namespace crisp
             /// @returns vector of angles in radian
             std::vector<float> slope_chain_code_signature() const;
 
+            /// @brief get covariance matrix of position
+            /// @returns covariance matrix of the position of each element
+            const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& get_covariance_matrix() const;
+
             /// @brief get the major axis, the longer axis along the eigenvalues of the ellipses fitting the region
             /// @return pair of points that model the line
             const std::pair<Vector2f, Vector2f>& get_major_axis() const;
@@ -101,9 +90,9 @@ namespace crisp
             /// @brief get the axis aligned bounding box where each side is parallel to the x/y axis
             /// @returns array of four points that model the box
             std::array<Vector2ui, 4> get_axis_aligned_bounding_box() const;
-            
+
             /// @brief get length of the regions boundary
-            /// @returns length
+            /// @returns legnth
             float get_perimeter() const;
 
             /// @brief get number of pixels in region including it's boundary
@@ -121,7 +110,7 @@ namespace crisp
             /// @brief get eccentricity: degree of fit to an ellipses
             /// @returns eccentricity as float
             float get_eccentricity() const;
-            
+
             /// @brief get number of holes
             /// @returns number of holes
             size_t get_n_holes() const;
@@ -129,23 +118,19 @@ namespace crisp
             /// @brief get boundaries for holes
             /// @returns vector of vectors where each of them is the closed boundary of a hole, enumerated in counter-clockwise direction
             const std::vector<std::vector<Vector2ui>>& get_hole_boundaries() const;
-            
+
             /// @brief get the nths moment invariant
             /// @param n: n in {1, 2, ..., 6, 7}
             /// @returns value of invariant
             float get_nths_moment_invariant(size_t n);
-            
+
             /// @brief get maximum probability of intensity value
             /// @returns float in [0, 1]
             float get_maximum_intensity_probability() const;
 
-            /// @brief get pearsons nths normalized moment around the mean of texture
+            /// @brief get nths statistical moment around the mean
             /// @returns value
-            float get_nths_moment(size_t n) const;
-
-            /// @brief get mean of texture
-            /// @returns value
-            float get_mean() const;
+            float get_nths_statistical_moment(size_t n) const;
 
             /// @brief get standard deviation of texture
             /// @returns value
@@ -162,54 +147,39 @@ namespace crisp
             /// @brief get entropy of texture
             /// @returns value in [0, 1]
             float get_average_entropy() const;
-            
+
             /// @brief get texture histogram
             /// @returns histogram of intensity values quantized into [0, 256]
-            const auto& get_intensity_histogram() const;
-            
+            const Histogram<256>& get_intensity_histogram() const;
+
             /// @brief get co-occurrence matrix (the number of occurrences of a pair of intensities) in specified direction. For images with multiple planes, intensities are the average intensity per element
             /// @param direction
             /// @returns 256x256 matrix, all elements normalized to [0, 1]
-            const auto& get_co_occurrence_matrix(CoOccurrenceDirection direction) const;
+            const CoOccurenceMatrix& get_co_occurrence_matrix(CoOccurenceDirection direction) const;
 
             /// @brief get measure of correlation of the intensity values
             /// @returns float in [-1, 1]
-            float get_intensity_correlation(CoOccurrenceDirection) const;
+            float get_intensity_correlation(CoOccurenceDirection) const;
 
             /// @brief measure homogeneity, how close the elements in the co-occurrence matrices are distributed towards the diagonal
             /// @returns float in [0, 1]
-            float get_homogeneity(CoOccurrenceDirection) const;
+            float get_homogeneity(CoOccurenceDirection) const;
 
             /// @brief get co-occurrence matrices entropy
             /// @returns float in [0, ]1
-            float get_entropy(CoOccurrenceDirection) const;
+            float get_entropy(CoOccurenceDirection) const;
 
             /// @brief get measure of difference between co-occurring pixels
             /// @returns float in [0, 1]
-            float get_contrast(CoOccurrenceDirection) const;
+            float get_contrast(CoOccurenceDirection) const;
 
-            /// @brief get const iterator to first element
-            /// @returns const iterator
-            /// @note no non-const iterator is supplied
-            auto begin() const;
-
-            /// @brief get const iterator to past-the-end element
-            /// @returns const iterator
-            /// @note no non-const iterator is supplied
-            auto end() const;
-            
         private:
-            void create();
-
             struct Element
             {
-                Element(Vector2ui, Value_t);
-
-                Vector2ui _position;
-                Value_t _value;
-                float _intensity;
+                Vector2ui position;
+                Value_t value;
             };
-            
+
             struct ElementCompare
             {
                 // sorts left-to-right, top to bottom
@@ -219,40 +189,37 @@ namespace crisp
                 }
             };
 
-            static constexpr inline size_t QUANTIZATION_N = 256;
-            
-            std::map<size_t, Element> _elements;
-            
+            std::map<size_t, Element> _position_to_value;
+
             std::vector<Vector2ui> _boundary;
+            std::vector<uint8_t> _boundary_direction;
             std::vector<Vector2ui> _boundary_polygon;
+
             std::vector<std::vector<Vector2ui>> _hole_boundaries;
 
-            size_t _min_x, _max_x, _mean_x;
-            size_t _min_y, _max_y, _mean_y;
-
             Vector2f _centroid;
+
             std::pair<Vector2f, Vector2f> _major_axis,
                                           _minor_axis;
+            double _eccentricity;
 
-            float _eccentricity = -1;
+            Vector2ui _x_bounds,
+                      _y_bounds;
 
-            Vector2ui _original_image_size;
+            size_t _n_holes;
 
-            mutable bool _histogram_initialized = false;
-            mutable Histogram<QUANTIZATION_N> _histogram;
+            float _max_probability = 0;
+            std::map<CoOccurenceDirection, size_t> _sum_of_elements;
+            mutable std::map<CoOccurenceDirection, CoOccurenceMatrix> _co_occurrence_matrices;
 
-            mutable float _intensity_mean = -1;
-            mutable float _intensity_variance = -1;
+            mutable std::map<size_t, float> _nths_moment;
 
-            mutable float _average_entropy = -1;
-            mutable float _max_probability = -1;
+            float _stddev;
 
-            mutable bool _intensity_occurrences_initialized = false;
-            mutable std::map<float, size_t> _intensity_occurrences;
-
-            mutable std::map<size_t, float> _nths_statistical_moment;
-            mutable std::map<CoOccurrenceDirection, Eigen::MatrixXf> _co_occurrence_matrix;
+            Histogram<256> _histogram;
     };
-}
 
-#include ".src/image_region.inl"
+    /// @brief split a segment into multiple closed, 4-connected regions
+    template<typename Image_t>
+    std::vector<ImageRegion<Image_t>> decompose_into_regions(const ImageSegment&, const Image_t&);
+}
