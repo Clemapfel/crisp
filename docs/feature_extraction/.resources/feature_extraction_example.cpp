@@ -20,7 +20,7 @@ int main()
     auto pepper_segment = segments.at(1);
     auto pepper = ImageRegion(pepper_segment, image);
 
-    auto cor = pepper.get_co_occurrence_matrix(CoOccurenceDirection::PLUS_90);
+    auto cor = pepper.get_co_occurrence_matrix(CoOccurrenceDirection::PLUS_90);
 
     auto cor_img = GrayScaleImage(cor);
     //save_to_disk(cor_img,"/home/clem/Workspace/crisp/docs/feature_extraction/.resources/pepper_cooccurrence_matrix.png");
@@ -30,17 +30,22 @@ int main()
     save_to_disk(hist_as_img,"/home/clem/Workspace/crisp/docs/feature_extraction/.resources/pepper_hist.png");
 
     for (size_t i = 0; i < 6; ++i)
-        std::cout << "n = " << i << ": " << pepper.get_nths_statistical_moment(i) / powf(pepper.get_variance(), i) << std::endl;
+        std::cout << "n = " << i << ": " << pepper.get_nths_moment(i) << std::endl;
 
     std::cout << "max probability: " <<  pepper.get_maximum_intensity_probability() << std::endl;
-    std::cout << "intensity correlation: " << pepper.get_intensity_correlation(CoOccurenceDirection::PLUS_90) << std::endl;
-    std::cout << "homogeneity: " << pepper.get_homogeneity(CoOccurenceDirection::PLUS_90) << std::endl;
+    std::cout << "intensity correlation: " << pepper.get_intensity_correlation(CoOccurrenceDirection::PLUS_90) << std::endl;
+    std::cout << "homogeneity: " << pepper.get_homogeneity(CoOccurrenceDirection::PLUS_90) << std::endl;
     std::cout << "average entropy: " <<  pepper.get_average_entropy() << std::endl;
-    std::cout << "entropy: " <<  pepper.get_entropy(CoOccurenceDirection::PLUS_90) << std::endl;
-    std::cout << "contrast: " <<  pepper.get_contrast(CoOccurenceDirection::PLUS_90) << std::endl;
+    std::cout << "entropy: " <<  pepper.get_entropy(CoOccurrenceDirection::PLUS_90) << std::endl;
+    std::cout << "contrast: " <<  pepper.get_contrast(CoOccurrenceDirection::PLUS_90) << std::endl;
+    std::cout << "variance: " << pepper.get_variance() << std::endl;
+    std::cout << "mean: " << pepper.get_mean() << std::endl;
+    std::cout << "kurtosis: " << pepper.get_kurtosis() << std::endl;
+    std::cout << "skewness: " << pepper.get_skewness() << std::endl;
+
 
     return 0;
-    auto it = pepper.get_intensity_correlation(CoOccurenceDirection::PLUS_90);
+    auto it = pepper.get_intensity_correlation(CoOccurrenceDirection::PLUS_90);
 
 
     return 0;

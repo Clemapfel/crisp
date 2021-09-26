@@ -31,7 +31,8 @@ namespace crisp
         /// (x,y) -> (x-1, y-1)
         MINUS_45
     };
-    
+
+    /// @brief a region is a an image segment along with the corresponding image values
     template<typename Image_t>
     class ImageRegion
     {   
@@ -130,7 +131,7 @@ namespace crisp
             /// @returns vector of vectors where each of them is the closed boundary of a hole, enumerated in counter-clockwise direction
             const std::vector<std::vector<Vector2ui>>& get_hole_boundaries() const;
             
-            /// @brief get the nths moment invariant
+            /// @brief get the nths Hu moment invariant
             /// @param n: n in {1, 2, ..., 6, 7}
             /// @returns value of invariant
             float get_nths_moment_invariant(size_t n);

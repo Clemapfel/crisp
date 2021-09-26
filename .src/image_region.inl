@@ -29,7 +29,7 @@ namespace crisp
     {
         _elements.clear();
         for (const auto& px : segment)
-            _elements.emplace(px, image(px.x(), px.y()));
+            _elements.insert(std::make_pair(px.to_hash(), Element(px, image(px.x(), px.y()))));
 
         _original_image_size = image.get_size();
         create();
@@ -47,7 +47,10 @@ namespace crisp
         _elements.clear();
         for (size_t x = 0; x < image.get_size().x(); ++x)
             for (size_t y = 0; y < image.get_size().y(); ++y)
-                _elements[Vector2ui{x, y}.to_hash()] = Element(Vector2ui{x, y}, image(x, y));
+            {
+                auto px = Vector2ui{x, y};
+                _elements.insert(std::make_pair(px.to_hash(), Element(px, image(px.x(), px.y()))));
+            }
 
         _original_image_size = image.get_size();
         create();
@@ -77,12 +80,14 @@ namespace crisp
             {
                 for (int j = -1; j <= +1; ++j)
                 {
+                    const auto new_px = Vector2i{int(px.x()) + i, int(px.y()) + j};
+
                     // outer edge of image is always boundary
-                    if (px.x() + i < 0 or px.x() + i > _original_image_size.x() 
-                        or px.y() + j < 0 or px.y() + j > _original_image_size.y())
+                    if (new_px.x() + i < 0 or new_px.x() + i > _original_image_size.x()
+                        or new_px.y() + j < 0 or new_px.y() + j > _original_image_size.y())
                         n_unconnected++;
 
-                    else if (not (i == 0 and j == 0) and _elements.find(px.to_hash()) == _elements.end())
+                    else if (not (i == 0 and j == 0) and _elements.find(new_px.to_hash()) == _elements.end())
                         n_unconnected++;
                 }
             }
@@ -589,7 +594,7 @@ namespace crisp
         intensities.reserve(_elements.size());
 
         for (auto& pair : _elements)
-            intensities.push_back(pair.second.intensity);
+            intensities.push_back(pair.second._intensity);
 
         _histogram = Histogram<QUANTIZATION_N>(intensities);
         _histogram_initialized = true;
@@ -629,6 +634,13 @@ namespace crisp
     template<typename Image_t>
     float ImageRegion<Image_t>::get_nths_moment(size_t n) const
     {
+        if (n == 0)
+            return 1;
+        else if (n == 1)
+            return 0;
+        else if (n == 2)
+            return 1;
+
         if (_nths_statistical_moment.find(n) != _nths_statistical_moment.end())
             return _nths_statistical_moment.at(n);
 
@@ -637,8 +649,9 @@ namespace crisp
 
         float sum = 0;
         for (auto& pair : _elements)
-            sum += pow((pair.second._intensity - mean) / stddev, n);
+            sum += pow((pair.second._intensity - mean), n);
 
+        sum /= pow(stddev, n);
         sum /= float(_elements.size());
         _nths_statistical_moment[n] = sum;
         return sum;
@@ -647,13 +660,13 @@ namespace crisp
     template<typename Image_t>
     float ImageRegion<Image_t>::get_skewness() const
     {
-        get_nths_moment(3);
+        return get_nths_moment(3);
     }
 
     template<typename Image_t>
     float ImageRegion<Image_t>::get_kurtosis() const
     {
-        get_nths_moment(4);
+        return get_nths_moment(4);
     }
 
     template<typename Image_t>
@@ -677,18 +690,16 @@ namespace crisp
 
             _intensity_occurrences_initialized = true;
         }
-        else
-        {
-            size_t max_n = 0;
-            float n = 0;
-            for (const auto& pair : _intensity_occurrences)
-            {
-                max_n = std::max(pair.second, max_n);
-                n++;
-            }
 
-            return max_n / n;
+        size_t max_n = 0;
+        float n = 0;
+        for (const auto& pair : _intensity_occurrences)
+        {
+            max_n = std::max(pair.second, max_n);
+            n++;
         }
+
+        return max_n / n;
     }
 
     template<typename Image_t>
@@ -718,7 +729,7 @@ namespace crisp
             sum += p * log2(p);
         }
 
-        _average_entropy = (-1 * sum) / log2(_intensity_occurrences.size());
+        _average_entropy = (-1 * sum) / (2 * log2(_intensity_occurrences.size()));
         return _average_entropy;
     }
     
@@ -746,8 +757,8 @@ namespace crisp
             float a_value = 0, b_value = 0;
             for (size_t i = 0; i < Value_t::size(); ++i)
             {
-                a_value += a->second.value.at(i);
-                b_value += b->second.value.at(i);
+                a_value += a->second._value.at(i);
+                b_value += b->second._value.at(i);
             }
 
             a_value = (a_value / Value_t::size()) * QUANTIZATION_N;
@@ -759,8 +770,8 @@ namespace crisp
 
         for (auto& pair : _elements)
         {
-            size_t x = pair.second.position.x();
-            size_t y = pair.second.position.y();
+            size_t x = pair.second._position.x();
+            size_t y = pair.second._position.y();
 
             switch (direction)
             {
@@ -848,19 +859,61 @@ namespace crisp
 
         return sum / (255*255);
     }
-    
+
+    template<typename Image_t>
+    float ImageRegion<Image_t>::get_intensity_correlation(CoOccurrenceDirection direction) const
+    {
+        auto& occurrence = get_co_occurrence_matrix(direction);
+        float sum_of_elements = occurrence.sum();
+
+        float col_mean = 0;
+        float row_mean = 0;
+        float col_stddev = 0;
+        float row_stddev = 0;
+
+        for (size_t i = 0; i < occurrence.rows(); ++i)
+            for (size_t j = 0; j < occurrence.cols(); ++j)
+                row_mean += i * (occurrence(i, j) / sum_of_elements);
+
+        for (size_t i = 0; i < occurrence.rows(); ++i)
+            for (size_t j = 0; j < occurrence.cols(); ++j)
+                row_stddev += (i - row_mean) * (i - row_mean) * (occurrence(i, j) / sum_of_elements);
+
+        if (row_stddev == 0)
+            return std::numeric_limits<float>::infinity();
+
+        row_stddev = sqrt(row_stddev);
+
+        for (size_t j = 0; j < occurrence.cols(); ++j)
+            for (size_t i = 0; i < occurrence.rows(); ++i)
+                col_mean += j * (occurrence(i, j) / sum_of_elements);
+
+        for (size_t j = 0; j < occurrence.cols(); ++j)
+            for (size_t i = 0; i < occurrence.rows(); ++i)
+                col_stddev += (j - col_mean) * (j - col_mean) * (occurrence(i, j) / sum_of_elements);
+
+        if (col_stddev == 0)
+            return std::numeric_limits<float>::infinity();
+
+        col_stddev = sqrt(col_stddev);
+
+        float correlation = 0;
+        for (size_t i = 0; i < occurrence.rows(); ++i)
+            for (size_t j = 0; j < occurrence.cols(); ++j)
+                correlation += ((i - row_mean) * (j - col_mean) * occurrence(i, j) / sum_of_elements) / (row_stddev * col_stddev);
+
+        return correlation;
+    }
+
     template<typename Image_t>
     auto ImageRegion<Image_t>::begin() const
     {
-        //TODO
+        _elements.begin();
     }
-    
+
     template<typename Image_t>
     auto ImageRegion<Image_t>::end() const
     {
-        //TODO
+        _elements.end();
     }
-    
-    
-    
 }
