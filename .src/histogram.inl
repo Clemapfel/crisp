@@ -35,12 +35,12 @@ namespace crisp
         {
             float value = float(it);
             value = clamp<float>(0, 1, value);
+            sum += value;
 
             value *= N;
             value = floor(value);
             _data.at(size_t(value)) += 1;
 
-            sum += value;
             n += 1;
         }
 
@@ -97,7 +97,7 @@ namespace crisp
     }
 
     template<size_t N>
-    ColorImage Histogram<N>::to_image() const
+    ColorImage Histogram<N>::as_image() const
     {
         ColorImage out;
         out.create(N+1, N+1);

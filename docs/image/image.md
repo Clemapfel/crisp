@@ -510,7 +510,7 @@ auto sprite = Sprite();
 sprite.create_from(histogram);
 
 // or:
-auto as_image = histogram.to_image();
+auto as_image = histogram.as_image();
 ```
 
 The resulting image is of size NxN where N is the number of bins. The vertical bars of the histogram are normalized into the range [0, N] which means that one pixel does not necessarily represent 1 occurence, the sprite or image is purely a visual aid meant to give a human a rough estimate of the histograms shape.

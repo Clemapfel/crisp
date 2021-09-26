@@ -73,7 +73,7 @@ We can get a rough idea of it's histogram like so:
 
 ```cpp
 auto histogram = Histogram<256>(image);
-save_to_disk(histogram.to_image(), /*...*/);
+save_to_disk(histogram.as_image(), /*...*/);
 ```
 ![](./.resources/clean_hist.png)
 

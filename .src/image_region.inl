@@ -759,19 +759,37 @@ namespace crisp
     template<typename Image_t>
     float ImageRegion<Image_t>::get_nths_statistical_moment(size_t n) const
     {
-        Value_t out;
+        if (_nths_moment.find(n) != _nths_moment.end())
+            return _nths_moment.at(n);
 
+        std::vector<float> intensities;
+
+        // mean
+        float mean = 0;
+        size_t n_occurrences = 0;
         for (auto& pair : _position_to_value)
         {
             float value = 0;
             for (size_t i = 0; i < Value_t::size(); ++i)
-                value += pair.second;
+                value += pair.second.value.at(i);
 
             value /= Value_t::size();
+            intensities.push_back(value);
 
-            out += pow(value - _histogram.mean(), n) * (_histogram.at(value) / _position_to_value.size());
+            mean += value;
+            n_occurrences++;
         }
 
+        mean /= n_occurrences;
+
+        float out = 0;
+        for (auto value : intensities)
+        {
+            out += powf((value - mean), n);
+        }
+
+        out /= n_occurrences;
+        _nths_moment.emplace(n, out);
         return out;
     }
 
@@ -784,13 +802,13 @@ namespace crisp
     template<typename Image_t>
     float ImageRegion<Image_t>::get_skewness() const
     {
-        return get_nths_statistical_moment(3);
+        return get_nths_statistical_moment(3) / powf(get_nths_statistical_moment(2), 3);
     }
 
     template<typename Image_t>
     float ImageRegion<Image_t>::get_kurtosis() const
     {
-        return get_nths_statistical_moment(4);
+        return get_nths_statistical_moment(4) / powf(get_nths_statistical_moment(2), 4);
     }
 
     template<typename Image_t>

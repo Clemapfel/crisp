@@ -252,6 +252,8 @@ namespace crisp
             std::map<CoOccurenceDirection, size_t> _sum_of_elements;
             mutable std::map<CoOccurenceDirection, CoOccurenceMatrix> _co_occurrence_matrices;
 
+            mutable std::map<size_t, float> _nths_moment;
+
             float _stddev;
 
             Histogram<256> _histogram;

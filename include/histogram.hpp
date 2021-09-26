@@ -66,7 +66,7 @@ namespace crisp
 
             /// @brief transform to N_Bins x N_Bins image
             /// @return grayscale image
-            ColorImage to_image() const;
+            ColorImage as_image() const;
 
         private:
             double _mean;
