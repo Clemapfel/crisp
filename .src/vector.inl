@@ -485,7 +485,7 @@ struct std::hash<crisp::Vector2ui>
 template<>
 struct std::hash<crisp::Vector2i>
 {
-    size_t operator()(const crisp::Vector2ui& in) const
+    size_t operator()(const crisp::Vector2i& in) const
     {
         auto a = static_cast<uint32_t>(in.at(0) + std::numeric_limits<int32_t>::max());
         auto b = static_cast<uint32_t>(in.at(1) + std::numeric_limits<int32_t>::max());
@@ -501,7 +501,7 @@ struct std::hash<crisp::Vector2i>
 template<>
 struct std::hash<crisp::Vector2f>
 {
-    size_t operator()(const crisp::Vector2ui& in) const
+    size_t operator()(const crisp::Vector2f& in) const
     {
         assert(in.at(0) >= 0 and in.at(0) <= 1 and in.at(1) >= 0 and in.at(2) <= 1);
 
