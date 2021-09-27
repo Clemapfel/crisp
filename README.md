@@ -96,9 +96,9 @@ Be sure to compile with gcc10 or newer, as many needed C++20 features are not su
 Consider reading the tutorials in order, this will teach important principles of `crisp` and image processing in general step-by-step:
 
 1. [System](./docs/system/system.md)
-3. [Vector](./docs/vector/vector.md) (optional)
+3. [Vector](./docs/vector/vector.md)
 4. [Images](./docs/image/image.md)
-2. [Color](./docs/color/color.md) (optional)
+2. [Color](./docs/color/color.md)
 6. [Noise](./docs/noise/noise.md) (optional)
 7. [Spatial Domain Filters](./docs/spatial_filters/spatial_domain_filtering.md)
 8. [Morphological Transform](./docs/morphological_transform/morphological_transform.md)
@@ -110,11 +110,3 @@ Consider reading the tutorials in order, this will teach important principles of
 ## [Documentation](./docs/index.md)
 
 Documentation is stored as interactive markdown files, right here on github. An index for easy navigation can be found [here](./docs/index.md) or in `/crisp/docs/index.md`.
-
-
-
-
-
-
-
-
