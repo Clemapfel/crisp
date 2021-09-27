@@ -2,7 +2,7 @@
 
 This page lists all major functions and their corresponding entries in the tutorials. You can navigate to each section by clicking the links or visiting `/crisp/docs/xyz` right here on github where xyz is the theme of the tutorial
 
-If this is your first time using `crisp`, consider reading the tutorial in the order recommended [here](../README.md/#tutorial).
+If this is your first time using `crisp`, consider reading the tutorials in the order recommended [here](../README.md/#tutorial).
 
 ---
 
@@ -12,7 +12,7 @@ If this is your first time using `crisp`, consider reading the tutorial in the o
    1.2 [Image Planes](#image-planes)<br>
    1.3 [Histgroams](#image-histograms)<br>
    1.4 [Whole Image Transforms](#whole-image-transforms)<br>
-2. [**Spatial Domain Filtering**](#filtering-in-the-spatial-domainspatial_filtersspatial_domain_filteringmd)<br>
+2. [**Spatial Domain Filtering**](#filtering-in-the-spatial-domain)<br>
     2.1 [Kernels](#kernels)<br>
     2.2 [crisp::SpatialFilter](#filter)<br>
     2.3 [Evaluation Functions](#evaluation-function)<br>
@@ -26,7 +26,7 @@ If this is your first time using `crisp`, consider reading the tutorial in the o
     4.2 [Thresholding](#thresholding)<br>
     4.3 [Edge Detection](#edge-detection)<br>
     4.4 [Clustering](#clustering)<br>
-5. [**Feature Extraction**](#feature-extractionfeature)<br>
+5. [**Feature Extraction**](#feature-extraction)<br>
     5.1 [crisp::ImageRegion](#crispimageregion)<br>
     5.2 [Boundary](#boundary)<br>
     5.3 [Signatures](#boundary-signatures)<br>
@@ -36,20 +36,19 @@ If this is your first time using `crisp`, consider reading the tutorial in the o
     6.1 [Fourier Transform](#fourier-transform)<br>
     6.2 [Spectral Filters](#spectral-filters)<br>
     6.3 [Pre-Defined Filter Types](#filter-types)<br>
-7. [**Vectors**](#vectorsvectorvectormd)<br>
+7. [**Vectors**](#vectors)<br>
     7.1 [General](#general)<br>
     7.2 [Arithmetics & Comparison](#arithmetics--comparisons)<br>
 8. [**Color**](#color)<br>
     8.1 [Color Representations](#color-representations)<br>
     8.2 [Pseudo Color](#pseudo-color)<br>
-9. [**Noise**](#noisen)<br>
+9. [**Noise**](#noise)<br>
     9.1 [crisp::NoiseGenerator](#general)<br>
     9.2 [Types of Noise](#types-of-noise)<br>
-10. [**System**](#systemsystemsystemmd)<br>
+10. [**System**](#system)<br>
     10.1 [Image I/O](#image-io)<br>
     10.2 [Rendering](#rendering)<br>
     10.3 [User Input](#keyboardmouse-input)<br>
-    
 ---
 
 ## [Images](./image/image.md)
@@ -145,7 +144,7 @@ If this is your first time using `crisp`, consider reading the tutorial in the o
 #include <morphological_transform.hpp>
 ```
 #### Structuring Element
-+ [Introduction](./morphological_transform/morphological_transform.md/#1-introduction)
++ [crisp::StructuringElement](./morphological_transform/morphological_transform.md/#1-introduction)
 + [Foreground, Background, "Don't Care" elements](./morphological_transform/morphological_transform.md/#21-foreground-background-and-dont-care-elements)
 + [Binding a Structuring Element](./morphological_transform/morphological_transform.md/#22-binding-an-structuring-element)
 + [Origin of a Structuring Element](./morphological_transform/morphological_transform.md/#23-origin)
@@ -153,7 +152,7 @@ If this is your first time using `crisp`, consider reading the tutorial in the o
 #### Pre-Defined Structuring Elements
 + [All Foreground](./morphological_transform/morphological_transform.md/#241-all-foreground)
 + [All Background](./morphological_transform/morphological_transform.md/#242-all-background)
-+ [All "don't care"](./morphological_transform/morphological_transform.md/#243-all-dont-care)
++ [All "Don't Care"](./morphological_transform/morphological_transform.md/#243-all-dont-care)
 + [Circle](./morphological_transform/morphological_transform.md/#244-circle)
 + [Diamond](./morphological_transform/morphological_transform.md/#245-diamond)
 + [Cross](./morphological_transform/morphological_transform.md/#246-cross)
@@ -178,9 +177,9 @@ If this is your first time using `crisp`, consider reading the tutorial in the o
 #include <edge_detection.hpp>
 ```
 
-#### crisp::ImageSegment
-+ [Introduction](./segmentation/segmentation.md/#1-introduction)
-+ [Connected and Unconnected Decomposition](./segmentation/segmentation.md/#11-extracting-segments)
+#### General
++ [crisp::ImageSegment](./segmentation/segmentation.md/#1-introduction)
++ [Decomposing into Connected or Unconnected Segments](./segmentation/segmentation.md/#11-extracting-segments)
 
 #### Thresholding
 + [Problems with Uniform vs Non-Uniform Lighting](./segmentation/segmentation.md/#2-thresholding)
