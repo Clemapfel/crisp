@@ -486,7 +486,7 @@ Using ``get_entropy(CoOccurrenceDirection)`` we compute a value of `0.36` (again
 
 ## 5.11 Contrast
 
-Contrast measures the difference in value between co-occuring pixels. A white pixel next to a black pixel (or vice-versa) would have maximum contrast while two pixels of identical color would have 0 contrast. We can compute the mean contrast in the specified direction using
+Contrast measures the difference in value between co-occurring pixels. A white pixel next to a black pixel (or vice-versa) would have maximum contrast while two pixels of identical color would have 0 contrast. We can compute the mean contrast in the specified direction using
 `get_contrast(CoOccurrenceDirection)`, as already mentioned it's values are in [0, 1].
 
 Out pepper has a contrast of `0.0002` which is extremely low, again this is expected, the shades of green transition into each other smoothly as there are no big jumps in intensity and large parts of the pepper have regions where neighboring pixels have the same intensity.
