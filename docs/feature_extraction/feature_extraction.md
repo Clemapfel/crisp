@@ -32,14 +32,16 @@ Image Regions, Region Descriptors, Boundary Tracing, Signatures, Pattern Descrip
    4.7 [Holes](#47-holes)<br>
    4.8 [N-ths Moment Invariant](#48-moment-invariants)<br>
 5. [Texture Descriptors](#5-texture-descriptors)<br>
-    5.1 [Co-Occurrence Matrix](#51-co-occurrence-matrix)<br>
-   5.2 [Maximum Intensity Response](#52-maximum-response)<br>
-   5.3 [Correlation](#53-intensity-correlation)<br>
-   5.4 [Uniformity](#54-uniformity)<br>
-   5.5 [Homogeneity](#55-homogeneity)<br>
-   5.6 [Entropy](#56-entropy)<br>
-   5.7 [Contrast](#57-contrast)<br>
-
+    5.1 [](#51-intensity-histogram)<br>
+    5.2 [](#52-maximum-response)<br>
+    5.3 [](#53-mean-variance)<br>
+    5.4 [](#54-n-ths-pearson-standardized-moment-around-the-mean)<br>
+    5.5 [](#55-average-entropy)<br>
+    5.6 [](#56-co-occurrence-matrix)<br>
+   5.7 [](#57-intensity-correlation)<br>
+   5.8 [](#58-homogeneity)<br>
+   5.9 [](#59-entropy)<br>
+   5.10 [](#510-contrast)<br>
 ## 1. Introduction
 
 In the [tutorial on segmentation](../segmentation/segmentation.md) we discussed how to extract part of an image, now we will find out what to actually do with them. Recall that, in `crisp`, an image *segment* is a set of pixel coordinates ``Vector2ui``:
@@ -473,18 +475,18 @@ We can numerically quantify the distribution of intensity value pair occurrences
 
 We can compute the mean intensity correlation using ``get_intensity_correlation(CoOccurrenceDirection)``. In our example for the left-to-right direction, this returns `0.4868`. This means the texture exhibits above average positive correlation in the left-to-right direction. Looking at the image of the pepper closely we note that the lighter spots coming from lighting are more present on the right side while the left side is more in shadow. This explains the positive (increasing) intensity correlation when computing it right to left.
 
-## 5.9 Homogeneity
+## 5.8 Homogeneity
 
 In the co-occurrence matrix, the diagonal represents occurrences of intensity pair `i_a`, `i_b` where `i_a = i_b`, so occurrences where two pixels in the specified direction have the same intensity. Homogenity quantifies how many of the intensity pairs are located near the diagonal. The higher the homogeneity, the less transitions between different intensities there are in that direction.
 
 We can access the value which is in [0, 1] using ``get_homogeneity(CoOccurrenceDirection)``. The pepper region exhibits a homogeneity of `0.625`. This may be slightly lower than expected considering the pepper is all green, however remember that we are quantifying texture, not color. The intensity (lightness) of the shades of green do vary quite a bit even though the hue does not. Nontheless `0.625` would be considered far above average so we would call the pepper a fairly homogenically textured region.
 
-## 5.10 Entropy
+## 5.9 Entropy
 
 Similar to the average entropy we can also compute the entropy of the co-occurrence matrix. This is a descriptor of how ordered the occurrence-pair distribution in that direction is. 
 Using ``get_entropy(CoOccurrenceDirection)`` we compute a value of `0.36` (again normalized into [0, 1]).
 
-## 5.11 Contrast
+## 5.10 Contrast
 
 Contrast measures the difference in value between co-occurring pixels. A white pixel next to a black pixel (or vice-versa) would have maximum contrast while two pixels of identical color would have 0 contrast. We can compute the mean contrast in the specified direction using
 `get_contrast(CoOccurrenceDirection)`, as already mentioned it's values are in [0, 1].

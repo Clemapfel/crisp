@@ -237,13 +237,17 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 + [N-ths Moment Invariant](./feature_extraction/feature_extraction.md/#48-moment-invariants)
 
 ### Texture Descriptors
-+ [Co-Occurence Matrix](./feature_extraction/feature_extraction.md/#51-co-occurence-matrix)
-+ [Maximum Intensity Response](./feature_extraction/feature_extraction.md/#52-maximum-response)
-+ [Correlation](./feature_extraction/feature_extraction.md/#53-intensity-correlation)
-+ [Uniformity](./feature_extraction/feature_extraction.md/#54-uniformity)
-+ [Homogeneity](./feature_extraction/feature_extraction.md/#55-homogeneity)
-+ [Entropy](./feature_extraction/feature_extraction.md/#56-entropy)
-+ [Contrast](./feature_extraction/feature_extraction.md/#57-contrast)
++ [Definition](./feature_extraction/feature_extraction.md/#5-texture-descriptors)
++ [Intensity Histogram](./feature_extraction/feature_extraction.md/#51-intensity-histogram)
++ [Maximum Response](./feature_extraction/feature_extraction.md/#52-maximum-response)
++ [Mean, Variance](./feature_extraction/feature_extraction.md/#53-mean-variance)
++ [Pearson n-ths Standardized Central Moment](./feature_extraction/feature_extraction.md/#54-n-ths-pearson-standardized-moment-around-the-mean)
++ [Average Entropy](./feature_extraction/feature_extraction.md/#55-average-entropy)
++ [Co-Occurrence Matrix](./feature_extraction/feature_extraction.md/#56-co-occurrence-matrix)
++ [Intensity Correlation](./feature_extraction/feature_extraction.md/#57-intensity-correlation)
++ [Homogeneity](./feature_extraction/feature_extraction.md/#58-homogeneity)
++ [Directional Entropy](./feature_extraction/feature_extraction.md/#59-entropy)
++ [Contrast](./feature_extraction/feature_extraction.md/#510-contrast)
 
 ---
 
