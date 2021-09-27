@@ -522,7 +522,6 @@ We note the two large spikes corresponding to the letters of the word "sample" (
 
 For a good example of using histograms to inspect images, consider visiting the [noise tutorial](../noise/noise.md).
 
-
 ## 6. Whole Image Transforms
 
 The header `whole_image_transform.hpp` provides miscellanous operations and algorithms that are applied to an entire image. We will detail each of the functions and it's uses in this section.

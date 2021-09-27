@@ -12,7 +12,7 @@ Spacially Independent Noise using Gaussian, Gamma, Uniform, Salt and Pepper dist
 ## Table of Content
 
 1. [**Introduction**](#1-introduction)
-2. [**Spatially Invariate Noise**](#2-noise-generator-for-spatially-invariate-noise)<br>
+2. [**Spatially Invariate Noise**](#2-noise-generator-for-spatially-invariant-noise)<br>
     2.1 [Uniform Noise](#21-uniform-noise)<br>
     2.2 [Gaussian Noise](#22-gaussian-noise)<br>
     2.3 [Gamma Noise](#23-gamma-noise)<br>
@@ -25,7 +25,7 @@ A common problem in image processing is removing noise from an image, for exampl
 
 There are two types of noise in `crisp`: spatially invariate and periodic noise. "Spatially invariate" means that the function generating the noise value for a certain pixel does not take the pixels location into account. For periodic noise, the location is taken into a account and the noise function is setup in a way where the resulting pattern repeats. Sinusoidal interference would be a common type of periodic noise while the "white noise" on a CRT TV would be considered spatially invariate
 
-## 2. Noise Generator for Spatially Invariate Noise
+## 2. Noise Generator for Spatially Invariant Noise
 
 To generate noise we first need to create a `crisp::NoiseGenerator`:
 

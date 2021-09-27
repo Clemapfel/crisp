@@ -5,8 +5,8 @@
 + Spatial Filtering
 + Morphological Transform
 + Fourier Transform & Spectral Filtering
-+ Clustering
 + Edge Detection
++ Segmentation & Clustering
 + Feature Extraction
 + Boundary and Texture Descriptors
 + Fully Connected Neural Networks
@@ -55,7 +55,7 @@ This makes debugging, filter design or just understanding/explaining your own al
 + supports Mac, Linux and Windows
 + Distinction between Images and Textures:
     - Images live in RAM and are operated upon by the CPU
-    - Textures live in vRAM and are operated upon by the GPU
+    - Textures live inVRAM and are operated upon by the GPU
 + allows for full flexibility with optional hardware acceleration
 
 `crisp` is **interactive**<br>

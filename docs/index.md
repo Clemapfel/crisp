@@ -83,7 +83,7 @@ If this is your first time using `crisp`, consider reading the tutorial in the o
   
 #### Image Histograms
 + [Image Histograms](./image/image.md/#5-histograms)
-+ [Histogram Equalization](./image/image.md/#52-histogram-equalization)
++ [Histogram Equalization](./image/image.md/#62-histogram-equalization)
 
 #### Whole Image Transforms
 
@@ -179,11 +179,11 @@ If this is your first time using `crisp`, consider reading the tutorial in the o
 ```
 
 #### crisp::ImageSegment
-+ [Introductin](./segmentation/segmentation.md/#1-introduction)
++ [Introduction](./segmentation/segmentation.md/#1-introduction)
 + [Connected and Unconnected Decomposition](./segmentation/segmentation.md/#11-extracting-segments)
 
 #### Thresholding
-+ [uniform vs non-uniform lighting](./segmentation/segmentation.md/#2-thresholding)
++ [Problems with Uniform vs Non-Uniform Lighting](./segmentation/segmentation.md/#2-thresholding)
 + [Manual Thresholds](./segmentation/segmentation.md/#21-manual-threshold)
 + [Basic Automated Thresholding](./segmentation/segmentation.md/#22-basic-threshold)
 + [Otsu's Method](./segmentation/segmentation.md/#23-otsus-method)
@@ -256,38 +256,38 @@ If this is your first time using `crisp`, consider reading the tutorial in the o
 
 #### Fourier Transform
 
-+ [Introduction](#./frequency_domain/frequency_domain_filtering.md/#2-fourier-transform)
-+ [Performance Mode](#./frequency_domain/frequency_domain_filtering.md/#21-fourier-transform-performance-mode)
-+ [Image -> Spectrum](#./frequency_domain/frequency_domain_filtering.md/#22-transforming-an-image-into-the-spectrum)
-+ [Spectrum -> Image](#./frequency_domain/frequency_domain_filtering.md/#25-transforming-the-spectrum-back-into-an-image)
-+ [Accessing Coefficients](#./frequency_domain/frequency_domain_filtering.md/#24-accessing-coefficients)
-+ [Visualizing the Spectrum](#./frequency_domain/frequency_domain_filtering.md/#23-visualizing-the-spectrum)
++ [Introduction](./frequency_domain/frequency_domain_filtering.md/#2-fourier-transform)
++ [Performance Mode](./frequency_domain/frequency_domain_filtering.md/#21-fourier-transform-performance-mode)
++ [Image -> Spectrum](./frequency_domain/frequency_domain_filtering.md/#22-transforming-an-image-into-the-spectrum)
++ [Spectrum -> Image](./frequency_domain/frequency_domain_filtering.md/#25-transforming-the-spectrum-back-into-an-image)
++ [Accessing Coefficients](./frequency_domain/frequency_domain_filtering.md/#24-accessing-coefficients)
++ [Visualizing the Spectrum](./frequency_domain/frequency_domain_filtering.md/#23-visualizing-the-spectrum)
 
 #### Spectral Filters
-+ [crisp::FrequencyDomainFilter](#./frequency_domain/frequency_domain_filtering.md/#3-spectral-filters)
-+ [Construction](#./frequency_domain/frequency_domain_filtering.md/#31-creating-and-visualizing-filters)
-+ [Visualization](#./frequency_domain/frequency_domain_filtering.md/#31-creating-and-visualizing-filters)
-+ [Modifying Filters](#./frequency_domain/frequency_domain_filtering.md/#33-modifying-filters)
-+ [Combining Filters](#./frequency_domain/frequency_domain_filtering.md/#33-modifying-filters)
-+ [Filter Offset & Radial Symmetry](#./frequency_domain/frequency_domain_filtering.md/#33-modifying-filters)
++ [crisp::FrequencyDomainFilter](./frequency_domain/frequency_domain_filtering.md/#3-spectral-filters)
++ [Construction](./frequency_domain/frequency_domain_filtering.md/#31-creating-and-visualizing-filters)
++ [Visualization](./frequency_domain/frequency_domain_filtering.md/#31-creating-and-visualizing-filters)
++ [Modifying Filters](./frequency_domain/frequency_domain_filtering.md/#33-modifying-filters)
++ [Combining Filters](./frequency_domain/frequency_domain_filtering.md/#33-modifying-filters)
++ [Filter Offset & Radial Symmetry](./frequency_domain/frequency_domain_filtering.md/#33-modifying-filters)
 
 #### Filter Types
-+ [Low-Pass Filters](#./frequency_domain/frequency_domain_filtering.md/#321-low-pass-filters)
-  - [Ideal](#./frequency_domain/frequency_domain_filtering.md/#321-low-pass-filters)
-  - [Gaussian](#./frequency_domain/frequency_domain_filtering.md/#321-low-pass-filters)
-  - [Butterworth](#./frequency_domain/frequency_domain_filtering.md/#321-low-pass-filters)
-+ [High-Pass Filters](#./frequency_domain/frequency_domain_filtering.md/#322-high-pass-filters)
-  - [Ideal](#./frequency_domain/frequency_domain_filtering.md/#322-high-pass-filters)
-  - [Gaussian](#./frequency_domain/frequency_domain_filtering.md/#322-high-pass-filters)
-  - [Butterworth](#./frequency_domain/frequency_domain_filtering.md/#322-high-pass-filters)
-+ [Band-Pass Filters](#./frequency_domain/frequency_domain_filtering.md/#323-band-pass-filters)
-  - [Ideal](#./frequency_domain/frequency_domain_filtering.md/#323-band-pass-filters)
-  - [Gaussian](#./frequency_domain/frequency_domain_filtering.md/#323-band-pass-filters)
-  - [Butterworth](#./frequency_domain/frequency_domain_filtering.md/#323-band-pass-filters)
-+ [Band-Reject Filters](#./frequency_domain/frequency_domain_filtering.md/#324-band-reject-filters)
-  - [Ideal](#./frequency_domain/frequency_domain_filtering.md/#324-band-reject-filters)
-  - [Gaussian](#./frequency_domain/frequency_domain_filtering.md/#324-band-reject-filters)
-  - [Butterworth](#./frequency_domain/frequency_domain_filtering.md/#324-band-reject-filters)
++ [Low-Pass Filters](./frequency_domain/frequency_domain_filtering.md/#321-low-pass-filters)
+  - [Ideal](./frequency_domain/frequency_domain_filtering.md/#321-low-pass-filters)
+  - [Gaussian](./frequency_domain/frequency_domain_filtering.md/#321-low-pass-filters)
+  - [Butterworth](./frequency_domain/frequency_domain_filtering.md/#321-low-pass-filters)
++ [High-Pass Filters](./frequency_domain/frequency_domain_filtering.md/#322-high-pass-filters)
+  - [Ideal](./frequency_domain/frequency_domain_filtering.md/#322-high-pass-filters)
+  - [Gaussian](./frequency_domain/frequency_domain_filtering.md/#322-high-pass-filters)
+  - [Butterworth](./frequency_domain/frequency_domain_filtering.md/#322-high-pass-filters)
++ [Band-Pass Filters](./frequency_domain/frequency_domain_filtering.md/#323-band-pass-filters)
+  - [Ideal](./frequency_domain/frequency_domain_filtering.md/#323-band-pass-filters)
+  - [Gaussian](./frequency_domain/frequency_domain_filtering.md/#323-band-pass-filters)
+  - [Butterworth](./frequency_domain/frequency_domain_filtering.md/#323-band-pass-filters)
++ [Band-Reject Filters](./frequency_domain/frequency_domain_filtering.md/#324-band-reject-filters)
+  - [Ideal](./frequency_domain/frequency_domain_filtering.md/#324-band-reject-filters)
+  - [Gaussian](./frequency_domain/frequency_domain_filtering.md/#324-band-reject-filters)
+  - [Butterworth](./frequency_domain/frequency_domain_filtering.md/#324-band-reject-filters)
     
 ---
 
@@ -342,7 +342,7 @@ If this is your first time using `crisp`, consider reading the tutorial in the o
 
 #### General
 + [crisp::NoiseGenerator](./noise/noise.md/#1-introduction)
-+ [Spatially Invariate vs Periodic Noise](./noise/noise.md/#2-noise-generator-for-spatially-invariate-noise)
++ [Spatially Invariant vs Periodic Noise](./noise/noise.md/#2-noise-generator-for-spatially-invariant-noise)
    
 #### Types of Noise
 + [Uniform Noise](./noise/noise.md/#21-uniform-noise)
