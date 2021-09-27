@@ -1,4 +1,4 @@
-[<< Back to Index](../index.md)
+[[<< Back to Index]](../index.md)
 
 ---
 # System Module
@@ -240,4 +240,4 @@ int main()
 Try executing [this little program](./system_example.cpp) by modifying ``crisp``s install path for ``load_grayscale_image`` to then test it out. You can use the up- and down-arrow keys to change the image the images brightness, revealing the actual content.
 
 ---
-[<< Back to Index](../index.md)
+[[<< Back to Index]](../index.md)

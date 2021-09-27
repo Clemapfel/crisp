@@ -1,4 +1,4 @@
-[<< Back to Index](../index.md)
+[[<< Back to Index]](../index.md)
 
 ---
 # Filtering in the Spatial Domain
@@ -775,7 +775,7 @@ We get a much better result with minimal distortion. The resulting image is now 
 While not used here, ``MAXIMUM`` and ``MINIMUM`` also have their applications, most notably in non-maxima surpression and for certain types pre- or post-processing steps.
 
 ---
-[<< Back to Index](../index.md)
+[[<< Back to Index]](../index.md)
 
 
 

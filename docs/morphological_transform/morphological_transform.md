@@ -1,4 +1,4 @@
-[<< Back to Index](../index.md)
+[[<< Back to Index]](../index.md)
 
 ---
 # Morphological Transforms
@@ -403,15 +403,8 @@ The resulting image is:
 Which clearly had the crosses and only the crosses removed. It is evident how an operation like this can be valuable in post-processing numerous binary images such as removing noise and specles after segmentation.
 
 ---
+[[<< Back to Index]](../index.md)
 
-## 4. Non-flat Structuring Elements
-
-(this feature is not yet implemented)
-
-## 4.1 Square Pyramid
-## 4.2 Diamond Pyramid
-## 4.3 Cone
-## 4.4 Hemisphere
 
 
 

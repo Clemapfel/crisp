@@ -1,4 +1,4 @@
-[<< Back to Index](../index.md)
+[[<< Back to Index]](../index.md)
 
 ---
 # Feature Extraction
@@ -492,4 +492,4 @@ Contrast measures the difference in value between co-occurring pixels. A white p
 Out pepper has a contrast of `0.0002` which is extremely low, again this is expected, the shades of green transition into each other smoothly as there are no big jumps in intensity and large parts of the pepper have regions where neighboring pixels have the same intensity.
 
 ---
-[<< Back to Index](../index.md)
+[[<< Back to Index]](../index.md)

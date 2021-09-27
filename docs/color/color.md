@@ -1,5 +1,5 @@
 
-[<< Back to Index](../index.md)
+[[<< Back to Index]](../index.md)
 
 ---
 # Color
@@ -326,4 +326,4 @@ As we can see the deer are even easier to spot now while the tree ands grass can
 We note some artifacting in the top right of the corner. This is due to a low dynamic range so pre-processing the image could result in even clearer results, however this step has been ommitted here.
 
 ---
-[<< Back to Index](../index.md)
+[[<< Back to Index]](../index.md)

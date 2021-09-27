@@ -1,4 +1,4 @@
-[<< Back to Index](../index.md)
+[[<< Back to Index]](../index.md)
 
 ---
 # Noise Generation
@@ -170,6 +170,6 @@ Instead of curves we now note smalle spikes that occur a set distance from the o
 (this feature is not yet implemented)
 
 ---
-[<< Back to Index](../index.md)
+[[<< Back to Index]](../index.md)
 
 

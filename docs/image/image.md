@@ -1,4 +1,4 @@
-[<< Back to Index](../index.md)
+[[<< Back to Index]](../index.md)
 
 ---
 
@@ -581,4 +581,4 @@ As expected the gradient response is low (darker) for the noisy foliage and high
 (this feature is not yet implemented)
 
 ---
-[<< Back to Index](../index.md)
+[[<< Back to Index]](../index.md)

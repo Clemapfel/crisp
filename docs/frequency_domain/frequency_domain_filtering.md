@@ -1,4 +1,4 @@
-[<< Back to Index](../index.md)
+[[<< Back to Index]](../index.md)
 
 ---
 
@@ -469,7 +469,7 @@ We note blurring, this is expected as our filter attenuated much of the high-fre
 This is due to the ideal shape of the filters outer cutoff region. A gaussian filters fourier transform is also gaussian, so it will result in no artifacting as seen in the relatively even region of the image such as the background. An ideal filters fourier transform however exhibits periodic interference which results in ringing around areas associated with that frequency region. We could eliminate this completely by instead choose a gaussian high-pass filter to start out with.
 
 ---
-[<< Back to Index](../index.md)
+[[<< Back to Index]](../index.md)
 <br>
 <br>
 <br>

@@ -1,4 +1,4 @@
-[<< Back to Index](../index.md)
+[[<< Back to Index]](../index.md)
 
 ---
 
@@ -322,7 +322,7 @@ If the maximum level of accuracy is desired and run-time is of no consideration,
 (this feature is not yet implemented)
 
 ---
-[<< Back to Index](../index.md)
+[[<< Back to Index]](../index.md)
 
 
 

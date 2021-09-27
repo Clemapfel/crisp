@@ -1,4 +1,4 @@
-###[[<< back to index]](../index.md)
+[[<< back to index]](../index.md)
 
 ---
 # [Vectors](../../include/vector.hpp)
