@@ -16,56 +16,54 @@ namespace crisp
     using Drawable = sf::Drawable;
     using Time = sf::Time;
 
-    // window that allows for rendering of sprites
+    /// @brief window that allows for rendering of sprites
     class RenderWindow : protected sf::RenderWindow
     {
         friend class InputHandler;
 
         public:
-            // @brief default ctor
+            /// @brief default ctor
             RenderWindow();
 
-            // @brief ctor and create as specified size
-            // @param width: x-dimension
-            // @param height: y-dimension
+            /// @brief ctor and create as specified size
+            /// @param width: x-resolution
+            /// @param height: y-resolution
             RenderWindow(size_t width, size_t height);
 
-            // @brief create as specified size
-            // @param width: x-dimension
-            // @param height: y-dimension
-            // @param fullscreen: fullscreen mode enabled (default: false)
-            // @param fps_limit: maximum fps (default: 60)
+            /// @brief create as specified size
+            /// @param width: x-resolution
+            /// @param height: y-resolution
+            /// @param fullscreen: open in fullscreen mode (default: true)
+            /// @param fps_limit: (default: 60)
             void create(size_t width, size_t height, bool fullscreen = false, size_t fps_limit = 60);
 
-            // @brief is the window currently minimized
-            // @returns false if minimized, true otherwise
+            /// @brief is the window currently minimized
+            /// @returns false if minimized, true otherwise
             bool is_open() const;
 
-            // @brief close the window
+            /// @brief close the window
             using sf::RenderWindow::close;
 
-            // @brief get window resolution
-            // @returns resolution
+            /// @brief get window resolution
+            /// @returns resolution as vector
             Vector2ui get_resolution() const;
 
-            // @brief set background color
-            // @param : color in rgb
+            /// @brief set background color
+            /// @param color: color as RGB
             void set_background_color(RGB);
 
-            // @brief get time since last update
-            // @returns time
+            /// @brief get time since last update
+            /// @returns time
             Time update();
 
-            // @brief draw object
-            // @param : drawable object
-            // @param : render states
+            /// @brief draw object
             using sf::RenderTarget::draw;
 
-            // @brief clear window with color
-            // @param : color (default: black)
+            /// @brief clear window with color
+            /// @param color: color as RGB
             void clear(RGB = RGB(0, 0, 0));
 
-            // @brief push current render state for display
+            /// @brief push current render state for display
             using sf::RenderWindow::display;
 
         protected:
@@ -74,7 +72,7 @@ namespace crisp
 
         private:
             sf::Clock _elapsed;
-            Vector2ui _resolution = Vector2ui(0, 0);
+            Vector2ui _resolution = Vector2ui{0, 0};
             sf::RectangleShape _background_shape;
     };
 }

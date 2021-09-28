@@ -45,9 +45,9 @@ namespace crisp
         switch (_padding_type)
         {
             case ZERO:
-                return Value_t(0);
+                return Value_t(InnerValue_t(0));
             case ONE:
-                return Value_t(1);
+                return Value_t(InnerValue_t(1));
             case REPEAT:
             {
                 int x_mod = x % int(get_size().x());
@@ -94,15 +94,18 @@ namespace crisp
                 return at(new_x, new_y);
             }
             default:
-                return Value_t(0);
+                return Value_t(InnerValue_t(0));
         }
     }
 
     template<typename InnerValue_t, size_t N>
     const typename Image<InnerValue_t, N>::Value_t& Image<InnerValue_t, N>::operator()(int x, int y) const
     {
-        if (x < 0  or x >= _data.rows() or y < 0 or y >= _data.cols())
-            return std::move(get_pixel_out_of_bounds(x, y));
+        if (x < 0 or x >= _data.rows() or y < 0 or y >= _data.cols())
+        {
+            _dummy_padding_reference = get_pixel_out_of_bounds(x, y);
+            return _dummy_padding_reference;
+        }
         else
             return _data(x, y);
     }
@@ -110,7 +113,7 @@ namespace crisp
     template<typename InnerValue_t, size_t N>
     typename Image<InnerValue_t, N>::Value_t& Image<InnerValue_t, N>::operator()(int x, int y)
     {
-        if (x < 0  or x >= _data.rows() or y < 0 or y >= _data.cols())
+        if (x < 0 or x >= _data.rows() or y < 0 or y >= _data.cols())
         {
             _dummy_padding_reference = get_pixel_out_of_bounds(x, y);
             return _dummy_padding_reference;
@@ -122,7 +125,7 @@ namespace crisp
     template<typename InnerValue_t, size_t N>
     Vector2ui Image<InnerValue_t, N>::get_size() const
     {
-        return {size_t(_data.rows()), size_t(_data.cols())};
+        return Vector2ui({size_t(_data.rows()), size_t(_data.cols())});
     }
 
     template<typename InnerValue_t, size_t N>
@@ -145,7 +148,7 @@ namespace crisp
         Image<InnerValue_t, N> out;
 
         for (long y = 0; y < _data.cols(); ++y)
-            for (long x = 0; x < _data.cols(); ++x)
+            for (long x = 0; x < _data.rows(); ++x)
                 out(x, y) = at(x, y) + other.at(x, y);
 
         return out;
@@ -159,7 +162,7 @@ namespace crisp
         Image<InnerValue_t, N> out;
 
         for (long y = 0; y < _data.cols(); ++y)
-            for (long x = 0; x < _data.cols(); ++x)
+            for (long x = 0; x < _data.rows(); ++x)
                 out(x, y) = at(x, y) - other.at(x, y);
 
         return out;
@@ -173,7 +176,7 @@ namespace crisp
         Image<InnerValue_t, N> out;
 
         for (long y = 0; y < _data.cols(); ++y)
-            for (long x = 0; x < _data.cols(); ++x)
+            for (long x = 0; x < _data.rows(); ++x)
                 out(x, y) = at(x, y) * other.at(x, y);
 
         return out;
@@ -187,7 +190,7 @@ namespace crisp
         Image<InnerValue_t, N> out;
 
         for (long y = 0; y < _data.cols(); ++y)
-            for (long x = 0; x < _data.cols(); ++x)
+            for (long x = 0; x < _data.rows(); ++x)
                 out(x, y) = at(x, y) / other.at(x, y);
 
         return out;
@@ -199,7 +202,7 @@ namespace crisp
         assert(get_size() == other.get_size());
 
         for (long y = 0; y < _data.cols(); ++y)
-            for (long x = 0; x < _data.cols(); ++x)
+            for (long x = 0; x < _data.rows(); ++x)
                 this->at(x, y) += other.at(x, y);
 
         return *this;
@@ -211,7 +214,7 @@ namespace crisp
         assert(get_size() == other.get_size());
 
         for (long y = 0; y < _data.cols(); ++y)
-            for (long x = 0; x < _data.cols(); ++x)
+            for (long x = 0; x < _data.rows(); ++x)
                 this->at(x, y) -= other.at(x, y);
 
         return *this;
@@ -223,7 +226,7 @@ namespace crisp
         assert(get_size() == other.get_size());
 
         for (long y = 0; y < _data.cols(); ++y)
-            for (long x = 0; x < _data.cols(); ++x)
+            for (long x = 0; x < _data.rows(); ++x)
                 this->at(x, y) *= other.at(x, y);
 
         return *this;
@@ -235,27 +238,35 @@ namespace crisp
         assert(get_size() == other.get_size());
 
         for (long y = 0; y < _data.cols(); ++y)
-            for (long x = 0; x < _data.cols(); ++x)
+            for (long x = 0; x < _data.rows(); ++x)
                 this->at(x, y) /= other.at(x, y);
         return *this;
     }
 
     template<typename InnerValue_t, size_t N>
-    template<size_t PlaneIndex>
-    Image<InnerValue_t, 1>  Image<InnerValue_t, N>::get_nths_plane() const
+    Image<InnerValue_t, 1>  Image<InnerValue_t, N>::get_nths_plane(size_t i) const
     {
-        static_assert(PlaneIndex < N, "Please specify an plane index less than N");
+        assert(i < N && "Please specify an plane index less than N");
 
         Image<InnerValue_t, 1> out;
         out.create(_data.rows(), _data.cols());
 
         for (long y = 0; y < _data.cols(); ++y)
             for (long x = 0; x < _data.rows(); ++x)
-                out(x, y) = _data(x, y).at(PlaneIndex);
+                out(x, y) = _data(x, y).at(i);
 
         return out;
     }
 
+    template<typename InnerValue_t, size_t N>
+    void Image<InnerValue_t, N>::set_nths_plane(const Image<InnerValue_t, 1>& plane, size_t i)
+    {
+        assert(i < N && "Please specify an plane index less than N");
+
+        for (long y = 0; y < _data.cols(); ++y)
+            for (long x = 0; x < _data.rows(); ++x)
+                _data(x, y).at(i) = plane(x, y).at(0);
+    }
 
     template<typename InnerValue_t, size_t N>
     auto Image<InnerValue_t, N>::begin()

@@ -5,11 +5,8 @@
 
 #pragma once
 
-// header collecting all includes realted to images of any type
-
 #include <image/binary_image.hpp>
 #include <image/grayscale_image.hpp>
 #include <image/color_image.hpp>
 #include <image/multi_plane_image.hpp>
 #include <image/padding_type.hpp>
-#include <image/image_conversion.hpp>

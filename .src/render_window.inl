@@ -15,6 +15,7 @@ namespace crisp
 
     inline RenderWindow::RenderWindow(size_t width, size_t height)
     {
+        InputHandler::set_window(this);
         create(width, height);
     }
 
@@ -35,7 +36,7 @@ namespace crisp
         setFramerateLimit(fps_limit);
 
         _background_shape.setPosition(0, 0);
-        _background_shape.setSize(sf::Vector2f(width, height));
+        _background_shape.setSize(sf::Vector2f{float(width), float(height)});
     }
 
     inline bool RenderWindow::is_open() const
@@ -45,9 +46,9 @@ namespace crisp
 
     inline Vector2ui RenderWindow::get_resolution() const
     {
-        auto x = float(_resolution.at(0));
-        auto y = float(_resolution.at(1));
-        auto out = Vector2ui(x, y);
+        size_t x = _resolution.at(0);
+        size_t y = _resolution.at(1);
+        auto out = Vector2ui{x, y};
         return out;
     }
 
@@ -76,6 +77,6 @@ namespace crisp
     inline Vector2f RenderWindow::get_mouse_position()
     {
         auto pos = sf::Mouse::getPosition(*this);
-        return Vector2f(pos.x, pos.y);
+        return Vector2f{float(pos.x), float(pos.y)};
     }
 }

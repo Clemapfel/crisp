@@ -7,7 +7,7 @@ namespace crisp
 {
     template<typename InnerValue_t, size_t N>
     Image<InnerValue_t, N>::Iterator::Iterator(Image<InnerValue_t, N>* data, size_t x, size_t y)
-        : _data(data), _x(x), _y(y), _size(_data->get_size().x(), _data->get_size().y())
+        : _data(data), _x(x), _y(y), _size{_data->get_size().x(), _data->get_size().y()}
     {}
 
     template<typename InnerValue_t, size_t N>
@@ -70,7 +70,7 @@ namespace crisp
 
     template<typename InnerValue_t, size_t N>
     Image<InnerValue_t, N>::ConstIterator::ConstIterator(const Image<InnerValue_t, N>* data, size_t x, size_t y)
-        : _data(data), _x(x), _y(y), _size(_data->get_size().x(), _data->get_size().y())
+        : _data(data), _x(x), _y(y), _size{_data->get_size().x(), _data->get_size().y()}
     {}
 
     template<typename InnerValue_t, size_t N>

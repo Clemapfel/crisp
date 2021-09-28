@@ -13,74 +13,138 @@
 
 namespace crisp
 {
-    namespace detail
-    {
-        template<typename T, size_t N>
-        using choose_image_value_t = typename std::conditional<N == 3 and std::is_same_v<T, float>, RGB, typename std::conditional<N == 1, T, Vector<T, N>>::type>::type;
-        // if (T == float and N == 3)
-        //      type = RGB
-        // else if (N == 1)
-        //      type = T
-        // else
-        //      type = Vector<T, N>
-    }
-
-    // an image that lives in ram and is operated upon by the cpu
+    /// @brief an image that lives in ram and is operated upon by the cpu
+    /// @param InnerValue_t: inner value type of the pixels (which are vectors themself)
+    /// @param N: number of components of the pixels
     template<typename InnerValue_t, size_t N = 1>
     class Image
     {
+        /// @brief non-const iterator, iterates left-to-right, top-to-bottom
         class Iterator;
+
+        /// @brief const iterator, iterates left-to-right, top-to-bottom
         class ConstIterator;
 
         public:
-            using Value_t = detail::choose_image_value_t<InnerValue_t, N>;
+            /// @brief expose pixel value type
+            using Value_t = typename std::conditional<N == 3 and std::is_same_v<InnerValue_t, float>, RGB, Vector<InnerValue_t, N>>::type;
 
-            // @brief ctors
+            /// @brief number of pixel value type components
+            static constexpr size_t n_planes = N;
+
+            /// @brief default ctor
             Image() = default;
-            Image(size_t width, size_t height, Value_t init = Value_t(InnerValue_t(0)));
 
-            // @brief create as given size with 1 value
-            void create(size_t width, size_t height, Value_t init = Value_t(InnerValue_t(0)));
+            /// @brief create image of specified size and value
+            /// @param width: x-dimension of the image
+            /// @param height: y-dimension of the image
+            /// @param init: initial value
+            Image(size_t width, size_t height, Value_t init = Value_t());
 
-            // @brief access pixel or padding if out of range
+            /// @brief create image of specified size and value
+            /// @param width: x-dimension of the image
+            /// @param height: y-dimension of the image
+            /// @param init: initial value
+            void create(size_t width, size_t height, Value_t init = Value_t());
+
+            /// @brief access pixel or padding if out of range
+            /// @param x: row index
+            /// @param y: column index
+            /// @returns const reference to value
             virtual const Value_t& operator()(int x, int y) const;
+
+            /// @brief access pixel or padding if out of range
+            /// @param x: row index
+            /// @param y: column index
+            /// @returns const reference to value, if the index is out of bounds, modifying the reference has no effect on the image
             virtual Value_t& operator()(int x, int y);
 
-            // @brief access pixel with bounds checking
+            /// @brief access pixel with bounds checking
+            /// @param x: row index
+            /// @param y: column index
+            /// @returns const reference to value
             virtual const Value_t& at(size_t x, size_t y) const;
+
+            /// @brief access pixel with bounds checking
+            /// @param x: row index
+            /// @param y: column index
+            /// @returns reference to value
             virtual Value_t& at(size_t x, size_t y);
 
-            // @brief get number of pixels
+            /// @brief get number of pixels
+            /// @returns vector where .x is the width, .y the height
             Vector2ui get_size() const;
 
-            // @brief specify the padding type, STRETCH by default
+            /// @brief specify the padding type, STRETCH by default
+            /// @param padding_type
             void set_padding_type(PaddingType);
 
-            // @brief access the padding type
+            /// @brief access the padding type
+            /// @returns padding type
             PaddingType get_padding_type() const;
 
-            // @brief image-image arithmetics
+            /// @brief image-image arithmetic elementwise addition
+            /// @param other_image
+            /// @returns resulting image
             Image<InnerValue_t, N> operator+(const Image<InnerValue_t, N>&) const;
+
+            /// @brief image-image arithmetic elementwise subtraction
+            /// @param other_image
+            /// @returns resulting image
             Image<InnerValue_t, N> operator-(const Image<InnerValue_t, N>&) const;
+
+            /// @brief image-image arithmetic elementwise multiplication
+            /// @param other_image
+            /// @returns resulting image
             Image<InnerValue_t, N> operator*(const Image<InnerValue_t, N>&) const;
+
+            /// @brief image-image arithmetic elementwise addition
+            /// @param other_image
+            /// @returns resulting image
             Image<InnerValue_t, N> operator/(const Image<InnerValue_t, N>&) const;
 
-            // @brief image-image assignment
+            /// @brief image-image arithmetic elementwise addition assignment
+            /// @param other_image
+            /// @returns reference to self
             Image<InnerValue_t, N>& operator+=(const Image<InnerValue_t, N>&);
+
+            /// @brief image-image arithmetic elementwise subtraction assignment
+            /// @param other_image
+            /// @returns reference to self
             Image<InnerValue_t, N>& operator-=(const Image<InnerValue_t, N>&);
+
+            /// @brief image-image arithmetic elementwise multiplication assignment
+            /// @param other_image
+            /// @returns reference to self
             Image<InnerValue_t, N>& operator*=(const Image<InnerValue_t, N>&);
+
+            /// @brief image-image arithmetic elementwise division assignment
+            /// @param other_image
+            /// @returns reference to self
             Image<InnerValue_t, N>& operator/=(const Image<InnerValue_t, N>&);
             
-            // @brief access all pixels nth component as a picture
-            template<size_t PlaneIndex>
-            Image<InnerValue_t, 1> get_nths_plane() const;
+            /// @brief access all pixels nth component as a picture
+            /// @returns new 1d image holding copied values of the component
+            Image<InnerValue_t, 1> get_nths_plane(size_t i) const;
 
-            // @brief access front element
+            /// @brief set the nths component of each pixel
+            /// @param plane: image holding the new values
+            void set_nths_plane(const Image<InnerValue_t, 1>&, size_t i);
+
+            /// @brief non-const begin
+            /// @return non-const iterator to top-left element
             auto begin();
+
+            /// @brief const begin
+            /// @return const iterator to top-left element
             auto begin() const;
 
-            // @brief access past-the-end element
+            /// @brief non-const end
+            /// @return non-const iterator to past-the-end element
             auto end();
+
+            /// @brief const begin
+            /// @return const iterator to past-the-end element
             auto end() const;
 
         protected:
@@ -88,7 +152,7 @@ namespace crisp
 
         private:
             Value_t get_pixel_out_of_bounds(int x, int y) const;
-            Value_t _dummy_padding_reference;
+            mutable Value_t _dummy_padding_reference;
 
             PaddingType _padding_type = PaddingType::STRETCH;
 
@@ -143,8 +207,6 @@ namespace crisp
                     size_t _x, _y = 0;
             };
     };
-
-    using GrayScaleImage = Image<float, 1>;
 }
 
 #include ".src/multi_plane_image.inl"

@@ -5,24 +5,48 @@
 
 namespace crisp
 {
-    GrayScaleImage ColorImage::get_red_plane()
+    Image<float, 1> ColorImage::get_red_plane()
     {
-        return get_nths_plane<0>();
+        return get_nths_plane(0);
     }
 
-    GrayScaleImage ColorImage::get_blue_plane()
+    void ColorImage::set_red_plane(const Image<float, 1>& plane)
     {
-        return get_nths_plane<1>();
+        assert(plane.get_size().x() == get_size().x() and plane.get_size().y() == get_size().y());
+        for (size_t x = 0; x < get_size().x(); ++x)
+            for (size_t y = 0; y < get_size().y(); ++y)
+                operator()(x, y).red() = plane(x, y);
     }
 
-    GrayScaleImage ColorImage::get_green_plane()
+    Image<float, 1> ColorImage::get_blue_plane()
     {
-        return get_nths_plane<2>();
+        return get_nths_plane(1);
     }
 
-    GrayScaleImage ColorImage::get_hue_plane()
+    void ColorImage::set_blue_plane(const Image<float, 1>& plane)
     {
-        GrayScaleImage out;
+        assert(plane.get_size().x() == get_size().x() and plane.get_size().y() == get_size().y());
+        for (size_t x = 0; x < get_size().x(); ++x)
+            for (size_t y = 0; y < get_size().y(); ++y)
+                operator()(x, y).blue() = plane(x, y);
+    }
+
+    Image<float, 1> ColorImage::get_green_plane()
+    {
+        return get_nths_plane(2);
+    }
+
+    void ColorImage::set_green_plane(const Image<float, 1>& plane)
+    {
+        assert(plane.get_size().x() == get_size().x() and plane.get_size().y() == get_size().y());
+        for (size_t x = 0; x < get_size().x(); ++x)
+            for (size_t y = 0; y < get_size().y(); ++y)
+                operator()(x, y).green() = plane(x, y);
+    }
+
+    Image<float, 1> ColorImage::get_hue_plane()
+    {
+        Image<float, 1> out;
         out.create(_data.rows(), _data.cols());
 
         for (long y = 0; y < _data.cols(); ++y)
@@ -37,9 +61,23 @@ namespace crisp
         return out;
     }
 
-    GrayScaleImage ColorImage::get_saturation_plane()
+    void ColorImage::set_hue_plane(const Image<float, 1>& plane)
     {
-        GrayScaleImage out;
+        assert(plane.get_size().x() == get_size().x() and plane.get_size().y() == get_size().y());
+        for (size_t x = 0; x < get_size().x(); ++x)
+        {
+            for (size_t y = 0; y < get_size().y(); ++y)
+            {
+                auto value = operator()(x, y).to_hsv();
+                value.hue() = plane(x, y);
+                operator()(x, y) = value.to_rgb();
+            }
+        }
+    }
+
+    Image<float, 1> ColorImage::get_saturation_plane()
+    {
+        Image<float, 1> out;
         out.create(_data.rows(), _data.cols());
 
         for (long y = 0; y < _data.cols(); ++y)
@@ -54,9 +92,23 @@ namespace crisp
         return out;
     }
 
-    GrayScaleImage ColorImage::get_value_plane()
+    void ColorImage::set_saturation_plane(const Image<float, 1>& plane)
     {
-        GrayScaleImage out;
+        assert(plane.get_size().x() == get_size().x() and plane.get_size().y() == get_size().y());
+        for (size_t x = 0; x < get_size().x(); ++x)
+        {
+            for (size_t y = 0; y < get_size().y(); ++y)
+            {
+                HSV value = operator()(x, y).to_hsv();
+                value.saturation() = plane(x, y);
+                operator()(x, y) = value.to_rgb();
+            }
+        }
+    }
+
+    Image<float, 1> ColorImage::get_value_plane()
+    {
+        Image<float, 1> out;
         out.create(_data.rows(), _data.cols());
 
         for (long y = 0; y < _data.cols(); ++y)
@@ -71,9 +123,23 @@ namespace crisp
         return out;
     }
 
-    GrayScaleImage ColorImage::get_lightness_plane()
+    void ColorImage::set_value_plane(const Image<float, 1>& plane)
     {
-        GrayScaleImage out;
+        assert(plane.get_size().x() == get_size().x() and plane.get_size().y() == get_size().y());
+        for (size_t x = 0; x < get_size().x(); ++x)
+        {
+            for (size_t y = 0; y < get_size().y(); ++y)
+            {
+                HSV value = operator()(x, y).to_hsv();
+                value.value() = plane(x, y);
+                operator()(x, y) = value.to_rgb();
+            }
+        }
+    }
+
+    Image<float, 1> ColorImage::get_lightness_plane()
+    {
+        Image<float, 1> out;
         out.create(_data.rows(), _data.cols());
 
         for (long y = 0; y < _data.cols(); ++y)
@@ -86,5 +152,19 @@ namespace crisp
         }
 
         return out;
+    }
+
+    void ColorImage::set_lightness_plane(const Image<float, 1>& plane)
+    {
+        assert(plane.get_size().x() == get_size().x() and plane.get_size().y() == get_size().y());
+        for (size_t x = 0; x < get_size().x(); ++x)
+        {
+            for (size_t y = 0; y < get_size().y(); ++y)
+            {
+                HSL value = operator()(x, y).to_hsl();
+                value.lightness() = plane(x, y);
+                operator()(x, y) = value.to_rgb();
+            }
+        }
     }
 }

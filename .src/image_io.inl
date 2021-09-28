@@ -23,9 +23,9 @@ namespace crisp
         ColorImage out;
         out.create(image.getSize().x, image.getSize().y);
 
-        for (long x = 0; x < image.getSize().x; ++x)
+        for (size_t x = 0; x < image.getSize().x; ++x)
         {
-            for (long y = 0; y < image.getSize().y; ++y)
+            for (size_t y = 0; y < image.getSize().y; ++y)
             {
                 auto color = image.getPixel(x, y);
                 out(x, y) = RGB(color.r / 255.f, color.g / 255.f, color.b / 255.f);
@@ -47,9 +47,9 @@ namespace crisp
         GrayScaleImage out;
         out.create(image.getSize().x, image.getSize().y);
 
-        for (long x = 0; x < image.getSize().x; ++x)
+        for (size_t x = 0; x < image.getSize().x; ++x)
         {
-            for (long y = 0; y < image.getSize().y; ++y)
+            for (size_t y = 0; y < image.getSize().y; ++y)
             {
                 auto color = image.getPixel(x, y);
                 out(x, y) = (color.r / 255.f + color.g / 255.f + color.b / 255.f) / 3.f;
@@ -71,9 +71,11 @@ namespace crisp
         BinaryImage out;
         out.create(image.getSize().x, image.getSize().y);
 
-        for (long x = 0; x < image.getSize().x; ++x)
+        bool had_to_threshold = false;
+
+        for (size_t x = 0; x < image.getSize().x; ++x)
         {
-            for (long y = 0; y < image.getSize().y; ++y)
+            for (size_t y = 0; y < image.getSize().y; ++y)
             {
                 auto color = image.getPixel(x, y);
 
@@ -83,11 +85,14 @@ namespace crisp
                     out(x, y) = true;
                 else
                 {
-                    std::cerr << "[WARNING] loading binary image from an image file containing more than just black (rgb(0, 0, 0)) and white (rgb(1, 1, 1)) pixels. A threshold of 0.5 will be applied." << std::endl;
                     out(x, y) = ((color.r / 255.f + color.g / 255.f + color.b / 255.f) / 3.f) > 0.5;
+                    had_to_threshold = true;
                 }
             }
         }
+
+        if (had_to_threshold)
+            std::cerr << "[WARNING] loading binary image from an image file containing more than just black (rgb(0, 0, 0)) and white (rgb(1, 1, 1)) pixels. A threshold of 0.5 will be applied." << std::endl;
 
         return out;
     }
@@ -97,9 +102,9 @@ namespace crisp
         sf::Image image;
         image.create(in.get_size().x(), in.get_size().y());
 
-        for (long x = 0; x < in.get_size().x(); ++x)
+        for (size_t x = 0; x < in.get_size().x(); ++x)
         {
-            for (long y = 0; y < in.get_size().y(); ++y)
+            for (size_t y = 0; y < in.get_size().y(); ++y)
             {
                 RGB color_in = in(x, y);
                 image.setPixel(x, y, sf::Color(uint8_t(color_in.red() * 255),
@@ -123,9 +128,9 @@ namespace crisp
         sf::Image image;
         image.create(in.get_size().x(), in.get_size().y());
 
-        for (long x = 0; x < in.get_size().x(); ++x)
+        for (size_t x = 0; x < in.get_size().x(); ++x)
         {
-            for (long y = 0; y < in.get_size().y(); ++y)
+            for (size_t y = 0; y < in.get_size().y(); ++y)
             {
                 float intensity = in(x, y);
                 image.setPixel(x, y, sf::Color(uint8_t(intensity * 255),
@@ -149,9 +154,9 @@ namespace crisp
         sf::Image image;
         image.create(in.get_size().x(), in.get_size().y());
 
-        for (long x = 0; x < in.get_size().x(); ++x)
+        for (size_t x = 0; x < in.get_size().x(); ++x)
         {
-            for (long y = 0; y < in.get_size().y(); ++y)
+            for (size_t y = 0; y < in.get_size().y(); ++y)
             {
                 bool which = in(x, y);
 

@@ -9,12 +9,31 @@
 
 namespace crisp
 {
+    /// @brief image where each pixel has only one 32-bit float intensity
     class GrayScaleImage : public Image<float, 1>
     {
         public:
-            // @brief convert to visually identical color image
+            /// @brief default ctor
+            GrayScaleImage();
+
+            /// @brief create as specified size
+            /// @param x: x-dimension
+            /// @param y: y-dimension
+            GrayScaleImage(size_t x, size_t y);
+
+            /// @brief create from another 1d image
+            /// @param image
+            template<typename T>
+            GrayScaleImage(const Image<T, 1>&);
+
+            /// @brief create from matrix of floats
+            /// @param matrix
+            GrayScaleImage(const Eigen::MatrixXf&);
+
+            /// @brief convert to visually identical color image
+            /// @returns new color image
             ColorImage convert_to_color() const;
     };
 }
 
-#include ".src/grayscale_image.inl
+#include ".src/grayscale_image.inl"
