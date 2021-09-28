@@ -4,7 +4,7 @@
 
 # Frequency Domain
 
-2D Discrete Fourier-Transform and Filtering it
+2D Discrete Fourier-Transform, Filtering in the Frequency Domain
 
 ```cpp
 #include <fourier_transform.hpp>
@@ -19,7 +19,7 @@
     2.2 [Transforming an Image into it's Spectrum](#22-transforming-an-image-into-the-spectrum)<br>
     2.3 [Visualizing the Spectrum](#23-visualizing-the-spectrum)<br>
     2.4 [Accessing Coefficients](#24-accessing-coefficients)<br>
-    2.5 [Transforming a Spectrum back into an Image](#25-transforming-the-spectrum-back-into-an-image)<br>
+    2.5 [Transforming a Spectrum Back Into an Image](#25-transforming-the-spectrum-back-into-an-image)<br>
 3. [**Spectral Filters**](#3-spectral-filters)<br>
     3.1 [Creating & Visualizing Filters](#31-creating-and-visualizing-filters)<br>
     3.2 [Filter Shapes](#32-filter-shapes)<br>
@@ -32,9 +32,10 @@
 
 ## 1. Introduction
 
-When working on an images pixel values directly, we call this working in the *spatial domain*. While this provides a variety of advantages some techniques are much easier to accomplish in the *frequency domain*. These *spectral* techniques, in ``crisp`` are performed on the 2D discrete [Fourier Transform](https://en.wikipedia.org/wiki/Fourier_transform) of an image. The fourier transforms treats our Images as 2D continous functions, regularly sampled at the pixel coordinates, and translates them into a number of [complex](https://en.wikipedia.org/wiki/Complex_number) coefficients of sinusoids functions. Combining the functions weighted by their coefficients returns the original image.
 
-While the exact mechanism behind it is not important for now, `crisp` saves users from interacting with 3rd party libraries and makes creating, inspecting and filtering the fourier transform easy. 
+When working on an image's pixel values directly, we call this working in the *spatial domain*. While doing so provides a variety of advantages, some techniques are much easier to accomplish in the *frequency domain*. These *spectral* techniques, in ``crisp``, are performed on the 2D discrete [Fourier Transform](https://en.wikipedia.org/wiki/Fourier_transform) of an image. The fourier transforms treats our Images as 2D continuous functions, regularly sampled at the pixel coordinates, and translates them into a number of [complex](https://en.wikipedia.org/wiki/Complex_number) coefficients of sinusoid functions. Combining the functions weighted by their coefficients returns the original image.
+
+While the exact mechanism behind it is not important for now, `crisp` saves users from interacting with 3rd party library and makes creating, inspecting and filtering the fourier transform easy and hassle-free.
 
 ## 2. Fourier Transform
 ### 2.1 Fourier Transform Performance Mode
@@ -48,9 +49,9 @@ class FourierTransform
 {
 ```
 
-+ ``SPEED`` is the most computationally optimal version offered by crisp, it uses 32-bit float coefficients and employs a suboptimal heuristic. While artifacting due to low precision is common, this is the only mode that can realistically be run in real time on most at-home machines.
-+ ``BALANCE`` is about 1.5 times slower than ``SPEED`` and uses 64-bit double coefficients. It's heuristic is also suboptimal, however is much closer to optimum than ``SPEED``s. For applications where a high performance CPU is available this mode is recommended even in real-time application and is thus specified as default.
-+ ``ACCURACY`` is about 10 times slower than ``SPEED``. Like ``BALANCE`` this mode also uses 64-bit double coefficients (or 128bit if the architecture supports it). The significant slow down comes mostly from measuring and computing the optimal parameters first instead of applying a heuristic, this assures that results are as accurate as possible. The difference between it's results and ``BALANCED``s result are often not noticeable to the naked eye, however in situations where accuracy is of the highest priority or in non-real-time applications, this is the mode of choice.
++ ``SPEED`` is the most computationally optimal version offered by `crisp`, it uses 32-bit float coefficients and employs a suboptimal heuristic for computing them. While artifacting due to low precision is common, this is the only mode that can realistically be run in real-time on most at-home machines
++ ``BALANCE`` is about 1.5 times slower than ``SPEED`` and uses 64-bit double coefficients. It's heuristic is also suboptimal, however is much closer to optimum than ``SPEED``s. For applications where a high performance CPU is available, this mode is recommended even in real-time application and is thus specified as the default
++ ``ACCURACY`` is about 10 times slower than ``SPEED``. Like ``BALANCE``, this mode also uses 64-bit double coefficients (or 128bit if the architecture supports it). The significant slow down comes mostly from measuring and computing the optimal parameters instead of applying a heuristic, this assures that results are as accurate as possible. The difference between its results and ``BALANCED``s result are often not noticeable to the naked eye, however in situations where accuracy is of the highest priority, or, in non-real-time applications, this may be the mode of choice.
 
 ### 2.2 Transforming an Image into the Spectrum
 
@@ -65,7 +66,7 @@ fourier.transform_from(image);
 
 ### 2.3 Visualizing the Spectrum
 
-Before we continue it is instructive to note that like any class in ``crisp``, we can visualize the transform by either transforming it to an image or binding it to a sprite and rendering it:
+Before we continue, it is instructive to note that like any class in ``crisp``, we can visualize the transform by either transforming it to an image or binding it to a sprite and rendering it:
 
 ```cpp
 auto spectrum_image = fourier.as_image();
@@ -77,14 +78,14 @@ auto phase_angle_image = fourier.phase_angle_as_image();
 This is the image we start out with, a simple rectangle: <br>
 ![](./.resources/cube.png)
 
-This is it's spectrum:<br>
+This is its spectrum:<br>
 ![](./.resources/cube_spectrum.png)<br>
 
 And it's phase angle (potential seizure warning) is available [here](#cube-phase-angle).
 
-We note that the spectrum is four times the size of the image. This is to eliminate wrap-around error and the increase in size is mandatory in general applications. We furthermore note that the spectrum is already *centered*, that is it's largest component (called the *dc component*) is at the center of the image. This is done to faciliate easier viewing. Being a series of oscillating functions the spectrum is of course periodic so we can simply shift the view such that the dc component lines up with the center without loosing any information.
+We note that the spectrum is four times the size of the image. This is to eliminate wrap-around error, this increase in size is mandatory in general applications. We furthermore note that the spectrum is already *centered*, that is, its largest component (called the *dc component*) is at the center of the image. This is done to facilitate easier viewing for human inspection. Being a series of oscillating functions, the spectrum is of course periodic, so we can simply shift the view such that the dc component lines up with the center without loosing any information.
 
-When rendering the spectrum the coefficients magnitudes are log-scaled and normalized into [0,1] **only for viewing**. This is to make inspection easier, the actual dc component is commonly 1000x higher than any other components which in image form would make it very hard to inspect the full spectrum. If we want the actual coeffecient values we need to access them directly.
+When rendering the spectrum, the coefficients magnitudes are log-scaled and normalized into [0,1] **only for viewing**. This is to make inspection easier, the actual dc component is commonly 1000x higher than any other components, which in image form would make it very hard to inspect the full spectrum. If we want the actual coefficient values, we need to access them directly.
 
 ### 2.4 Accessing Coefficients
 
@@ -108,9 +109,9 @@ Value_t& get_phase_angle(size_t x, size_t y);
 Value_t get_dc_component() const;
 ```
 
-Where x and y are the row and column index of the matrix that we visualizes as an image. The complex coefficients are stored in [*polar form*](https://en.cppreference.com/w/cpp/numeric/complex/polar) as magnitude and phase angle instead of real and imaginary parts.
+Where x and y are the row and column index of the matrix that we visualize as an image, respectively. The complex coefficients are stored in [*polar form*](https://en.cppreference.com/w/cpp/numeric/complex/polar) as magnitude and phase angle instead of real and imaginary parts.
 
-We can access the size of the spectrum using ``FourierSpectrum::get_size()``. Since the dc component is at it's center, we could also access it's magnitude like so:
+We can access the size of the spectrum using ``FourierSpectrum::get_size()``. Since the dc component is at its center, we could also access its magnitude like so:
 
 ```cpp
 auto dc_one = fourier.get_dc_component();
@@ -121,7 +122,7 @@ assert(dc_one == dc_two);
 
 ### 2.5 Transforming the Spectrum back into an image
 
-We can transform the spectrum back using ``Image<Inner_t, 1> transform_to() const``. If we were to do this right now we would just get the same image so it may be instructional to first modify the spectrum. We alter it using:
+We can transform the spectrum back using ``Image<Inner_t, 1> transform_to() const``. If we were to do this immediately, we would just get the same image, so it may be instructional to first modify the spectrum. We alter it using:
 
 ```cpp
 auto dc = spectrum.get_dc_component();
@@ -132,7 +133,7 @@ for (size_t y = 0; y < spectrum.get_size().y(); ++y)
         spectrum.get_component(x, y) = dc;
 }
 ```
-Here we multiply each component along the center axis by a factor that increases the "farther away" from the dc component the component is. The spectrum now looks like this:
+Here, we multiply each component along the center axis by a factor that increases the farther away from the dc component it is. The spectrum now looks like this:
 
 ![](./.resources/cube_spectrum_modified.png)
 
@@ -144,17 +145,17 @@ auto result = spectrum.transform_to<GrayScaleImage>();
 ```
 ![](./.resources/cube_modified.png)
 
-The original image is unrecognizable but we do note both that it roughly adheres to the original boundary of the rectangle and the typical periodicity that is inherent to many spectral techniques.
+The original image is unrecognizable, but we do note both that it roughly adheres to the original boundary of the rectangle and that typical periodicity that is inherent to many spectral techniques is evident.
 
 ## 3. Spectral Filters
 
-While our previous modification of the spectrum had no real mathematical point , properly *filtering* a spectrum has many applications. To make this just as easy as creating the transform, `crisp` offers a multitude of common filter shapes as well as tools to combine filters. We can then combine the created filter and apply it to a spectrum. 
+While our previous modification of the spectrum had no real mathematical point, properly *filtering* a spectrum has many applications. To make this just as easy as creating the transform, `crisp` offers a multitude of common filter shapes. We can then combine created filters using arithmetic operations and apply it to a spectrum. 
 
 ## 3.1 Creating and Visualizing Filters
 
-Spectral filters can be best thought of as floating point valued matrices of the same size as the fourier spectrum (`2*m*2*n`, where `m*n the size of the image) we're trying to filter. Applying the filter usually means element-wise multiplying the spectrum with it. 
+Spectral filters can be best thought of as floating point valued matrices of the same size as the fourier spectrum (`2*m*2*n`, where `m*n` the size of the image) we're trying to filter. Applying the filter usually means element-wise, multiplying the spectrum with it. 
 
-Similar to spatial filters, ``crisp`` offers a class called ``FrequencyDomainFilter``. We create a filter by specifying it's size:
+Similar to spatial filters, ``crisp`` offers a class called ``FrequencyDomainFilter``. We create a filter by first specifying its size:
 
 ```cpp
 auto filter = FrequencyDomainFilter(2*m, 2*n);
@@ -163,7 +164,7 @@ auto filter = FrequencyDomainFilter(2*m, 2*n);
 auto filter = FrequencyDomainFilter(spectrum);
 ```
 
-We then need to specify the filters *shape* using function of the form ``filter.as_xyz()``. Remember that our filters are 2d matrices so (like everything in crisp) we can visualize them by binding them to a ``crisp::Sprite`` or transforming them into an image:
+We then need to specify the filters *shape* using a function of the form ``filter.as_xyz()``. Remember that our filters are 2d matrices, so (like everything in `crisp`) we can visualize them by binding them to a ``crisp::Sprite`` or transforming them into an image:
 
 ```cpp
 auto sprite = Sprite();
@@ -174,7 +175,7 @@ auto image = filter.as_image<GrayScaleImage>();
 ```
 ## 3.2 Filter Shapes
 
-The simplest filter shape is ``FrequencyDomainFilter::identity()``. In order to not modify the spectrum after applying (multiplying) the filter we would expect the filter to be valued 1 at all positions:
+The simplest filter shape is ``FrequencyDomainFilter::identity()``. In order to not modify the spectrum after applying (multiplying) the filter, we would expect the filter to be valued 1 at all positions:
 
 ```
 filter.set_function(filter.identity());
@@ -190,11 +191,11 @@ Low-Pass filters *attenuate* (diminish) higher frequencies and *pass* (do not mo
 
 ``crisp`` provides three types of low-pass filter shaping functions:
 
-+ ``as_ideal_lowpass`` has a sharp cutoff point between it's attenuating and passing regions:<br>
++ ``as_ideal_lowpass`` has a sharp cutoff point between its attenuating and passing regions:<br>
 ![](./.resources/ideal_lowpass.png)<br><br>
 + ``as_gaussian_lowpass`` has a smooth transition between attenuating and passing regions that follows a [gaussian distribution](https://en.wikipedia.org/wiki/Gaussian_filter) :<br>
 ![](./.resources/gaussian_lowpass.png)<br><br>
-+ ``as_butterworth_lowpass`` of order n is a filter that follows a [butterworth distribution of order n](https://en.wikipedia.org/wiki/Butterworth_filter). This filter approaches the ideal low-pass shape for order n -> infinity and approaches the gaussian low-pass shape for order n -> 0.<br> Shown below: order 1, 2 and 3<br>
++ ``as_butterworth_lowpass`` of order n is a filter that follows a [butterworth distribution of order n](https://en.wikipedia.org/wiki/Butterworth_filter). This filter approaches the ideal low-pass for order n -> infinity and the gaussian low-pass for order n -> 0. <br> Shown below: order 1, 2 and 3<br>
 ![](./.resources/butterworth_1_lowpass.png)<br>
 ![](./.resources/butterworth_2_lowpass.png)<br>
 ![](./.resources/butterworth_3_lowpass.png)<br>
@@ -210,14 +211,14 @@ void FrequencyDomainFilter::as_xyz_lowpass(
 ```  
 where 
 + ``cutoff_frequency`` is the frequency after which the attenuating region starts
-+ ``pass_factor`` is the factor the coefficients in the passing (low frequency, inner) region are multiplied by. By default this factor is 1
-+ ``reject_factor`` is the factor the coefficients in the attenuating (high frequency, outer) region are multiplied by. By default this factor is 0
++ ``pass_factor`` is the factor the coefficients in the passing (low frequency, inner) region are multiplied by. By default, this factor is 1
++ ``reject_factor`` is the factor the coefficients in the attenuating (high frequency, outer) region are multiplied by. By default, this factor is 0
 
-The cut-off frequency will usually be a value in `[0, 2*m*2*n]` where `m`, `n` the size of the original image, though there is no mechanism to specifically enforce this.
+The cut-off frequency will usually be a value in `[0, min(m, n)]` where `2*m*2*n` the size of the spectrum, though there is no mechanism to specifically enforce this.
 
 ## 3.2.2 High-Pass Filters
 
-High-pass filters attentate low frequncies towards the center of the spectrum and pass high frequencies towards the outer edges. Just like with low-pass filters, ``crisp`` offers three filter shaping functions:
+High-pass filters attenuate low frequencies towards the center of the spectrum and pass high frequencies towards the outer edges. Just like with low-pass filters, ``crisp`` offers three filter shaping functions:
 
 + ``as_ideal_highpass`` has a sharp cutoff point between attenuating and passing region:<br>
 ![](./.resources/ideal_highpass.png)<br><br>
@@ -225,7 +226,7 @@ High-pass filters attentate low frequncies towards the center of the spectrum an
 + ``as_gaussian_highpass`` has a smooth gaussian transition from attenuating to passing region:<br>
 ![](./.resources/gaussian_highpass.png)<br><br>
 
-+ ``as_butterworth_highpass`` similarly follows the butterworth filter shape along it's cutoff region.<br> Pictured are butterworth high-pass filters of order 1, 2, 3:<br>
++ ``as_butterworth_highpass`` similarly follows the butterworth filter shape along its cutoff region.<br> Pictured are butterworth high-pass filters of order 1, 2, 3:<br>
 ![](./.resources/butterworth_1_highpass.png)<br>
 ![](./.resources/butterworth_2_highpass.png)<br>
 ![](./.resources/butterworth_3_highpass.png)<br><br>
@@ -241,10 +242,10 @@ void FrequencyDomainFilter::as_xyz_highpass(
 ```
 where
 + ``cutoff_frequency`` is the frequency after which the passing region starts
-+ ``pass_factor`` is the factor the coefficients in the passing (high frequency, outer) region are multiplied by. By default this factor is 1
-+ ``reject_factor`` is the factor the coefficients in the attenuating (lower frequency, inner) region are multiplied by. By default this factor is 0
++ ``pass_factor`` is the factor the coefficients in the passing (high frequency, outer) region are multiplied by. By default, this factor is 1
++ ``reject_factor`` is the factor the coefficients in the attenuating (lower frequency, inner) region are multiplied by. By default, this factor is 0
 
-The cutoff frequency will again usually be in `[0, 2*m*2*n]`, where `m`, `n` the size of the image.
+The cutoff frequency will again usually be in `[0, min(m, n)]`, where `2*m*2*n` the size of the region`
 
 As you may have noticed the high-pass filter is the inverse of the low-pass filter, that is for a high-pass filter H, low-pass filter I with the same cutoff frequency, reject- and pass-factor, it holds true that: ``identity - H = I`` and ``identity - I = H``. We will see later how we can use arithmetic operations like these to our advantage.
 
@@ -263,7 +264,7 @@ A band-pass filter is a filter that passes frequencies inside a specified interv
 ![](./.resources/butterworth_2_bandpass.png)<br>
 ![](./.resources/butterworth_3_bandpass.png)<br><br>
   
-Unlike low-pass and high-pass filters, band-pass-filters take two cutoff frequencies, `c_min` and `c_max` such that frequencies below `c_min` are attenuated, frequencies between `c_min` and `c_max` are passed and frequencies above `c_max` are attenuated:
+Unlike low-pass and high-pass filters, band-pass-filters take two cutoff frequencies, `c_min` and `c_max`, `c_min < c_max` such that frequencies below `c_min` are attenuated, frequencies between `c_min` and `c_max` are passed and frequencies above `c_max` are attenuated:
 
 ```cpp
 void FrequencyDomainFilter::as_xyz_bandpass(
@@ -276,14 +277,14 @@ void FrequencyDomainFilter::as_xyz_bandpass(
 where 
 + ``cutoff_min`` is the lower cutoff frequency
 + ``cutoff_max`` is the higher cutoff frequency
-+ ``pass_factor`` is the factor the coefficients in the passing (inside the "donut") region are multiplied by. By default this factor is 1
-+ ``reject_factor`` is the factor the coefficients in the attenuating (outside the "donut") region are multiplied by. By default this factor is 0
++ ``pass_factor`` is the factor the coefficients in the passing (inside the "bad") region are multiplied by. By default, this factor is 1
++ ``reject_factor`` is the factor the coefficients in the attenuating (outside the "donut") region are multiplied by. By default, this factor is 0
 
-Where `cutoff_min`, `cutoff_max` in `[0, 2*m*2*n]` and `cutoff_min < cutoff_max`.
+Where `cutoff_min`, `cutoff_max` will usually be in `[0, min(m, n)]`.
 
 ## 3.2.4 Band-Reject Filters
 
-Lastly we have band-reject filters which are the inverse of band-pass filters, that is for a band-pass filter 'B_p' and band-reject filter 'B_r' with the same cutoff frequencies, it holds that `identity - B_p = B_r` and `identity - B_r = B_p`. Band-reject filters attenuate frequencies between their two cutoff points and pass frequencies outside it. ``crisp`` again supplies 3 different shapes:
+Lastly, we have band-reject filters. These are the inverse of band-pass filters, that is, for a band-pass filter `B_p` and band-reject filter `B_r` with the same cutoff frequencies, it holds that `identity - B_p = B_r` and `identity - B_r = B_p`. Band-reject filters attenuate frequencies between their two cutoff frequencies and pass frequencies outside it. ``crisp``, again, supplies 3 different shapes:
 
 + ``as_ideal_bandreject`` with a sharp cutoff:<br>
 ![](./.resources/ideal_bandreject.png)<br><br>
@@ -308,15 +309,15 @@ void FrequencyDomainFilter::as_xyz_bandreject(
 ```  
 where 
 + ``cutoff_min`` is the lower cutoff frequency
-+ ``cutoff_max`` is the higher cutoff frequenc
-+ ``pass_factor`` is the factor the coefficients in the passing (outside the "donut") region are multiplied by. By default this factor is 1
-+ ``reject_factor`` is the factor the coefficients in the attenuating (inside the "donut") region are multiplied by. By default this factor is 0
++ ``cutoff_max`` is the higher cutoff frequency
++ ``pass_factor`` is the factor the coefficients in the passing (outside the band) region are multiplied by. By default, this factor is 1
++ ``reject_factor`` is the factor the coefficients in the attenuating (inside the band) region are multiplied by. By default, this factor is 0
 
-Where `cutoff_min`, `cutoff_max` in `[0, 2*m*2*n]` and `cutoff_min < cutoff_max`.
+Where `cutoff_min`, `cutoff_max` in `[0, min(m, n)]` and `cutoff_min < cutoff_max`.
 
 ## 3.3 Modifying a Filter
 
-It's easiest to think of filters as 1-plane images with ``double`` pixels. This is because, just like with actual images, we can access individual elements as if they were pixels. The following functions can be used to access individual elements of the filter:
+It's easiest to think of filters as 1-plane images with ``double``-valued pixels. This is because, just like with actual images, we can access individual elements as if they were pixels. The following functions can be used to access individual elements of the filter:
 
 ```cpp
 // access like a pixel
@@ -331,9 +332,9 @@ double at(size_t x, size_t y) const;
 const std::vector<double>& get_values() const;
 ``` 
 
-Where ``get_values`` returns a vector of pixels in row-major order, that is they are enumerated left-to-right, top-to-bottom just like ``crisp::Image<T, N>::Iterator`` would an image.
+Where ``get_values`` returns a vector of pixels in row-major order, that is, they are enumerated left-to-right, top-to-bottom just like ``crisp::Image<T, N>::Iterator`` would an image.
 
-Filters support arithmetic, filter-filter operations. These are element-wise operations, so multiplying one filter by another is equivalent to multiplying each element of the first fitler by the corresponding element of the second filter. The following arithmetic operations are supported:
+Filters support arithmetic, filter-filter operations. These are element-wise operations, multiplying one filter by another is equivalent to multiplying each element of the first filter with the corresponding element of the second filter. This means both filter have to be the exact same size. The following arithmetic operations are supported:
 
 ```cpp
 FrequencyDomainFilter operator+(const FrequencyDomainFilter&) const;
@@ -347,18 +348,18 @@ FrequencyDomainFilter& operator*=(const FrequencyDomainFilter&);
 FrequencyDomainFilter& operator/=(const FrequencyDomainFilter&);
 ```
 
-These combined with the multitude of filter shapes lends a lot of freedom in filter design.
+These, combined with the multitude of filter shapes, lends a lot of freedom in filter design.
 
-After modification, especially addition or subtraction it is common for a filter to have values below 0 or above 1, which in certain circumstances is undiserable. In response to this ``crisp`` offers a member function that projects all filter values into the specified interval:
+After modification, especially addition or subtraction. It is common for a filter to have values below 0 or above 1. In certain circumstances this may be undesirable. To address this, ``crisp`` offers a member function that projects all filter values into the specified interval:
 
 ```cpp
 void normalize(double min = 0, double max = 1)
 ``` 
-This function linearly interpolates all resulting values of the filter into the specified interval or [0, 1] by default.
+This function linearly interpolates all resulting values of the filter into the specified interval (or [0, 1] by default).
 
 ## 3.4 Filter Offset and Symmetry
 
-To achieve full flexibility we need to be able to move a filters center. We do this using the following function:
+To achieve full flexibility, we need to be able to move a filter's center. We do so using the following function:
 
 ```cpp
 void set_offset(
@@ -369,12 +370,12 @@ void set_offset(
 ```
 
 Where 
-+ `x_dist_from_center` is the x-offset, usually in [0, 0.5 * 2*m]
-+ `y_dist_from_center` is the y-offset, usually in [0, 0.5 * 2*n]
++ `x_dist_from_center` is the x-offset, usually in [0, m]
++ `y_dist_from_center` is the y-offset, usually in [0, n]
 
 For a spectrum of size '2*m*2*n'.
 
-To illustrate what this function does exactl, let's consder a practical example. We first define a butterworth bandpass filter of a relatively high order. This way we still don't have a completely sharp transition but we're also not as "smokey" as with proper gaussian filter:
+To illustrate what this function does exactly, let's consider a practical example: We first define a butterworth bandpass filter of a relatively high order. This way, we still don't have a completely sharp transition, but we're also not as "smokey" as with a proper gaussian filter:
 
 ```cpp
 auto image = GrayScaleImage(/*...*/);
@@ -403,9 +404,9 @@ filter.set_offset(
 ```
 ![](./.resources/with_offset.png)
 
-As expected the filters center moved towards the top left of the image.
+As expected, the filter's center moved towards the top-left of the image.
 
-Multiplying a fourier spectrum with a filter that is not symmetrical, will result in it's phase angle shifting. This usually corrupts the resulting image. To prevent this, we can turn on ``force_symmetry``, which automatically mirrors the offset filter across the center, resulting in a symmetrical image:
+Multiplying a fourier spectrum with a filter that is not symmetrical will result in its phase angle shifting. This usually corrupts the resulting image. To prevent this, we can turn on ``force_symmetry``, which automatically mirrors the offset filter across the center, resulting in a symmetrical shape:
 
 ```cpp
 filter.set_offset(
@@ -420,7 +421,7 @@ We conclude this section with a final example. Let's again consider this familia
 
 ![](./.resources/grayscale_opal.png)<br>
 
-To filter the image we first compute it's fourier spectrum:
+To filter the image, we first compute it's fourier spectrum:
 
 ```cpp
 auto image = load_grayscale_image(/*...*/ + "/crisp/docs/frequency_domain_filtering/grayscale_opal.png");
@@ -431,7 +432,7 @@ spectrum.transform_from(image);
 
 ![](./.resources/opal_spectrum.png)<br>
 
-We can now design our filter by first creating a fresh ideal high-pass filter. Because high-pass filters attenuate lower frequencies towards the center of the spectrum, an unmodified high-pass filter will inevitably modify the dc component. This would result in an overall lowering of the brightness of the image, to alleviate this we can combine the high-pass filter with a low-pass filter as for low-pass filters, the dc component is in the passing region. We choose a gaussian low-pass for this:
+We can now design our filter by first creating a fresh, ideal high-pass filter. Because high-pass filters attenuate lower frequencies towards the center of the spectrum, an unmodified high-pass filter will inevitably modify the dc component. This would result in an overall lowering of the brightness of the image, to alleviate this we can combine the high-pass filter with a low-pass filter, as for low-pass filters, the dc component is in the passing region and thus not diminished. We choose a gaussian low-pass:
 
 ```cpp 
 auto filter = FrequencyDomainFilter();
@@ -443,13 +444,13 @@ lowpass.as_gaussian_lowpass(0.1 * spectrum.get_size().x());
 filter += lowpass;
 filter.normalize();
 ``` 
-After normalizing the filter we can render it to an image to inspect it:
+After normalizing the filter, we can render it to an image to inspect it:
 
 ![](./.resources/combined_filter.png)
 
-As expected the dc component is in a completly white region, meaning it will be passed unaltered.
+As expected, the dc component is in the white (1-valued) region, meaning it will be passed unaltered.
 
-We now apply the filter to the spectrum using ``apply_to``. This multiplies the filter with spectrum coefficients magnitudes (if we were to modify the phase angle, the overall phase angle would shift again ruining the image). We then transform the spectrum back into an image:
+We now apply the filter to the spectrum using ``apply_to``. This multiplies the filter with only the corresponding coefficient magnitudes of the spectrum. The coefficient's phase angle is not modified as it would, again, corrupt the image. We then transform the spectrum back into an image:
 
 ```cpp
 filter.apply_to(spectrum);
@@ -462,11 +463,11 @@ The filtered spectrum now looks like this:<br>
 And the resulting image is:<br>
 ![](./.resources/opal_filtered.png)
 
-We note blurring, this is expected as our filter attenuated much of the high-freuqency region of the spectrum and high frequencies tend to be associated with fine detail, thus removing them blurs the image. Inspecting the image closely we note "ringing" around the letters:<br>
+We note blurring, this is expected as our filter attenuated much of the high-frequency region of the spectrum. High frequencies tend to be associated with fine detail, thus, removing them blurs the image. Inspecting the image closely, we note "ringing" around the letters:<br>
 
 ![](./.resources/opal_ringing_closeup.png)<br>
 
-This is due to the ideal shape of the filters outer cutoff region. A gaussian filters fourier transform is also gaussian, so it will result in no artifacting as seen in the relatively even region of the image such as the background. An ideal filters fourier transform however exhibits periodic interference which results in ringing around areas associated with that frequency region. We could eliminate this completely by instead choose a gaussian high-pass filter to start out with.
+This is due to the ideal shape of the filter's outer cutoff region. A gaussian filter's fourier transform is also gaussian, so it will result in no artifacting as seen in the picture's background. An ideal filter's fourier transform, however, exhibits periodic interference which results in ringing around areas associated with that frequency region. We could eliminate this completely by instead choosing a gaussian high-pass filter to start out with.
 
 ---
 [[<< Back to Index]](../index.md)
