@@ -11,18 +11,18 @@ Image Regions, Region Descriptors, Boundary Tracing, Signatures, Pattern Descrip
 
 ## Table of Contents
 
-1. [Introduction](#1-introduction)<br>
+1. [**Introduction**](#1-introduction)<br>
     1.1 [Extracting a Region](#11-an-example)<br>
-2. [Region Boundary](#2-region-boundary)<br>
+2. [**Region Boundary**](#2-region-boundary)<br>
     2.1 [Definition](#21-8-connectivity-and-minimal-cardinality)<br>
-   2.2 [Boundary Polygon](#22-boundary-polygon)<br>
-3. [Boundary Signature](#3-boundary-signatures)<br>
+    2.2 [Boundary Polygon](#22-boundary-polygon)<br>
+3. [**Boundary Signature**](#3-boundary-signatures)<br>
     3.1 [Vertex Polygon](#31-vertex-polygon)<br>
     3.2 [Slope Chain Code Signature](#32-slope-chain-code-signature)<br>
     3.3 [Radial Distance Signature](#33-radial-distance-signature)<br>
     3.4 [Complex Coordinate Signature](#34-complex-coordinate-signature)<br>
     3.5 [Farthest Point Signature](#35-farthest-point-signature)<br>
-4. [Whole Region Descriptors](#4-whole-region-descriptors)<br>
+4. [**Whole Region Descriptors**](#4-whole-region-descriptors)<br>
     4.1 [Area, Perimeter, Compactness](#41-area--perimeter-compactness)<br>
     4.2 [Centroid](#42-centroid)<br>
     4.3 [Axis Aligned Bounding Box](#43-aabb)<br>
@@ -31,7 +31,7 @@ Image Regions, Region Descriptors, Boundary Tracing, Signatures, Pattern Descrip
    4.6 [Circularity](#46-circularity)<br>
    4.7 [Holes](#47-holes)<br>
    4.8 [N-ths Moment Invariant](#48-moment-invariants)<br>
-5. [Texture Descriptors](#5-texture-descriptors)<br>
+5. [**Texture Descriptors**](#5-texture-descriptors)<br>
     5.1 [](#51-intensity-histogram)<br>
     5.2 [](#52-maximum-response)<br>
     5.3 [](#53-mean-variance)<br>

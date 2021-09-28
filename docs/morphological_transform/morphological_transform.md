@@ -11,8 +11,8 @@ Erosion, Dilation, Opening, Closing, Hit-or-Miss-Transforms, Pattern Detection w
 
 ## Table of Contents
 
-1. [Introduction](#1-introduction)<br>
-2. [Structuring Elements](#2-structuring-element)<br>
+1. [**Introduction**](#1-introduction)<br>
+2. [**Structuring Elements**](#2-structuring-element)<br>
     2.1 [Foreground, Background, "Don't Care" elements](#21-foreground-background-and-dont-care-elements)<br>
     2.2 [Binding a Structuring Element](#22-binding-an-structuring-element)<br>
     2.3 [Origin of a Structuring Element](#23-origin)<br>
@@ -23,7 +23,7 @@ Erosion, Dilation, Opening, Closing, Hit-or-Miss-Transforms, Pattern Detection w
     2.4.4 [Circle](#244-circle)<br>
     2.4.5 [Diamond](#245-diamond)<br>
     2.4.6 [Cross](#246-cross)<br>
-3. [Different Types of Transforms](#3-transform-functions)<br>
+3. [**Types of Transforms**](#3-transform-functions)<br>
     3.1 [Erosion](#31-erosion)<br>
     3.2 [Dilation](#32-dilation)<br>
     3.3 [Geodesic Erosion](#33-geodesic-erosion)<br>

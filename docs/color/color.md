@@ -13,13 +13,13 @@ Colors in RGB, HSV, HSL and GrayScale Representation, Converting between Represe
 
 ## Table of Contents
 
-1. [Introduction](#1-introduction)<br>
-2. [RGB](#2-rgb)<br>
-3. [HSV](#3-hsv)<br>
-4. [HSL](#4-hsl)<br>
-5. [GrayScale](#5-grayscale)<br>
-6. [In Summary](#6-in-summary)<br>
-7. [Pseudo Color](#7-pseudo-color)<br>
+1. [**Introduction**](#1-introduction)<br>
+2. [**RGB**](#2-rgb)<br>
+3. [**HSV**](#3-hsv)<br>
+4. [**HSL**](#4-hsl)<br>
+5. [**GrayScale**](#5-grayscale)<br>
+6. [**In Summary**](#6-in-summary)<br>
+7. [**Pseudo Color**](#7-pseudo-color)<br>
     7.1 [crisp::PseudoColor](#71-crisppseudocolor)<br>
     7.2 [Multi Range Mapping](#72-multi-range-mapping)<br>
 

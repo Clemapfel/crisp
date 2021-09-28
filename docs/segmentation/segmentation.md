@@ -13,18 +13,18 @@ Thresholding, Clustering, Edge Detection & Linking
 
 ## Table of Contents
 
-1. [Introduction](#1-introduction)<br>
+1. [**Introduction**](#1-introduction)<br>
     1.1 [Extracting Segments](#11-extracting-segments)<br>
-2. [Thresholding](#2-thresholding)<br>
+2. [**Thresholding**](#2-thresholding)<br>
     2.1 [Manual Thresholds](#21-manual-threshold)<br>
     2.2 [Basic Automated Thresholding](#22-basic-threshold)<br>
     2.3 [Otsu's Method](#23-otsus-method)<br>
     2.4 [Variable Threshold](#24-variable-threshold)<br>
     2.5 [Neighborhood Threshold](#25-neighborhood-threshold)<br>
-3. [Edge Detection](#3-edge-detection)<br>
+3. [**Edge Detection**](#3-edge-detection)<br>
     3.1 [Threshold Sobel Gradient Magnitude](#31-threshold-sobel-gradient)<br>
     3.2 [Canny's Algorithm](#32-canny)<br>
-4. [Clustering](#4-clustering)<br>
+4. [**Clustering**](#4-clustering)<br>
     4.1 [k-means Clustering](#41-k-means-clustering)<br>
     4.2 [Superpixel Clustering](#42-superpixel-clustering)<br>
     4.3 [Clustering by Region Growing](#43-region-growing-clustering)<br>

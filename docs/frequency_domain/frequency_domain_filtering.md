@@ -13,14 +13,14 @@
 
 ## Table of Contents
 
-1. [Introduction](#1-introduction)<br>
-2. [Fourier Transform](#2-fourier-transform)<br>
+1. [**Introduction**](#1-introduction)<br>
+2. [**Fourier Transform**](#2-fourier-transform)<br>
     2.1 [Fourier Transform Performance Mode](#21-fourier-transform-performance-mode)<br>
     2.2 [Transforming an Image into it's Spectrum](#22-transforming-an-image-into-the-spectrum)<br>
     2.3 [Visualizing the Spectrum](#23-visualizing-the-spectrum)<br>
     2.4 [Accessing Coefficients](#24-accessing-coefficients)<br>
     2.5 [Transforming a Spectrum back into an Image](#25-transforming-the-spectrum-back-into-an-image)<br>
-3. [Spectral Filters](#3-spectral-filters)<br>
+3. [**Spectral Filters**](#3-spectral-filters)<br>
     3.1 [Creating & Visualizing Filters](#31-creating-and-visualizing-filters)<br>
     3.2 [Filter Shapes](#32-filter-shapes)<br>
         3.2.1 [Low-Pass Filters](#321-low-pass-filters)<br>
