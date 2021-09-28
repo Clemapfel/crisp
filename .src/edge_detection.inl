@@ -36,7 +36,7 @@ namespace crisp::EdgeDetection
             for (long y = 0; y < original.get_size().y(); ++y)
             {
                 float x_sum = 0;
-                for (long s : {-1, 1})  // skipping the zeros has same performance as seperating the kernels
+                for (long s : {-1, 1})  // skipping the zeros has same performance as separating the kernels
                 {
                     for (long t : {-1, 0, +1})
                     {
@@ -99,7 +99,7 @@ namespace crisp::EdgeDetection
             for (long y = 0; y < original.get_size().y(); ++y)
             {
                 float x_sum = 0;
-                for (long s : {-1, 1})  // skipping the zeros has same performance as seperating the kernels
+                for (long s : {-1, 1})  // skipping the zeros has same performance as separating the kernels
                 {
                     for (long t : {-1, 0, +1})
                     {

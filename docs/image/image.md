@@ -178,7 +178,7 @@ A more detailed explanation of what is happening here can be found in the [syste
 
 ![](./.resources/full_window_view.png)
 
-Note that to render images we need to move them from the ram to the graphics card, operations that scale or move the image may result in artifacting that is only visible in the render window. Always remember: modifying the sprite does not modify the image in any way as the datas memory are completely seperate.
+Note that to render images we need to move them from the ram to the graphics card, operations that scale or move the image may result in artifacting that is only visible in the render window. Always remember: modifying the sprite does not modify the image in any way as the datas memory are completely separate.
 
 
 ## 3.2 Accessing Individual pixels
@@ -559,7 +559,7 @@ The maximum and minimum are now closer to [0, 1] and the effect on the image is 
 
 The gradient of an image can be thought of as the rate of change in a specific direction. If we go from an intensity of 0 to a neighbouring pixel in a specified direction that has an intensity of 1 we would see a high gradient while going from 0.5 to 0.51 would have result in a low gradient response. The *gradient magnitude* then is the length of the gradient vector in all directions.
 
-To compute the gradient magnitude we could filter the image with the sobel operator and then reassemble it, however `crisp` gives us a one-stop-shop function that does the filtering, assembling and kernel seperation all automatically. Using our already normalized deer from the previous section:
+To compute the gradient magnitude we could filter the image with the sobel operator and then reassemble it, however `crisp` gives us a one-stop-shop function that does the filtering, assembling and kernel separation all automatically. Using our already normalized deer from the previous section:
 
 ```cpp
 auto deer = /* see above */;

@@ -291,9 +291,9 @@ int main()
     std::cout << kernel << std::endl;
 
     Kernel left, right;
-    if (not seperate(kernel, &left, &right))
+    if (not separate(kernel, &left, &right))
     {
-        // handle non-seperable kernels
+        // handle non-separable kernels
     }
 
     std::cout << left << "\n" << std::endl;
