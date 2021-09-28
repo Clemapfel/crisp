@@ -33,23 +33,27 @@ Loading and Saving Images, Rendering any `crisp` Object to a Window, Keyboard/Mo
 We can load an image from disk like so:
 
 ```cpp
-std::string path = /*...*/ + "crisp/.test/opal_color.png";
+std::string path = /*...*/ + "crisp/image/.resources/opal_color.png";
 
-auto as_binary = load_binary_image(path);
-auto as_grayscale = load_grayscale_image(path);
 auto as_color = load_color_image(path);
+auto as_grayscale = load_grayscale_image(path);
+auto as_binary = load_binary_image(path);
 ```
 
 Most major file formats (`.bmp`, `.png`, `.tga`, `.jpg`, `.gif`, `.psd`, `.hdr`, `.pic`) are supported. 
 
-Depending on what type the image is loaded as, the following behavior will occurr:
+Depending on what type the image is loaded as, the following behavior will occur:
 
-+ `load_color_image`: image data will be interpreted as 8-bit rgba and then transformed into 32-bit floating point rgb. Transparency will be ignored and assumed as 0.
-+ ``load_grayscale_image``: image data will be transformed into a single intensity by averaging the rgba values, ignoring transparency.
++ `load_color_image`: image data will be interpreted as 8-bit rgba and then transformed into 32-bit floating point rgb. Transparency will be ignored and assumed as 1
++ ``load_grayscale_image``: image data will be transformed into a single intensity by averaging the rgba values, ignoring transparency
   
 + ``load_binary_image``: image data will be transformed into grayscale, then thresholded using a threshold of 0.5
 
-When loading as binary, if we want to apply a different threshold we can load the image as grayscale and threshold it manually using ``Segmentation::manual_threshold`` as detailed in the [segmentation tutorial](../segmentation/segmentation.md/#21-manual-threshold).
+![](../image/.resources/color_opal.png)<br>
+![](../image/.resources/grayscale_opal.png)<br>
+![](../image/.resources/binary_opal.png)<br>
+
+When loading as binary, if we want to apply a different threshold we can load the image as grayscale and threshold it manually, using ``Segmentation::manual_threshold`` as detailed in the [segmentation tutorial](../segmentation/segmentation.md/#21-manual-threshold).
   
 ## 1.2 Saving an Image
 
@@ -62,7 +66,7 @@ if (not save_to_disk(image, path))
     // handle disk error
 ```
 
-Only ``crisp::BinaryImage``, ``crisp::GrayScaleImage`` and ``crisp::ColorImage`` can be saved like this. If we want to store a different image type we first need to convert it into either of the three.
+Only ``crisp::BinaryImage``, ``crisp::GrayScaleImage`` and ``crisp::ColorImage`` can be saved like this. If we want to store a different image type, we first need to convert it into either of the three.
 
 ## 2. Rendering
 
@@ -79,6 +83,8 @@ One of ``crisps`` central design decisions is that everything can be rendered. W
 + `crisp::Histogram`
 + `Eigen::Matrix<T, /*...*/>`
 
+We can do so by binding any of these objects to a `crisp::Sprite`.
+
 ### 2.1 Sprite & Render Window
 
 We will focus on rendering images for now. To render an image we first need to create a ``crisp::Sprite``, then bind the corresponding image like so:
@@ -90,16 +96,16 @@ ColorImage color_image = /*...*/
 sprite.create_from(color_image);
 ```
 
-Now we need to open a ``crisp::RenderWindow``. When creating it we supply it's resolution, the fps limit and wether or not it should be openend in fullscreen mode. We then implement a *render-loop* which has the following steps (in order):
+Now we need to open a ``crisp::RenderWindow``. When creating it we supply its resolution, the fps limit and whether it should be opened in full-screen mode. We then implement a *render-loop* which has the following steps (in order):
 
-1. Update the input component
+1. Update the input handler
 2. Clear the window
 3. Draw our entities
 4. Display the window
 
-(we will learn more about `crisp::InputComponent` later)
+(we will learn more about `crisp::InputHandler` later)
 
-This loop is continously executed until the user clicks the "x" button of the window.
+This loop is continuously executed until the user clicks the "x" button of the window or `exit()` is called from anywhere in the program.
 
 ```cpp
 // main.cpp
@@ -126,7 +132,7 @@ int main()
     // render loop
     while (window.is_open())
     {
-        // 1. update input component
+        // 1. update input handler
         auto time = window.update();
         
         // 2. clear the render state
@@ -140,16 +146,17 @@ int main()
     }
 }
 ```
+![](../image/.resources/full_window_view.png)
 
-Sprites can be scaled and moved around the window, it's position is relative to the top-left corner of the window, the sprites center is it's origin. Note that we can specify coordinates outside of the windows boundaries without problems, however we won't be able to see the sprite if it's entire area is outside the window area.
+Sprites can be scaled and moved around the window, its position is relative to the top-left corner of the window, the sprites center is its origin. Note that we can specify coordinates outside the windows boundaries without problems, however we won't be able to see the sprite if its entire area is outside the window area.
 
 ### 2.2 Mouse & Keyboard Input
 
-Calling ``crisp::RenderWindow::update`` automatically updates the ``InputHandler`` which handles all user input, mouse and keyboard. This includes minimizing or closing the window which is why we need to update it to make it so the window closes when the user clicks the "x".
+Calling ``crisp::RenderWindow::update`` automatically updates the ``InputHandler`` which handles all user input through mouse and keyboard. This includes minimizing or closing the window, which is why we need to update the InputHandler continuously.
 
-The Input component is a static entity that cannot be initialized. It holds the current and past state of the keyboard. We can query the state of a specific key by specifying it's ``KeyID``, the enum of available keys can be accessed [here](../../include/system/key_id.hpp). 
+The input handler is a static entity that cannot be initialized, it is always in memory and listens for input events. It holds the current and past state of the keyboard. We can query the state of a specific key by specifying its ``KeyID``, the enum of available keys can be accessed [here](../../include/system/key_id.hpp). 
 
-The state of a key can be either "down" (pressed) or "up" (not pressed) at any point in time. The state updates when ``RenderWindow::update()`` is called and we can access it using:
+The state of a key can be either "down" (pressed) or "up" (not pressed) at any point in time. The state updates when ``RenderWindow::update()`` is called, and we can access it using:
 
 ```cpp
 // is key down currently
@@ -175,7 +182,7 @@ Where ``crisp::Time`` is the real time since elapsed from the last ``RenderWindo
 
 ## 3. An Example
 
-We can use this interactivity to aid in debugging (so we don't have to recompile anytime we want to change a parameter) or to build an interactive program. For example let's say we want to experimentally change the brightness of a grayscale image. One way to do this could be like so:
+We can use this interactivity to aid in debugging (so we don't have to recompile anytime we want to change a parameter) or to build an interactive program. For example, let's say we want to experimentally change the brightness of a grayscale image. One way to do this could be like so:
 
 ```cpp
 #include <system.hpp>
@@ -196,13 +203,16 @@ int main()
     auto window = RenderWindow();
     window.create(image.get_size().x(), image.get_size().y());
 
-    // modify the image by multiplying each pixel intensity with factor
+    // modify the image by multiplying each pixel intensity with factor that changes based on user input
     float factor = 1;
     auto update = [&]()
     {
         std::cout << "current factor: " << factor << std::endl;
         
+        // reset image
         image = original;
+        
+        // apply the factor
         for (auto& px : image)
             px *= factor;
 
@@ -237,7 +247,7 @@ int main()
 }
 ```
 
-Try executing [this little program](./system_example.cpp) by modifying ``crisp``s install path for ``load_grayscale_image`` to then test it out. You can use the up- and down-arrow keys to change the image the images brightness, revealing the actual content.
+Try executing [this little program](./system_example.cpp) by modifying the resource path for ``load_grayscale_image`` and test it out. You can use the up- and down-arrow keys to change the image the image's brightness, revealing the actual content.
 
 ---
 [[<< Back to Index]](../index.md)

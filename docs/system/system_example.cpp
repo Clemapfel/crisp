@@ -10,7 +10,7 @@ using namespace crisp;
 int main()
 {
     // load image as backup
-    const auto original = load_grayscale_image("/home/clem/Workspace/crisp/docs/system/hidden_secret.png");
+    const auto original = load_grayscale_image("MODIFY/THIS/PATH/crisp/docs/system/hidden_secret.png");
 
     // image that we will modify
     auto image = original;
