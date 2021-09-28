@@ -71,7 +71,7 @@ namespace crisp
         if (out_left != nullptr)
             *out_left = u.cast<float>();
 
-        if (out_right != nulltpr)
+        if (out_right != nullptr)
             *out_right = v.transpose().cast<float>();
 
         return true;
