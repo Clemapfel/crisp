@@ -22,8 +22,15 @@ int main()
 
     std::cout << min << " " << max << std::endl;
 
+    auto before_hist = Histogram<256>(image);
+    save_to_disk(before_hist.as_image(), "/home/clem/Workspace/crisp/docs/image/.resources/deer_hist_before.png");
+
     normalize(image);
     save_to_disk(image, "/home/clem/Workspace/crisp/docs/image/.resources/deer_normalized.png");
+
+    auto after_hist = Histogram<256>(image);
+    save_to_disk(after_hist.as_image(), "/home/clem/Workspace/crisp/docs/image/.resources/deer_hist_after.png");
+    return 0;
 
     auto gradient = compute_gradient_magnitude(image);
     normalize(gradient);
