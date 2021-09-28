@@ -68,8 +68,12 @@ namespace crisp
         for (size_t i = 0; i < V.cols(); ++i)
             v(i) = V(i, 0);
 
-        *out_left = u.cast<float>();
-        *out_right = v.transpose().cast<float>();
+        if (out_left != nullptr)
+            *out_left = u.cast<float>();
+
+        if (out_right != nulltpr)
+            *out_right = v.transpose().cast<float>();
+
         return true;
     }
 
