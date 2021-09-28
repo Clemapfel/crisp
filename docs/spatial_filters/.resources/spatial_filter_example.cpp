@@ -14,6 +14,15 @@ using namespace crisp;
 int main()
 {
     {
+        auto kernel = SpatialFilter::kirsch_compass_nw();
+        auto left = kernel;
+        auto right = kernel;
+        std::cout << separate(kernel, &left, &right) << std::endl;
+        exit(0);
+    }
+
+
+    {
         auto kernel = SpatialFilter::laplacian_second_derivative();
         auto filter = SpatialFilter();
         filter.set_kernel(kernel);
