@@ -43,13 +43,19 @@ namespace crisp
                 // updates response
                 float activate(const std::vector<float>& previous_layer)
                 {
+                    std::cout << "(" << _layer_i << ")" << std::endl;
+                    std::cout << "weights: " ;
+                    for (auto& w : _weights)
+                        std::cout << w << " ";
+                    std::cout << _bias << "\n" << std::endl;
+
                     float sum = 0;
                     for (size_t i = 0; i < previous_layer.size(); ++i)
                         sum += _weights.at(i) * previous_layer.at(i);
 
                     sum += _bias;
 
-                    return (1 / (expf(-1 * sum)));
+                    return (1 / (1 + exp(-1 * sum)));
                 }
 
                 //private:
@@ -75,6 +81,11 @@ namespace crisp
                 _layers.at(layer_i).at(neuron_i)._weights.at(weight_i) = new_weight;
             }
 
+            void override_bias(size_t layer_i, size_t neuron_i, float new_bias)
+            {
+                _layers.at(layer_i).at(neuron_i)._bias = new_bias;
+            }
+
             using FeatureVector_t = Vector<float, std::get<0>(std::make_tuple(LayerN...))>;
 
             /// @returns pair where .first is the class, .second the response value
@@ -87,7 +98,7 @@ namespace crisp
                 responses.back().reserve(FeatureVector_t::size());
 
                 for (size_t i = 0; i < FeatureVector_t::size(); ++i)
-                    responses.back().push_back(feature_vector);
+                    responses.back().push_back(feature_vector.at(i));
 
                 for (size_t layer_i = 1; layer_i < _layers.size(); ++layer_i)
                 {
@@ -110,6 +121,14 @@ namespace crisp
                         max_value = value;
                     }
                 }
+
+                for (auto& vec : responses)
+                {
+                    std::cout << std::endl;
+                    for (auto& value : vec)
+                        std::cout << value << " | ";
+                }
+
 
                 return std::make_pair(max_i, max_value);
             }

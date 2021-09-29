@@ -9,9 +9,28 @@ using namespace crisp;
 
 int main()
 {
-    auto nn = NeuralNetwork<1, 2, 3>();
+    auto nn = NeuralNetwork<3, 2, 2>();
 
-    std::cout << nn.forward_pass({2}).second << std::endl;
+    // pg. 949
+    nn.override_weight(1, 0, 0, 0.1);
+    nn.override_weight(1, 0, 1, 0.2);
+    nn.override_weight(1, 0, 2, 0.6);
+    nn.override_bias(1, 0, 0.4);
+
+    nn.override_weight(1, 1, 0, 0.4);
+    nn.override_weight(1, 1, 1, 0.3);
+    nn.override_weight(1, 1, 2, 0.1);
+    nn.override_bias(1, 1, 0.2);
+
+    nn.override_weight(2, 0, 0, 0.2);
+    nn.override_weight(2, 0, 1, 0.1);
+    nn.override_bias(2, 0, 0.6);
+
+    nn.override_weight(2, 1, 0, 0.1);
+    nn.override_weight(2, 1, 1, 0.4);
+    nn.override_bias(2, 1, 0.3);
+
+    std::cout << nn.forward_pass({3, 0, 1}).second << std::endl;
 
 }
 
