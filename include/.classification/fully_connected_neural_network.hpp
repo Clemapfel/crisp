@@ -128,6 +128,8 @@ namespace crisp
                 return std::make_pair(max_i, max_value);
             }
 
+            static inline alpha = 0.01;
+
             void back_propagate(const FeatureVector_t& input, const OutputVector_t& desired_output)
             {
                 // forward pass first
@@ -151,35 +153,17 @@ namespace crisp
                 }
 
                 // init error
-                std::vector<std::vector<float>> error;
+                std::vector<std::vector<float>> node_delta;
                 for (size_t i = 0; i < _layers.size(); ++i)
                 {
-                    error.emplace_back();
+                    node_delta.emplace_back();
+                    layer_delta.emplace_back();
                     for (size_t j = 0; j < _layers.at(i).size(); ++j)
-                        error.back().push_back(-1);
+                        node_delta.back().push_back(-1);
                 }
 
-                // last layer
-                for (size_t i = 0; i < error.back().size(); ++i)
-                {
-                    float hzj = observed.at(observed.size() - 2).at(i);
-                    error.at(i) = hzj * (1 - hzj) * observed.back().at(i) - desired_output.at(i);
-                }
+                // REDO: i is node_i, j is weight_i, l is layer_i
 
-                // back propagate
-                for (size_t layer_i = _layers.size() - 2; layer_i >= 0; layer_i--)
-                {
-                    for (size_t node_i = 0; node_i < error.at(layer_i).size(); node_i++)
-                    {
-                        float hzj = observed.at(layer_i).at(node_i);
-
-                        float delta = 0;
-                        for (size_t weight_i = 0; weight_i < _layers.at(layer_i-1).size(); ++weight_i)
-                        {
-                            delta +=
-                        }
-                    }
-                }
 
 
 
