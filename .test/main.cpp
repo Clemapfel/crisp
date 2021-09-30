@@ -34,6 +34,12 @@ int main()
         nn.back_propagate(feature, desired);
     }
 
+
+    std::cout << "DESIRED:" << std::endl;
+    std::cout << desired << std::endl;
+    std::cout << "FINAL" << std::endl;
+    std::cout << nn.forward_pass(feature) << std::endl;
+
     /*
     auto nn = NeuralNetwork<3, 2, 2>();
 

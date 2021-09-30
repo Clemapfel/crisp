@@ -50,14 +50,9 @@ namespace crisp
         using OutputVector_t = Vector<float, get_layer_n<sizeof...(LayerN)-1>()>;
         using InputVector_t = Vector<float, get_layer_n<0>()>;
 
-        Matrix sigmoid(const Matrix& in)
+        float sigmoid(float x)
         {
-            auto out = in;
-            for (size_t i = 0; i < out.rows(); ++i)
-                for (size_t j = 0; j < out.cols(); ++j)
-                    out(i, j) = 1 / (1 + expf(-1 * out(i, j)));
-
-            return std::move(out);
+            return (1 / (1 + expf(-1 * x)));
         }
 
         void override_weight(size_t layer_i, size_t neuron_i, size_t weight_i, float new_weight)
@@ -82,13 +77,53 @@ namespace crisp
             responses.push_back(in);
 
             for (size_t i = 1; i < _layer_to_n.size(); ++i)
-                responses.push_back(sigmoid(_weights.at(i) * responses.back() + _bias.at(i)));
+            {
+                auto temp = _weights.at(i) * responses.back() + _bias.at(i);
+                for (size_t x = 0; x < temp.rows(); ++x)
+                    for (size_t y = 0; y < temp.cols(); ++y)
+                        temp(x, y) = sigmoid(temp(x, y));
+            }
 
             OutputVector_t out;
             for (size_t i = 0; i < OutputVector_t::size(); ++i)
                 out.at(i) = responses.back()(0, i);
 
             return out;
+        }
+
+        Matrix forward_pass(const Matrix& input)
+        {
+            const size_t n_layers = _layer_to_n.size();
+
+            std::vector<Matrix> bias;
+
+            for (size_t l = 0; l < _bias.size(); ++l)
+            {
+                bias.emplace_back(_bias.at(l).rows(), input.cols());
+                for (size_t col_i = 0; col_i < input.cols(); ++col_i)
+                    for (size_t row_i = 0; row_i < _bias.at(l).rows(); ++row_i)
+                        bias.back()(row_i, col_i) = _bias.at(l)(row_i, 0);
+            }
+
+            auto h = [&](const Eigen::MatrixXf& in)
+            {
+                auto out = in;
+                for (size_t i = 0; i < in.rows(); ++i)
+                    for (size_t j = 0; j < in.cols(); ++j)
+                        out(i, j) = sigmoid(out(i, j));
+
+                return out;
+            };
+
+            std::vector<Matrix> zl;  // raw
+            zl.push_back(input);
+
+            for (size_t l = 1; l < n_layers; ++l)
+            {
+                zl.push_back(_weights.at(l) * h(zl.at(l-1)) + bias.at(l));
+            }
+
+            return h(zl.back());
         }
 
         void back_propagate(const Matrix& input, const Matrix& desired)
@@ -106,15 +141,37 @@ namespace crisp
                         bias.back()(row_i, col_i) = _bias.at(l)(row_i, 0);
             }
 
-            // feed forward
-            std::vector<Matrix> responses;
-            responses.push_back(input);
+            auto h = [&](const Eigen::MatrixXf& in)
+            {
+                auto out = in;
+                for (size_t i = 0; i < in.rows(); ++i)
+                    for (size_t j = 0; j < in.cols(); ++j)
+                        out(i, j) = sigmoid(out(i, j));
 
-            for (size_t i = 1; i < n_layers; ++i)
-                responses.push_back(sigmoid(_weights.at(i) * responses.back() + bias.at(i)));
+                return out;
+            };
+
+            auto h_derivative = [&](const Eigen::MatrixXf& in)
+            {
+                auto out = in;
+                for (size_t i = 0; i < in.rows(); ++i)
+                    for (size_t j = 0; j < in.cols(); ++j)
+                        out(i, j) = sigmoid(out(i, j)) * (1 - sigmoid(out(i, j)));
+
+                return out;
+            };
+
+            // feed forward
+            std::vector<Matrix> zl;  // raw
+            zl.push_back(input);
+
+            for (size_t l = 1; l < n_layers; ++l)
+            {
+                zl.push_back(_weights.at(l) * h(zl.at(l-1)) + bias.at(l));
+            }
 
             // TEMP calc error
-            auto error = desired - responses.back();
+            auto error = desired - zl.back();
 
             float sum = 0;
             for (size_t i = 0; i < error.rows(); ++i)
@@ -123,38 +180,32 @@ namespace crisp
 
             std::cout << sum / float(error.rows() * error.cols()) << std::endl;
 
-            // construct errors
+            // deltas
             std::vector<Matrix> deltas;
-            for (size_t i = 0; i < n_layers; ++i)
+            for (size_t l = 0; l < n_layers; ++l)
                 deltas.emplace_back();
 
-            //deltas.back().resize(_layer_to_n.back(), input.cols());
-            deltas.at(n_layers-1) = (responses.at(n_layers-1) - desired).cwiseProduct(responses.at(n_layers-2));
+            deltas.back() = (h(zl.back()) - desired).cwiseProduct(h_derivative(zl.back()));
 
-            for (size_t l = n_layers-2; l > 0; l--)
+            for (size_t l = n_layers - 2; l > 0; l--)
             {
-                deltas.at(l) = (_weights.at(l+1).transpose() * deltas.at(l+1)).cwiseProduct(responses.at(l-1));
+                deltas.at(l) = (_weights.at(l+1).transpose() * deltas.at(l+1)).cwiseProduct(h_derivative(zl.at(l)));
             }
 
-            // update weights
+            // update weights and biases
             const float alpha = 1;
-            for (size_t l = n_layers-1; l > 0; l--)
+            for (size_t l = 1; l < n_layers; l++)
             {
-                _weights.at(l) = _weights.at(l) - alpha * deltas.at(l) * responses.at(l-1).transpose();
+                _weights.at(l) = _weights.at(l) - alpha * deltas.at(l) * h(zl.at(l-1).transpose());
 
-                Eigen::MatrixXf bias_delta_average;
-                bias_delta_average.resize(_bias.at(l).rows(), _bias.at(l).cols());
-                for (size_t i = 0; i < deltas.at(l).rows(); ++i)
-                {
-                    float sum = 0;
-                    for (size_t j = 0; j < deltas.at(l).cols(); ++j)
-                        sum += deltas.at(l)(i, j);
+                auto bias_delta = Matrix(_bias.at(l).rows(), _bias.at(l).cols());
+                bias_delta.setConstant(0);
 
-                    sum /= deltas.at(l).cols();
-                    bias_delta_average(i, 0) = sum;
-                }
+                for (size_t row_i = 0; row_i < bias_delta.rows(); ++row_i)
+                    for (size_t col_i = 0; col_i < deltas.at(l).cols(); ++col_i)
+                        bias_delta(row_i, 0) = bias_delta(row_i, 0) + deltas.at(l)(row_i, col_i);
 
-                _bias.at(l) = _bias.at(l) - alpha * bias_delta_average;
+                _bias.at(l) = _bias.at(l) - alpha * bias_delta;
             }
         }
     };
