@@ -8,6 +8,7 @@
 #include <vector.hpp>
 #include <iostream>
 #include <random>
+#include <thread>
 
 namespace crisp
 {
@@ -39,9 +40,9 @@ namespace crisp
                 for (size_t node_i = 0; node_i < _layer_to_n.at(layer_i); ++node_i)
                 {
                     for (size_t weight_i = 0; weight_i < _layer_to_n.at(layer_i); weight_i++)
-                        _weights.at(layer_i)(node_i, weight_i) = 0;
+                        _weights.at(layer_i)(node_i, weight_i) = 1;
 
-                    _bias.at(layer_i)(node_i, 0) = 0;
+                    _bias.at(layer_i)(node_i, 0) = 1;
                 }
             }
         }
@@ -92,8 +93,9 @@ namespace crisp
 
         void back_propagate(const Matrix& input, const Matrix& desired)
         {
-            //input.rows() = n pattersn
-            //input.cols() = feature dimensions
+            const size_t n_layers = _layer_to_n.size();
+
+            // create bias by concatenating
             std::vector<Matrix> bias;
 
             for (size_t l = 0; l < _bias.size(); ++l)
@@ -104,18 +106,56 @@ namespace crisp
                         bias.back()(row_i, col_i) = _bias.at(l)(row_i, 0);
             }
 
+            // feed forward
             std::vector<Matrix> responses;
             responses.push_back(input);
 
-            for (size_t i = 1; i < _layer_to_n.size(); ++i)
+            for (size_t i = 1; i < n_layers; ++i)
                 responses.push_back(sigmoid(_weights.at(i) * responses.back() + bias.at(i)));
 
-            std::cout << responses.back() << std::endl;
+            // TEMP calc error
+            auto error = desired - responses.back();
 
+            float sum = 0;
+            for (size_t i = 0; i < error.rows(); ++i)
+                for (size_t j = 0; j < error.cols(); ++j)
+                    sum += error(i, j) * error(i, j);
 
+            std::cout << sum / float(error.rows() * error.cols()) << std::endl;
 
+            // construct errors
+            std::vector<Matrix> deltas;
+            for (size_t i = 0; i < n_layers; ++i)
+                deltas.emplace_back();
 
+            //deltas.back().resize(_layer_to_n.back(), input.cols());
+            deltas.at(n_layers-1) = (responses.at(n_layers-1) - desired).cwiseProduct(responses.at(n_layers-2));
 
+            for (size_t l = n_layers-2; l > 0; l--)
+            {
+                deltas.at(l) = (_weights.at(l+1).transpose() * deltas.at(l+1)).cwiseProduct(responses.at(l-1));
+            }
+
+            // update weights
+            const float alpha = 1;
+            for (size_t l = n_layers-1; l > 0; l--)
+            {
+                _weights.at(l) = _weights.at(l) - alpha * deltas.at(l) * responses.at(l-1).transpose();
+
+                Eigen::MatrixXf bias_delta_average;
+                bias_delta_average.resize(_bias.at(l).rows(), _bias.at(l).cols());
+                for (size_t i = 0; i < deltas.at(l).rows(); ++i)
+                {
+                    float sum = 0;
+                    for (size_t j = 0; j < deltas.at(l).cols(); ++j)
+                        sum += deltas.at(l)(i, j);
+
+                    sum /= deltas.at(l).cols();
+                    bias_delta_average(i, 0) = sum;
+                }
+
+                _bias.at(l) = _bias.at(l) - alpha * bias_delta_average;
+            }
         }
     };
     /*

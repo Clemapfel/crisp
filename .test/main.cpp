@@ -17,7 +17,6 @@ int main()
     // 1  1 -> 0    1
     // 0  0 -> 0    1
 
-    /*
     Eigen::MatrixXf feature;
     feature.resize(2, 4);
     feature << 1, -1, -1,  1,
@@ -30,9 +29,12 @@ int main()
 
     auto nn = NeuralNetwork<2, 2, 2>();
 
-    nn.back_propagate(feature, desired);
-     */
+    for (size_t n_epochs = 0; n_epochs < 10000; ++n_epochs)
+    {
+        nn.back_propagate(feature, desired);
+    }
 
+    /*
     auto nn = NeuralNetwork<3, 2, 2>();
 
     // pg. 949
@@ -63,6 +65,7 @@ int main()
              1, 1, 1, 1;
 
     nn.back_propagate(input, input);
+     */
 
 
 }
