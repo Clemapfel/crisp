@@ -81,17 +81,41 @@ namespace crisp
             responses.push_back(in);
 
             for (size_t i = 1; i < _layer_to_n.size(); ++i)
-            {
-                std::cout << "weights: " << std::endl << _weights.at(i) << std::endl;
                 responses.push_back(sigmoid(_weights.at(i) * responses.back() + _bias.at(i)));
-                std::cout << "respons: " << std::endl << responses.back() << std::endl;
-            }
 
             OutputVector_t out;
             for (size_t i = 0; i < OutputVector_t::size(); ++i)
                 out.at(i) = responses.back()(0, i);
 
             return out;
+        }
+
+        void back_propagate(const Matrix& input, const Matrix& desired)
+        {
+            //input.rows() = n pattersn
+            //input.cols() = feature dimensions
+            std::vector<Matrix> bias;
+
+            for (size_t l = 0; l < _bias.size(); ++l)
+            {
+                bias.emplace_back(_bias.at(l).rows(), input.cols());
+                for (size_t col_i = 0; col_i < input.cols(); ++col_i)
+                    for (size_t row_i = 0; row_i < _bias.at(l).rows(); ++row_i)
+                        bias.back()(row_i, col_i) = _bias.at(l)(row_i, 0);
+            }
+
+            std::vector<Matrix> responses;
+            responses.push_back(input);
+
+            for (size_t i = 1; i < _layer_to_n.size(); ++i)
+                responses.push_back(sigmoid(_weights.at(i) * responses.back() + bias.at(i)));
+
+            std::cout << responses.back() << std::endl;
+
+
+
+
+
         }
     };
     /*
