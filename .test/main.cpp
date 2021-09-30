@@ -29,7 +29,7 @@ int main()
 
     auto nn = NeuralNetwork<2, 2, 2>();
 
-    for (size_t n_epochs = 0; n_epochs < 10000; ++n_epochs)
+    for (size_t n_epochs = 0; n_epochs < 100000; ++n_epochs)
     {
         nn.back_propagate(feature, desired);
     }

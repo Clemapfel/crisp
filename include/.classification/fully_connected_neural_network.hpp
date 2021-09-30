@@ -9,6 +9,7 @@
 #include <iostream>
 #include <random>
 #include <thread>
+#include <deque>
 
 namespace crisp
 {
@@ -27,10 +28,13 @@ namespace crisp
 
         NeuralNetwork()
         {
-            _weights.at(0).resize(get_layer_n<0>(), 1);
+            _weights.at(0).resize(1, 1);
             _weights.at(0).setConstant(1);
-            _bias.at(0).resize(get_layer_n<0>(), 1);
+            _bias.at(0).resize(1, 1);
             _bias.at(0).setConstant(0);
+
+            auto dist = std::uniform_real_distribution(-0.25, +0.25);
+            auto engine = std::mt19937();
 
             for (size_t layer_i = 1; layer_i < _layer_to_n.size(); ++layer_i)
             {
@@ -40,9 +44,9 @@ namespace crisp
                 for (size_t node_i = 0; node_i < _layer_to_n.at(layer_i); ++node_i)
                 {
                     for (size_t weight_i = 0; weight_i < _layer_to_n.at(layer_i); weight_i++)
-                        _weights.at(layer_i)(node_i, weight_i) = 1;
+                        _weights.at(layer_i)(node_i, weight_i) = 1 + dist(engine);
 
-                    _bias.at(layer_i)(node_i, 0) = 1;
+                    _bias.at(layer_i)(node_i, 0) = dist(engine);
                 }
             }
         }
@@ -141,72 +145,40 @@ namespace crisp
                         bias.back()(row_i, col_i) = _bias.at(l)(row_i, 0);
             }
 
-            auto h = [&](const Eigen::MatrixXf& in)
+            auto print_matrix = [](const Matrix& m)
             {
-                auto out = in;
-                for (size_t i = 0; i < in.rows(); ++i)
-                    for (size_t j = 0; j < in.cols(); ++j)
-                        out(i, j) = sigmoid(out(i, j));
-
-                return out;
-            };
-
-            auto h_derivative = [&](const Eigen::MatrixXf& in)
-            {
-                auto out = in;
-                for (size_t i = 0; i < in.rows(); ++i)
-                    for (size_t j = 0; j < in.cols(); ++j)
-                        out(i, j) = sigmoid(out(i, j)) * (1 - sigmoid(out(i, j)));
-
-                return out;
+                std::cout << m << "\n" << std::endl;
             };
 
             // feed forward
             std::vector<Matrix> zl;  // raw
             zl.push_back(input);
 
-            for (size_t l = 1; l < n_layers; ++l)
-            {
-                zl.push_back(_weights.at(l) * h(zl.at(l-1)) + bias.at(l));
-            }
+            std::vector<Matrix> hzl;    // sigmoid of raw
+            std::vector<Matrix> hdzl;   // sigmoid derivative of raw
 
-            // TEMP calc error
-            auto error = desired - zl.back();
-
-            float sum = 0;
-            for (size_t i = 0; i < error.rows(); ++i)
-                for (size_t j = 0; j < error.cols(); ++j)
-                    sum += error(i, j) * error(i, j);
-
-            std::cout << sum / float(error.rows() * error.cols()) << std::endl;
-
-            // deltas
-            std::vector<Matrix> deltas;
             for (size_t l = 0; l < n_layers; ++l)
-                deltas.emplace_back();
-
-            deltas.back() = (h(zl.back()) - desired).cwiseProduct(h_derivative(zl.back()));
-
-            for (size_t l = n_layers - 2; l > 0; l--)
             {
-                deltas.at(l) = (_weights.at(l+1).transpose() * deltas.at(l+1)).cwiseProduct(h_derivative(zl.at(l)));
+                if (l > 0)
+                    zl.push_back(_weights.at(l) * hzl.at(l-1) + bias.at(l));
+
+                hzl.emplace_back(zl.back().rows(), zl.back().cols());
+                for (size_t i = 0; i < hzl.back().rows(); ++i)
+                    for (size_t j = 0; j < hzl.back().cols(); ++j)
+                        hzl.back()(i, j) = tanh(zl.back()(i, j));
+
+                print_matrix(hzl.back());
+
+                hdzl.emplace_back(zl.back().rows(), zl.back().cols());
+                for (size_t i = 0; i < hzl.back().rows(); ++i)
+                    for (size_t j = 0; j < hzl.back().cols(); ++j)
+                        hdzl.back()(i, j) = 1 / (coshf(zl.back()(i, j)) * coshf(zl.back()(i, j)));
+
+                print_matrix(hdzl.back());
             }
 
-            // update weights and biases
-            const float alpha = 1;
-            for (size_t l = 1; l < n_layers; l++)
-            {
-                _weights.at(l) = _weights.at(l) - alpha * deltas.at(l) * h(zl.at(l-1).transpose());
-
-                auto bias_delta = Matrix(_bias.at(l).rows(), _bias.at(l).cols());
-                bias_delta.setConstant(0);
-
-                for (size_t row_i = 0; row_i < bias_delta.rows(); ++row_i)
-                    for (size_t col_i = 0; col_i < deltas.at(l).cols(); ++col_i)
-                        bias_delta(row_i, 0) = bias_delta(row_i, 0) + deltas.at(l)(row_i, col_i);
-
-                _bias.at(l) = _bias.at(l) - alpha * bias_delta;
-            }
+            std::deque<Matrix> deltas;
+            delta.push_front((1.f / desired.rows()) * (desired - hzl.at(n_layers-1)) * (hdzl.at(n_layers-1)));
         }
     };
     /*
