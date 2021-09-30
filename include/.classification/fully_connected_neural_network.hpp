@@ -11,6 +11,90 @@
 
 namespace crisp
 {
+    template<size_t... LayerN>
+    struct NeuralNetwork
+    {
+        const static inline std::vector<size_t> _layer_to_n = {LayerN...};
+
+        template<size_t n>
+        static constexpr size_t get_layer_n() {return std::get<n>(std::make_tuple(LayerN...));};
+
+        using Matrix = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>;
+
+        std::array<Matrix, sizeof...(LayerN)> _weights;  // x = neuron index, y = weight index
+        std::array<Matrix, sizeof...(LayerN)> _bias;     // x = neuron index, y = 0
+
+        NeuralNetwork()
+        {
+            _weights.at(0).resize(get_layer_n<0>(), 1);
+            _weights.at(0).setConstant(1);
+            _bias.at(0).resize(get_layer_n<0>(), 1);
+            _bias.at(0).setConstant(0);
+
+            for (size_t layer_i = 1; layer_i < _layer_to_n.size(); ++layer_i)
+            {
+                _weights.at(layer_i).resize(_layer_to_n.at(layer_i), _layer_to_n.at(layer_i - 1));
+                _bias.at(layer_i).resize(_layer_to_n.at(layer_i), 1);
+
+                for (size_t node_i = 0; node_i < _layer_to_n.at(layer_i); ++node_i)
+                {
+                    for (size_t weight_i = 0; weight_i < _layer_to_n.at(layer_i); weight_i++)
+                        _weights.at(layer_i)(node_i, weight_i) = 0;
+
+                    _bias.at(layer_i)(node_i, 0) = 0;
+                }
+            }
+        }
+
+        using OutputVector_t = Vector<float, get_layer_n<sizeof...(LayerN)-1>()>;
+        using InputVector_t = Vector<float, get_layer_n<0>()>;
+
+        Matrix sigmoid(const Matrix& in)
+        {
+            auto out = in;
+            for (size_t i = 0; i < out.rows(); ++i)
+                for (size_t j = 0; j < out.cols(); ++j)
+                    out(i, j) = 1 / (1 + expf(-1 * out(i, j)));
+
+            return std::move(out);
+        }
+
+        void override_weight(size_t layer_i, size_t neuron_i, size_t weight_i, float new_weight)
+        {
+            _weights.at(layer_i)(neuron_i, weight_i) = new_weight;
+        }
+
+        void override_bias(size_t layer_i, size_t neuron_i, float new_bias)
+        {
+            _bias.at(layer_i)(neuron_i, 0) = new_bias;
+        }
+
+        OutputVector_t forward_pass(const InputVector_t& input)
+        {
+            Matrix in;
+            in.resize(InputVector_t::size(), 1);
+
+            for (size_t i = 0; i < input.size(); ++i)
+                in(i, 0) = input.at(i);
+
+            std::vector<Matrix> responses;
+            responses.push_back(in);
+
+            for (size_t i = 1; i < _layer_to_n.size(); ++i)
+            {
+                std::cout << "weights: " << std::endl << _weights.at(i) << std::endl;
+                responses.push_back(sigmoid(_weights.at(i) * responses.back() + _bias.at(i)));
+                std::cout << "respons: " << std::endl << responses.back() << std::endl;
+            }
+
+            OutputVector_t out;
+            for (size_t i = 0; i < OutputVector_t::size(); ++i)
+                out.at(i) = responses.back()(0, i);
+
+            return out;
+        }
+    };
+    /*
     // first layer: number of elements in feature vector
     // hidden layers: arbitrary
     // last layer: number of observed classes
@@ -41,7 +125,6 @@ namespace crisp
                     }
                 }
 
-                // updates response
                 float activate(const std::vector<float>& previous_layer)
                 {
                     float sum = 0;
@@ -143,8 +226,7 @@ namespace crisp
                     observed.back().reserve(_layer_to_n.at(layer_i));
 
                     for (size_t neuron_i = 0; neuron_i < _layers.at(layer_i).size(); ++neuron_i)
-                        observed.back().push_back(
-                                _layers.at(layer_i).at(neuron_i).activate(observed.at(layer_i - 1)));
+                        observed.back().push_back(_layers.at(layer_i).at(neuron_i).activate(observed.at(layer_i - 1)));
                 }
 
                 // init error
@@ -153,54 +235,54 @@ namespace crisp
                 {
                     node_delta.emplace_back();
                     for (size_t j = 0; j < _layers.at(i).size(); ++j)
-                        node_delta.back().push_back(-1);
+                        node_delta.back().push_back(0);
                 }
 
                 // last layer
-                for (size_t node_i = 0, layer_i = _layers.size() - 1; node_i < _layers.at(layer_i).size(); node_i++)    // sic
+                for (size_t i = 0; i < _layers.back().size(); ++i)
                 {
-                    float net_in  = observed.at(layer_i-1).at(node_i);  // h(z_j(l))
-                    float net_out = observed.at(layer_i).at(node_i);       // aj(L)
+                    const size_t l = _layers.size() - 1;
 
-                    node_delta.at(layer_i).at(node_i) = net_in * (1 - net_in) * (net_out - desired_output.at(node_i));
+                    float hzj = 0;
+                    for (size_t k = 0; k < _layers.at(l-1).size(); ++k)
+                        hzj += observed.at(l-1).at(k);
+
+                    float error = observed.at(l).at(i) - desired_output.at(i);
+
+                    node_delta.at(l).at(i) = hzj * (1 - hzj) * error;
                 }
 
-                // reference
-                //https://www.jeremyjordan.me/neural-networks-training/
-                // REDO: j is node_i, i is weight_i, l is layer_i
-
-                // back propagate
-                for (size_t layer_i = _layers.size() - 2; layer_i > 0; layer_i--)
+                // deltas
+                for (size_t l = _layers.size() - 2; l > 0; l--)
                 {
-                    for (size_t node_i = 0; node_i < _layers.at(layer_i).size(); node_i++)
+                    for (size_t j = 0; j < _layers.at(l).size(); ++j)
                     {
-                        float delta_j = 0;
-                        for (size_t weight_i = 0; weight_i < _layers.at(layer_i + 1).size(); weight_i++)
-                        {
-                            delta_j += node_delta.at(layer_i).at(weight_i) * _layers.at(layer_i + 1).at(weight_i)._weights.at(node_i);
-                        }
+                        float hzj = 0;
+                        for (size_t k = 0; k < _layers.at(l-1).size(); ++k)
+                            hzj += observed.at(l-1).at(k);
 
-                        float net_in  = observed.at(layer_i-1).at(node_i);  // h(z_j(l))
-                        node_delta.at(layer_i).at(node_i) = delta_j * (net_in) * (1 - net_in);
+                        float sum = 0;
+                        for (size_t i = 0; i < _layers.at(l+1).size(); ++i)
+                            sum += _layers.at(l+1).at(j)._weights.at(i) * node_delta.at(l+1).at(i);
+
+                        node_delta.at(l).at(j) = hzj * (1 - hzj) * sum;
                     }
                 }
 
-                // adjust weights and bias
-                for (size_t layer_i = 1; layer_i < _layers.size(); layer_i++)
+                // update
+                for (size_t l = _layers.size() - 1; l > 0; l--)
                 {
-                    for (size_t node_i = 0; node_i < _layers.at(layer_i).size(); node_i++)  // i
+                    for (size_t i = 0; i < _layers.at(l).size(); ++i)
                     {
-                        for (size_t weight_i = 0; weight_i < _layers.at(layer_i - 1).size(); weight_i++)    // j
+                        for (size_t j = 0; j < _layers.at(l-1).size(); ++j)
                         {
-                            auto& weight = _layers.at(layer_i).at(node_i)._weights.at(weight_i);
-                            weight -= alpha * node_delta.at(layer_i).at(node_i) * observed.at(layer_i).at(weight_i);
+                            _layers.at(l).at(i)._weights.at(j) -= alpha * node_delta.at(l).at(i) * observed.at(l-1).at(j);
                         }
 
-                        auto& bias = _layers.at(layer_i).at(node_i)._bias;
-                        bias -= alpha * node_delta.at(layer_i).at(node_i);
+                        _layers.at(l).at(i)._bias -= alpha * node_delta.at(l).at(i);
                     }
-
                 }
             }
     };
+     */
 }
