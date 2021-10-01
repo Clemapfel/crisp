@@ -97,8 +97,9 @@ namespace crisp
 
         Matrix forward_pass(const Matrix& input)
         {
-            const size_t n_layers = _layer_to_n.size();
+             const size_t n_layers = _layer_to_n.size();
 
+            // create bias by concatenating
             std::vector<Matrix> bias;
 
             for (size_t l = 0; l < _bias.size(); ++l)
@@ -109,25 +110,24 @@ namespace crisp
                         bias.back()(row_i, col_i) = _bias.at(l)(row_i, 0);
             }
 
-            auto h = [&](const Eigen::MatrixXf& in)
-            {
-                auto out = in;
-                for (size_t i = 0; i < in.rows(); ++i)
-                    for (size_t j = 0; j < in.cols(); ++j)
-                        out(i, j) = sigmoid(out(i, j));
-
-                return out;
-            };
-
+            // feed forward
             std::vector<Matrix> zl;  // raw
             zl.push_back(input);
 
-            for (size_t l = 1; l < n_layers; ++l)
+            std::vector<Matrix> hzl;    // sigmoid of raw
+
+            for (size_t l = 0; l < n_layers; ++l)
             {
-                zl.push_back(_weights.at(l) * h(zl.at(l-1)) + bias.at(l));
+                if (l > 0)
+                    zl.push_back(_weights.at(l) * hzl.at(l-1) + bias.at(l));
+
+                hzl.emplace_back(zl.back().rows(), zl.back().cols());
+                for (size_t i = 0; i < hzl.back().rows(); ++i)
+                    for (size_t j = 0; j < hzl.back().cols(); ++j)
+                        hzl.back()(i, j) = tanh(zl.back()(i, j));
             }
 
-            return h(zl.back());
+            return hzl.back();
         }
 
         void back_propagate(const Matrix& input, const Matrix& desired)
@@ -167,18 +167,29 @@ namespace crisp
                     for (size_t j = 0; j < hzl.back().cols(); ++j)
                         hzl.back()(i, j) = tanh(zl.back()(i, j));
 
-                print_matrix(hzl.back());
-
                 hdzl.emplace_back(zl.back().rows(), zl.back().cols());
                 for (size_t i = 0; i < hzl.back().rows(); ++i)
                     for (size_t j = 0; j < hzl.back().cols(); ++j)
                         hdzl.back()(i, j) = 1 / (coshf(zl.back()(i, j)) * coshf(zl.back()(i, j)));
-
-                print_matrix(hdzl.back());
             }
 
-            std::deque<Matrix> deltas;
-            delta.push_front((1.f / desired.rows()) * (desired - hzl.at(n_layers-1)) * (hdzl.at(n_layers-1)));
+            std::vector<Matrix> deltas;
+            deltas.resize(n_layers);
+
+            deltas.at(n_layers-1) = (hzl.at(n_layers-1) - desired).cwiseProduct(hdzl.at(n_layers-1));
+
+            for (size_t l = n_layers -2; l > 0; l--)
+                deltas.at(l) = (_weights.at(l+1).transpose() * deltas.at(l+1)).cwiseProduct(hdzl.at(l));
+
+            const float alpha = 1;
+            for (size_t l = 1; l < n_layers; l++)
+            {
+                _weights.at(l) -= alpha * deltas.at(l) * hzl.at(l-1).transpose();
+
+                for (size_t row_i = 0; row_i < _bias.at(l).rows(); ++row_i)
+                    for (size_t col_i = 0; col_i < deltas.at(l).cols(); ++col_i)
+                        _bias.at(l)(row_i, 0) -= alpha * deltas.at(l)(row_i, col_i);
+            }
         }
     };
     /*
