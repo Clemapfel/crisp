@@ -24,16 +24,15 @@ int main()
 
     Eigen::MatrixXf desired;
     desired.resize(2, 4);
-    desired << 1, 1, 0, 0,
-               0, 0, 1, 1;
+    desired << 1, 0, 1, 0,
+               0, 1, 0, 1;
 
     auto nn = NeuralNetwork<2, 2, 2>();
 
-    for (size_t n_epochs = 0; n_epochs < 10000; ++n_epochs)
+    for (size_t n_epochs = 0; n_epochs < 200000; ++n_epochs)
     {
         nn.back_propagate(feature, desired);
     }
-
 
     std::cout << "DESIRED:" << std::endl;
     std::cout << desired << std::endl;
