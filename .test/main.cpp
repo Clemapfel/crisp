@@ -5,12 +5,12 @@
 
 #include <.classification/fully_connected_neural_network.hpp>
 #include <thread>
+#include <iostream>
 
 using namespace crisp;
 
 int main()
 {
-
     // A  B    XOR  NOT XOR
     // 0  1 -> 1    0
     // 1  0 -> 1    0
@@ -27,17 +27,17 @@ int main()
     desired << 1, 0, 1, 0,
                0, 1, 0, 1;
 
-    auto nn = NeuralNetwork<2, 2, 2>();
+    auto nn = NeuralNetwork<2, 2, 2, 2>();
 
-    for (size_t n_epochs = 0; n_epochs < 200000; ++n_epochs)
+    for (size_t n_epochs = 0; n_epochs < 10000; ++n_epochs)
     {
-        nn.back_propagate(feature, desired);
+        nn.train(feature, desired);
     }
 
     std::cout << "DESIRED:" << std::endl;
     std::cout << desired << std::endl;
     std::cout << "FINAL" << std::endl;
-    std::cout << nn.forward_pass(feature) << std::endl;
+    std::cout << nn.identify(feature) << std::endl;
 
     /*
     auto nn = NeuralNetwork<3, 2, 2>();
