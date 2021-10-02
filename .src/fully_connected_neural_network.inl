@@ -147,4 +147,72 @@ namespace crisp
                     _bias.at(l)(row_i, 0) -= alpha * deltas.at(l)(row_i, col_i);
         }
     }
+
+    template<size_t... Ns>
+    void NeuralNetwork<Ns...>::override_weight(size_t layer_i, size_t neuron_i, size_t weight_i, float weight)
+    {
+        _weights.at(layer_i)(neuron_i, weight_i) = weight;
+    }
+
+    template<size_t... Ns>
+    void NeuralNetwork<Ns...>::override_bias(size_t layer_i, size_t neuron_i, float bias)
+    {
+        _weights.at(layer_i)(neuron_i, 0) = bias;
+    }
+
+    template<size_t... Ns>
+    std::string NeuralNetwork<Ns...>::as_string() const
+    {
+        std::stringstream str;
+        for (size_t i = 0; i < _weights.size(); ++i)
+        {
+            for (size_t y = 0; y < _weights.at(i).cols(); ++y)
+                for (size_t x = 0; x < _weights.at(i).rows(); ++x)
+                    str << _weights.at(i)(x, y) << " ";
+
+            for (size_t y = 0; y < _bias.at(i).cols(); ++y)
+                for (size_t x = 0; x < _bias.at(i).rows(); ++x)
+                    str << _bias.at(i)(x, y) << " ";
+        }
+
+        str << std::endl;
+        return str.str();
+    }
+
+    template<size_t... Ns>
+    void NeuralNetwork<Ns...>::from_string(const std::string& in)
+    {
+        std::vector<float> values;
+
+        std::string buffer;
+        std::stringstream ss(in);
+
+        while (ss >> buffer)
+            values.push_back(std::stof(buffer));
+
+        for (size_t l = 0, i = 0; l < _weights.size(); ++l)
+        {
+            for (size_t y = 0; y < _weights.at(l).cols(); ++y)
+                for (size_t x = 0; x < _weights.at(l).rows(); ++x, ++i)
+                    _weights.at(l)(x, y) = values.at(i);
+
+            for (size_t y = 0; y < _bias.at(l).cols(); ++y)
+                for (size_t x = 0; x < _bias.at(l).rows(); ++x, ++i)
+                    _bias.at(l)(x, y) = values.at(i);
+        }
+    }
+
+    template<size_t... Ns>
+    void NeuralNetwork<Ns...>::clear()
+    {
+        for (size_t l = 0, i = 0; l < _weights.size(); ++l)
+        {
+            _weights.at(l).setConstant(1);
+            _bias.at(l).setConstant(0);
+        }
+    }
+
+
+
+
 }

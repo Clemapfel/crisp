@@ -29,15 +29,22 @@ int main()
 
     auto nn = NeuralNetwork<2, 2, 2, 2>();
 
-    for (size_t n_epochs = 0; n_epochs < 10000; ++n_epochs)
+    for (size_t n_epochs = 0; n_epochs < 1000; ++n_epochs)
     {
         nn.train(feature, desired);
     }
 
-    std::cout << "DESIRED:" << std::endl;
-    std::cout << desired << std::endl;
-    std::cout << "FINAL" << std::endl;
+    std::cout << "before:" << std::endl;
     std::cout << nn.identify(feature) << std::endl;
+    std::cout << std::endl;
+
+    auto str = nn.as_string();
+    nn.clear();
+    nn.from_string(str);
+
+    std::cout << "after:" << std::endl;
+    std::cout << nn.identify(feature) << std::endl;
+    std::cout << std::endl;
 
     /*
     auto nn = NeuralNetwork<3, 2, 2>();

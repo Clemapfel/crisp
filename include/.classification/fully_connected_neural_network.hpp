@@ -31,9 +31,14 @@ namespace crisp
             /// @brief back propagate to train network once
             void train(InputMatrix_t features, OutputMatrix_t desired_result);
 
-        protected:
+        //protected:
             void override_weight(size_t layer_i, size_t neuron_i, size_t weight_i, float weight);
             void override_bias(size_t layer_i, size_t neuron_i, float bias);
+
+            std::string as_string() const;
+            void from_string(const std::string&);
+
+            void clear();
 
         private:
             float activation_function(float x);
