@@ -9,6 +9,13 @@
 namespace crisp
 {
     template<size_t... Ns>
+    template<size_t n>
+    constexpr size_t NeuralNetwork<Ns...>::get_n_neurons_in_layer()
+    {
+        return std::get<n>(std::make_tuple(Ns...));
+    };
+
+    template<size_t... Ns>
     float NeuralNetwork<Ns...>::activation_function(float x)
     {
         float x2 = x * x;
@@ -149,6 +156,12 @@ namespace crisp
     }
 
     template<size_t... Ns>
+    void NeuralNetwork<Ns...>::set_learning_rate(float alpha)
+    {
+        _alpha = alpha;
+    }
+
+    template<size_t... Ns>
     void NeuralNetwork<Ns...>::override_weight(size_t layer_i, size_t neuron_i, size_t weight_i, float weight)
     {
         _weights.at(layer_i)(neuron_i, weight_i) = weight;
@@ -211,8 +224,4 @@ namespace crisp
             _bias.at(l).setConstant(0);
         }
     }
-
-
-
-
 }
