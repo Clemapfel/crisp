@@ -28,21 +28,8 @@ int main()
                0, 1, 0, 1;
 
     auto nn = NeuralNetwork<2, 2, 2, 2>();
+    std::cout << nn.train_until(feature, desired, 0.0001) << std::endl;
 
-    for (size_t n_epochs = 0; n_epochs < 1000; ++n_epochs)
-    {
-        nn.train(feature, desired);
-    }
-
-    std::cout << "before:" << std::endl;
-    std::cout << nn.identify(feature) << std::endl;
-    std::cout << std::endl;
-
-    auto str = nn.as_string();
-    nn.clear();
-    nn.from_string(str);
-
-    std::cout << "after:" << std::endl;
     std::cout << nn.identify(feature) << std::endl;
     std::cout << std::endl;
 

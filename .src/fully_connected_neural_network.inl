@@ -5,6 +5,7 @@
 
 #include <.classification/fully_connected_neural_network.hpp>
 #include <random>
+#include <iostream>
 
 namespace crisp
 {
@@ -92,13 +93,11 @@ namespace crisp
 
         return hzl.back();
     }
-    
-    template<size_t... Ns>
-    void NeuralNetwork<Ns...>::train(typename NeuralNetwork<Ns...>::InputMatrix_t input, OutputMatrix_t desired)
-    {
-        assert(input.cols() == desired.cols() && input.rows() == desired.rows());
 
-        const size_t n_layers = _layer_to_n.size();
+    template<size_t... Ns>
+    typename NeuralNetwork<Ns...>::OutputMatrix_t NeuralNetwork<Ns...>::back_propagate(const InputMatrix_t& input, const OutputMatrix_t& desired)
+    {
+         const size_t n_layers = _layer_to_n.size();
 
         // create bias by concatenating
         std::vector<Eigen::MatrixXf> bias;
@@ -155,6 +154,36 @@ namespace crisp
                 for (size_t col_i = 0; col_i < deltas.at(l).cols(); ++col_i)
                     _bias.at(l)(row_i, 0) -= alpha * deltas.at(l)(row_i, col_i);
         }
+
+        return hzl.back();
+    }
+    
+    template<size_t... Ns>
+    void NeuralNetwork<Ns...>::train(typename NeuralNetwork<Ns...>::InputMatrix_t input, OutputMatrix_t desired)
+    {
+        assert(input.cols() == desired.cols() && input.rows() == desired.rows());
+        back_propagate(input, desired);
+    }
+
+    template<size_t... Ns>
+    size_t NeuralNetwork<Ns...>::train_until(typename NeuralNetwork<Ns...>::InputMatrix_t input, OutputMatrix_t desired, float mse_threshold)
+    {
+        assert(input.cols() == desired.cols() && input.rows() == desired.rows());
+
+        size_t n_epochs = 0,
+               n_below_mse = 0;
+
+        while (n_below_mse < 3)
+        {
+            if (mse_from(back_propagate(input, desired), desired) <= mse_threshold)
+                n_below_mse++;
+            else
+                n_below_mse = 0;
+
+            n_epochs++;
+        }
+
+        return n_epochs;
     }
 
     template<size_t... Ns>
@@ -165,13 +194,24 @@ namespace crisp
         float error = 0;
 
         auto result = identify(input);
+        return mse_from(result, desired);
+    }
 
-        size_t n = 0;
+    template<size_t... Ns>
+    float NeuralNetwork<Ns...>::mse_from(const typename NeuralNetwork<Ns...>::OutputMatrix_t& result, const OutputMatrix_t& desired)
+    {
+        float max_error = -1;
         for (size_t y = 0; y < result.cols(); ++y)
-            for (size_t x = 0; x < result.rows(); ++x, ++n)
+        {
+            float error = 0;
+            for (size_t x = 0; x < result.rows(); ++x)
                 error += (desired(x, y) - result(x, y)) * (desired(x, y) - result(x, y));
 
-        return error / n;
+            if (error > max_error)
+                max_error = error;
+        }
+
+        return max_error / desired.rows();
     }
 
     template<size_t... Ns>
