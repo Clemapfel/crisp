@@ -42,10 +42,22 @@ namespace crisp
             /// @returns matrix holding activation values, each column is one sample, each row one output layer neuron activation result
             OutputMatrix_t identify(const InputMatrix_t&);
 
-            /// @brief back propagate to train network once
+            /// @brief back propagate to train network *once*
             /// @param features: matrix holding one or more samples, each column is one sample, each row one feature
             /// @param desired_result: matrix holding one or more desired response vectors, each column is one sample, each row is one neuron in the output layer.
             void train(InputMatrix_t features, OutputMatrix_t desired_result);
+
+            /// @brief compute forward pass for given feature vectors, then compute mean squared error between it and given training set
+            /// @param features: matrix holding one or more samples, each column is one sample, each row one feature
+            /// @param desired_result: matrix holding one or more desired response vectors, each column is one sample, each row is one neuron in the output layer.
+            /// @returns mean squared error
+            float compute_mean_squared_error(InputMatrix_t features, OutputMatrix_t desired_result);
+
+            /// @brief compute number of misidentifications using current weights
+            /// @param features: matrix holding one or more samples, each column is one sample, each row one feature
+            /// @param desired_result: matrix holding one or more desired response vectors, each column is one sample, each row is one neuron in the output layer.
+            /// @returns float in [0, 1] where 0 if all correct, 1 if none correct
+            float compute_classification_error(InputMatrix_t features, OutputMatrix_t desired_result);
 
             /// @brief set learning rate for all future train(...) calls
             /// @param alpha: learning rate, recommended range: [0.001, 0.1]

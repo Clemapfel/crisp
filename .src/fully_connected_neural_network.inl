@@ -96,6 +96,8 @@ namespace crisp
     template<size_t... Ns>
     void NeuralNetwork<Ns...>::train(typename NeuralNetwork<Ns...>::InputMatrix_t input, OutputMatrix_t desired)
     {
+        assert(input.cols() == desired.cols() && input.rows() == desired.rows());
+
         const size_t n_layers = _layer_to_n.size();
 
         // create bias by concatenating
@@ -154,6 +156,66 @@ namespace crisp
                     _bias.at(l)(row_i, 0) -= alpha * deltas.at(l)(row_i, col_i);
         }
     }
+
+    template<size_t... Ns>
+    float NeuralNetwork<Ns...>::compute_mean_squared_error(typename NeuralNetwork<Ns...>::InputMatrix_t input, OutputMatrix_t desired)
+    {
+        assert(input.cols() == desired.cols());
+
+        float error = 0;
+
+        auto result = identify(input);
+
+        size_t n = 0;
+        for (size_t y = 0; y < result.cols(); ++y)
+            for (size_t x = 0; x < result.rows(); ++x, ++n)
+                error += (desired(x, y) - result(x, y)) * (desired(x, y) - result(x, y));
+
+        return error / n;
+    }
+
+    template<size_t... Ns>
+    float NeuralNetwork<Ns...>::compute_classification_error(typename NeuralNetwork<Ns...>::InputMatrix_t input, OutputMatrix_t desired)
+    {
+        assert(input.cols() == desired.cols());
+
+        size_t n_correct = 0,
+               n_wrong = 0;
+
+        auto result = identify(input);
+
+        for (size_t y = 0; y < result.cols(); ++y)
+        {
+            float max_result = 0;
+            size_t max_result_i = -1;
+
+            float max_desired = 0;
+            size_t max_desired_i = -1;
+
+            for (size_t x = 0; x < result.rows(); ++x)
+            {
+                if (result(x, y) > max_result)
+                {
+                    max_result = result(x, y);
+                    max_result_i = x;
+                }
+
+                if (desired(x, y) > max_desired)
+                {
+                    max_desired = desired(x, y);
+                    max_desired_i = x;
+                }
+
+                if (max_desired_i == max_result_i)
+                    n_correct++;
+                else
+                    n_wrong++;
+            }
+        }
+
+        return float(n_wrong) / float(n_correct + n_wrong);
+    }
+
 
     template<size_t... Ns>
     void NeuralNetwork<Ns...>::set_learning_rate(float alpha)
