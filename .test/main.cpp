@@ -3,9 +3,10 @@
 // Created on 07.09.21 by clem (mail@clemens-cords.com)
 //
 
-#include <.classification/fully_connected_neural_network.hpp>
+#include <classification/fully_connected_neural_network.hpp>
 #include <thread>
 #include <iostream>
+#include <fstream>
 
 using namespace crisp;
 
@@ -19,8 +20,8 @@ int main()
 
     Eigen::MatrixXf feature;
     feature.resize(2, 4);
-    feature << 1, -1, -1,  1,
-               1, -1,  1, -1;
+    feature << 1, -1, 0,  -0.5,
+               -1, -1, 0, +0.5;
 
     Eigen::MatrixXf desired;
     desired.resize(2, 4);
@@ -28,7 +29,14 @@ int main()
                0, 1, 0, 1;
 
     auto nn = NeuralNetwork<2, 2, 2, 2>();
-    std::cout << nn.train_until(feature, desired, 0.0001) << std::endl;
+
+    auto file = std::ifstream("/home/clem/Workspace/crisp/docs/feature_classification/xor_nn.bin");
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    std::string str = buffer.str();
+    nn.from_string(str);
+
+    //std::cout << nn.train_until(feature, desired, 0.0001) << std::endl;
 
     std::cout << nn.identify(feature) << std::endl;
     std::cout << std::endl;
