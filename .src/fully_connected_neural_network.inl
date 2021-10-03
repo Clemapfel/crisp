@@ -3,7 +3,7 @@
 // Created on 01.10.21 by clem (mail@clemens-cords.com)
 //
 
-#include <.classification/fully_connected_neural_network.hpp>
+#include <classification/fully_connected_neural_network.hpp>
 #include <random>
 #include <iostream>
 

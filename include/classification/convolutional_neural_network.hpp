@@ -4,3 +4,8 @@
 //
 
 #pragma once
+
+namespace crisp
+{
+    // this feature is not yet implemented
+}
