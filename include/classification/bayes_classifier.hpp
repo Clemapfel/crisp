@@ -20,7 +20,7 @@ namespace crisp
             /// @brief add population fo samples to class with given index
             /// @param class_i: index of class in {0, 1, .., ClassN}
             /// @param samples: matrix of size FeatureN*x. Each row is one feature, each column is one sample
-            void train(size_t class_i, const FeatureMatrix_t& samples);
+            void train(const FeatureMatrix_t&, const ClassificationMatrix_t&);
 
             /// @brief classify a feature vector
             /// @param samples: matrix of size Feature*x, where each row i one feature, each column one sample
@@ -33,7 +33,7 @@ namespace crisp
                 float probability = 1.f / ClassN;
                 Eigen::Matrix<float, FeatureN, 1> variance;
                 Eigen::Matrix<float, FeatureN, 1> mean;
-                FeatureMatrix_t samples;
+                size_t n = 0;
                 bool trained = false;
             };
 

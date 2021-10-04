@@ -36,45 +36,70 @@ namespace crisp
     }
 
     template<size_t FeatureN, size_t ClassN>
-    void BayesClassifier<FeatureN, ClassN>::train(size_t class_i, const BayesClassifier<FeatureN, ClassN>::FeatureMatrix_t & input)
+    void BayesClassifier<FeatureN, ClassN>::train(const BayesClassifier<FeatureN, ClassN>::FeatureMatrix_t & features, const ClassificationMatrix_t& classes)
     {
-        assert(class_i < ClassN && "Class Index out of Range");
+        assert(features.cols() == classes.cols());
 
-        auto& c = _classes.at(class_i);
-        auto m = Eigen::MatrixXf(FeatureN, c.samples.cols() + input.cols());
-        m << c.samples, input;
-
-        auto mean = Eigen::MatrixXf(FeatureN, 1);
-        mean.setConstant(0);
-
-        for (size_t col_i = 0; col_i < m.cols(); ++col_i)
+        for (auto& c : _classes)
         {
-            for (size_t row_i = 0; row_i < FeatureN; ++row_i)
-                mean(row_i, 0) += m(row_i, col_i);
+            c.variance.setConstant(0);
+            c.mean.setConstant(0);
+            c.n = 1;
         }
 
-        mean /= float(m.cols());
-
-        auto variance = mean;
-
-        for (size_t col_i = 0; col_i < m.cols(); ++col_i)
+        // estimate mean
+        for (size_t col_i = 0; col_i < features.cols(); ++col_i)
         {
-            for (size_t row_i = 0; row_i < FeatureN; ++row_i)
-                variance(row_i, 0) += powf((m(row_i, col_i) - mean(row_i, 0)), 2);
+            auto& pattern = features.block(0, col_i, features.rows(), 1);
+
+            for (size_t row_i = 0; row_i < classes.rows(); ++row_i)
+            {
+                if (bool(classes(row_i, col_i)))
+                {
+                    auto& c = _classes.at(row_i);
+                    c.mean += pattern;
+                    c.n += 1;
+                }
+            }
         }
 
-        variance /= float(m.cols());
+        for (auto& c : _classes)
+        {
+            c.mean /= c.n;
+        }
 
-        // add pseudocount
-        for (size_t row_i = 0; row_i < FeatureN; ++row_i)
-            if (variance(row_i, 0) == 0)
-                variance(row_i, 0) = 1 / float(m.cols());
+        // estimate var
+        for (size_t col_i = 0; col_i < features.cols(); ++col_i)
+        {
+            auto& pattern = features.block(0, col_i, features.rows(), 1);
 
-        c.mean = mean;
-        c.variance = variance;
-        c.samples = m;
-        c.trained = true;
+            for (size_t row_i = 0; row_i < classes.rows(); ++row_i)
+            {
+                if (bool(classes(row_i, col_i)))
+                {
+                    auto& c = _classes.at(row_i);
+                    c.variance += (pattern - c.mean).cwiseProduct(pattern - c.mean);
+                }
+            }
+        }
 
-        return;
+        auto mean_variance = Eigen::MatrixXf(FeatureN, 1);
+        mean_variance.setConstant(0);
+
+        for (auto& c : _classes)
+        {
+            c.variance /= c.n;
+            mean_variance += c.variance;
+        }
+
+        mean_variance /= _classes.size();
+
+        // estimate if variance is 0
+        for (auto& c : _classes)
+        {
+            for (size_t row_i = 0; row_i < c.variance.size(); ++row_i)
+                if (c.variance(row_i, 0) == 0)
+                    c.variance(row_i, 0) = mean_variance(row_i, 0);
+        }
     }
 }
