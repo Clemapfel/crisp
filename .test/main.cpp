@@ -13,27 +13,20 @@ using namespace crisp;
 
 int main()
 {
-    Eigen::MatrixXf c1;
-    c1.resize(3, 4);
-    c1 << 0, 0, 0, 0,
-          0, 0, 0, 0,
-          1, 2, 3, 4;
+    Eigen::MatrixXf features;
+    features.resize(3, 12);
+    features << 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4,
+                0, 0, 0, 0, 1, 2, 3, 4, 0, 0, 0, 0,
+                1, 2, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0;
 
-    auto c2 = c1;
-    c2 << 0, 0, 0, 0,
-          1, 2, 3, 4,
-          0, 0, 0, 0;
+    auto classes = features;
+    classes <<  0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+                0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0,
+                1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0;
 
-    auto c3 = c1;
-    c3 << 1, 2, 3, 4,
-          0, 0, 0, 0,
-          0, 0, 0, 0;
 
     auto bayes = BayesClassifier<3, 3>();
-    bayes.train(0, c1);
-    bayes.train(1, c2);
-    bayes.train(2, c3);
-
+    bayes.train(features, classes);
 
     auto ctest = Eigen::MatrixXf(3, 3);
     ctest << 0, 1, 0,
@@ -42,58 +35,6 @@ int main()
 
     std::cout << bayes.identify(ctest) << std::endl;
     return 0;
-
-
-    // estimate mean
-    auto estimate_mean = [](const Eigen::MatrixXf& m)
-    {
-        Eigen::MatrixXf out;
-        out.resize(m.rows(), 1);
-        out.setConstant(0);
-
-        for (size_t y = 0; y < m.cols(); y++)
-            for (size_t x = 0; x < m.rows(); x++)
-                out(x, 0) += m(x, y);
-
-        out /= m.cols();
-        return out;
-    };
-
-    // estimate covar
-    auto estimate_covar = [&](const Eigen::MatrixXf& m)
-    {
-        auto mean = estimate_mean(m);
-
-        auto covar = Eigen::MatrixXf(m.rows(), m.rows());
-        covar.setConstant(0);
-
-        for (size_t i = 0; i < m.cols(); ++i)
-        {
-            auto x = m.block(0, i, m.rows(), 1);
-            covar = covar + ((x - mean) * (x - mean).transpose());
-        }
-        covar /= m.cols();
-        return covar;
-    };
-
-    auto decision_function = [&](Eigen::MatrixXf pattern, const Eigen::MatrixXf& m)
-    {
-        auto mean = estimate_mean(m);
-        auto covar = estimate_covar(m);
-
-        // log of gaussian probablity distribution
-        return -0.5 * log(covar.determinant()) * -0.5 * ((pattern - mean).transpose() * covar.inverse() * (pattern - mean))(0, 0);
-    };
-
-    // normalize by subtracting min from all other
-
-    Eigen::MatrixXf test;
-    test.resize(3, 1);
-    test << 5, 5, 5;
-    decision_function(test, c1);
-    std::cout << "A: " << decision_function(test, c1) << std::endl;
-    std::cout << "B: " << decision_function(test, c2) << std::endl;
-
 
     /*
     // A  B    XOR  NOT XOR

@@ -18,36 +18,161 @@ Bayes Classifier, Fully Connected Neural Networks, Convolutional Neural Networks
 
 We learned how to first extract part of an image into a [segment](../segmentation/segmentation.md), then compute unique descriptors that describe the [regions](../feature_extraction) shape and texture. Now it is finally time to use these descriptors to solve one of the most common image processing applications: classifying a region.
 
-To classify a region means to assign it a label. Usually this means to label it as belonging to a certain group, let's assume for the sake of simplicity that we have 3 possible groups: `c0`, `c1` and `c2`, where any one region can only belong to exactly one group. This restriction is not technically necessary but it will keep things more easy to follow later. 
+To classify an object means to divide it into a number of classes `{C_0, C_1, ..., C_m-1}`. For the sake of simplicity we assume that on object can only belong to exaclty one class. While this assumption is not necessary for any of `crisp`s deep learning features, it will make things easier to follow later.
+
+### 1.1 Features & Class Membership
+
+For one specific region, class membership is given as a `m*1` matrix `M`:
+
+| class index | `M(i, 0)`
+|-------------|--------
+| 0           | {0, 1}
+| 1           | {0, 1}
+| ...         | ...
+| m-1         | {0, 1}
+
+Where if `M(4, 0) == 1` then the object is classified into class `C4`. Because an object can only belong to one class at a time, `M.sum() == 1` (as all values except for the single `1` are `0`).
+
+To classify an object we need to describe it somehow, we do this using a `n*1` matrix called a *feature vector*. Each row of this matrix `N` corresponds to one feature:
+
+| feature index | `N(i, 0)`
+|---------------|--------
+| 0             | [-1, 1]
+| 1             | [-1, 1]
+| ...           | ...
+| n-1           | [-1, 1]
+
+When classifying multiple objects, all objects have a feature vector of the same size and each row corresponds to the same type of feature. All that changes is the value of the feature. As we saw in the table above, it is necessary to normalize the value of the feature into range `[-1, 1]`. In the literature features are often normalized into `[0, 1]` but beause this is a subset of of `[-1, 1]` either approach works in `crisp`.
+
+A *training dataset* in `crisp` is a set of feature vectors and their corresponding, desired classifications. In practice this set are two matrices: 
+
++ `FeatureMatrix_t` is a n*x matrix where n the number of features and x the number of samples in the population. Each row is one feature, each column is one sample. All it's values should be normalized into [-1, 1]
+  
++`ClassificationMatrix_t` is a m*x matrix where m the number of classes and x the number of sample. All elements of a row should be either 1 or 0
+
+The number of columns `x` has to be the same for both of these. If one object has it's feature vector as the column of the feature matrix at position i, the the iths column of the classification matrix holds the desired classification.
+
+It may be instructive to consider a practical example. Consider the following data set:
+
+ducks: 38
+chickens: 32
 
 
-## 2. Fully Connected Neural Network
+| sample | class   | egg weight | yolk to white ratio
+|--------|---------|------------|--------------
+|0       | Chicken | 52         |    31%
+1       | Chicken | 58         |    34%
+2       | Chicken | 67         |    32%
+3       | Chicken | 62         |    37%
+4       | Chicken | 59         |    32%
+5       | Chicken | 65         |    29%
+        |         |            |
+6       | Duck    | 61         |    36%
+7       | Duck    | 63         |    35%
+8       | Duck    | 69         |    39%
+9       | Duck    | 60         |    38%
+10       | Duck    | 71        |    37%
+11       | Duck    | 75        |    34%
 
-### 2.1 Feature Vectors and Class Affiliation
+Here we have a set of 12 eggs from both chickens and ducks. Each egg sample has 3 data point: wether it was from a chicken or duck, it's weight and it's yolk-to-white-ratio.
+We want to create a classifier that uses this dataset and decides wether an egg we hand it is a chicken or duck egg.
 
-We formalize the approach as such:
+Before we can use `crisp` for classification, however, we need to arrange the data in a way that `crisp` understands.
 
-Each region has a series of descriptors called a *feature vector*:
+We have `m = 2` classes and `n = 2` features. We are trying to predict the "class" propery of each egg:
 
 ```cpp
-f1,
-f2,
-/*...*/,
-fn
+auto classes = Eigen::Matrix<2, 12>();
+
+classes << 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, // is chicken
+           0, 0, 0, 0, 0, 1, 1, 1, 1, 1; // is duck
 ```
 
-This is a n*1 matrix where each row f1, f2, ... is the numerical value of a feature. It is recommended to normalize all features into the range of [0, 1] (or [-1, 1] depending on the network architecture).
-
-For each feature vector we want to assign it to one of m classes. Class-affiliation is given as a m*1 matrix
+Each egg sample gets a 2x1 feature vector that is 1 in the first row if it is from a chicken, 1 in the second row if it is from a duck. We now enter features in a similar matrix keeping the column order the same. Because `crisp` needs features to be in the range [-1, 1] we also divide all percentages and weights by 100:
 
 ```cpp
-c1, 
-c2,
-/*...*/,
-cm
+auto features = Eigen::Matrix<2, 12>();
+
+features << .52, .58, .67, .62, .59, .65, .61, .63, .69, .60, .71, .75, // weight
+            .31, .34, .32, .37, .32, .29, .36, .35, .39, .38, .37, .34; // yok ratio
 ```
 
-Where each row ci is either `0` or `1` and `c1 + c2 + ... + cm = 1` (that is there is only exaclty one ci that has the value 1, all others are 0). Note that `m` and `n` can be different sizes, it's reasonable to assign objects with 20 features into only 2 classes or (less reasonably) assign objects with 2 features into 20 classes.
+We now have converted our table into a form that `crisps` algorithms understand.
+
+
+### 2. Bayes Statistical Classifier
+
+The simplest classifier in `crisp` is `crisp::BayesClassifier`. This class has two template parameters:
+
+```cpp
+template<size_t FeatureN, size_t ClassN>
+class BayesClassifier
+{
+```
++ `FeatureN` is the number of features (`n` in our notation)
++ `ClassN` is the number of classes (`m` in our notation)
+
+Both need to be available at compile time. 
+
+The classifier works by estimating the type of distribution, mean and variance from a given population. Then when we hand it a sample (egg) to identify, it calculates the propabilities that our egg is from a specific class. For us it would calculated 
+```
+p(x | chicken)  // is our current egg x from a chicken
+p(x | duck)     // is our current egg x from a duck
+```
+
+The return values of the classifier are not actual probabilities (they can be outside the range of [0, 1]) however the higher the actual probablity of class-membership is, the higher a score the classifier will assign to it.
+
+### 2.1 Training the Bayes Classifier
+
+To estimate the values it needs for classification we offer it our training set from before like so:
+
+```cpp
+auto classes = Eigen::Matrix<2, 12>();
+
+classes << 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, // is chicken
+           0, 0, 0, 0, 0, 1, 1, 1, 1, 1; // is duck
+           
+auto features = Eigen::Matrix<2, 12>();
+
+features << .52, .58, .67, .62, .59, .65, .61, .63, .69, .60, .71, .75, // weight
+            .31, .34, .32, .37, .32, .29, .36, .35, .39, .38, .37, .34; // yok ratio
+
+auto bayes = BayesClassifier<2, 2>(); // 2 features, 2 classes
+bayes.train(feature, classes);
+```
+
+That is all, the classifier is now primed to identify any egg we hand it. Unlike neural networks which will be discussed later in this section, the bayes classifier achieves optimality (under it's heavily restricive assumptions) with just one training cycle. 
+
+### 2.2 Identification using the Bayes Classifier
+
+We just came back and found 3 eggs around our imaginative farm. We measure their size and content:
+
+| egg | weight | yolk ratio
+|-----|--------|-----------
+| 0   |  51    |  29%
+| 1   |  67    |  37%
+| 2   |  70    |  38%  
+
+We could ask one-by-one but it is often easier to instead convert them to a feature matrix just like we did with the training data:
+
+```cpp
+auto to_identify = Eigen::MatrixXf(2, 3);
+
+//               0    1    2    // egg
+to_identify << .51, .67, .70,   // weight
+               .29, .37, .38;   // yolk ratio
+```
+
+We can identify this set using just one operation:
+
+```cpp
+auto result = bayes.identify(to_identify);
+std::cout << result << std::endl;
+```
+     
+
+
+
 
 ### 2.2 Architecture
 
