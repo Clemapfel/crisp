@@ -61,7 +61,7 @@ namespace crisp
     }
     
     template<size_t... Ns>
-    typename NeuralNetwork<Ns...>::OutputMatrix_t NeuralNetwork<Ns...>::identify(const InputMatrix_t& input)
+    typename NeuralNetwork<Ns...>::ClassificationMatrix_t NeuralNetwork<Ns...>::identify(const FeatureMatrix_t& input)
     {
         const size_t n_layers = _layer_to_n.size();
 
@@ -95,7 +95,7 @@ namespace crisp
     }
 
     template<size_t... Ns>
-    typename NeuralNetwork<Ns...>::OutputMatrix_t NeuralNetwork<Ns...>::back_propagate(const InputMatrix_t& input, const OutputMatrix_t& desired)
+    typename NeuralNetwork<Ns...>::ClassificationMatrix_t NeuralNetwork<Ns...>::back_propagate(const FeatureMatrix_t& input, const ClassificationMatrix_t& desired)
     {
          const size_t n_layers = _layer_to_n.size();
 
@@ -159,14 +159,14 @@ namespace crisp
     }
     
     template<size_t... Ns>
-    void NeuralNetwork<Ns...>::train(typename NeuralNetwork<Ns...>::InputMatrix_t input, OutputMatrix_t desired)
+    void NeuralNetwork<Ns...>::train(typename NeuralNetwork<Ns...>::FeatureMatrix_t input, ClassificationMatrix_t desired)
     {
         assert(input.cols() == desired.cols() && input.rows() == desired.rows());
         back_propagate(input, desired);
     }
 
     template<size_t... Ns>
-    size_t NeuralNetwork<Ns...>::train_until(typename NeuralNetwork<Ns...>::InputMatrix_t input, OutputMatrix_t desired, float mse_threshold)
+    size_t NeuralNetwork<Ns...>::train_until(typename NeuralNetwork<Ns...>::FeatureMatrix_t input, ClassificationMatrix_t desired, float mse_threshold)
     {
         assert(input.cols() == desired.cols() && input.rows() == desired.rows());
 
@@ -187,7 +187,7 @@ namespace crisp
     }
 
     template<size_t... Ns>
-    float NeuralNetwork<Ns...>::compute_mean_squared_error(typename NeuralNetwork<Ns...>::InputMatrix_t input, OutputMatrix_t desired)
+    float NeuralNetwork<Ns...>::compute_mean_squared_error(typename NeuralNetwork<Ns...>::FeatureMatrix_t input, ClassificationMatrix_t desired)
     {
         assert(input.cols() == desired.cols());
 
@@ -198,7 +198,7 @@ namespace crisp
     }
 
     template<size_t... Ns>
-    float NeuralNetwork<Ns...>::mse_from(const typename NeuralNetwork<Ns...>::OutputMatrix_t& result, const OutputMatrix_t& desired)
+    float NeuralNetwork<Ns...>::mse_from(const typename NeuralNetwork<Ns...>::ClassificationMatrix_t& result, const ClassificationMatrix_t& desired)
     {
         float max_error = -1;
         for (size_t y = 0; y < result.cols(); ++y)
@@ -215,7 +215,7 @@ namespace crisp
     }
 
     template<size_t... Ns>
-    float NeuralNetwork<Ns...>::compute_classification_error(typename NeuralNetwork<Ns...>::InputMatrix_t input, OutputMatrix_t desired)
+    float NeuralNetwork<Ns...>::compute_classification_error(typename NeuralNetwork<Ns...>::FeatureMatrix_t input, ClassificationMatrix_t desired)
     {
         assert(input.cols() == desired.cols());
 

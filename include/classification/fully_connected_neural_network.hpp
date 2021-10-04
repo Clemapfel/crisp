@@ -28,10 +28,10 @@ namespace crisp
             static constexpr size_t get_n_neurons_in_layer();
 
             /// @brief matrix holding one or more feature vectors, each column is one sample, each row is one feature. Feature values should be normalized into [-1, 1]
-            using InputMatrix_t = Eigen::Matrix<float, get_n_neurons_in_layer<0>(), Eigen::Dynamic>;
+            using FeatureMatrix_t = Eigen::Matrix<float, get_n_neurons_in_layer<0>(), Eigen::Dynamic>;
 
             /// @brief matrix holding the output layer activation results for one or more feature vector samples. Each column is one sample, each row is output of one neuron.
-            using OutputMatrix_t = Eigen::Matrix<float, get_n_neurons_in_layer<sizeof...(NeuronsPerLayer) - 1>(), Eigen::Dynamic>;
+            using ClassificationMatrix_t = Eigen::Matrix<float, get_n_neurons_in_layer<sizeof...(NeuronsPerLayer) - 1>(), Eigen::Dynamic>;
 
             /// @brief ctor
             /// @param learning_rate: constant that governs learning speed, often called alpha or mu in the literature. Recommended range: [0.001, 0.1]
@@ -40,31 +40,31 @@ namespace crisp
             /// @brief forward pass through network
             /// @param input: matrix holding one or more samples, each column is one sample, each row one feature
             /// @returns matrix holding activation values, each column is one sample, each row one output layer neuron activation result
-            [[nodiscard]] OutputMatrix_t identify(const InputMatrix_t&);
+            [[nodiscard]] ClassificationMatrix_t identify(const FeatureMatrix_t&);
 
             /// @brief back propagate to train network a single time
             /// @param features: matrix holding one or more samples, each column is one sample, each row one feature. Features should be normalized into [-1, 1]
             /// @param desired_result: matrix holding one or more desired response vectors, each column is one sample, each row is the desired output for that neuron. All values should be either 0 or 1
-            void train(InputMatrix_t features, OutputMatrix_t desired_result);
+            void train(FeatureMatrix_t features, ClassificationMatrix_t desired_result);
 
             /// @brief back propagate until mean squared error is below threshold for more than 3 runs in a row
             /// @param features: matrix holding one or more samples, each column is one sample, each row one feature. Features should be normalized into [-1, 1]
             /// @param desired_result: matrix holding one or more desired response vectors, each column is one sample, each row is the desired output for that neuron. All values should be either 0 or 1
             /// @param mse_threshold: threshold for mean squared error, recommended range: [0.000001, 0.01]
             /// @returns number of epochs elapsed
-            size_t train_until(InputMatrix_t features, OutputMatrix_t desired_result, float mse_threshold);
+            size_t train_until(FeatureMatrix_t features, ClassificationMatrix_t desired_result, float mse_threshold);
 
             /// @brief forward pass for given feature vectors, then compute maximum mean squared error in result
             /// @param features: matrix holding one or more samples, each column is one sample, each row one feature. Features should be normalized into [-1, 1]
             /// @param desired_result: matrix holding one or more desired response vectors, each column is one sample, each row is the desired output for that neuron. All values should be either 0 or 1
             /// @returns mean squared error
-            float compute_mean_squared_error(InputMatrix_t features, OutputMatrix_t desired_result);
+            float compute_mean_squared_error(FeatureMatrix_t features, ClassificationMatrix_t desired_result);
 
             /// @brief compute ratio of misidentifications using current weights
             /// @param features: matrix holding one or more samples, each column is one sample, each row one feature. Features should be normalized into [-1, 1]
             /// @param desired_result: matrix holding one or more desired response vectors, each column is one sample, each row is the desired output for that neuron. All values should be either 0 or 1
             /// @returns float in [0, 1] where 0 if all correct, 1 if none correct
-            float compute_classification_error(InputMatrix_t features, OutputMatrix_t desired_result);
+            float compute_classification_error(FeatureMatrix_t features, ClassificationMatrix_t desired_result);
 
             /// @brief set learning rate for all future back propagations
             /// @param alpha: learning rate, recommended range: [0.001, 0.1]
@@ -95,9 +95,9 @@ namespace crisp
             void override_bias(size_t layer_i, size_t neuron_i, float bias);
 
         private:
-            static float mse_from(const OutputMatrix_t& actual, const OutputMatrix_t& desired);
+            static float mse_from(const ClassificationMatrix_t& actual, const ClassificationMatrix_t& desired);
 
-            OutputMatrix_t back_propagate(const InputMatrix_t&, const OutputMatrix_t&);
+            ClassificationMatrix_t back_propagate(const FeatureMatrix_t&, const ClassificationMatrix_t&);
 
             float activation_function(float x);
             float activation_function_partial_derivative(float x);
