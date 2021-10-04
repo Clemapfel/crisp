@@ -21,22 +21,6 @@ We learned how to first extract part of an image into a [segment](../segmentatio
 To classify a region means to assign it a label. Usually this means to label it as belonging to a certain group, let's assume for the sake of simplicity that we have 3 possible groups: `c0`, `c1` and `c2`, where any one region can only belong to exactly one group. This restriction is not technically necessary but it will keep things more easy to follow later. 
 
 
-It may be instructional to consider an example. Say that we're trying to classify white, round balls into three classes: Field-Hockey balls, Golfballs and Tabletennis Balls:
-
-
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Balle_de_hockey_sur_gazon_avec_pi%C3%A8ce_de_5_francs.jpg/1920px-Balle_de_hockey_sur_gazon_avec_pi%C3%A8ce_de_5_francs.jpg)
-<br>
-A field hockey ball (source: wikimedia)<br><br>
-![](https://upload.wikimedia.org/wikipedia/commons/e/e9/Golf_ball_titleist_1.jpg)
-A golf ball (source: wikimedia)<br><br>
-
-![](https://m.media-amazon.com/images/I/81crdESgtLL._AC_SL1500_.jpg)
-Three table-tennis balls (source: schildkröt online store)<br>
-
-In image-processing we rarely have information like weight and relative size available so we will have to work with purely visual elements.
-
-
-
 ## 2. Fully Connected Neural Network
 
 ### 2.1 Feature Vectors and Class Affiliation
@@ -261,7 +245,7 @@ Note how it's architecture differs, previously it was `NeuralNetwork<2, 2, 2, 2>
 
 `crisp::NeuralNetwork` offers two training functions:
 
-```cpp
+```cppic
 
 
 
