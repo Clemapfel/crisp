@@ -4,6 +4,7 @@
 //
 
 #include <classification/fully_connected_neural_network.hpp>
+#include <classification/bayes_classifier.hpp>
 #include <thread>
 #include <iostream>
 #include <fstream>
@@ -14,14 +15,34 @@ int main()
 {
     Eigen::MatrixXf c1;
     c1.resize(3, 4);
-    c1 << 0, 0, 1, 0,
-          0, 1, 1, 1,
-          1, 1, 1, 0;
+    c1 << 0, 0, 0, 0,
+          0, 0, 0, 0,
+          1, 2, 3, 4;
 
     auto c2 = c1;
-    c2 << 1, 1, 1, 0,
-          0, 0, 1, 0,
-          1, 0, 0, 0;
+    c2 << 0, 0, 0, 0,
+          1, 2, 3, 4,
+          0, 0, 0, 0;
+
+    auto c3 = c1;
+    c3 << 1, 2, 3, 4,
+          0, 0, 0, 0,
+          0, 0, 0, 0;
+
+    auto bayes = BayesClassifier<3, 3>();
+    bayes.train(0, c1);
+    bayes.train(1, c2);
+    bayes.train(2, c3);
+
+
+    auto ctest = Eigen::MatrixXf(3, 3);
+    ctest << 0, 1, 0,
+             1, 0, 0,
+             0, 0, 1;
+
+    std::cout << bayes.identify(ctest) << std::endl;
+    return 0;
+
 
     // estimate mean
     auto estimate_mean = [](const Eigen::MatrixXf& m)
@@ -60,12 +81,15 @@ int main()
         auto mean = estimate_mean(m);
         auto covar = estimate_covar(m);
 
-        return covar.determinant() + ((pattern - mean).transpose() * covar.inverse() * (pattern - mean))(0, 0);
+        // log of gaussian probablity distribution
+        return -0.5 * log(covar.determinant()) * -0.5 * ((pattern - mean).transpose() * covar.inverse() * (pattern - mean))(0, 0);
     };
+
+    // normalize by subtracting min from all other
 
     Eigen::MatrixXf test;
     test.resize(3, 1);
-    test << 0, 0.4, 0;
+    test << 5, 5, 5;
     decision_function(test, c1);
     std::cout << "A: " << decision_function(test, c1) << std::endl;
     std::cout << "B: " << decision_function(test, c2) << std::endl;

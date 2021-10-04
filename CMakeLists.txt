@@ -88,7 +88,12 @@ add_library(crisp STATIC
         .src/noise_generator.inl
         .src/salt_and_pepper_distribution.inl
 
-        include/classification/fully_connected_neural_network.hpp .src/fully_connected_neural_network.inl include/classification/classification.hpp)
+        include/classification/fully_connected_neural_network.hpp
+        .src/fully_connected_neural_network.inl
+
+        include/classification/bayes_classifier.hpp
+        .src/bayes_classifier.inl
+        )
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp sfml-graphics sfml-window sfml-system fftw3 fftw3l fftw3f)
