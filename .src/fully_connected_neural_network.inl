@@ -91,7 +91,9 @@ namespace crisp
                     hzl.back()(i, j) = activation_function(zl.back()(i, j));
         }
 
-        return hzl.back();
+        auto& out = hzl.back();
+
+        return out;
     }
 
     template<size_t... Ns>

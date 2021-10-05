@@ -16,7 +16,7 @@ namespace crisp
         float min = std::numeric_limits<float>::max();
         for (size_t col_i = 0; col_i < input.cols(); ++col_i)
         {
-            const auto& pattern = input.block(0, col_i, 3, 1);
+            const auto& pattern = input.block(0, col_i, FeatureN, 1);
 
             for (size_t class_i = 0; class_i < ClassN; ++class_i)
             {
@@ -30,6 +30,15 @@ namespace crisp
                     out(class_i, col_i) *= 1 / sqrt(variance) * exp(-1 * pow(pattern(row_i, 0) - mean, 2) / (2 * variance));
                 }
             }
+        }
+
+        for (size_t col_i = 0; col_i < out.cols(); ++col_i)
+        {
+            float sum = out.block(0, col_i, out.rows(), 1).sum();
+            assert(sum != 0);
+
+            for (size_t row_i = 0; row_i < out.rows(); ++row_i)
+                out(row_i, col_i) /= sum;
         }
 
         return out;
