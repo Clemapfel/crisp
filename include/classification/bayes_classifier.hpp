@@ -10,6 +10,8 @@
 namespace crisp
 {
     /// @brief naive bayes optimum statistical classifier, assumes distribution to be gaussian
+    /// @tparam FeatureN: number of features in feature vector
+    /// @tparam ClassN: number of possible classes
     template<size_t FeatureN, size_t ClassN>
     class BayesClassifier
     {
@@ -17,14 +19,14 @@ namespace crisp
         using ClassificationMatrix_t = Eigen::Matrix<float, ClassN, Eigen::Dynamic>;
 
         public:
-            /// @brief add population fo samples to class with given index
-            /// @param class_i: index of class in {0, 1, .., ClassN}
-            /// @param samples: matrix of size FeatureN*x. Each row is one feature, each column is one sample
+            /// @brief estimate variance and mean from population
+            /// @param features: feature matrix where each row is one feature, each column one sample
+            /// @param desired: classification matrix where each row is one class, each column one sample
             void train(const FeatureMatrix_t&, const ClassificationMatrix_t&);
 
             /// @brief classify a feature vector
-            /// @param samples: matrix of size Feature*x, where each row i one feature, each column one sample
-            /// @returns matrix of size ClassN*x, each column is one sample. The row with the *highest* value is the predicted classification
+            /// @param samples: matrix of size Feature*x where each row is one feature, each column one sample
+            /// @returns matrix of size ClassN*x where each row is one class, each column one sample. The row with the highest value is the predicted classification
             ClassificationMatrix_t identify(const FeatureMatrix_t&);
 
         private:
