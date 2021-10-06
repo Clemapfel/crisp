@@ -32,7 +32,7 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
     5.3 [Signatures](#boundary-signatures)<br>
     5.4 [Region Descriptors](#region-descriptors)<br>
     5.5 [Texture Descriptors](#texture-descriptors)<br>
-6. [**Feature Classification & Deep Learning](#feature-classifiction)<br>
+6. [**Feature Classification & Deep Learning**](#feature-classifiction)<br>
    6.1 [Data Layout](#data-layout)<br>
    6.2 [Bayes Statistical Classifier](#bayes-classifier)<br>
    6.3 [Neural Networks](#deep-learning)<br>
