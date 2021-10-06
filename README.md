@@ -1,4 +1,4 @@
-# CRISP: Real-Time Interactive Signal Processing Library
+# CRISP: Real-Time Interactive Signal Processing Library (v0.6.2)
 
 ## What is `crisp`?
 `crisp` is a library implementing most image-processing needs from scratch. This includes:
