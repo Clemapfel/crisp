@@ -32,23 +32,27 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
     5.3 [Signatures](#boundary-signatures)<br>
     5.4 [Region Descriptors](#region-descriptors)<br>
     5.5 [Texture Descriptors](#texture-descriptors)<br>
-6. [**Frequency Domain Filtering**](#frequency-domain)<br>
-    6.1 [Fourier Transform](#fourier-transform)<br>
-    6.2 [Spectral Filters](#spectral-filters)<br>
-    6.3 [Pre-Defined Filter Types](#filter-types)<br>
-7. [**Vectors**](#vectors)<br>
-    7.1 [General](#general)<br>
-    7.2 [Arithmetics & Comparison](#arithmetics--comparisons)<br>
-8. [**Color**](#color)<br>
-    8.1 [Color Representations](#color-representations)<br>
-    8.2 [Pseudo Color](#pseudo-color)<br>
-9. [**Noise**](#noise)<br>
-    9.1 [crisp::NoiseGenerator](#general)<br>
-    9.2 [Types of Noise](#types-of-noise)<br>
-10. [**System**](#system)<br>
-    10.1 [Image I/O](#image-io)<br>
-    10.2 [Rendering](#rendering)<br>
-    10.3 [User Input](#keyboardmouse-input)<br>
+6. [**Feature Classification & Deep Learning](#feature-classifiction)<br>
+   6.1 [Data Layout](#data-layout)<br>
+   6.2 [Bayes Statistical Classifier](#bayes-classifier)<br>
+   6.3 [Neural Networks](#deep-learning)<br>
+7. [**Frequency Domain Filtering**](#frequency-domain)<br>
+    7.1 [Fourier Transform](#fourier-transform)<br>
+    7.2 [Spectral Filters](#spectral-filters)<br>
+    7.3 [Pre-Defined Filter Types](#filter-types)<br>
+8. [**Vectors**](#vectors)<br>
+    8.1 [General](#general)<br>
+    8.2 [Arithmetics & Comparison](#arithmetics--comparisons)<br>
+9. [**Color**](#color)<br>
+    9.1 [Color Representations](#color-representations)<br>
+    9.2 [Pseudo Color](#pseudo-color)<br>
+10. [**Noise**](#noise)<br>
+    10.1 [crisp::NoiseGenerator](#general)<br>
+    10.2 [Types of Noise](#types-of-noise)<br>
+11. [**System**](#system)<br>
+    11.1 [Image I/O](#image-io)<br>
+    11.2 [Rendering](#rendering)<br>
+    11.3 [User Input](#keyboardmouse-input)<br>
 ---
 
 ## [Images](./image/image.md)
@@ -263,8 +267,13 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 #include <classification.hpp>
 ```
 
+## Data Layout
 + [Training Data Layout, Feature Vectors and Classification Matrices](./feature_classification/feature_classification_and_deep_learning.md/#1-introduction)
+  
+## Bayes Classifier
 + [Bayes Statistical Classifier](./feature_classification/feature_classification_and_deep_learning.md/#2-bayes-statistical-classifier)
+  
+## Deep Learning
 + [Fully Connected Neural Networks](./feature_classification/feature_classification_and_deep_learning.md/#3-neural-networks)
 
 ---
