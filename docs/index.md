@@ -251,6 +251,24 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 
 ---
 
+##[Feature Classification](./feature_classification/feature_classification_and_deep_learning.md)
+
+```cpp
+#include <classification/bayes_classifier.hpp>
+#include <classification/sift.hpp>
+#include <classification/fully_connected_neural_networks.hpp>
+#include <classification/convolutional_neural_networks.hpp>
+
+// all of the above collected in:
+#include <classification.hpp>
+```
+
++ [Training Data Layout, Feature Vectors and Classification Matrices](./feature_classification/feature_classification_and_deep_learning.md/#1-introduction)
++ [Bayes Statistical Classifier](./feature_classification/feature_classification_and_deep_learning.md/#2-bayes-statistical-classifier)
++ [Fully Connected Neural Networks](./feature_classification/feature_classification_and_deep_learning.md/#3-neural-networks)
+
+---
+
 ## [Frequency Domain](./frequency_domain/frequency_domain_filtering.md)
 ```cpp
 #include <fourier_transform.hpp>
