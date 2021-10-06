@@ -105,7 +105,7 @@ Consider reading the tutorials in order, this will teach important principles of
 9. [Frequency Domain Filters](./docs/frequency_domain/frequency_domain_filtering.md)
 10. [Segmentation](./docs/segmentation/segmentation.md)
 11. [Feature Extraction](./docs/feature_extraction/feature_extraction.md)
-12. [Deep Learning](docs/feature_classification/deep_learning.md)
+12. [Deep Learning](./docs/feature_classification/deep_learning.md)
 
 ## [Documentation](./docs/index.md)
 
