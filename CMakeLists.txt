@@ -88,15 +88,12 @@ add_library(crisp STATIC
         .src/noise_generator.inl
         .src/salt_and_pepper_distribution.inl
 
-        include/.classification/fully_connected_neural_network.hpp
+        include/classification/fully_connected_neural_network.hpp
+        .src/fully_connected_neural_network.inl
 
-        include/.classification/bayes_classifier.hpp
-
-        include/.classification/sift.hpp
-
-        include/.classification/convolutional_neural_network.hpp
-
-        include/.classification/perceptron.hpp)
+        include/classification/bayes_classifier.hpp
+        .src/bayes_classifier.inl
+        docs/feature_classification/deep_learning_example.cpp)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp sfml-graphics sfml-window sfml-system fftw3 fftw3l fftw3f)
@@ -132,6 +129,9 @@ target_link_libraries(EXAMPLE_FEATURE_EXTRACTION crisp)
 
 add_executable(EXAMPLE_NOISE docs/noise/.resources/noise_main.cpp)
 target_link_libraries(EXAMPLE_NOISE crisp)
+
+add_executable(EXAMPLE_DEEP_LEARNING docs/feature_classification/deep_learning_example.cpp)
+target_link_libraries(EXAMPLE_DEEP_LEARNING crisp)
 
 ### TESTS #######################################################################################
 
