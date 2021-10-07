@@ -92,8 +92,7 @@ add_library(crisp STATIC
         .src/fully_connected_neural_network.inl
 
         include/classification/bayes_classifier.hpp
-        .src/bayes_classifier.inl
-        docs/feature_classification/deep_learning_example.cpp)
+        .src/bayes_classifier.inl)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp sfml-graphics sfml-window sfml-system fftw3 fftw3l fftw3f)
@@ -101,37 +100,6 @@ target_link_libraries(crisp sfml-graphics sfml-window sfml-system fftw3 fftw3l f
 include_directories("./include")
 include_directories("./")
 
-### EXAMPLES ####################################################################################
-
-add_executable(EXAMPLE_COLOR docs/color/.resources/color_example.cpp)
-target_link_libraries(EXAMPLE_COLOR crisp)
-
-add_executable(EXAMPLE_FREQUENCY_DOMAIN docs/frequency_domain/.resources/frequency_domain_example.cpp)
-target_link_libraries(EXAMPLE_FREQUENCY_DOMAIN crisp)
-
-add_executable(EXAMPLE_IMAGE docs/image/.resources/image_example.cpp)
-target_link_libraries(EXAMPLE_IMAGE crisp)
-
-add_executable(EXAMPLE_MORPHOLOGICAL_TRANSFORM docs/morphological_transform/.resources/morphological_transform_example.cpp)
-target_link_libraries(EXAMPLE_MORPHOLOGICAL_TRANSFORM crisp)
-
-add_executable(EXAMPLE_SEGMENTATION docs/segmentation/.resources/segmentation_example.cpp)
-target_link_libraries(EXAMPLE_SEGMENTATION crisp)
-
-add_executable(EXAMPLE_SPATIAL_FILTER docs/spatial_filters/.resources/spatial_filter_example.cpp)
-target_link_libraries(EXAMPLE_SPATIAL_FILTER crisp)
-
-add_executable(EXAMPLE_SYSTEM docs/system/system_example.cpp)
-target_link_libraries(EXAMPLE_SYSTEM crisp)
-
-add_executable(EXAMPLE_FEATURE_EXTRACTION docs/feature_extraction/.resources/feature_extraction_example.cpp)
-target_link_libraries(EXAMPLE_FEATURE_EXTRACTION crisp)
-
-add_executable(EXAMPLE_NOISE docs/noise/.resources/noise_main.cpp)
-target_link_libraries(EXAMPLE_NOISE crisp)
-
-add_executable(EXAMPLE_DEEP_LEARNING docs/feature_classification/deep_learning_example.cpp)
-target_link_libraries(EXAMPLE_DEEP_LEARNING crisp)
 
 ### TESTS #######################################################################################
 
