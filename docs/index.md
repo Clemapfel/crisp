@@ -2,7 +2,7 @@
 
 This page lists all major functions and their corresponding entries in the tutorials. You can navigate to each section by clicking the links or visiting `/crisp/docs/xyz` right here on github where xyz is the theme of the tutorial
 
-If this is your first time using `crisp`, consider reading the tutorials in the order recommended [here](../README.md/#tutorial).
+If this is your first time using `crisp`, consider reading the tutorials in the order recommended [here](../README.md/#tutorials).
 
 ---
 
