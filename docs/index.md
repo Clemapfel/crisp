@@ -32,7 +32,7 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
     5.3 [Signatures](#boundary-signatures)<br>
     5.4 [Region Descriptors](#region-descriptors)<br>
     5.5 [Texture Descriptors](#texture-descriptors)<br>
-6. [**Feature Classification & Deep Learning](#feature-classifiction)<br>
+6. [**Feature Classification & Deep Learning**](#feature-classifiction)<br>
    6.1 [Data Layout](#data-layout)<br>
    6.2 [Bayes Statistical Classifier](#bayes-classifier)<br>
    6.3 [Neural Networks](#deep-learning)<br>
@@ -210,23 +210,23 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 #include <image_region.hpp>
 ```
 
-### crisp::ImageRegion
+#### crisp::ImageRegion
 + [Introduction](./feature_extraction/feature_extraction.md/#1-introduction)
 + [How to Extract a Region](./feature_extraction/feature_extraction.md/#11-an-example)
 
-### Boundary
+#### Boundary
 + [Region Boundary](./feature_extraction/feature_extraction.md/#2-region-boundary)
 + [Definition](./feature_extraction/feature_extraction.md/#21-8-connectivity-and-minimal-cardinality)
 + [Boundary Polygon](./feature_extraction/feature_extraction.md/#22-boundary-polygon)
 
-### Boundary Signatures
+#### Boundary Signatures
 + [Vertex Polygon](./feature_extraction/feature_extraction.md/#31-vertex-polygon)
 + [Slope Chain Code Signature](./feature_extraction/feature_extraction.md/#32-slope-chain-code-signature)
 + [Radial Distance Signature](./feature_extraction/feature_extraction.md/#33-radial-distance-signature)
 + [Complex Coordinate Signature](./feature_extraction/feature_extraction.md/#34-complex-coordinate-signature)
 + [Farthest Point Signature](./feature_extraction/feature_extraction.md/#35-farthest-point-signature)
 
-### Region Descriptors
+#### Region Descriptors
 + [Introduction](./feature_extraction/feature_extraction.md/#4-whole-region-descriptors)
 + [Area](./feature_extraction/feature_extraction.md/#41-area--perimeter-compactness)
 + [Perimeter](./feature_extraction/feature_extraction.md/#41-area--perimeter-compactness)
@@ -240,7 +240,7 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 + [Hole Boundaries](./feature_extraction/feature_extraction.md/#47-holes)
 + [N-ths Moment Invariant](./feature_extraction/feature_extraction.md/#48-moment-invariants)
 
-### Texture Descriptors
+#### Texture Descriptors
 + [Definition](./feature_extraction/feature_extraction.md/#5-texture-descriptors)
 + [Intensity Histogram](./feature_extraction/feature_extraction.md/#51-intensity-histogram)
 + [Maximum Response](./feature_extraction/feature_extraction.md/#52-maximum-response)
@@ -255,7 +255,7 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 
 ---
 
-##[Feature Classification](./feature_classification/feature_classification_and_deep_learning.md)
+## [Feature Classification](./feature_classification/feature_classification_and_deep_learning.md)
 
 ```cpp
 #include <classification/bayes_classifier.hpp>
@@ -267,13 +267,13 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 #include <classification.hpp>
 ```
 
-## Data Layout
+#### Data Layout
 + [Training Data Layout, Feature Vectors and Classification Matrices](./feature_classification/feature_classification_and_deep_learning.md/#1-introduction)
   
-## Bayes Classifier
+#### Bayes Classifier
 + [Bayes Statistical Classifier](./feature_classification/feature_classification_and_deep_learning.md/#2-bayes-statistical-classifier)
   
-## Deep Learning
+#### Deep Learning
 + [Fully Connected Neural Networks](./feature_classification/feature_classification_and_deep_learning.md/#3-neural-networks)
 
 ---
