@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -lstdc++fs -pthread -lpthread")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -lstdc++fs -pthread -lpthread -lGL")
 set(CMAKE_CXX_STANDARD 20)
 
 project(crisp)
@@ -12,6 +12,9 @@ find_package(SFML 2.5.1 COMPONENTS graphics window system REQUIRED)
 
 # EIGEN
 include_directories("./eigen/Eigen")
+
+# OpenGL
+FIND_PACKAGE(OpenGL REQUIRED)
 
 ### CRISP #######################################################################################
 
@@ -95,7 +98,7 @@ add_library(crisp STATIC
         .src/bayes_classifier.inl)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
-target_link_libraries(crisp sfml-graphics sfml-window sfml-system fftw3 fftw3l fftw3f)
+target_link_libraries(crisp sfml-graphics sfml-window sfml-system fftw3 fftw3l fftw3f ${OPENGL_LIBRARIES})
 
 include_directories("./include")
 include_directories("./")

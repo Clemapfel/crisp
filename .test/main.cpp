@@ -9,96 +9,42 @@
 #include <iostream>
 #include <fstream>
 
+#include <SFML/OpenGL.hpp>
+#include <SFML/Window/Context.hpp>
+#include <SFML/Graphics/RenderTexture.hpp>
+
+#include <system.hpp>
+#include <GL/gl.h>
+
 using namespace crisp;
 
 int main()
 {
-    Eigen::MatrixXf features;
-    features.resize(3, 12);
-    features << 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4,
-                0, 0, 0, 0, 1, 2, 3, 4, 0, 0, 0, 0,
-                1, 2, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0;
+    auto settings = sf::ContextSettings(0, 0, 0, 3, 3);
+    auto context = sf::Context(settings, 1000, 1000);
 
-    auto classes = features;
-    classes <<  0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
-                0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0,
-                1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0;
+    // render texture has context
+    auto render = sf::RenderTexture();
+    render.create(800, 600, settings);
 
+    render.setActive(true);
+    glClearColor(1, 0, 1, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
 
-    auto bayes = BayesClassifier<3, 3>();
-    bayes.train(features, classes);
+    render.setActive(false);
 
-    auto ctest = Eigen::MatrixXf(3, 3);
-    ctest << 0, 1, 0,
-             1, 0, 0,
-             0, 0, 1;
+    auto window = crisp::RenderWindow(800, 600);
+    auto sprite = sf::Sprite();
+    sprite.setTexture(render.getTexture());
 
-    std::cout << bayes.identify(ctest) << std::endl;
-    return 0;
+    while(window.is_open())
+    {
+        window.update();
 
-    /*
-    // A  B    XOR  NOT XOR
-    // 0  1 -> 1    0
-    // 1  0 -> 1    0
-    // 1  1 -> 0    1
-    // 0  0 -> 0    1
-
-    Eigen::MatrixXf feature;
-    feature.resize(2, 4);
-    feature << 1, -1, 0,  -0.5,
-               -1, -1, 0, +0.5;
-
-    Eigen::MatrixXf desired;
-    desired.resize(2, 4);
-    desired << 1, 0, 1, 0,
-               0, 1, 0, 1;
-
-    auto nn = NeuralNetwork<2, 2, 2, 2>();
-
-    auto file = std::ifstream("/home/clem/Workspace/crisp/docs/feature_classification/xor_nn.bin");
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    std::string str = buffer.str();
-    nn.from_string(str);
-
-    //std::cout << nn.train_until(feature, desired, 0.0001) << std::endl;
-
-    std::cout << nn.identify(feature) << std::endl;
-    std::cout << std::endl;
-
-    /*
-    auto nn = NeuralNetwork<3, 2, 2>();
-
-    // pg. 949
-    nn.override_weight(1, 0, 0, 0.1);
-    nn.override_weight(1, 0, 1, 0.2);
-    nn.override_weight(1, 0, 2, 0.6);
-    nn.override_bias(1, 0, 0.4);
-
-    nn.override_weight(1, 1, 0, 0.4);
-    nn.override_weight(1, 1, 1, 0.3);
-    nn.override_weight(1, 1, 2, 0.1);
-    nn.override_bias(1, 1, 0.2);
-
-    nn.override_weight(2, 0, 0, 0.2);
-    nn.override_weight(2, 0, 1, 0.1);
-    nn.override_bias(2, 0, 0.6);
-
-    nn.override_weight(2, 1, 0, 0.1);
-    nn.override_weight(2, 1, 1, 0.4);
-    nn.override_bias(2, 1, 0.3);
-
-    //std::cout << nn.forward_pass({3, 0, 1}) << std::endl;
-
-    Eigen::MatrixXf input;
-    input.resize(3, 4);
-    input << 3, 3, 3, 3,
-             0, 0, 0, 0,
-             1, 1, 1, 1;
-
-    nn.back_propagate(input, input);
-     */
-
+        window.clear();
+        window.draw(sprite);
+        window.display();
+    }
 
 }
 
