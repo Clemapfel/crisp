@@ -58,19 +58,27 @@ This makes debugging, filter design or just understanding/explaining your own al
     - Textures live inVRAM and are operated upon by the GPU
 + allows for full flexibility with optional hardware acceleration
 
-`crisp` is **interactive**<br>
-+ All SFML functionality is included, this means keyboard/mouse support, rendering to a window, shapes, sounds, etc.
-
 ## Installation
 ### Dependencies
 + C++20 or newer
-+ [gcc10](https://gcc.gnu.org/install/download.html) or newer 
-+ [OpenGL 3.2](https://developer.nvidia.com/opengl-driver) or newer
 + [cmake](https://cmake.org/install/)
++ [gcc10](https://gcc.gnu.org/install/download.html) or newer 
+    - `libgcc-10-dev`
++ [OpenGL 3.2](https://developer.nvidia.com/opengl-driver) or newer
+    - `libopengl-dev`
 + [Eigen](https://eigen.tuxfamily.org/dox/GettingStarted.html)
+    - `libeigen3-dev`
 + [SFML](https://www.sfml-dev.org/tutorials/1.6/start-linux.php)
-+ [fftw3](https://www.fftw.org/) (included)
-
+    - `libsfml-system2.5`
+    - `libsfml-window2.5`
+    - `libsfml-graphics2.5`
++ [fftw3](https://www.fftw.org/)
+    - `libfftw3-bin` 
+    - `libfftw3-single3`
+    - `libfftw3-double3` 
+    - `libfftw3-long3`
+    - `libfftw3-quad3`
+    
 ### Installation
 `crisp` is header only, to add it to your project, simply use:
 
@@ -82,14 +90,14 @@ or if you already have a project folder:
 ```
 git submodule add https://github.com/Clemapfel/crisp.git
 ```
-
 Add the corresponding include path to your cmake script and link against `crisp` like so:
+
 ```cmake
 include_directories(/path/to/.../crisp/include/)
 add_executable(MY_EXECUTABLE path/to/my/main.cpp)
 target_link_libraries(MY_EXECUTABLE crisp)
 ```
-Be sure to compile with gcc10 or newer, as many needed C++20 features are not supported in older versions. You will also need to install Eigen and SFML on a system-level (see [Dependencies](#dependencies))
+Be sure to compile with gcc10 or newer, as many needed C++20 features are not supported in older versions. If linker errors appear, make sure all dependencies and packages listed above are installed on a system level.
 
 ## Tutorials
 
