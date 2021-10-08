@@ -159,11 +159,22 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    sf::Image image;
-    image.loadFromFile("/home/clem/Workspace/crisp/.test/opal_color.png");
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getSize().x, image.getSize().y, 0, GL_RGB, GL_UNSIGNED_BYTE, image.getPixelsPtr());
-    glGenerateMipmap(GL_TEXTURE_2D);
+    crisp::ColorImage image = crisp::load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
+    std::vector<float> data;
 
+    for (size_t y = 0; y < image.get_size().y(); ++y)
+    {
+        for (size_t x = 0; x < image.get_size().x(); ++x)
+        {
+            auto px = image(x, image.get_size().y() - y);
+            data.push_back(px.red());
+            data.push_back(px.green());
+            data.push_back(px.blue());
+        }
+    }
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.get_size().x(), image.get_size().y(), 0, GL_RGB, GL_FLOAT, &data[0]);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
     // render
     glClearColor(0.2f, 0.3f, 0.3f, 1);

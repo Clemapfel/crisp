@@ -147,7 +147,7 @@ namespace crisp
             /// @return const iterator to past-the-end element
             auto end() const;
 
-        protected:
+        //protected:
             Eigen::Matrix<Value_t, Eigen::Dynamic, Eigen::Dynamic> _data;
 
         private:
