@@ -7,7 +7,7 @@ project(crisp)
 ### DEPENDENCIES ################################################################################
 
 # SFML
-set(SFML_DIR "/usr/include/SFML") # modify this SFML is located somewhere else
+set(SFML_DIR "/usr/include/SFML") # modify this if SFML is located somewhere else
 find_package(SFML 2.5.1 COMPONENTS graphics window system REQUIRED)
 
 # EIGEN
