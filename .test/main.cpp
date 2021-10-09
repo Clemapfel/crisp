@@ -17,6 +17,7 @@
 #include <GLES3/gl3.h>
 
 #include <texture/state.hpp>
+#include <texture/texture.hpp>
 
 using namespace crisp;
 
@@ -55,14 +56,15 @@ const char *fragmentShaderSource = R"(
 
 int main()
 {
-    crisp::ColorImage image = crisp::load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
+    auto image = crisp::load_binary_image("/home/clem/Workspace/crisp/.test/opal_color.png");
 
     sf::ContextSettings context_settings;
     context_settings.antialiasingLevel = 0;
 
     auto style = sf::Style::Titlebar | sf::Style::Close;
 
-    auto window = sf::RenderWindow();
+    auto state = crisp::State<sf::RenderWindow>();
+    auto& window = state._context;
     window.create(sf::VideoMode(image.get_size().x(), image.get_size().y()), "", style, context_settings);
     window.setActive(true);
 
@@ -154,32 +156,10 @@ int main()
     glEnableVertexAttribArray(2);
 
     // texture
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    std::vector<float> data;
-
-    for (size_t y = 0; y < image.get_size().y(); ++y)
-    {
-        for (size_t x = 0; x < image.get_size().x(); ++x)
-        {
-            auto px = image(x, image.get_size().y() - y);
-            data.push_back(px.red());
-            //data.push_back(px.green());
-            //data.push_back(px.blue());
-        }
-    }
-
-    // GL_R3_G3_B2 for black and white
-    // GL_RGB32F for color
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R16, image.get_size().x(), image.get_size().y(), 0, GL_RED, GL_FLOAT, &data[0]);
-    glGenerateMipmap(GL_TEXTURE_2D);
+    auto tex = Texture<bool, 1>(image.get_size().x(), image.get_size().y());
+    tex.create_from(image);
+    auto texture = state.add_texture(tex);
+    state.bind_texture(texture);
 
     // render
     glClearColor(0.2f, 0.3f, 0.3f, 1);

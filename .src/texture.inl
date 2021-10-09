@@ -43,9 +43,8 @@ namespace crisp
     template<typename T, size_t N>
     T* Texture<T, N>::expose_data()
     {
-        return &_data[0];
+        return reinterpret_cast<T*>(_data[0]);
     }
-
 
     template<typename T, size_t N>
     void Texture<T, N>::create_from(const Image<T, N>& image)

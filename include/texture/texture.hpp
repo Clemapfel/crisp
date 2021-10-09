@@ -60,6 +60,28 @@ namespace crisp
         private:
             Vector2ui _size;
             PaddingType _padding_type = PaddingType::STRETCH;
+
+            class BoolProxy
+            {
+                private:
+                    bool _value;
+
+                public:
+                    BoolProxy()
+                        : _value(false)
+                    {}
+
+                    BoolProxy(const bool& b)
+                        : _value(b)
+                    {}
+
+                    operator bool()
+                    {
+                        return _value;
+                    }
+            };
+
+            //using final_t = typename std::conditional<std::is_same_v<InnerValue_t, bool>, BoolProxy, InnerValue_t>::type;
             std::vector<InnerValue_t> _data;
     };
 }
