@@ -79,7 +79,7 @@ namespace crisp
                      texture.get_size().y(),
                      0,
                      format,
-                     (std::is_same_v<Value_t, bool> ? GL_BYTE : GL_FLOAT),
+                     (std::is_same_v<Value_t, bool> ? GL_UNSIGNED_BYTE : GL_FLOAT),
                      texture.expose_data());
 
         glGenerateMipmap(GL_TEXTURE_2D);
