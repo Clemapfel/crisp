@@ -47,19 +47,21 @@ const char *fragmentShaderSource = R"(
     
     void main()
     {
-        FragColor = texture(ourTexture, TexCoord);
+        FragColor = vec4(texture(ourTexture, TexCoord).xxx, 1);
     }
 )";
 
 int main()
 {
+    crisp::ColorImage image = crisp::load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
+
     sf::ContextSettings context_settings;
     context_settings.antialiasingLevel = 0;
 
     auto style = sf::Style::Titlebar | sf::Style::Close;
 
     auto window = sf::RenderWindow();
-    window.create(sf::VideoMode(800, 600), "", style, context_settings);
+    window.create(sf::VideoMode(image.get_size().x(), image.get_size().y()), "", style, context_settings);
     window.setActive(true);
 
     // shaders
@@ -138,7 +140,7 @@ int main()
     glEnableVertexAttribArray(0);
 
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(0));
     glEnableVertexAttribArray(0);
 
     // color attribute
@@ -156,10 +158,9 @@ int main()
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    crisp::ColorImage image = crisp::load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
     std::vector<float> data;
 
     for (size_t y = 0; y < image.get_size().y(); ++y)
@@ -168,12 +169,14 @@ int main()
         {
             auto px = image(x, image.get_size().y() - y);
             data.push_back(px.red());
-            data.push_back(px.green());
-            data.push_back(px.blue());
+            //data.push_back(px.green());
+            //data.push_back(px.blue());
         }
     }
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.get_size().x(), image.get_size().y(), 0, GL_RGB, GL_FLOAT, &data[0]);
+    // GL_R3_G3_B2 for black and white
+    // GL_RGB32F for color
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R16, image.get_size().x(), image.get_size().y(), 0, GL_RED, GL_FLOAT, &data[0]);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     // render

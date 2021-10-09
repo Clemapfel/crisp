@@ -95,7 +95,7 @@ add_library(crisp STATIC
         .src/fully_connected_neural_network.inl
 
         include/classification/bayes_classifier.hpp
-        .src/bayes_classifier.inl)
+        .src/bayes_classifier.inl include/texture/texture.hpp include/texture/state.hpp .src/state.inl .src/texture.inl)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp sfml-graphics sfml-window sfml-system fftw3 fftw3l fftw3f ${OPENGL_LIBRARIES})

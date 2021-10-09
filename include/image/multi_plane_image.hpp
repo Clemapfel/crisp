@@ -6,7 +6,7 @@
 #pragma once
 
 #include <vector.hpp>
-#include <image/padding_type.hpp>
+#include <padding_type.hpp>
 #include <color.hpp>
 
 #include <type_traits>
