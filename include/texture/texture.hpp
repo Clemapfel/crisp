@@ -15,6 +15,7 @@
 
 #include <padding_type.hpp>
 #include <vector.hpp>
+#include <image/multi_plane_image.hpp>
 
 namespace crisp
 {
@@ -41,13 +42,15 @@ namespace crisp
     class Texture
     {
         static_assert(N <= 4, "crisp::Texture only supports up to 4 planes. For a higher dimensional image, use crisp::Image");
-        static_asssert(std::is_same_v<InnerValue_t, bool> or std::is_same_v<InnerValue_t, float>, "crisp::Texture only support bool and 32-bit float as value type, for other types use crisp::Image");
+        static_assert(std::is_same_v<InnerValue_t, bool> or std::is_same_v<InnerValue_t, float>, "crisp::Texture only support bool and 32-bit float as value type, for other types use crisp::Image");
 
         public:
-            using Value_t = typename std::conditional<N == 3 and std::is_same_v<InnerValue_t, float>, RGB, Vector<InnerValue_t, N>>::type;
-
             Texture(size_t width, size_t height);
             void create(size_t width, size_t height);
+
+            void create_from(const Image<InnerValue_t, N>&);
+
+            Vector2ui get_size() const;
 
             void set_padding_type(PaddingType);
             PaddingType get_padding_type() const;
@@ -55,9 +58,8 @@ namespace crisp
             InnerValue_t* expose_data();
 
         private:
-
             Vector2ui _size;
-            PaddingType _padding_type;
+            PaddingType _padding_type = PaddingType::STRETCH;
             std::vector<InnerValue_t> _data;
     };
 }

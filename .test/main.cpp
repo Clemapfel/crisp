@@ -16,6 +16,8 @@
 #include <system.hpp>
 #include <GLES3/gl3.h>
 
+#include <texture/state.hpp>
+
 using namespace crisp;
 
 const char *vertexShaderSource = R"(
