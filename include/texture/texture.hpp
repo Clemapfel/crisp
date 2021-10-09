@@ -17,6 +17,8 @@
 #include <vector.hpp>
 #include <image/multi_plane_image.hpp>
 
+#include <boost/container/vector.hpp>
+
 namespace crisp
 {
 
@@ -45,6 +47,8 @@ namespace crisp
         static_assert(std::is_same_v<InnerValue_t, bool> or std::is_same_v<InnerValue_t, float>, "crisp::Texture only support bool and 32-bit float as value type, for other types use crisp::Image");
 
         public:
+            using Value_t = typename std::conditional<std::is_same_v<InnerValue_t, bool>, char, InnerValue_t>::type;
+
             Texture(size_t width, size_t height);
             void create(size_t width, size_t height);
 
@@ -55,34 +59,13 @@ namespace crisp
             void set_padding_type(PaddingType);
             PaddingType get_padding_type() const;
 
-            InnerValue_t* expose_data();
+            auto* expose_data();
 
         private:
             Vector2ui _size;
             PaddingType _padding_type = PaddingType::STRETCH;
 
-            class BoolProxy
-            {
-                private:
-                    bool _value;
-
-                public:
-                    BoolProxy()
-                        : _value(false)
-                    {}
-
-                    BoolProxy(const bool& b)
-                        : _value(b)
-                    {}
-
-                    operator bool()
-                    {
-                        return _value;
-                    }
-            };
-
-            //using final_t = typename std::conditional<std::is_same_v<InnerValue_t, bool>, BoolProxy, InnerValue_t>::type;
-            std::vector<InnerValue_t> _data;
+            std::vector<Value_t> _data;
     };
 }
 

@@ -39,7 +39,9 @@ namespace crisp
             if (std::is_same_v<Value_t, float>)
                 internal_format = GL_R32F;
             else if (std::is_same_v<Value_t, bool>)
+            {
                 internal_format = GL_R8;
+            }
         }
         else if (N == 2)
         {
@@ -66,6 +68,9 @@ namespace crisp
                 internal_format = GL_RGBA2;
         }
 
+        size_t sum = 0;
+        for (size_t i = 0; i < texture.get_size().x() * texture.get_size().y(); ++i)
+            sum += int(texture.expose_data()[i]);
 
         glTexImage2D(GL_TEXTURE_2D,
                      0,
@@ -74,7 +79,7 @@ namespace crisp
                      texture.get_size().y(),
                      0,
                      format,
-                     (std::is_same_v<Value_t, bool> ? GL_BOOL : GL_FLOAT),
+                     (std::is_same_v<Value_t, bool> ? GL_BYTE : GL_FLOAT),
                      texture.expose_data());
 
         glGenerateMipmap(GL_TEXTURE_2D);

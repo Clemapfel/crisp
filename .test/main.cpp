@@ -21,42 +21,10 @@
 
 using namespace crisp;
 
-const char *vertexShaderSource = R"(
-
-    #version 330 core
-    layout (location = 0) in vec3 aPos;
-    layout (location = 1) in vec3 aColor;
-    layout (location = 2) in vec2 aTexCoord;
-
-    out vec3 ourColor;
-    out vec2 TexCoord;
-
-    void main()
-    {
-        gl_Position = vec4(aPos, 1.0);
-        ourColor = aColor;
-        TexCoord = aTexCoord;
-    }
-)";
-
-const char *fragmentShaderSource = R"(
-    #version 330 core
-    out vec4 FragColor;
-      
-    in vec3 ourColor;
-    in vec2 TexCoord;
-    
-    uniform sampler2D ourTexture;
-    
-    void main()
-    {
-        FragColor = vec4(texture(ourTexture, TexCoord).xxx, 1);
-    }
-)";
-
 int main()
 {
     auto image = crisp::load_binary_image("/home/clem/Workspace/crisp/.test/opal_color.png");
+    //auto image = image_in.convert_to_color();
 
     sf::ContextSettings context_settings;
     context_settings.antialiasingLevel = 0;
@@ -69,12 +37,25 @@ int main()
     window.setActive(true);
 
     // shaders
+    std::ifstream file("/home/clem/Workspace/crisp/.test/default.vert");
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    auto vertex_source_str = buffer.str();
+    const auto* vertex_source = vertex_source_str.c_str();
+
+    file.close();
+    file.open("/home/clem/Workspace/crisp/.test/default.frag");
+    buffer.str(std::string());
+    buffer << file.rdbuf();
+    auto fragment_source_str = buffer.str();
+    const auto* fragment_source = fragment_source_str.c_str();
+
     unsigned int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader, 1, &vertexShaderSource, NULL);
+    glShaderSource(vertex_shader, 1, &vertex_source, NULL);
     glCompileShader(vertex_shader);
 
     unsigned int fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader, 1, &fragmentShaderSource, NULL);
+    glShaderSource(fragment_shader, 1, &fragment_source, NULL);
     glCompileShader(fragment_shader);
 
     unsigned int shader_program = glCreateProgram();
@@ -89,24 +70,24 @@ int main()
     if (not success)
     {
         glGetProgramInfoLog(vertex_shader, sizeof(log), nullptr, log);
-        std::cerr << log << std::endl;
-        return 1;
+        std::cout << log << std::endl;
+        throw std::invalid_argument("error compiling vertex shader");
     }
 
     glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
     if (not success)
     {
         glGetProgramInfoLog(fragment_shader, sizeof(log), nullptr, log);
-        std::cerr << log << std::endl;
-        return 1;
+        std::cout << log << std::endl;
+        throw std::invalid_argument("error compiling fragment shader");
     }
 
     glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
     if (not success)
     {
         glGetProgramInfoLog(shader_program, sizeof(log), nullptr, log);
-        std::cerr << log << std::endl;
-        return 1;
+        std::cout << log << std::endl;
+        throw std::invalid_argument("error linking shaders");
     }
 
     glDeleteShader(vertex_shader);
