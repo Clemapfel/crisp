@@ -47,7 +47,7 @@ namespace crisp
         static_assert(std::is_same_v<InnerValue_t, bool> or std::is_same_v<InnerValue_t, float>, "crisp::Texture only support bool and 32-bit float as value type, for other types use crisp::Image");
 
         public:
-            using Value_t = typename std::conditional<std::is_same_v<InnerValue_t, bool>, char, InnerValue_t>::type;
+            using Value_t = typename std::conditional<std::is_same_v<InnerValue_t, bool>, khronos_int8_t , InnerValue_t>::type;
 
             Texture(size_t width, size_t height);
             void create(size_t width, size_t height);
@@ -66,6 +66,9 @@ namespace crisp
             PaddingType _padding_type = PaddingType::STRETCH;
 
             std::vector<Value_t> _data;
+
+            static inline const sf::ContextSettings _settings = sf::ContextSettings(0, 0, 0, 3, 3);
+            sf::Context _context;
     };
 }
 

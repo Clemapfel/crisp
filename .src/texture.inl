@@ -11,7 +11,7 @@ namespace crisp
     Texture<T, N>::Texture(size_t width, size_t height)
         : _size{width, height}
     {
-        _data.resize(N * width * height, typename Texture<T, N>::Value_t(0));
+        create(width, height);
     }
 
     template<typename T, size_t N>
@@ -20,6 +20,7 @@ namespace crisp
         _data.clear();
         _data.resize(N * width * height, typename Texture<T, N>::Value_t(0));
         _size = Vector2ui{width, height};
+        _context.create(settings, width, height);
     }
 
     template<typename T, size_t N>
@@ -50,14 +51,17 @@ namespace crisp
     void Texture<T, N>::create_from(const Image<T, N>& image)
     {
         _data.clear();
-        for (size_t y = 0; y < image.get_size().y(); ++y)
+
+        for (size_t y = 0; y < image.get_size().y(); y++)
         {
-            for (size_t x = 0; x < image.get_size().x(); ++x)
+            for (size_t x = 0; x < image.get_size().x(); x++)
             {
-                auto px = image(x, image.get_size().y() - y);
+                auto px = image.at(x, image.get_size().y() - (y+1));
 
                 for (size_t i = 0; i < N; ++i)
-                    _data.push_back(static_cast<Value_t>(px.at(i)));
+                {
+                    _data.push_back(px.at(0));
+                }
             }
         }
     }

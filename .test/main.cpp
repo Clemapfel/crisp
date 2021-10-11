@@ -26,6 +26,9 @@ int main()
     auto image = crisp::load_binary_image("/home/clem/Workspace/crisp/.test/opal_color.png");
     //auto image = image_in.convert_to_color();
 
+    for (size_t y = 0; y < image.get_size().y(); ++y)
+        image(0, y) = false;
+
     sf::ContextSettings context_settings;
     context_settings.antialiasingLevel = 0;
 

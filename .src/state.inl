@@ -68,18 +68,14 @@ namespace crisp
                 internal_format = GL_RGBA2;
         }
 
-        size_t sum = 0;
-        for (size_t i = 0; i < texture.get_size().x() * texture.get_size().y(); ++i)
-            sum += int(texture.expose_data()[i]);
-
         glTexImage2D(GL_TEXTURE_2D,
                      0,
                      internal_format,
-                     texture.get_size().x(),
+                     texture.get_size().x()+1,
                      texture.get_size().y(),
                      0,
                      format,
-                     (std::is_same_v<Value_t, bool> ? GL_UNSIGNED_BYTE : GL_FLOAT),
+                     (std::is_same_v<Value_t, bool> ? GL_BYTE : GL_FLOAT),
                      texture.expose_data());
 
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -111,10 +107,5 @@ namespace crisp
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-
-
-
-
     }
 }
