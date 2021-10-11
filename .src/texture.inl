@@ -20,7 +20,6 @@ namespace crisp
         _data.clear();
         _data.resize(N * width * height, typename Texture<T, N>::Value_t(0));
         _size = Vector2ui{width, height};
-        _context.create(settings, width, height);
     }
 
     template<typename T, size_t N>

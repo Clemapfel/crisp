@@ -67,8 +67,11 @@ namespace crisp
 
             std::vector<Value_t> _data;
 
-            static inline const sf::ContextSettings _settings = sf::ContextSettings(0, 0, 0, 3, 3);
-            sf::Context _context;
+            // ids
+            unsigned int _vertex_buffer,
+                   _vertex_array,
+                   _element_array,
+                   _id;
     };
 }
 

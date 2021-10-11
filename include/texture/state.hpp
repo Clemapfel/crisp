@@ -18,6 +18,8 @@ namespace crisp
 {
     using ID = unsigned int;
 
+    constexpr size_t MAXIMUM_NUMBER_OF_TEXTURES = 64;
+
     template<typename Context_t = sf::RenderWindow>
     struct State
     {
@@ -26,23 +28,43 @@ namespace crisp
 
         void bind_texture(ID);
 
+        static inline const sf::ContextSettings settings = sf::ContextSettings(0, 0, 0, 3, 3);
 
-
-
-
-        void enable_context();
-        void disable_context();
-
-        Context_t _context;
-
-        struct TextureInfo
-        {
-            bool bool_or_float;
-            size_t n;
-            PaddingType padding_type;
+        static inline const float vertices[] = {
+             //pos       //colors   //tex
+             1,  1, 0,   1, 1, 1,   1, 1,
+             1, -1, 0,   1, 1, 1,   1, 0,
+            -1, -1, 0,   1, 1, 1,   0, 0,
+            -1,  1, 0,   1, 1, 1,   0, 1
         };
 
-        std::map<ID, TextureInfo> _info;
+        static inline const unsigned int element_indices[] =
+        {
+            0, 1, 3,
+            1, 2, 3
+        };
+
+        struct TextureProxy
+        {
+            unsigned int native_handle = 0;
+            bool bool_or_float;
+            size_t n = 0;
+            PaddingType padding_type;
+            sf::RenderTexture context = sf::RenderTexture();
+
+            unsigned int vertex_array_id = 0,
+                         vertex_buffer_id = 0,
+                         element_buffer_id = 0;
+        };
+
+        static inline std::array<TextureProxy, MAXIMUM_NUMBER_OF_TEXTURES> _proxies = {};
+        static inline std::array<bool, MAXIMUM_NUMBER_OF_TEXTURES> _proxies_allocated = {false};
+        static inline std::map<ID, size_t> _native_to_index = {};
+
+        TextureProxy& get_proxy(ID id)
+        {
+            return _proxies.at(_native_to_index.at(id));
+        }
     };
 }
 

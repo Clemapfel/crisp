@@ -35,7 +35,7 @@ int main()
     auto style = sf::Style::Titlebar | sf::Style::Close;
 
     auto state = crisp::State<sf::RenderWindow>();
-    auto& window = state._context;
+    auto window = sf::RenderWindow();
     window.create(sf::VideoMode(image.get_size().x(), image.get_size().y()), "", style, context_settings);
     window.setActive(true);
 
