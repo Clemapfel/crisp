@@ -69,7 +69,7 @@ This makes debugging, filter design or just understanding/explaining your own al
 + [cmake](https://cmake.org/install/)
 + [gcc10](https://gcc.gnu.org/install/download.html) or newer 
     - `libgcc-10-dev`
-+ [OpenGL 3.2](https://developer.nvidia.com/opengl-driver) or newer
++ [OpenGL 3.3](https://developer.nvidia.com/opengl-driver) or newer
     - `libopengl-dev`
 + [Eigen](https://eigen.tuxfamily.org/dox/GettingStarted.html)
     - `libeigen3-dev`
