@@ -32,7 +32,6 @@ It's called visual computing, after all. Here's a non-exhaustive list of things 
 + `crisp::StructuringElement`
 + `crisp::Histogram`
 + `Eigen::Matrix<T, /*...*/>`
-+ `crisp::FullyConnectedNeuralNetwork`
 + `crisp::ConvolutionalNeuralNetwork`
 + and more!
 
@@ -43,7 +42,8 @@ This makes debugging, filter design or just understanding/explaining your own al
 + very easy to understand and interface with. Allows for high flexibility
 + textures live in vram and are operated upon by the GPU
 + harder to interact with, textures make up for this by being extremely fast as they make full use of hardware-acceleration
-+ all algorithms work on textures and images just the same
++ all algorithms work on textures and images
++ textures can be transformed into images and vice-versa
 
 `crisp` is **well documented**<br>
 + [full tutorials](#tutorial) are available for all features
