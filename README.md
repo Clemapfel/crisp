@@ -38,6 +38,13 @@ It's called visual computing, after all. Here's a non-exhaustive list of things 
 
 This makes debugging, filter design or just understanding/explaining your own algorithms much easier and more intuitive.
 
+`crisp` is **fast AND flexible**
++ images live in ram and are operated upon by the CPU
++ very easy to understand and interface with. Allows for high flexibility
++ textures live in vram and are operated upon by the GPU
++ harder to interact with, textures make up for this by being extremely fast as they make full use of hardware-acceleration
++ all algorithms work on textures and images just the same
+
 `crisp` is **well documented**<br>
 + [full tutorials](#tutorial) are available for all features
 + examples with images are provided whenever possible
@@ -53,10 +60,8 @@ This makes debugging, filter design or just understanding/explaining your own al
 
 `crisp` is **portable**<br>
 + supports Mac, Linux and Windows
-+ Distinction between Images and Textures:
-    - Images live in RAM and are operated upon by the CPU
-    - Textures live inVRAM and are operated upon by the GPU
-+ allows for full flexibility with optional hardware acceleration
++ runs on tiny 1-cpu machines like embedded systems
++ also makes full use of strong machines' multiple processors, hardware-acceleration
 
 ## Installation
 ### Dependencies
@@ -101,7 +106,7 @@ Be sure to compile with gcc10 or newer, as many needed C++20 features are not su
 
 ## Tutorials
 
-Consider reading the tutorials in order, this will teach important principles of `crisp` and image processing in general step-by-step:
+Consider reading the tutorials in order, this will teach important principles of `crisp` (and image processing in general) step-by-step:
 
 1. [System](./docs/system/system.md)
 3. [Vector](./docs/vector/vector.md)
@@ -117,4 +122,4 @@ Consider reading the tutorials in order, this will teach important principles of
 
 ## [Documentation](./docs/index.md)
 
-Documentation is stored as interactive markdown files, right here on github. An index for easy navigation can be found [here](./docs/index.md) or in `/crisp/docs/index.md`.
+Documentation is stored as interactive markdown files, right here on github. An index for easy navigation can be found [here](./docs/index.md) or in `/crisp/docs/`.
