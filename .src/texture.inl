@@ -43,7 +43,7 @@ namespace crisp
     template<typename T, size_t N>
     auto* Texture<T, N>::expose_data()
     {
-        return &_data[0];
+        return &_data[1];
     }
 
     template<typename T, size_t N>
@@ -59,9 +59,15 @@ namespace crisp
 
                 for (size_t i = 0; i < N; ++i)
                 {
-                    _data.push_back(px.at(0));
+                    if (std::is_same_v<T, bool>)
+                        _data.push_back(bool(px.at(i)) ? std::numeric_limits<Value_t>::max() : 0);
+                    else
+                        _data.push_back(static_cast<Value_t>(px.at(i)));
                 }
             }
         }
+
+        for (size_t i = 0; i < get_size().x() * get_size().y(); ++i)
+            _data.push_back(std::numeric_limits<Value_t>::max());
     }
 }

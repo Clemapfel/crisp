@@ -36,7 +36,7 @@ int main()
 
     auto state = crisp::State<sf::RenderWindow>();
     auto window = sf::RenderWindow();
-    window.create(sf::VideoMode(image.get_size().x(), image.get_size().y()), "", style, context_settings);
+    window.create(sf::VideoMode(image.get_size().x()-1, image.get_size().y()), "", style, context_settings);
     window.setActive(true);
 
     // shaders

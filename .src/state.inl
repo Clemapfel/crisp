@@ -9,8 +9,8 @@ namespace crisp
 {
 
     template<typename CT>
-    template<typename Value_t, size_t N>
-    ID State<CT>::add_texture(Texture<Value_t, N>& texture)
+    template<typename T, size_t N>
+    ID State<CT>::add_texture(Texture<T, N>& texture)
     {
         // allocate new context
         size_t current = 0;
@@ -26,14 +26,13 @@ namespace crisp
 
         if (not found)
         {
-            std::cerr << "[WARNING] The maximum number of sf::Textures (" << MAXIMUM_NUMBER_OF_TEXTURES << ") has been reached, allocating new textures may override others and cause problems." << std::endl;
+            std::cerr << "[WARNING] The maximum number of Textures (" << MAXIMUM_NUMBER_OF_TEXTURES << ") has been reached, allocating new textures may override others and cause problems." << std::endl;
             std::cerr << "Please deallocate some of them before continuing. If absolutely necessary, you can also change the maximum allowable number by modifying MAXIMUM_NUMBER_OF_TEXTURES in /crisp/textures/state.hpp" << std::endl;
             current = 0;
         }
 
-
         TextureProxy& proxy = _proxies.at(current);
-        proxy.bool_or_float = std::is_same_v<Value_t, bool>;
+        proxy.bool_or_float = std::is_same_v<T, bool>;
         proxy.padding_type = texture.get_padding_type();
         proxy.context.create(texture.get_size().x(), texture.get_size().y(), settings);
 
@@ -78,50 +77,52 @@ namespace crisp
         GLint format;
         if (N == 1)
         {
-            format = GL_RED;
-            if (std::is_same_v<Value_t, float>)
-                internal_format = GL_R32F;
-            else if (std::is_same_v<Value_t, bool>)
+            if (std::is_same_v<T, float>)
             {
-                internal_format = GL_R8;
+                format = GL_RED;
+                internal_format = GL_R32F;
+            }
+            else if (std::is_same_v<T, bool>)
+            {
+                format = GL_RED_INTEGER;
+                internal_format = GL_R8UI;
             }
         }
         else if (N == 2)
         {
             format = GL_RG;
-            if (std::is_same_v<Value_t, float>)
+            if (std::is_same_v<T, float>)
                 internal_format = GL_RG32F;
-            else if (std::is_same_v<Value_t, bool>)
+            else if (std::is_same_v<T, bool>)
                 internal_format = GL_RG8;
         }
         else if (N == 3)
         {
             format = GL_RGB;
-            if (std::is_same_v<Value_t, float>)
+            if (std::is_same_v<T, float>)
                 internal_format = GL_RGB32F;
-            else if (std::is_same_v<Value_t, bool>)
+            else if (std::is_same_v<T, bool>)
                 internal_format = GL_RGB8;
         }
         else if (N == 4)
         {
             format = GL_RGBA;
-            if (std::is_same_v<Value_t, float>)
+            if (std::is_same_v<T, float>)
                 internal_format = GL_RGBA32F;
-            else if (std::is_same_v<Value_t, bool>)
+            else if (std::is_same_v<T, bool>)
                 internal_format = GL_RGBA8;
         }
 
         glTexImage2D(GL_TEXTURE_2D,
              0,
              internal_format,
-             texture.get_size().x(),
-             texture.get_size().y(),
+             static_cast<GLsizei>(texture.get_size().x())-1,
+             static_cast<GLsizei>(texture.get_size().y())-1,
              0,
              format,
-             (std::is_same_v<Value_t, bool> ? GL_BYTE : GL_FLOAT),
+             std::is_same_v<T, bool> ? GL_UNSIGNED_BYTE : GL_FLOAT,
              texture.expose_data());
 
-        glGenerateMipmap(GL_TEXTURE_2D);
         proxy.context.setActive(false);
 
         return id;
@@ -148,7 +149,7 @@ namespace crisp
             glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
         }
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     }
 }
