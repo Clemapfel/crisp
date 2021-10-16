@@ -5,18 +5,31 @@
 
 #pragma once
 
-#include <vector.hpp>
+#include <SFML/Graphics/Shader.hpp>
+
+#include <GLES3/gl3.h>
+
+#include <texture/texture.hpp>
+#include <texture/native_handle.hpp>
+#include <spatial_filter.hpp>
+#include <morphological_transform.hpp>
 
 namespace crisp
 {
-    class Shader
+    template<typename T>
+    using Matrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
+
+    // fragment shader
+    class Shader : public sf::Shader
     {
         public:
-            Shader(const std::string& path);
-            ~Shader();
+            void set_active(bool);
+            ID get_native_handle() const;
 
-            void set_int(const std::string& var_name, int32_t);
-            void set_float(const std::string& var_name, float);
+            bool load_from_file(const std::string& path);
+
+            void set_int(const std::string& var_name, khronos_int32_t);
+            void set_float(const std::string& var_name, khronos_float_t);
             void set_bool(const std::string& var_name, bool);
 
             template<typename Value_t, size_t N>
@@ -27,8 +40,7 @@ namespace crisp
 
             template<typename T>
             void set_vec3(const std::string& var_name, const crisp::Vector<T, 3>&);
-            
-            void set_color(const std::string& var_name, const crisp::RGB&);
+            void set_vec3(const std::string& var_name, const crisp::RGB&);
 
             template<typename T>
             void set_vec4(const std::string& var_name, const crisp::Vector<T, 4>&);
@@ -48,21 +60,7 @@ namespace crisp
             void set_kernel(const std::string& var_name, const Kernel&);
 
             void set_structuring_element(const std::string& var_name, const StructuringElement&);
-            
-        private:
-            GLNativeHandle _id;
-
-            enum ProxyType
-            {
-                INT, FLOAT, BOOL, VEC2, VEC3, VEC4, ARRAY_VEC1, ARRAY_VEC2, ARRAY_VEC3, ARRAY_VEC4, TEXTURE
-            };
-
-            struct ProxyEntry
-            {
-                ProxyID id;
-                ProxyType type;
-            };
-
-            std::unordered_map<std::string, ProxyEntry> _var_name_to_proxy;
     };
 }
+
+#include ".src/shader.inl"

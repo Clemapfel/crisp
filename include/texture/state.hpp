@@ -1,94 +1,130 @@
 // 
 // Copyright 2021 Clemens Cords
-// Created on 09.10.21 by clem (mail@clemens-cords.com)
+// Created on 16.10.21 by clem (mail@clemens-cords.com)
 //
 
 #pragma once
 
-#include <SFML/OpenGL.hpp>
-#include <SFML/Window/Context.hpp>
-#include <SFML/Graphics/RenderTexture.hpp>
-#include <SFML/Graphics/Shader.hpp>
+#include <vector>
 
-#include <system.hpp>
-#include <GLES3/gl3.h>
-
-#include <texture/texture.hpp>
+#include <vector.hpp>
+#include <padding_type.hpp>
 #include <texture/native_handle.hpp>
-#include <texture/shader.hpp>
+#include <texture/texture.hpp>
 
 namespace crisp
 {
-    constexpr size_t MAXIMUM_NUMBER_OF_TEXTURES = 64;
-    constexpr size_t MAXIMUM_NUMBER_OF_SHADERS = 256;
 
-    template<typename Context_t = sf::RenderWindow>
+    struct TextureProxy
+    {
+        GLNativeHandle _native_handle;
+        PaddingType _padding_type;
+
+        unsigned int vertex_array_id,
+                     vertex_buffer_id,
+                     element_buffer_id;
+    };
+
+    struct ShaderProxy
+    {
+        GLNativeHandle _native_handle;
+
+
+    };
+
+    using ProxyID = int;    // -1, -2, ... so it isn't confused with GLNativeHandle
+
+    template<typename T>
+    struct Proxy
+    {
+        Proxy(const T& value);
+        ProxyID get_id() const;
+
+        private:
+            ProxyID id;
+    };
+
+    template<typename T>
+    using Matrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
+
+    // holds proxies to all objects relevant for currently registered shaders
     struct State
     {
-        template<typename Value_t, size_t N>
-        ID add_texture(Texture<Value_t, N>&);
-        void bind_texture(ID);
+        static ProxyID register_int(int);
+        static void free_int(ProxyID);
 
-        ID add_shader(const std::string& path);
-        void bind_shader(ID);
+        static ProxyID register_float(float);
+        static void free_float(ProxyID);
 
-        void display();
+        static ProxyID register_bool(bool);
+        static void free_bool(ProxyID);
 
-        static inline const sf::ContextSettings settings = sf::ContextSettings(0, 0, 0, 3, 3);
+        template<typename T>
+        static ProxyID register_vec2(const Vector<T, 2>&);
 
-        static inline const float vertices[] = {
-             //pos       //colors   //tex
-             1,  1, 0,   1, 1, 1,   1, 1,
-             1, -1, 0,   1, 1, 1,   1, 0,
-            -1, -1, 0,   1, 1, 1,   0, 0,
-            -1,  1, 0,   1, 1, 1,   0, 1
-        };
+        static void free_vec2(ProxyID);
 
-        static inline const unsigned int element_indices[] =
-        {
-            0, 1, 3,
-            1, 2, 3
-        };
+        template<typename T>
+        static ProxyID register_vec3(const Vector<T, 3>&);
 
-        struct TextureProxy
-        {
-            unsigned int native_handle = 0;
-            bool bool_or_float;
-            size_t n = 0;
-            PaddingType padding_type;
-            sf::RenderTexture context = sf::RenderTexture();
+        static void free_vec3(ProxyID);
 
-            unsigned int vertex_array_id = 0,
-                         vertex_buffer_id = 0,
-                         element_buffer_id = 0;
-        };
+        template<typename T>
+        static ProxyID register_vec4(const Vector<T, 4>&);
 
-        // TEXTURES
-        static inline std::array<TextureProxy, MAXIMUM_NUMBER_OF_TEXTURES> _proxies = {};
-        static inline std::array<bool, MAXIMUM_NUMBER_OF_TEXTURES> _proxies_allocated = {false};
-        static inline std::map<ID, size_t> _texture_native_to_index = {};
+        static void free_vec4(ProxyID);
 
-        TextureProxy& get_texture_proxy(ID id)
-        {
-            return _proxies.at(_texture_native_to_index.at(id));
-        }
+        template<typename T>
+        static ProxyID register_matrix(const Matrix<T>&);
 
-        // SHADERS
-        static inline std::array<Shader, MAXIMUM_NUMBER_OF_SHADERS> _shaders = {};
-        static inline std::array<bool, MAXIMUM_NUMBER_OF_TEXTURES> _shaders_allocated = {false};
-        static inline std::map<ID, size_t> _shader_native_to_index = {};
+        template<typename T>
+        static ProxyID register_matrix(const Matrix<Vector<T, 2>>&);
 
-        Shader& get_shader(ID id)
-        {
-            return _shaders.at(_shader_native_to_index.at(id));
-        }
+        template<typename T>
+        static ProxyID register_matrix(const Matrix<Vector<T, 3>>&);
 
-        static inline bool _vertex_shader_initialized = false;
+        template<typename T>
+        static ProxyID register_matrix(const Matrix<Vector<T, 4>>&);
 
-        // CURRENTLY BOUND
-        static inline ID _current_texture;
-        static inline ID _fragment_shader;
-        static inline sf::Shader _vertex_shader = sf::Shader();
+        /// @tparam N: number of components in inner vector
+        template<size_t N>
+        void free_matrix(ProxyID);
+
+        static GLNativeHandle register_shader(const std::string& path);
+        void free_shader(GLNativeHandle);
+
+        template<typename T, size_t N>
+        static GLNativeHandle register_texture(const Texture<T, N>&);
+        void free_texture(GLNativeHandle);
+
+        private:
+
+            static inline ProxyID _current = 0;
+            static ProxyID get_next_id()
+            {
+                return _current--;
+            }
+
+            // primitives
+            static inline std::unordered_map<ProxyID, int> _ints = {};
+            static inline std::unordered_map<ProxyID, float> _floats = {};
+            static inline std::unordered_map<ProxyID, bool> _bools = {};
+
+            static inline std::unordered_map<ProxyID, std::array<float, 2>> _vec2s = {};
+            static inline std::unordered_map<ProxyID, std::array<float, 3>> _vec3s = {};
+            static inline std::unordered_map<ProxyID, std::array<float, 4>> _vec4s = {};
+
+            static inline std::unordered_map<ProxyID, std::vector<float>> _array_vec1s = {};
+            static inline std::unordered_map<ProxyID, std::vector<std::array<float, 2>>> _array_vec2s = {};
+            static inline std::unordered_map<ProxyID, std::vector<std::array<float, 3>>> _array_vec3s = {};
+            static inline std::unordered_map<ProxyID, std::vector<std::array<float, 4>>> _array_vec4s = {};
+
+            // shaders
+            static inline GLNativeHandle _vertex_shader = {};
+            static inline std::vector<GLNativeHandle> _fragment_shaders = {};
+
+            // textures
+            static inline std::vector<GLNativeHandle> _textures = {};
     };
 }
 

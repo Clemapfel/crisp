@@ -5,4 +5,4 @@
 
 #pragma once
 
-using ID = unsigned int;
+using GLNativeHandle = unsigned int;

@@ -24,6 +24,9 @@ using namespace crisp;
 
 int main()
 {
+    auto state = State();
+    auto shader = Shader();
+    /*
     auto image = crisp::load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
     //auto image = image_in.convert_to_color();
 
@@ -60,5 +63,6 @@ int main()
                 window.close();
         }
     }
+     */
 }
 
