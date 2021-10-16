@@ -60,7 +60,7 @@ namespace crisp
                 for (size_t i = 0; i < N; ++i)
                 {
                     if (std::is_same_v<T, bool>)
-                        _data.push_back(bool(px.at(i)) ? std::numeric_limits<Value_t>::max() : 0);
+                        _data.push_back(bool(px.at(i)) ? 255 : 0);
                     else
                         _data.push_back(static_cast<Value_t>(px.at(i)));
                 }

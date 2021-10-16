@@ -4,11 +4,11 @@ out vec4 FragColor;
 in vec3 ourColor;
 in vec2 TexCoord;
 
-uniform usampler2D ourTexture;
+uniform sampler2D ourTexture;
 
 void main()
 {
     //bool b = bool(texture2D(ourTexture, TexCoord).x);
-    uint r = texture(ourTexture, TexCoord).r;
-    FragColor = vec4(float(r));//texture2D(ourTexture, TexCoord); //vec4(float(b));
+    float value = texture(ourTexture, TexCoord).r;
+    FragColor = vec4(value == 1);//texture2D(ourTexture, TexCoord); //vec4(float(b));
 }

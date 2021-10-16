@@ -47,7 +47,7 @@ namespace crisp
         static_assert(std::is_same_v<InnerValue_t, bool> or std::is_same_v<InnerValue_t, float>, "crisp::Texture only support bool and 32-bit float as value type, for other types use crisp::Image");
 
         public:
-            using Value_t = typename std::conditional<std::is_same_v<InnerValue_t, bool>, GLubyte, InnerValue_t>::type;
+            using Value_t = typename std::conditional<std::is_same_v<InnerValue_t, bool>, GLboolean, InnerValue_t>::type;
 
             Texture(size_t width, size_t height);
             void create(size_t width, size_t height);

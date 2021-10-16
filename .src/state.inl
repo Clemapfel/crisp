@@ -84,8 +84,8 @@ namespace crisp
             }
             else if (std::is_same_v<T, bool>)
             {
-                format = GL_RED_INTEGER;
-                internal_format = GL_R8UI;
+                format = GL_RED;
+                internal_format = GL_R8;
             }
         }
         else if (N == 2)
@@ -113,18 +113,19 @@ namespace crisp
                 internal_format = GL_RGBA8;
         }
 
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
         glTexImage2D(GL_TEXTURE_2D,
              0,
              internal_format,
-             static_cast<GLsizei>(texture.get_size().x())-1,
-             static_cast<GLsizei>(texture.get_size().y())-1,
+             static_cast<GLsizei>(texture.get_size().x()),
+             static_cast<GLsizei>(texture.get_size().y()),
              0,
              format,
              std::is_same_v<T, bool> ? GL_UNSIGNED_BYTE : GL_FLOAT,
              texture.expose_data());
 
         proxy.context.setActive(false);
-
         return id;
     }
 
