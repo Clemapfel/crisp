@@ -220,11 +220,14 @@ namespace crisp
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        glBindTexture(GL_TEXTURE_2D, _current_texture);
+        glBindVertexArray(get_texture_proxy(_current_texture).vertex_array_id);
+
         sf::Shader::bind(&_vertex_shader);
         sf::Shader::bind(&get_shader(_fragment_shader)); //_fragment_shader.set_active(true);
 
-        glBindTexture(GL_TEXTURE_2D, _current_texture);
-        glBindVertexArray(get_texture_proxy(_current_texture).vertex_array_id);
+        glUniform1i(_current_texture, 0);
+
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 }

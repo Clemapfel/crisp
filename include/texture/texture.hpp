@@ -21,7 +21,6 @@
 
 namespace crisp
 {
-
     /*
      * N == 1
      * bool -> GL_RGBA2
