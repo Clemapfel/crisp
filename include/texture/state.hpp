@@ -13,11 +13,10 @@
 #include <GLES3/gl3.h>
 
 #include <texture/texture.hpp>
+#include <texture/native_handle.hpp>
 
 namespace crisp
 {
-    using ID = unsigned int;
-
     constexpr size_t MAXIMUM_NUMBER_OF_TEXTURES = 64;
 
     template<typename Context_t = sf::RenderWindow>

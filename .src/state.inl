@@ -75,45 +75,47 @@ namespace crisp
 
         GLint internal_format;
         GLint format;
+
+        size_t alignment_n = 1;
+
         if (N == 1)
         {
-            if (std::is_same_v<T, float>)
-            {
-                format = GL_RED;
-                internal_format = GL_R32F;
-            }
-            else if (std::is_same_v<T, bool>)
-            {
-                format = GL_RED;
+            format = GL_RED;
+            alignment_n = 1;
+            if (std::is_same_v<T, bool>)
                 internal_format = GL_R8;
-            }
+            else
+                internal_format = GL_R32F;
         }
         else if (N == 2)
         {
             format = GL_RG;
-            if (std::is_same_v<T, float>)
-                internal_format = GL_RG32F;
-            else if (std::is_same_v<T, bool>)
+            alignment_n = 2;
+            if (std::is_same_v<T, bool>)
                 internal_format = GL_RG8;
+            else
+                internal_format = GL_RG32F;
         }
         else if (N == 3)
         {
             format = GL_RGB;
-            if (std::is_same_v<T, float>)
-                internal_format = GL_RGB32F;
-            else if (std::is_same_v<T, bool>)
+            alignment_n = 1;
+            if (std::is_same_v<T, bool>)
                 internal_format = GL_RGB8;
+            else
+                internal_format = GL_RGB32F;
         }
         else if (N == 4)
         {
             format = GL_RGBA;
-            if (std::is_same_v<T, float>)
-                internal_format = GL_RGBA32F;
-            else if (std::is_same_v<T, bool>)
+            alignment_n = 4;
+            if (std::is_same_v<T, bool>)
                 internal_format = GL_RGBA8;
+            else
+                internal_format = GL_RGBA32F;
         }
 
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, alignment_n);
 
         glTexImage2D(GL_TEXTURE_2D,
              0,

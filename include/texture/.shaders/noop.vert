@@ -6,6 +6,8 @@ layout (location = 2) in vec2 _vertex_tex_coord;
 
 out vec2 _tex_coord;
 
+// DO NOT MODIFY
+
 void main()
 {
     gl_Position = vec4(_vertex_pos, 1.0);

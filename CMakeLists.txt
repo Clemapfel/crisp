@@ -103,8 +103,10 @@ add_library(crisp STATIC
         include/texture/state.hpp
         .src/state.inl
 
+        include/texture/shader.hpp
+        .src/shader.inl
 
-)
+        include/texture/native_handle.hpp )
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp sfml-graphics sfml-window sfml-system fftw3 fftw3l fftw3f ${OPENGL_LIBRARIES})

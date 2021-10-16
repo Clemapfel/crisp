@@ -69,9 +69,9 @@ namespace crisp
 
             // ids
             unsigned int _vertex_buffer,
-                   _vertex_array,
-                   _element_array,
-                   _id;
+                         _vertex_array,
+                         _element_array,
+                         _id;
     };
 }
 

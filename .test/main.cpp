@@ -18,16 +18,14 @@
 
 #include <texture/state.hpp>
 #include <texture/texture.hpp>
+#include <texture/shader.hpp>
 
 using namespace crisp;
 
 int main()
 {
-    auto image = crisp::load_binary_image("/home/clem/Workspace/crisp/.test/opal_color.png");
+    auto image = crisp::load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
     //auto image = image_in.convert_to_color();
-
-    for (size_t y = 0; y < image.get_size().y(); ++y)
-        image(0, y) = false;
 
     sf::ContextSettings context_settings;
     context_settings.antialiasingLevel = 0;
@@ -40,50 +38,27 @@ int main()
     window.setActive(true);
 
     // shaders
-    std::ifstream file("/home/clem/Workspace/crisp/.test/default.vert");
+    std::ifstream file("/home/clem/Workspace/crisp/texture/.shaders/noop.vert");
     std::stringstream buffer;
     buffer << file.rdbuf();
     auto vertex_source_str = buffer.str();
     const auto* vertex_source = vertex_source_str.c_str();
 
-    file.close();
-    file.open("/home/clem/Workspace/crisp/.test/default.frag");
-    buffer.str(std::string());
-    buffer << file.rdbuf();
-    auto fragment_source_str = buffer.str();
-    const auto* fragment_source = fragment_source_str.c_str();
-
     unsigned int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex_shader, 1, &vertex_source, NULL);
     glCompileShader(vertex_shader);
 
-    unsigned int fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader, 1, &fragment_source, NULL);
-    glCompileShader(fragment_shader);
+    auto fragment_shader = crisp::Shader();
+    fragment_shader.load_from_file("/home/clem/Workspace/crisp/texture/.shaders/noop.frag");
+    glCompileShader(fragment_shader.get_native_handle());
 
     unsigned int shader_program = glCreateProgram();
     glAttachShader(shader_program, vertex_shader);
-    glAttachShader(shader_program, fragment_shader);
+    glAttachShader(shader_program, fragment_shader.get_native_handle());
     glLinkProgram(shader_program);
 
     int success;
     char log[512];
-
-    glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
-    if (not success)
-    {
-        glGetProgramInfoLog(vertex_shader, sizeof(log), nullptr, log);
-        std::cout << log << std::endl;
-        throw std::invalid_argument("error compiling vertex shader");
-    }
-
-    glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
-    if (not success)
-    {
-        glGetProgramInfoLog(fragment_shader, sizeof(log), nullptr, log);
-        std::cout << log << std::endl;
-        throw std::invalid_argument("error compiling fragment shader");
-    }
 
     glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
     if (not success)
@@ -94,7 +69,7 @@ int main()
     }
 
     glDeleteShader(vertex_shader);
-    glDeleteShader(fragment_shader);
+    glDeleteShader(fragment_shader.get_native_handle());
 
     float vertices[] = {
     //  pos         colors      tex
@@ -140,7 +115,7 @@ int main()
     glEnableVertexAttribArray(2);
 
     // texture
-    auto tex = Texture<bool, 1>(image.get_size().x(), image.get_size().y());
+    auto tex = Texture<float, 3>(image.get_size().x(), image.get_size().y());
     tex.create_from(image);
     auto texture = state.add_texture(tex);
     state.bind_texture(texture);

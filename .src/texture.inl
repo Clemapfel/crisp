@@ -50,6 +50,7 @@ namespace crisp
     void Texture<T, N>::create_from(const Image<T, N>& image)
     {
         _data.clear();
+        _data.reserve(image.get_size().x() * image.get_size().y() * Image<T, N>::Value_t::size());
 
         for (size_t y = 0; y < image.get_size().y(); y++)
         {
