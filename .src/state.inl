@@ -7,7 +7,6 @@
 
 namespace crisp
 {
-
     template<typename CT>
     template<typename T, size_t N>
     ID State<CT>::add_texture(Texture<T, N>& texture)
@@ -39,7 +38,7 @@ namespace crisp
         ID id;
         glGenTextures(1, &id);
 
-        _native_to_index[id] = current;
+        _texture_native_to_index[id] = current;
 
         proxy.native_handle = id;
 
@@ -135,7 +134,7 @@ namespace crisp
     void State<CT>::bind_texture(ID id)
     {
         auto& proxy = _proxies.at(id);
-        proxy.context.setActive(true);
+        //proxy.context.setActive(true);
 
         glBindTexture(GL_TEXTURE_2D, id);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, padding_type_to_gl_padding(proxy.padding_type));
@@ -154,5 +153,78 @@ namespace crisp
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        _current_texture = id;
+    }
+
+    template<typename CT>
+    ID State<CT>::add_shader(const std::string& path)
+    {
+        size_t current = 0;
+        bool found = false;
+        for (; current < _shaders_allocated.size(); ++current)
+        {
+            if (not _shaders_allocated.at(current))
+            {
+                found = true;
+                break;
+            }
+        }
+
+        if (not found)
+        {
+            std::cerr << "[WARNING] The maximum number of Shaders (" << MAXIMUM_NUMBER_OF_SHADERS << ") has been reached, allocating new shader may override others and cause problems." << std::endl;
+            current = 0;
+        }
+
+        auto& shader = _shaders.at(current);
+        shader.load_from_file(path);
+
+        auto id = shader.get_native_handle();
+        _shader_native_to_index[id] = current;
+
+        return id;
+    }
+
+    template<typename CT>
+    void State<CT>::bind_shader(ID id)
+    {
+        _fragment_shader = id;
+    }
+
+    template<typename CT>
+    void State<CT>::display()
+    {
+        if (not _vertex_shader_initialized)
+        {
+            _vertex_shader.loadFromMemory(R"(
+                #version 330 core
+
+                layout (location = 0) in vec3 _vertex_pos;
+                layout (location = 1) in vec3 _vertex_color_rgb;
+                layout (location = 2) in vec2 _vertex_tex_coord;
+
+                out vec2 _tex_coord;
+
+                // DO NOT MODIFY
+
+                void main()
+                {
+                    gl_Position = vec4(_vertex_pos, 1);
+                    _tex_coord = _vertex_tex_coord;
+                }
+            )", sf::Shader::Vertex);
+            _vertex_shader_initialized = true;
+        }
+
+        glClearColor(0, 0, 0, 1);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        sf::Shader::bind(&_vertex_shader);
+        sf::Shader::bind(&get_shader(_fragment_shader)); //_fragment_shader.set_active(true);
+
+        glBindTexture(GL_TEXTURE_2D, _current_texture);
+        glBindVertexArray(get_texture_proxy(_current_texture).vertex_array_id);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 }

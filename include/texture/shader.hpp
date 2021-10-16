@@ -20,7 +20,7 @@ namespace crisp
     using Matrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 
     // fragment shader
-    class Shader : private sf::Shader
+    class Shader : public sf::Shader
     {
         public:
             void set_active(bool);
@@ -60,9 +60,6 @@ namespace crisp
             void set_kernel(const std::string& var_name, const Kernel&);
 
             void set_structuring_element(const std::string& var_name, const StructuringElement&);
-
-        private:
-            ID _id;
     };
 }
 

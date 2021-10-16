@@ -8,24 +8,31 @@
 #include <SFML/OpenGL.hpp>
 #include <SFML/Window/Context.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
+#include <SFML/Graphics/Shader.hpp>
 
 #include <system.hpp>
 #include <GLES3/gl3.h>
 
 #include <texture/texture.hpp>
 #include <texture/native_handle.hpp>
+#include <texture/shader.hpp>
 
 namespace crisp
 {
     constexpr size_t MAXIMUM_NUMBER_OF_TEXTURES = 64;
+    constexpr size_t MAXIMUM_NUMBER_OF_SHADERS = 256;
 
     template<typename Context_t = sf::RenderWindow>
     struct State
     {
         template<typename Value_t, size_t N>
         ID add_texture(Texture<Value_t, N>&);
-
         void bind_texture(ID);
+
+        ID add_shader(const std::string& path);
+        void bind_shader(ID);
+
+        void display();
 
         static inline const sf::ContextSettings settings = sf::ContextSettings(0, 0, 0, 3, 3);
 
@@ -56,14 +63,32 @@ namespace crisp
                          element_buffer_id = 0;
         };
 
+        // TEXTURES
         static inline std::array<TextureProxy, MAXIMUM_NUMBER_OF_TEXTURES> _proxies = {};
         static inline std::array<bool, MAXIMUM_NUMBER_OF_TEXTURES> _proxies_allocated = {false};
-        static inline std::map<ID, size_t> _native_to_index = {};
+        static inline std::map<ID, size_t> _texture_native_to_index = {};
 
-        TextureProxy& get_proxy(ID id)
+        TextureProxy& get_texture_proxy(ID id)
         {
-            return _proxies.at(_native_to_index.at(id));
+            return _proxies.at(_texture_native_to_index.at(id));
         }
+
+        // SHADERS
+        static inline std::array<Shader, MAXIMUM_NUMBER_OF_SHADERS> _shaders = {};
+        static inline std::array<bool, MAXIMUM_NUMBER_OF_TEXTURES> _shaders_allocated = {false};
+        static inline std::map<ID, size_t> _shader_native_to_index = {};
+
+        Shader& get_shader(ID id)
+        {
+            return _shaders.at(_shader_native_to_index.at(id));
+        }
+
+        static inline bool _vertex_shader_initialized = false;
+
+        // CURRENTLY BOUND
+        static inline ID _current_texture;
+        static inline ID _fragment_shader;
+        static inline sf::Shader _vertex_shader = sf::Shader();
     };
 }
 

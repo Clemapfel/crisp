@@ -38,81 +38,8 @@ int main()
     window.setActive(true);
 
     // shaders
-    std::ifstream file("/home/clem/Workspace/crisp/texture/.shaders/noop.vert");
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    auto vertex_source_str = buffer.str();
-    const auto* vertex_source = vertex_source_str.c_str();
-
-    unsigned int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader, 1, &vertex_source, NULL);
-    glCompileShader(vertex_shader);
-
-    auto fragment_shader = crisp::Shader();
-    fragment_shader.load_from_file("/home/clem/Workspace/crisp/texture/.shaders/noop.frag");
-    glCompileShader(fragment_shader.get_native_handle());
-
-    unsigned int shader_program = glCreateProgram();
-    glAttachShader(shader_program, vertex_shader);
-    glAttachShader(shader_program, fragment_shader.get_native_handle());
-    glLinkProgram(shader_program);
-
-    int success;
-    char log[512];
-
-    glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
-    if (not success)
-    {
-        glGetProgramInfoLog(shader_program, sizeof(log), nullptr, log);
-        std::cout << log << std::endl;
-        throw std::invalid_argument("error linking shaders");
-    }
-
-    glDeleteShader(vertex_shader);
-    glDeleteShader(fragment_shader.get_native_handle());
-
-    float vertices[] = {
-    //  pos         colors      tex
-         1,  1, 0,   1, 1, 1,   1, 1, // top right
-         1, -1, 0,   1, 1, 1,   1, 0, // bottom right
-        -1, -1, 0,   1, 1, 1,   0, 0, // bottom left
-        -1,  1, 0,   1, 1, 1,   0, 1  // top left
-    };
-
-    unsigned int indices[] =
-    {
-        0, 1, 3,  // first Triangle
-        1, 2, 3   // second Triangle
-    };
-
-    // vertices
-    unsigned int vertex_buffer, vertex_array, element_array_buffer;
-    glGenVertexArrays(1, &vertex_array);
-    glGenBuffers(1, &vertex_buffer);
-    glGenBuffers(1, &element_array_buffer);
-
-    glBindVertexArray(vertex_array);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_array_buffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
-    glEnableVertexAttribArray(0);
-
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(0));
-    glEnableVertexAttribArray(0);
-
-    // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    // texture coord attribute
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    auto fragment_id = state.add_shader("/home/clem/Workspace/crisp/include/texture/.shaders/noop.frag");
+    state.bind_shader(fragment_id);
 
     // texture
     auto tex = Texture<float, 3>(image.get_size().x(), image.get_size().y());
@@ -121,13 +48,7 @@ int main()
     state.bind_texture(texture);
 
     // render
-    glClearColor(0.2f, 0.3f, 0.3f, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glUseProgram(shader_program);
-    glBindVertexArray(vertex_array);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
+    state.display();
     window.display();
 
     while(window.isOpen())

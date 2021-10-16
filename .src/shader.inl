@@ -183,6 +183,6 @@ namespace crisp
 
     ID Shader::get_native_handle() const
     {
-        return _id;
+        return sf::Shader::getNativeHandle();
     }
 }
