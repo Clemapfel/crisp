@@ -50,7 +50,8 @@ namespace crisp
             void set_structuring_element(const std::string& var_name, const StructuringElement&);
             
         private:
-            GLNativeHandle _id;
+            GLNativeHandle _shader_id,
+                           _program_id;
 
             enum ProxyType
             {

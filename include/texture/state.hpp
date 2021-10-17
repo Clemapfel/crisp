@@ -6,6 +6,7 @@
 #pragma once
 
 #include <vector>
+#include <set>
 
 #include <vector.hpp>
 #include <padding_type.hpp>
@@ -23,13 +24,6 @@ namespace crisp
         unsigned int vertex_array_id,
                      vertex_buffer_id,
                      element_buffer_id;
-    };
-
-    struct ShaderProxy
-    {
-        GLNativeHandle _native_handle;
-
-
     };
 
     using ProxyID = int;    // -1, -2, ... so it isn't confused with GLNativeHandle
@@ -88,10 +82,16 @@ namespace crisp
 
         /// @tparam N: number of components in inner vector
         template<size_t N>
-        void free_matrix(ProxyID);
+        static void free_matrix(ProxyID);
 
+        /// @param path: [in]
+        /// @param program_id: [out]
+        /// @param shader_id: [out]
         static GLNativeHandle register_shader(const std::string& path);
-        void free_shader(GLNativeHandle);
+        static void free_shader(GLNativeHandle);
+
+        static GLNativeHandle register_program(GLNativeHandle fragment_shader_id);
+        static void free_program(GLNativeHandle);
 
         template<typename T, size_t N>
         static GLNativeHandle register_texture(const Texture<T, N>&);
@@ -120,8 +120,10 @@ namespace crisp
             static inline std::unordered_map<ProxyID, std::vector<std::array<float, 4>>> _array_vec4s = {};
 
             // shaders
-            static inline GLNativeHandle _vertex_shader = {};
-            static inline std::vector<GLNativeHandle> _fragment_shaders = {};
+            static void initialize_vertex_shader();
+            static inline GLNativeHandle _vertex_shader = -1;
+            static inline std::multiset<GLNativeHandle> _fragment_shaders = {};
+            static inline std::multiset<GLNativeHandle> _shader_programs = {};
 
             // textures
             static inline std::vector<GLNativeHandle> _textures = {};

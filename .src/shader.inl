@@ -12,7 +12,7 @@ namespace crisp
 {
     Shader::Shader(const std::string& path)
     {
-        _id = State::register_shader(path);
+
     }
 
     Shader::~Shader()
@@ -56,7 +56,6 @@ namespace crisp
                     break;
             }
         }
-
     }
 
     bool Shader::load_from_file(const std::string& path)
