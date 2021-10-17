@@ -4,9 +4,27 @@
 //
 
 #include <texture/state.hpp>
+#include <texture/shader.hpp>
 
 namespace crisp
 {
+    void State::set_active_shader(crisp::Shader* shader)
+    {
+        _active_shader = shader;
+    }
+
+    void State::display()
+    {
+        glClearColor(0, 0, 0, 1);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        if (_active_shader)
+            _active_shader->set_active(true);
+
+        glBindVertexArray(_vertex_array);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    }
+
     void State::initialize_vertex_shader()
     {
         if (_vertex_shader != -1)
@@ -129,12 +147,11 @@ namespace crisp
 
     void State::bind_shader_program(GLNativeHandle program_id)
     {
-        _active_shader = program_id;
         glUseProgram(program_id);
     }
 
     template<typename T, size_t N>
-    GLNativeHandle State::register_texture(const Texture<T, N>& texture)
+    GLNativeHandle State::register_texture(Texture<T, N>& texture)
     {
         GLNativeHandle texture_id;
         glGenTextures(1, &texture_id);
@@ -145,16 +162,15 @@ namespace crisp
         {
             // vertex info
             static float vertices[] = {
-                    // positions          // colors           // texture coords
-                    0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
-                    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
-                    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
-                    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f  // top left
+                 1,  1, 0,   1, 0, 0,   1, 1, // top right
+                 1, -1, 0,   0, 1, 0,   1, 0, // bottom right
+                -1, -1, 0,   0, 0, 1,   0, 0, // bottom left
+                -1,  1, 0,   1, 1, 0,   0, 1  // top left
             };
 
             static unsigned int indices[] = {
-                    0, 1, 3, // first triangle
-                    1, 2, 3  // second triangle
+                    0, 1, 3,
+                    1, 2, 3
             };
 
             glGenVertexArrays(1, &_vertex_array);

@@ -22,10 +22,17 @@ namespace crisp
     template<typename T>
     using Matrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 
+    class Shader;
+
     // holds proxies to all objects relevant for currently registered shaders
     struct State
     {
+        friend class Shader;
+
         State() = delete;
+
+        static void display();
+        static void set_active_shader(crisp::Shader*);
 
         static ProxyID register_int(int);
         static void free_int(ProxyID);
@@ -88,7 +95,7 @@ namespace crisp
         static void bind_shader_program(GLNativeHandle program_id);
 
         template<typename T, size_t N>
-        static GLNativeHandle register_texture(const Texture<T, N>&);
+        static GLNativeHandle register_texture(Texture<T, N>&);
         void free_texture(GLNativeHandle);
         static void bind_texture(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle texture_id, size_t texture_location);
 
@@ -120,7 +127,7 @@ namespace crisp
             static inline std::multiset<GLNativeHandle> _fragment_shaders = {};
             static inline std::multiset<GLNativeHandle> _shader_programs = {};
 
-            static inline GLNativeHandle _active_shader = 0;
+            static inline crisp::Shader* _active_shader = nullptr;
 
             // textures
             static inline bool _vertices_initialized = false;

@@ -39,20 +39,13 @@ int main()
 
     auto shader = Shader("/home/clem/Workspace/crisp/include/texture/.shaders/noop.frag");
 
-    /*
-
-    // shaders
-    auto fragment_id = state.add_shader("/home/clem/Workspace/crisp/include/texture/.shaders/noop.frag");
-    state.bind_shader(fragment_id);
-
-    // texture
-    auto tex = Texture<float, 3>(image.get_size().x(), image.get_size().y());
-    tex.create_from(image);
-    auto texture = state.add_texture(tex);
-    state.bind_texture(texture);
+    auto texture_ram = Texture<float, 3>(image.get_size().x(), image.get_size().y());
+    texture_ram.create_from(image);
+    shader.set_texture("_texture", texture_ram);
+    shader.set_active(true);
 
     // render
-    state.display();
+    State::display();
     window.display();
 
     while(window.isOpen())
@@ -64,6 +57,5 @@ int main()
                 window.close();
         }
     }
-     */
 }
 
