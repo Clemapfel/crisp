@@ -57,14 +57,14 @@ namespace crisp
         glCompileShader(id);
 
         int compilation_success;
-        char compilation_log[512] = "";
+        char compilation_log[1024] = "";
         glGetShaderiv(id, GL_COMPILE_STATUS, &compilation_success);
-        glGetShaderInfoLog(id, 512, nullptr, compilation_log);
+        glGetShaderInfoLog(id, 1024, nullptr, compilation_log);
 
         if (not bool(compilation_success))
         {
             std::cerr << "[WARNING] Failed to compile shader at " << path << std::endl;
-            std::cerr << "Log: " << compilation_log << std::endl;
+            std::cerr << compilation_log << std::endl;
         }
 
         _vertex_shader = id;
@@ -99,14 +99,14 @@ namespace crisp
         glCompileShader(shader_id);
 
         int compilation_success;
-        char compilation_log[512] = "";
+        char compilation_log[1024] = "";
         glGetShaderiv(shader_id, GL_COMPILE_STATUS, &compilation_success);
-        glGetShaderInfoLog(shader_id, 512, nullptr, compilation_log);
+        glGetShaderInfoLog(shader_id, 1024, nullptr, compilation_log);
 
         if (compilation_success == GL_FALSE)
         {
             std::cerr << "[WARNING] Failed to compile shader at " << path << std::endl;
-            std::cerr << "Log: " << compilation_log << std::endl;
+            std::cerr << compilation_log << std::endl;
         }
 
         _fragment_shaders.insert(shader_id);
@@ -127,13 +127,13 @@ namespace crisp
         glLinkProgram(program_id);
 
         int linking_success;
-        char linking_log[512] = "";
+        char linking_log[1024] = "";
         glGetProgramiv(program_id, GL_LINK_STATUS, &linking_success);
 
         if (linking_success == GL_FALSE)
         {
             std::cerr << "[WARNING] Failed to link shader to program " << program_id << std::endl;
-            std::cerr << "Log: " << linking_log << std::endl;
+            std::cerr << linking_log << std::endl;
         }
 
         _shader_programs.insert(program_id);
@@ -164,10 +164,11 @@ namespace crisp
         {
             // vertex info
             static float vertices[] = {
-                 1,  1, 0,   1, 0, 0,   1, 1, // top right
-                 1, -1, 0,   0, 1, 0,   1, 0, // bottom right
-                -1, -1, 0,   0, 0, 1,   0, 0, // bottom left
-                -1,  1, 0,   1, 1, 0,   0, 1  // top left
+                // pos, col, tex_coord
+                 1,  1, 0,   1, 1, 1,   1, 1, // top right
+                 1, -1, 0,   1, 1, 1,   1, 0, // bottom right
+                -1, -1, 0,   1, 1, 1,   0, 0, // bottom left
+                -1,  1, 0,   1, 1, 1,   0, 1  // top left
             };
 
             static unsigned int indices[] = {

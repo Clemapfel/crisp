@@ -63,12 +63,9 @@ namespace crisp
                     if (std::is_same_v<T, bool>)
                         _data.push_back(bool(px.at(i)) ? 255 : 0);
                     else
-                        _data.push_back(static_cast<Value_t>(px.at(i)));
+                        _data.push_back(px.at(i));
                 }
             }
         }
-
-        for (size_t i = 0; i < get_size().x() * get_size().y(); ++i)
-            _data.push_back(std::numeric_limits<Value_t>::max());
     }
 }

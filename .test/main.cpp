@@ -25,9 +25,7 @@ using namespace crisp;
 
 int main()
 {
-    auto image = crisp::load_grayscale_image("/home/clem/Workspace/crisp/.test/opal_color.png");
-    auto binary = crisp::Segmentation::otsu_threshold(image);
-    //auto binary = crisp::thre
+    auto image = crisp::load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
     //auto image = image_in.convert_to_color();
 
     sf::ContextSettings context_settings;
@@ -41,13 +39,26 @@ int main()
 
     auto shader = Shader("/home/clem/Workspace/crisp/include/texture/.shaders/noop.frag");
 
-    auto texture_ram = Texture<float, 1>(image.get_size().x(), image.get_size().y());
+    auto texture_ram = Texture<float, 3>(image.get_size().x(), image.get_size().y());
     texture_ram.create_from(image);
-    shader.set_texture("_texture_0", texture_ram);
 
-    auto binary_ram = Texture<bool, 1>(image.get_size().x(), image.get_size().y());
-    binary_ram.create_from(binary);
-    shader.set_texture("_texture_1", binary_ram);
+    save_to_disk(image, "/home/clem/Workspace/crisp/.test/texture_test_before.png");
+
+    for (size_t y = 0, i = 0; y < image.get_size().y(); ++y)
+        for (size_t x = 0; x < image.get_size().x(); ++x)
+        {
+            image(x, y) = RGB {
+                texture_ram.expose_data()[i],
+                texture_ram.expose_data()[i + 1],
+                texture_ram.expose_data()[i + 2]
+            };
+
+            i = i + 3;
+        }
+
+    save_to_disk(image, "/home/clem/Workspace/crisp/.test/texture_test_after.png");
+
+    shader.set_texture("_texture", texture_ram);
 
     shader.set_active();
     shader.bind_uniforms();

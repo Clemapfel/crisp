@@ -65,12 +65,6 @@ namespace crisp
             PaddingType _padding_type = PaddingType::STRETCH;
 
             std::vector<Value_t> _data;
-
-            // ids
-            unsigned int _vertex_buffer,
-                         _vertex_array,
-                         _element_array,
-                         _id;
     };
 }
 
