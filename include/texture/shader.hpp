@@ -24,7 +24,7 @@ namespace crisp
             void set_bool(const std::string& var_name, bool);
 
             template<typename Value_t, size_t N>
-            void set_texture(const std::string& var_name, Texture<Value_t, N>&);
+            void set_texture(const std::string& var_name, const Image<Value_t, N>&);
 
             template<typename T>
             void set_vec2(const std::string& var_name, const crisp::Vector<T, 2>&);

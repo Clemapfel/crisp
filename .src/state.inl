@@ -5,6 +5,7 @@
 
 #include <texture/state.hpp>
 #include <texture/shader.hpp>
+#include <boost/container/vector.hpp>
 
 namespace crisp
 {
@@ -241,9 +242,42 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    GLNativeHandle State::register_texture(Texture<T, N>& texture)
+    GLNativeHandle State::register_texture(const Image<T, N>& image)
     {
         static_assert(0 < N and N <= 4);
+
+
+        using Data_t = typename std::conditional<std::is_same_v<T, bool>, GLboolean, float>::type;
+        boost::container::vector<Data_t> data;
+        data.reserve(image.get_size().x() * image.get_size().y() * N);
+
+        for (size_t y = 0; y < image.get_size().y(); y++)
+        {
+            for (size_t x = 0; x < image.get_size().x(); x++)
+            {
+                std::vector<size_t> seq;
+
+                // TODO: why is this workaround needed?
+                if (N == 1)
+                    seq = {0};
+                else if (N == 2)
+                    seq = {1, 0};
+                else if (N == 3)
+                    seq = {2, 0, 1};
+                else if (N == 4)
+                    seq = {2, 0, 1, 3};
+
+                auto px = image.at(x, image.get_size().y() - (y + 1));
+
+                for (size_t i : seq)
+                {
+                    if (std::is_same_v<T, bool>)
+                        data.push_back(bool(px.at(i)) ? 255 : 0);
+                    else
+                        data.push_back(px.at(i));
+                }
+            }
+        }
 
         GLNativeHandle texture_id;
         glGenTextures(1, &texture_id);
@@ -338,22 +372,22 @@ namespace crisp
         glPixelStorei(GL_UNPACK_ALIGNMENT, alignment_n);
 
         glTexImage2D(GL_TEXTURE_2D,
-             0,
-             internal_format,
-             static_cast<GLsizei>(texture.get_size().x()),
-             static_cast<GLsizei>(texture.get_size().y()),
-             0,
-             format,
-             std::is_same_v<T, bool> ? GL_UNSIGNED_BYTE : GL_FLOAT,
-             texture.expose_data());
+                     0,
+                     internal_format,
+                     static_cast<GLsizei>(image.get_size().x()),
+                     static_cast<GLsizei>(image.get_size().y()),
+                     0,
+                     format,
+                     std::is_same_v<T, bool> ? GL_UNSIGNED_BYTE : GL_FLOAT,
+                     &data[0]);
 
         _textures.insert(texture_id);
         _texture_info.insert({
             texture_id,
             TextureInfo{
-                .padding_type = texture.get_padding_type(),
-                .width = texture.get_size().x(),
-                .height = texture.get_size().y(),
+                .padding_type = image.get_padding_type(),
+                .width = image.get_size().x(),
+                .height = image.get_size().y(),
             }
         });
 

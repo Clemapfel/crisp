@@ -17,7 +17,6 @@
 #include <GLES3/gl3.h>
 
 #include <texture/state.hpp>
-#include <texture/texture.hpp>
 #include <texture/shader.hpp>
 #include <segmentation.hpp>
 
@@ -26,7 +25,6 @@ using namespace crisp;
 int main()
 {
     auto image = crisp::load_grayscale_image("/home/clem/Workspace/crisp/.test/opal_color.png");
-    //auto image = image_in.convert_to_color();
 
     sf::ContextSettings context_settings;
     context_settings.antialiasingLevel = 0;
@@ -39,10 +37,7 @@ int main()
 
     auto shader = Shader("/home/clem/Workspace/crisp/include/texture/.shaders/noop.frag");
 
-    auto texture_ram = Texture<float, 1>(image.get_size().x(), image.get_size().y());
-    texture_ram.create_from(image);
-
-    shader.set_texture("_texture", texture_ram);
+    shader.set_texture("_texture", image);
     shader.set_color("_color", RGB{1, 0, 1});
 
     shader.set_active();

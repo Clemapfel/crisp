@@ -269,7 +269,7 @@ namespace crisp
     }
 
     template<typename Value_t, size_t N>
-    void Shader::set_texture(const std::string& var_name, Texture<Value_t, N>& tex)
+    void Shader::set_texture(const std::string& var_name, const Image<Value_t, N>& tex)
     {
         _var_name_to_proxy.insert({
             var_name,

@@ -13,7 +13,6 @@
 #include <vector.hpp>
 #include <padding_type.hpp>
 #include <texture/native_handle.hpp>
-#include <texture/texture.hpp>
 
 namespace crisp
 {
@@ -106,12 +105,11 @@ namespace crisp
         static void bind_shader_program(GLNativeHandle program_id);
 
         template<typename T, size_t N>
-        static GLNativeHandle register_texture(Texture<T, N>&);
+        static GLNativeHandle register_texture(const Image<T, N>&);
         void free_texture(GLNativeHandle);
         static void bind_texture(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle texture_id, size_t texture_location);
 
         private:
-
             static inline ProxyID _current = 0;
             static ProxyID get_next_id()
             {
