@@ -62,13 +62,8 @@ namespace crisp
         State::free_program(_program_id);
     }
 
-    void Shader::set_active(bool b)
+    void Shader::bind_uniforms()
     {
-        if (not b)
-            State::bind_shader_program(0);
-
-        State::bind_shader_program(_program_id);
-
         size_t texture_location = 0;
         for (auto& pair : _var_name_to_proxy)
         {
@@ -110,6 +105,12 @@ namespace crisp
                     break;
             }
         }
+    }
+
+    void Shader::set_active()
+    {
+        State::bind_shader_program(_program_id);
+        State::set_active_shader(this);
     }
 
     void Shader::set_int(const std::string& var_name, int32_t v)

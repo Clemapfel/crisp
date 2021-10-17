@@ -128,6 +128,7 @@ namespace crisp
             static inline std::multiset<GLNativeHandle> _shader_programs = {};
 
             static inline crisp::Shader* _active_shader = nullptr;
+            static inline GLNativeHandle _active_program = -1;
 
             // textures
             static inline bool _vertices_initialized = false;

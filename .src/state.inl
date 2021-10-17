@@ -18,10 +18,11 @@ namespace crisp
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        if (_active_shader)
-            _active_shader->set_active(true);
-
         glBindVertexArray(_vertex_array);
+
+        if (_active_shader)
+            _active_shader->bind_uniforms();
+
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 
@@ -148,6 +149,7 @@ namespace crisp
     void State::bind_shader_program(GLNativeHandle program_id)
     {
         glUseProgram(program_id);
+        _active_program = program_id;
     }
 
     template<typename T, size_t N>
@@ -282,14 +284,14 @@ namespace crisp
     ProxyID State::register_float(float v)
     {
         auto id = get_next_id();
-        _ints.insert({id, v});
+        _floats.insert({id, v});
         return id;
     }
 
     ProxyID State::register_bool(bool v)
     {
         auto id = get_next_id();
-        _ints.insert({id, v});
+        _bools.insert({id, v});
         return id;
     }
 
@@ -517,6 +519,7 @@ namespace crisp
     void State::bind_vec3(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
         auto& vec = _vec3s.at(proxy_id);
+        auto location = glGetUniformLocation(program_id, var_name.c_str());
         glUniform3f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1), vec.at(2));
     }
 
@@ -557,5 +560,24 @@ namespace crisp
         glUniform1i(location, texture_unit);
         glActiveTexture(GL_TEXTURE0 + texture_unit);
         glBindTexture(GL_TEXTURE_2D, texture_id);
+
+        auto info = _texture_info.at(texture_id);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, padding_type_to_gl_padding(info.padding_type));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, padding_type_to_gl_padding(info.padding_type));
+
+        if (info.padding_type == PaddingType::ZERO)
+        {
+            float border[] = {0.f, 0.f, 0.f, 1.0f};
+            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+        }
+        else if (info.padding_type == PaddingType::ONE)
+        {
+            float border[] = {1.0f, 1.0f, 1.0f, 1.0f};
+            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+        }
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     }
 }

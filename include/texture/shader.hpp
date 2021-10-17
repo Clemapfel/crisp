@@ -15,7 +15,9 @@ namespace crisp
             Shader(const std::string& path);
             ~Shader();
 
-            void set_active(bool);
+            void bind_uniforms();
+
+            void set_active();
 
             void set_int(const std::string& var_name, int32_t);
             void set_float(const std::string& var_name, float);
