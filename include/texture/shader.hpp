@@ -15,6 +15,8 @@ namespace crisp
             Shader(const std::string& path);
             ~Shader();
 
+            void set_active(bool);
+
             void set_int(const std::string& var_name, int32_t);
             void set_float(const std::string& var_name, float);
             void set_bool(const std::string& var_name, bool);
@@ -64,6 +66,8 @@ namespace crisp
                 ProxyType type;
             };
 
-            std::unordered_map<std::string, ProxyEntry> _var_name_to_proxy;
+            std::map<std::string, ProxyEntry> _var_name_to_proxy;
     };
 }
+
+#include ".src/shader.inl"

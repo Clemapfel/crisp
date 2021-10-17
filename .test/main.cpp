@@ -24,9 +24,7 @@ using namespace crisp;
 
 int main()
 {
-    auto state = State();
-    auto shader = Shader();
-    /*
+
     auto image = crisp::load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
     //auto image = image_in.convert_to_color();
 
@@ -35,10 +33,13 @@ int main()
 
     auto style = sf::Style::Titlebar | sf::Style::Close;
 
-    auto state = crisp::State<sf::RenderWindow>();
     auto window = sf::RenderWindow();
     window.create(sf::VideoMode(image.get_size().x()-1, image.get_size().y()), "", style, context_settings);
     window.setActive(true);
+
+    auto shader = Shader("/home/clem/Workspace/crisp/include/texture/.shaders/noop.frag");
+
+    /*
 
     // shaders
     auto fragment_id = state.add_shader("/home/clem/Workspace/crisp/include/texture/.shaders/noop.frag");

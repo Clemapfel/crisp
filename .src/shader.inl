@@ -12,54 +12,104 @@ namespace crisp
 {
     Shader::Shader(const std::string& path)
     {
-
+        _shader_id = State::register_shader(path);
+        _program_id = State::register_program(_shader_id);
     }
 
     Shader::~Shader()
     {
-        for (std::pair<std::string, ProxyEntry>& entry : _var_name_to_proxy)
+        for (auto& entry : _var_name_to_proxy)
         {
             switch (entry.second.type)
             {
                 case INT:
-                    State::free_int(entry.first);
+                    State::free_int(entry.second.id);
                     break;
                 case FLOAT:
-                    State::free_float(entry.first);
+                    State::free_float(entry.second.id);
                     break;
                 case BOOL:
-                    State::free_bool(entry.first);
+                    State::free_bool(entry.second.id);
                     break;
                 case VEC2:
-                    State::free_vec2(entry.first);
+                    State::free_vec2(entry.second.id);
                     break;
                 case VEC3:
-                    State::free_vec3(entry.first);
+                    State::free_vec3(entry.second.id);
                     break;
                 case VEC4:
-                    State::free_vec4(entry.first);
+                    State::free_vec4(entry.second.id);
                     break;
                 case ARRAY_VEC1:
-                    State::free_matrix<1>(entry.first);
+                    State::free_matrix<1>(entry.second.id);
                     break;
                 case ARRAY_VEC2:
-                    State::free_matrix<2>(entry.first);
+                    State::free_matrix<2>(entry.second.id);
                     break;
                 case ARRAY_VEC3:
-                    State::free_matrix<3>(entry.first);
+                    State::free_matrix<3>(entry.second.id);
                     break;
                 case ARRAY_VEC4:
-                    State::free_matrix<4>(entry.first);
+                    State::free_matrix<4>(entry.second.id);
                     break;
                 case TEXTURE:
                     // sic, noop
                     break;
             }
         }
+
+        State::free_shader(_shader_id);
+        State::free_program(_program_id);
     }
 
-    bool Shader::load_from_file(const std::string& path)
+    void Shader::set_active(bool b)
     {
+        if (not b)
+            State::bind_shader_program(0);
+
+        State::bind_shader_program(_program_id);
+
+        size_t texture_location = 0;
+        for (auto& pair : _var_name_to_proxy)
+        {
+            switch (pair.second.type)
+            {
+                case INT:
+                    State::bind_int(_program_id, pair.first, pair.second.id);
+                    break;
+                case FLOAT:
+                    State::bind_float(_program_id, pair.first, pair.second.id);
+                    break;
+                case BOOL:
+                    State::bind_bool(_program_id, pair.first, pair.second.id);
+                    break;
+                case VEC2:
+                    State::bind_vec2(_program_id, pair.first, pair.second.id);
+                    break;
+                case VEC3:
+                    State::bind_vec3(_program_id, pair.first, pair.second.id);
+                    break;
+                case VEC4:
+                    State::bind_vec4(_program_id, pair.first, pair.second.id);
+                    break;
+                case ARRAY_VEC1:
+                    State::bind_matrix<1>(_program_id, pair.first, pair.second.id);
+                    break;
+                case ARRAY_VEC2:
+                    State::bind_matrix<2>(_program_id, pair.first, pair.second.id);
+                    break;
+                case ARRAY_VEC3:
+                    State::bind_matrix<3>(_program_id, pair.first, pair.second.id);
+                    break;
+                case ARRAY_VEC4:
+                    State::bind_matrix<4>(_program_id, pair.first, pair.second.id);
+                    break;
+                case TEXTURE:
+                    State::bind_texture(_program_id, pair.first, pair.second.id, texture_location);
+                    texture_location += 1;
+                    break;
+            }
+        }
     }
 
     void Shader::set_int(const std::string& var_name, int32_t v)
@@ -179,9 +229,9 @@ namespace crisp
         });
     }
 
-    void Shader::set_color(std::string& var_name, const RGB& rgb)
+    void Shader::set_color(const std::string& var_name, const crisp::RGB& rgb)
     {
-        auto as_vec = Vector<float, 3>{rbg.red(), rgb.green(), rgb.blue()};
+        auto as_vec = Vector<float, 3>{rgb.red(), rgb.green(), rgb.blue()};
         _var_name_to_proxy.insert({
             var_name,
             ProxyEntry {

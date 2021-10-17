@@ -84,7 +84,7 @@ namespace crisp
         glGetShaderiv(shader_id, GL_COMPILE_STATUS, &compilation_success);
         glGetShaderInfoLog(shader_id, 512, nullptr, compilation_log);
 
-        if (not bool(compilation_success))
+        if (compilation_success == GL_FALSE)
         {
             std::cerr << "[WARNING] Failed to compile shader at " << path << std::endl;
             std::cerr << "Log: " << compilation_log << std::endl;
@@ -111,7 +111,7 @@ namespace crisp
         char linking_log[512] = "";
         glGetProgramiv(program_id, GL_LINK_STATUS, &linking_success);
 
-        if (not (bool(linking_success)))
+        if (linking_success == GL_FALSE)
         {
             std::cerr << "[WARNING] Failed to link shader to program " << program_id << std::endl;
             std::cerr << "Log: " << linking_log << std::endl;
@@ -125,6 +125,135 @@ namespace crisp
     {
         _shader_programs.erase(id);
         glDeleteProgram(id);
+    }
+
+    void State::bind_shader_program(GLNativeHandle program_id)
+    {
+        _active_shader = program_id;
+        glUseProgram(program_id);
+    }
+
+    template<typename T, size_t N>
+    GLNativeHandle State::register_texture(const Texture<T, N>& texture)
+    {
+        GLNativeHandle texture_id;
+        glGenTextures(1, &texture_id);
+
+        glBindTexture(GL_TEXTURE_2D, texture_id);
+
+        if (not _vertices_initialized)
+        {
+            // vertex info
+            static float vertices[] = {
+                    // positions          // colors           // texture coords
+                    0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
+                    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
+                    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
+                    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f  // top left
+            };
+
+            static unsigned int indices[] = {
+                    0, 1, 3, // first triangle
+                    1, 2, 3  // second triangle
+            };
+
+            glGenVertexArrays(1, &_vertex_array);
+            glGenBuffers(1, &_vertex_buffer);
+            glGenBuffers(1, &_element_buffer);
+
+            glBindVertexArray(_vertex_array);
+
+            glBindBuffer(GL_ARRAY_BUFFER, _vertex_buffer);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _element_buffer);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+            // position attribute
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
+            glEnableVertexAttribArray(0);
+
+            // color attribute
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
+            glEnableVertexAttribArray(1);
+
+            // texture coord attribute
+            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
+            glEnableVertexAttribArray(2);
+
+            _vertices_initialized = true;
+        }
+
+        GLint internal_format;
+        GLint format;
+
+        size_t alignment_n = 1;
+
+        if (N == 1)
+        {
+            format = GL_RED;
+            alignment_n = 1;
+            if (std::is_same_v<T, bool>)
+                internal_format = GL_R8;
+            else
+                internal_format = GL_R32F;
+        }
+        else if (N == 2)
+        {
+            format = GL_RG;
+            alignment_n = 2;
+            if (std::is_same_v<T, bool>)
+                internal_format = GL_RG8;
+            else
+                internal_format = GL_RG32F;
+        }
+        else if (N == 3)
+        {
+            format = GL_RGB;
+            alignment_n = 1;
+            if (std::is_same_v<T, bool>)
+                internal_format = GL_RGB8;
+            else
+                internal_format = GL_RGB32F;
+        }
+        else if (N == 4)
+        {
+            format = GL_RGBA;
+            alignment_n = 4;
+            if (std::is_same_v<T, bool>)
+                internal_format = GL_RGBA8;
+            else
+                internal_format = GL_RGBA32F;
+        }
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, alignment_n);
+
+        glTexImage2D(GL_TEXTURE_2D,
+             0,
+             internal_format,
+             static_cast<GLsizei>(texture.get_size().x()),
+             static_cast<GLsizei>(texture.get_size().y()),
+             0,
+             format,
+             std::is_same_v<T, bool> ? GL_UNSIGNED_BYTE : GL_FLOAT,
+             texture.expose_data());
+
+        _textures.insert(texture_id);
+        _texture_info.insert({
+            texture_id,
+            TextureInfo{
+                .padding_type = texture.get_padding_type(),
+                .width = texture.get_size().x(),
+                .height = texture.get_size().y(),
+            }
+        });
+
+        return texture_id;
+    }
+
+    void State::free_texture(GLNativeHandle id)
+    {
+        glDeleteTextures(1, &id);
     }
 
     ProxyID State::register_int(int v)
@@ -321,6 +450,11 @@ namespace crisp
         _vec3s.erase(id);
     }
 
+    void State::free_vec4(ProxyID id)
+    {
+        _vec4s.erase(id);
+    }
+
     template<size_t N>
     void State::free_matrix(ProxyID id)
     {
@@ -343,13 +477,69 @@ namespace crisp
         };
     }
 
+    void State::bind_int(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
+    {
+        glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), _ints.at(proxy_id));
+    }
 
+    void State::bind_float(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
+    {
+        glUniform1f(glGetUniformLocation(program_id, var_name.c_str()), _floats.at(proxy_id));
+    }
 
+    void State::bind_bool(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
+    {
+        glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), int(_bools.at(proxy_id)));
+    }
 
+    void State::bind_vec2(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
+    {
+        auto& vec = _vec2s.at(proxy_id);
+        glUniform2f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1));
+    }
 
+    void State::bind_vec3(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
+    {
+        auto& vec = _vec3s.at(proxy_id);
+        glUniform3f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1), vec.at(2));
+    }
 
+    void State::bind_vec4(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
+    {
+        auto& vec = _vec3s.at(proxy_id);
+        glUniform4f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1), vec.at(2), vec.at(3));
+    }
 
+    template<size_t N>
+    void State::bind_matrix(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
+    {
+        if (N == 1)
+        {
+            auto& matrix = _array_vec1s.at(proxy_id);
+            glUniform1fv(glGetUniformLocation(program_id, var_name.c_str()), matrix.size(), &matrix[0]);
+        }
+        else if (N == 2)
+        {
+            auto& matrix = _array_vec2s.at(proxy_id);
+            glUniform2fv(glGetUniformLocation(program_id, var_name.c_str()), matrix.size(), &matrix[0][0]);
+        }
+        else if (N == 3)
+        {
+            auto& matrix = _array_vec3s.at(proxy_id);
+            glUniform3fv(glGetUniformLocation(program_id, var_name.c_str()), matrix.size(), &matrix[0][0]);
+        }
+        else if (N == 4)
+        {
+            auto& matrix = _array_vec4s.at(proxy_id);
+            glUniform3fv(glGetUniformLocation(program_id, var_name.c_str()), matrix.size(), &matrix[0][0]);
+        }
+    }
 
-
-
+    void State::bind_texture(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle texture_id, size_t texture_unit)
+    {
+        auto location = glGetUniformLocation(program_id, var_name.c_str());
+        glUniform1i(location, texture_unit);
+        glActiveTexture(GL_TEXTURE0 + texture_unit);
+        glBindTexture(GL_TEXTURE_2D, texture_id);
+    }
 }

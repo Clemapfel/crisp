@@ -8,6 +8,8 @@
 #include <vector>
 #include <set>
 
+#include <SFML/Graphics/Glsl.hpp>
+
 #include <vector.hpp>
 #include <padding_type.hpp>
 #include <texture/native_handle.hpp>
@@ -15,28 +17,7 @@
 
 namespace crisp
 {
-
-    struct TextureProxy
-    {
-        GLNativeHandle _native_handle;
-        PaddingType _padding_type;
-
-        unsigned int vertex_array_id,
-                     vertex_buffer_id,
-                     element_buffer_id;
-    };
-
     using ProxyID = int;    // -1, -2, ... so it isn't confused with GLNativeHandle
-
-    template<typename T>
-    struct Proxy
-    {
-        Proxy(const T& value);
-        ProxyID get_id() const;
-
-        private:
-            ProxyID id;
-    };
 
     template<typename T>
     using Matrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
@@ -44,30 +25,39 @@ namespace crisp
     // holds proxies to all objects relevant for currently registered shaders
     struct State
     {
+        State() = delete;
+
         static ProxyID register_int(int);
         static void free_int(ProxyID);
+        static void bind_int(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
 
         static ProxyID register_float(float);
         static void free_float(ProxyID);
+        static void bind_float(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
+
 
         static ProxyID register_bool(bool);
         static void free_bool(ProxyID);
+        static void bind_bool(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
 
         template<typename T>
         static ProxyID register_vec2(const Vector<T, 2>&);
 
         static void free_vec2(ProxyID);
-
+        static void bind_vec2(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
+        
         template<typename T>
         static ProxyID register_vec3(const Vector<T, 3>&);
 
         static void free_vec3(ProxyID);
+        static void bind_vec3(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
 
         template<typename T>
         static ProxyID register_vec4(const Vector<T, 4>&);
 
         static void free_vec4(ProxyID);
-
+        static void bind_vec4(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
+        
         template<typename T>
         static ProxyID register_matrix(const Matrix<T>&);
 
@@ -83,6 +73,9 @@ namespace crisp
         /// @tparam N: number of components in inner vector
         template<size_t N>
         static void free_matrix(ProxyID);
+        
+        template<size_t N>
+        static void bind_matrix(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
 
         /// @param path: [in]
         /// @param program_id: [out]
@@ -92,10 +85,12 @@ namespace crisp
 
         static GLNativeHandle register_program(GLNativeHandle fragment_shader_id);
         static void free_program(GLNativeHandle);
+        static void bind_shader_program(GLNativeHandle program_id);
 
         template<typename T, size_t N>
         static GLNativeHandle register_texture(const Texture<T, N>&);
         void free_texture(GLNativeHandle);
+        static void bind_texture(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle texture_id, size_t texture_location);
 
         private:
 
@@ -125,8 +120,25 @@ namespace crisp
             static inline std::multiset<GLNativeHandle> _fragment_shaders = {};
             static inline std::multiset<GLNativeHandle> _shader_programs = {};
 
+            static inline GLNativeHandle _active_shader = 0;
+
             // textures
-            static inline std::vector<GLNativeHandle> _textures = {};
+            static inline bool _vertices_initialized = false;
+            static inline GLNativeHandle _vertex_array = -1,
+                                          _vertex_buffer = -1,
+                                          _element_buffer = -1;
+
+            struct TextureInfo
+            {
+                PaddingType padding_type;
+                size_t width,
+                       height;
+            };
+
+            static inline std::multiset<GLNativeHandle> _textures = {};
+            static inline std::unordered_map<GLNativeHandle, TextureInfo> _texture_info;
+
+            static inline GLNativeHandle _active_texture = 0;
     };
 }
 
