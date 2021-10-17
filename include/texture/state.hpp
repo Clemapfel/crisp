@@ -31,7 +31,17 @@ namespace crisp
 
         State() = delete;
 
-        //static std::vector<float>
+        template<typename T>
+        static void get_pixel_buffer(Image<T, 1>& image, Vector2ui top_left = {0, 0});
+
+        template<typename T>
+        static void get_pixel_buffer(Image<T, 2>& image, Vector2ui top_left = {0, 0});
+
+        template<typename T>
+        static void get_pixel_buffer(Image<T, 3>& image, Vector2ui top_left = {0, 0});
+
+        template<typename T>
+        static void get_pixel_buffer(Image<T, 4>& image, Vector2ui top_left = {0, 0});
 
         static void display();
         static void set_active_shader(crisp::Shader*);

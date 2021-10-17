@@ -26,6 +26,94 @@ namespace crisp
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 
+    template<typename T>
+    void State::get_pixel_buffer(Image<T, 1>& image, Vector2ui top_left)
+    {
+        std::vector<float> buffer;
+        buffer.resize(image.get_size().x() * image.get_size().y() * 4);
+
+        glReadPixels(top_left.x(), top_left.y(), image.get_size().x(), image.get_size().y(), GL_RGBA, GL_FLOAT, &buffer[0]);
+
+        for (size_t y = 0, i = 0; y < image.get_size().y(); ++y)
+        {
+            for (size_t x = 0; x < image.get_size().x(); ++x, i += 4)
+            {
+                float r = buffer.at(i+0);
+                float g = buffer.at(i+1);
+                float b = buffer.at(i+2);
+                float a = buffer.at(i+3);
+
+                image(x, image.get_size().y() - (y+1)) = r;
+            }
+        }
+    }
+
+    template<typename T>
+    void State::get_pixel_buffer(Image<T, 2>& image, Vector2ui top_left)
+    {
+        std::vector<float> buffer;
+        buffer.resize(image.get_size().x() * image.get_size().y() * 4);
+
+        glReadPixels(top_left.x(), top_left.y(), image.get_size().x(), image.get_size().y(), GL_RGBA, GL_FLOAT, &buffer[0]);
+
+        for (size_t y = 0, i = 0; y < image.get_size().y(); ++y)
+        {
+            for (size_t x = 0; x < image.get_size().x(); ++x, i += 4)
+            {
+                float r = buffer.at(i+0);
+                float g = buffer.at(i+1);
+                float b = buffer.at(i+2);
+                float a = buffer.at(i+3);
+
+                image(x, image.get_size().y() - (y+1)) = Vector<T, 2>{static_cast<T>(r), static_cast<T>(g)};
+            }
+        }
+    }
+
+    template<typename T>
+    void State::get_pixel_buffer(Image<T, 3>& image, Vector2ui top_left)
+    {
+        std::vector<float> buffer;
+        buffer.resize(image.get_size().x() * image.get_size().y() * 4);
+
+        glReadPixels(top_left.x(), top_left.y(), image.get_size().x(), image.get_size().y(), GL_RGBA, GL_FLOAT, &buffer[0]);
+
+        for (size_t y = 0, i = 0; y < image.get_size().y(); ++y)
+        {
+            for (size_t x = 0; x < image.get_size().x(); ++x, i += 4)
+            {
+                float r = buffer.at(i+0);
+                float g = buffer.at(i+1);
+                float b = buffer.at(i+2);
+                float a = buffer.at(i+3);
+
+                image(x, image.get_size().y() - (y+1)) = Vector<T, 3>{static_cast<T>(r), static_cast<T>(g), static_cast<T>(g)};
+            }
+        }
+    }
+
+    template<typename T>
+    void State::get_pixel_buffer(Image<T, 4>& image, Vector2ui top_left)
+    {
+        std::vector<float> buffer;
+        buffer.resize(image.get_size().x() * image.get_size().y() * 4);
+
+        glReadPixels(top_left.x(), top_left.y(), image.get_size().x(), image.get_size().y(), GL_RGBA, GL_FLOAT, &buffer[0]);
+
+        for (size_t y = 0, i = 0; y < image.get_size().y(); ++y)
+        {
+            for (size_t x = 0; x < image.get_size().x(); ++x, i += 4)
+            {
+                float r = buffer.at(i+0);
+                float g = buffer.at(i+1);
+                float b = buffer.at(i+2);
+                float a = buffer.at(i+3);
+
+                image(x, image.get_size().y() - (y+1)) = Vector<T, 4>{static_cast<T>(r), static_cast<T>(g), static_cast<T>(b), static_cast<T>(a)};
+            }
+        }
+    }
+
     void State::initialize_vertex_shader()
     {
         if (_vertex_shader != -1)

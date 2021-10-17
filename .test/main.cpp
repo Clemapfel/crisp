@@ -25,7 +25,7 @@ using namespace crisp;
 
 int main()
 {
-    auto image = crisp::load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
+    auto image = crisp::load_grayscale_image("/home/clem/Workspace/crisp/.test/opal_color.png");
     //auto image = image_in.convert_to_color();
 
     sf::ContextSettings context_settings;
@@ -39,7 +39,7 @@ int main()
 
     auto shader = Shader("/home/clem/Workspace/crisp/include/texture/.shaders/noop.frag");
 
-    auto texture_ram = Texture<float, 3>(image.get_size().x(), image.get_size().y());
+    auto texture_ram = Texture<float, 1>(image.get_size().x(), image.get_size().y());
     texture_ram.create_from(image);
 
     shader.set_texture("_texture", texture_ram);
@@ -52,14 +52,8 @@ int main()
     State::display();
     window.display();
 
-    while(window.isOpen())
-    {
-        auto event = sf::Event();
-        while(window.pollEvent(event))
-        {
-            if (event.type == sf::Event::EventType::Closed)
-                window.close();
-        }
-    }
+    State::get_pixel_buffer(image);
+    save_to_disk(image, "/home/clem/Workspace/crisp/.test/screenshot.png");
+    return 0;
 }
 
