@@ -56,9 +56,21 @@ namespace crisp
         {
             for (size_t x = 0; x < image.get_size().x(); x++)
             {
-                auto px = image.at(x, image.get_size().y() - (y+1));
+                std::vector<size_t> seq;
 
-                for (size_t i = 0; i < N; ++i)
+                // TODO: why is this workaround needed?
+                if (N == 1)
+                    seq = {0};
+                else if (N == 2)
+                    seq = {1, 0};
+                else if (N == 3)
+                    seq = {2, 0, 1};
+                else if (N == 4)
+                    seq = {2, 0, 1, 3};
+
+                auto px = image.at(x, image.get_size().y() - (y + 1));
+
+                for (size_t i : seq)
                 {
                     if (std::is_same_v<T, bool>)
                         _data.push_back(bool(px.at(i)) ? 255 : 0);

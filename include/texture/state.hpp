@@ -31,6 +31,8 @@ namespace crisp
 
         State() = delete;
 
+        //static std::vector<float>
+
         static void display();
         static void set_active_shader(crisp::Shader*);
 
@@ -41,7 +43,6 @@ namespace crisp
         static ProxyID register_float(float);
         static void free_float(ProxyID);
         static void bind_float(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
-
 
         static ProxyID register_bool(bool);
         static void free_bool(ProxyID);

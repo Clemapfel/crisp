@@ -62,7 +62,7 @@ namespace crisp
             throw std::out_of_range(
                     "Index " + std::to_string(i) + " out of range for vector of size " + std::to_string(N));
 
-        return Eigen::Array<T, 1, N>::operator()(0, i);;
+        return Eigen::Array<T, 1, N>::operator()(0, i);
     }
 
     template<typename T, size_t N>

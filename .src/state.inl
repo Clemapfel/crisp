@@ -155,6 +155,8 @@ namespace crisp
     template<typename T, size_t N>
     GLNativeHandle State::register_texture(Texture<T, N>& texture)
     {
+        static_assert(0 < N and N <= 4);
+
         GLNativeHandle texture_id;
         glGenTextures(1, &texture_id);
 

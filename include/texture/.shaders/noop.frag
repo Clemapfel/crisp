@@ -3,6 +3,7 @@
 in vec2 _tex_coord;
 
 uniform sampler2D _texture;
+uniform vec3 _color;
 
 // DO NOT MODIFY
 

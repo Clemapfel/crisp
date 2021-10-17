@@ -42,23 +42,8 @@ int main()
     auto texture_ram = Texture<float, 3>(image.get_size().x(), image.get_size().y());
     texture_ram.create_from(image);
 
-    save_to_disk(image, "/home/clem/Workspace/crisp/.test/texture_test_before.png");
-
-    for (size_t y = 0, i = 0; y < image.get_size().y(); ++y)
-        for (size_t x = 0; x < image.get_size().x(); ++x)
-        {
-            image(x, y) = RGB {
-                texture_ram.expose_data()[i],
-                texture_ram.expose_data()[i + 1],
-                texture_ram.expose_data()[i + 2]
-            };
-
-            i = i + 3;
-        }
-
-    save_to_disk(image, "/home/clem/Workspace/crisp/.test/texture_test_after.png");
-
     shader.set_texture("_texture", texture_ram);
+    shader.set_color("_color", RGB{1, 0, 1});
 
     shader.set_active();
     shader.bind_uniforms();
