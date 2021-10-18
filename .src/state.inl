@@ -491,25 +491,25 @@ namespace crisp
             glUniformMatrix2fv(location, 1, false, &matrix.data[0]);
 
         else if (matrix.n_rows == 2 and matrix.n_cols == 3)
-            glUniformMatrix2x3fv(location, 1, false, &matrix.data[0]);
+            glUniformMatrix3x2fv(location, 1, false, &matrix.data[0]);
 
         else if (matrix.n_rows == 2 and matrix.n_cols == 4)
-            glUniformMatrix2x4fv(location, 1, false, &matrix.data[0]);
+            glUniformMatrix4x2fv(location, 1, false, &matrix.data[0]);
 
         else if (matrix.n_rows == 3 and matrix.n_cols == 2)
-            glUniformMatrix3x2fv(location, 1, false, &matrix.data[0]);
+            glUniformMatrix2x3fv(location, 1, false, &matrix.data[0]);
 
         else if (matrix.n_rows == 3 and matrix.n_cols == 3)
             glUniformMatrix3fv(location, 1, false, &matrix.data[0]);
 
         else if (matrix.n_rows == 3 and matrix.n_cols == 4)
-            glUniformMatrix3x4fv(location, 1, false, &matrix.data[0]);
+            glUniformMatrix4x3fv(location, 1, false, &matrix.data[0]);
 
         else if (matrix.n_rows == 4 and matrix.n_cols == 2)
-            glUniformMatrix4x2fv(location, 1, false, &matrix.data[0]);
+            glUniformMatrix2x4fv(location, 1, false, &matrix.data[0]);
 
         else if (matrix.n_rows == 4 and matrix.n_cols == 3)
-            glUniformMatrix4x3fv(location, 1, false, &matrix.data[0]);
+            glUniformMatrix3x4fv(location, 1, false, &matrix.data[0]);
 
         else if (matrix.n_rows == 4 and matrix.n_cols == 4)
             glUniformMatrix4fv(location, 1, false, &matrix.data[0]);
