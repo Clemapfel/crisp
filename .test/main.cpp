@@ -36,17 +36,21 @@ int main()
     window.create(sf::VideoMode(image.get_size().x()-1, image.get_size().y()), "", style, context_settings);
     window.setActive(true);
 
-    auto shader = Shader("/home/clem/Workspace/crisp/include/gpu_side/.shaders/convolute_mat3x3.glsl");
+    auto shader = Shader("/home/clem/Workspace/crisp/include/gpu_side/.shaders/convolute_vec3.glsl");
 
     shader.set_texture("_texture", image);
     shader.set_vec2("_texture_size", image.get_size());
 
     auto matrix = SpatialFilter::laplacian_first_derivative();
     std::cout << matrix << std::endl;
-    shader.set_matrix<float, 3, 3>("_kernel", matrix);
+    shader.set_vec3("_kernel", Vector<float, 3>{-1, 0, 1});
+    shader.set_bool("_vertical", false);
 
     shader.set_active();
     shader.bind_uniforms();
+
+    //https://gamedev.stackexchange.com/questions/31162/updating-texture-memory-via-shader
+    //http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-14-render-to-texture/
 
     // render
     State::display();
