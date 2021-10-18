@@ -1,41 +1,55 @@
 #version 330 core
 
-float project(float lower_bound, float upper_bound, float value)
-{
-    return value * abs(lower_bound - upper_bound) + min(lower_bound, upper_bound);
-}
-
 in vec2 _tex_coord;
 
 uniform mat3 _kernel;
 uniform sampler2D _texture;
-uniform float _max;
+uniform vec2 _texture_size;
 
 void main()
 {
-    mat3 kernel = mat3(-1);
-    kernel[0][0] = 8;
+    mat3 kernel = mat3(1);
+    vec2 step_size = 1 / _texture_size;
 
-    float min = 0;
-    float max = 0;
-    float value = 0;
-    for (int s = -1; s <= +1; ++s)
-    {
-        for (int t = -1; t <= +1; ++t)
-        {
-            float kernel_val = kernel[1 + s][1 + t];
+    float kernel_sum = 0;
+    vec4 response = vec4(0);
+    
+    float kernel_val = kernel[0][0];
+    response += kernel_val * texture(_texture, _tex_coord + (vec2(-1, -1) * step_size));
+    kernel_sum += kernel_val;
+    
+    kernel_val = kernel[0][1];
+    response += kernel_val * texture(_texture, _tex_coord + (vec2(-1, 0) * step_size));
+    kernel_sum += kernel_val;
+    
+    kernel_val = kernel[0][2];
+    response += kernel_val * texture(_texture, _tex_coord + (vec2(-1, 1) * step_size));
+    kernel_sum += kernel_val;
+    
+    kernel_val = kernel[1][0];
+    response += kernel_val * texture(_texture, _tex_coord + (vec2(0, -1) * step_size));
+    kernel_sum += kernel_val;
+    
+    kernel_val = kernel[1][1];
+    response += kernel_val * texture(_texture, _tex_coord + (vec2(0, 0) * step_size));
+    kernel_sum += kernel_val;
+    
+    kernel_val = kernel[1][2];
+    response += kernel_val * texture(_texture, _tex_coord + (vec2(0, 1) * step_size));
+    kernel_sum += kernel_val;
+    
+    kernel_val = kernel[2][0];
+    response += kernel_val * texture(_texture, _tex_coord + (vec2(1, -1) * step_size));
+    kernel_sum += kernel_val;
+    
+    kernel_val = kernel[2][1];
+    response += kernel_val * texture(_texture, _tex_coord + (vec2(1, 0) * step_size));
+    kernel_sum += kernel_val;
+    
+    kernel_val = kernel[2][2];
+    response += kernel_val * texture(_texture, _tex_coord + (vec2(1, 1) * step_size));
+    kernel_sum += kernel_val;
 
-            value += texture(_texture, _tex_coord + vec2(s, t)).x * kernel_val;
-
-            if (kernel_val < 0)
-                min += kernel_val;
-            else
-                max += kernel_val;
-        }
-    }
-
-    value -= min;
-    value /= (-1 * min + max);
-
-    gl_FragColor = vec4(value, value, value, 1); ////texture2D(_texture, _tex_coord); //vec4(vec3(_kernel * neighborhood), 1);
+    response /= kernel_sum;
+    gl_FragColor = response;
 }

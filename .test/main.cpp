@@ -12,6 +12,7 @@
 #include <SFML/OpenGL.hpp>
 #include <SFML/Window/Context.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
+#include <SFML/Graphics.hpp>
 
 #include <system.hpp>
 #include <GLES3/gl3.h>
@@ -38,7 +39,11 @@ int main()
     auto shader = Shader("/home/clem/Workspace/crisp/include/gpu_side/.shaders/apply_mat3.frag");
 
     shader.set_texture("_texture", image);
-    shader.set_matrix<float, 3, 3>("_kernel", SpatialFilter::laplacian_first_derivative());
+    shader.set_vec2("_texture_size", image.get_size());
+
+    auto matrix = SpatialFilter::laplacian_first_derivative();
+    std::cout << matrix << std::endl;
+    shader.set_matrix<float, 3, 3>("_kernel", matrix);
 
     shader.set_active();
     shader.bind_uniforms();

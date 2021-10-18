@@ -18,7 +18,7 @@ namespace crisp
 
     void Shader::load_from_file(const std::string& path)
     {
-        std::cout << "[LOG] Recompiling " << path << "..." << std::endl;
+        std::cerr << "[LOG] Recompiling " << path << std::endl;
 
         if (_shader_id != -1)
             State::free_shader(_shader_id);
