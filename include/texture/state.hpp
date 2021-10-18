@@ -74,24 +74,30 @@ namespace crisp
 
         static void free_vec4(ProxyID);
         static void bind_vec4(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
-        
-        template<typename T>
-        static ProxyID register_matrix(const Matrix<T>&);
 
         template<typename T>
-        static ProxyID register_matrix(const Matrix<Vector<T, 2>>&);
+        static ProxyID register_array(const std::vector<T>&);
 
         template<typename T>
-        static ProxyID register_matrix(const Matrix<Vector<T, 3>>&);
+        static ProxyID register_vec2_array(const std::vector<crisp::Vector<T, 2>>&);
 
         template<typename T>
-        static ProxyID register_matrix(const Matrix<Vector<T, 4>>&);
+        static ProxyID register_vec3_array(const std::vector<crisp::Vector<T, 3>>&);
+
+        template<typename T>
+        static ProxyID register_vec4_array(const std::vector<crisp::Vector<T, 4>>&);
 
         /// @tparam N: number of components in inner vector
         template<size_t N>
-        static void free_matrix(ProxyID);
+        static void free_array(ProxyID);
         
         template<size_t N>
+        static void bind_array(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
+
+        template<typename T, size_t n_rows, size_t n_cols>
+        static ProxyID register_matrix(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>&);
+
+        static void free_matrix(ProxyID);
         static void bind_matrix(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
 
         /// @param path: [in]
@@ -125,10 +131,19 @@ namespace crisp
             static inline std::unordered_map<ProxyID, std::array<float, 3>> _vec3s = {};
             static inline std::unordered_map<ProxyID, std::array<float, 4>> _vec4s = {};
 
+            struct MatrixProxy
+            {
+                std::vector<float> data;
+                size_t n_cols,
+                       n_rows;
+            };
+
+            static inline std::unordered_map<ProxyID, MatrixProxy> _mats = {};
+
             static inline std::unordered_map<ProxyID, std::vector<float>> _array_vec1s = {};
-            static inline std::unordered_map<ProxyID, std::vector<std::array<float, 2>>> _array_vec2s = {};
-            static inline std::unordered_map<ProxyID, std::vector<std::array<float, 3>>> _array_vec3s = {};
-            static inline std::unordered_map<ProxyID, std::vector<std::array<float, 4>>> _array_vec4s = {};
+            static inline std::unordered_map<ProxyID, std::vector<float>> _array_vec2s = {};
+            static inline std::unordered_map<ProxyID, std::vector<float>> _array_vec3s = {};
+            static inline std::unordered_map<ProxyID, std::vector<float>> _array_vec4s = {};
 
             // shaders
             static void initialize_vertex_shader();

@@ -40,17 +40,20 @@ namespace crisp
                 case VEC4:
                     State::free_vec4(entry.second.id);
                     break;
+                case MATRIX:
+                    State::free_matrix(entry.second.id);
+                    break;
                 case ARRAY_VEC1:
-                    State::free_matrix<1>(entry.second.id);
+                    State::free_array<1>(entry.second.id);
                     break;
                 case ARRAY_VEC2:
-                    State::free_matrix<2>(entry.second.id);
+                    State::free_array<2>(entry.second.id);
                     break;
                 case ARRAY_VEC3:
-                    State::free_matrix<3>(entry.second.id);
+                    State::free_array<3>(entry.second.id);
                     break;
                 case ARRAY_VEC4:
-                    State::free_matrix<4>(entry.second.id);
+                    State::free_array<4>(entry.second.id);
                     break;
                 case TEXTURE:
                     // sic, noop
@@ -87,17 +90,20 @@ namespace crisp
                 case VEC4:
                     State::bind_vec4(_program_id, pair.first, pair.second.id);
                     break;
+                case MATRIX:
+                    State::bind_matrix(_program_id, pair.first, pair.second.id);
+                    break;
                 case ARRAY_VEC1:
-                    State::bind_matrix<1>(_program_id, pair.first, pair.second.id);
+                    State::bind_array<1>(_program_id, pair.first, pair.second.id);
                     break;
                 case ARRAY_VEC2:
-                    State::bind_matrix<2>(_program_id, pair.first, pair.second.id);
+                    State::bind_array<2>(_program_id, pair.first, pair.second.id);
                     break;
                 case ARRAY_VEC3:
-                    State::bind_matrix<3>(_program_id, pair.first, pair.second.id);
+                    State::bind_array<3>(_program_id, pair.first, pair.second.id);
                     break;
                 case ARRAY_VEC4:
-                    State::bind_matrix<4>(_program_id, pair.first, pair.second.id);
+                    State::bind_array<4>(_program_id, pair.first, pair.second.id);
                     break;
                 case TEXTURE:
                     State::bind_texture(_program_id, pair.first, pair.second.id, texture_location);
@@ -182,53 +188,66 @@ namespace crisp
         });
     }
 
-    template<typename T>
-    void Shader::set_matrix(const std::string& var_name, const Matrix<T>& matrix)
+    template<typename T, size_t n_rows, size_t n_cols>
+    void Shader::set_matrix(const std::string& var_name, const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& matrix)
     {
         _var_name_to_proxy.insert({
-           var_name,
-           ProxyEntry {
-               .id = State::register_matrix(matrix),
-               .type = ProxyType::ARRAY_VEC1
-           }
+            var_name,
+            ProxyEntry {
+                .id = State::register_matrix<T, n_rows, n_cols>(matrix),
+                .type = ProxyType::MATRIX
+            }
         });
     }
 
     template<typename T>
-    void Shader::set_matrix(const std::string& var_name, const Matrix<Vector<T, 2>>& matrix)
+    void Shader::set_array(const std::string& var_name, const std::vector<T>& data)
     {
         _var_name_to_proxy.insert({
-           var_name,
-           ProxyEntry {
-               .id = State::register_matrix(matrix),
-               .type = ProxyType::ARRAY_VEC2
-           }
+            var_name,
+            ProxyEntry {
+                .id = State::register_array(data),
+                .type = ProxyType::ARRAY_VEC1
+            }
         });
     }
 
     template<typename T>
-    void Shader::set_matrix(const std::string& var_name, const Matrix<Vector<T, 3>>& matrix)
+    void Shader::set_array_vec2(const std::string& var_name, const std::vector<crisp::Vector<T, 2>>& data)
     {
         _var_name_to_proxy.insert({
-           var_name,
-           ProxyEntry {
-               .id = State::register_matrix(matrix),
-               .type = ProxyType::ARRAY_VEC3
-           }
+            var_name,
+            ProxyEntry {
+                .id = State::register_vec2_array(data),
+                .type = ProxyType::ARRAY_VEC2
+            }
         });
     }
 
     template<typename T>
-    void Shader::set_matrix(const std::string& var_name, const Matrix<Vector<T, 4>>& matrix)
+    void Shader::set_array_vec3(const std::string& var_name, const std::vector<crisp::Vector<T, 3>>& data)
     {
         _var_name_to_proxy.insert({
-           var_name,
-           ProxyEntry {
-               .id = State::register_matrix(matrix),
-               .type = ProxyType::ARRAY_VEC4
-           }
+            var_name,
+            ProxyEntry {
+                .id = State::register_vec3_array(data),
+                .type = ProxyType::ARRAY_VEC3
+            }
         });
     }
+
+    template<typename T>
+    void Shader::set_array_vec4(const std::string& var_name, const std::vector<crisp::Vector<T, 4>>& data)
+    {
+        _var_name_to_proxy.insert({
+            var_name,
+            ProxyEntry {
+                .id = State::register_vec4_array(data),
+                .type = ProxyType::ARRAY_VEC4
+            }
+        });
+    }
+
 
     void Shader::set_color(const std::string& var_name, const crisp::RGB& rgb)
     {
@@ -242,6 +261,7 @@ namespace crisp
         });
     }
 
+    /*
     void Shader::set_kernel(const std::string& var_name, const Kernel& kernel)
     {
         auto as_matrix = static_cast<Matrix<float>>(kernel);
@@ -267,6 +287,7 @@ namespace crisp
 
         set_matrix(var_name, as_matrix);
     }
+     */
 
     template<typename Value_t, size_t N>
     void Shader::set_texture(const std::string& var_name, const Image<Value_t, N>& tex)

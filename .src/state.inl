@@ -468,104 +468,166 @@ namespace crisp
         return id;
     }
 
-    template<typename T>
-    ProxyID State::register_matrix(const Matrix<T>& matrix)
+    template<typename T, size_t n_rows, size_t n_cols>
+    ProxyID State::register_matrix(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& matrix)
     {
+        static_assert(2 <= n_rows and n_rows <= 4 and 2 <= n_cols and n_cols <= 4);
+        auto id = get_next_id();
+
+        std::vector<float> as_float;
+        as_float.reserve(matrix.rows() * matrix.cols());
+
+            for (size_t y = 0; y < matrix.cols(); ++y)
+                for (size_t x = 0; x < matrix.rows(); ++x)
+                    as_float.push_back(static_cast<float>(matrix(x, y)));
+
+        _mats.insert({
+            id,
+            MatrixProxy {
+                .data = as_float,
+                .n_rows = matrix.rows(),
+                .n_cols = matrix.cols()
+            }
+        });
+    }
+
+    void State::bind_matrix(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
+    {
+        auto matrix = _mats.at(proxy_id);
+        auto location = glGetUniformLocation(program_id, var_name.c_str());
+
+        if (matrix.n_rows == 2 and matrix.n_cols == 2)
+            glUniformMatrix2fv(location, 1, false, &matrix.data[0]);
+
+        else if (matrix.n_rows == 2 and matrix.n_cols == 3)
+            glUniformMatrix2x3fv(location, 1, false, &matrix.data[0]);
+
+        else if (matrix.n_rows == 2 and matrix.n_cols == 4)
+            glUniformMatrix2x4fv(location, 1, false, &matrix.data[0]);
+
+        else if (matrix.n_rows == 3 and matrix.n_cols == 2)
+            glUniformMatrix3x2fv(location, 1, false, &matrix.data[0]);
+
+        else if (matrix.n_rows == 3 and matrix.n_cols == 3)
+            glUniformMatrix3fv(location, 1, false, &matrix.data[0]);
+
+        else if (matrix.n_rows == 3 and matrix.n_cols == 4)
+            glUniformMatrix3x4fv(location, 1, false, &matrix.data[0]);
+
+        else if (matrix.n_rows == 4 and matrix.n_cols == 2)
+            glUniformMatrix4x2fv(location, 1, false, &matrix.data[0]);
+
+        else if (matrix.n_rows == 4 and matrix.n_cols == 3)
+            glUniformMatrix4x3fv(location, 1, false, &matrix.data[0]);
+
+        else if (matrix.n_rows == 4 and matrix.n_cols == 4)
+            glUniformMatrix4fv(location, 1, false, &matrix.data[0]);
+    }
+
+    void State::free_matrix(ProxyID id)
+    {
+        _mats.erase(id);
+    }
+
+    template<typename T>
+    ProxyID State::register_array(const std::vector<T>& data)
+    {
+        std::vector<float> as_float;
+
+        for (const auto& x : data)
+            as_float.push_back(static_cast<float>(x));
+
         auto id = get_next_id();
         _array_vec1s.insert({
-           id,
-           std::vector<float>(size_t(matrix.rows() * matrix.cols()))
+            id,
+            as_float
         });
-
-        auto& vec = _array_vec1s.at(id);
-
-        for (size_t y = 0; y < matrix.cols(); ++y)
-        {
-            for (size_t x = 0; x < matrix.rows(); ++x)
-            {
-                vec.push_back(matrix(x, y));
-            }
-        }
-
-        return id;
     }
 
     template<typename T>
-    ProxyID State::register_matrix(const Matrix<Vector<T, 2>>& matrix)
+    ProxyID State::register_vec2_array(const std::vector<crisp::Vector<T, 2>>& data)
     {
+        std::vector<float> as_float;
+
+        for (const auto& vec : data)
+        {
+            as_float.push_back(static_cast<float>(vec.x()));
+            as_float.push_back(static_cast<float>(vec.y()));
+        }
+
         auto id = get_next_id();
         _array_vec2s.insert({
-           id,
-           std::vector<std::array<float, 2>>(size_t(matrix.rows() * matrix.cols()))
+            id,
+            as_float
         });
-
-        auto& vec = _array_vec2s.at(id);
-
-        for (size_t y = 0; y < matrix.cols(); ++y)
-        {
-            for (size_t x = 0; x < matrix.rows(); ++x)
-            {
-                vec.push_back({
-                    static_cast<float>(matrix(x, y).at(0)),
-                    static_cast<float>(matrix(x, y).at(1)),
-                });
-            }
-        }
-
-        return id;
     }
 
     template<typename T>
-    ProxyID State::register_matrix(const Matrix<Vector<T, 3>>& matrix)
+    ProxyID State::register_vec3_array(const std::vector<crisp::Vector<T, 3>>& data)
     {
+        std::vector<float> as_float;
+
+        for (const auto& vec : data)
+        {
+            as_float.push_back(static_cast<float>(vec.x()));
+            as_float.push_back(static_cast<float>(vec.y()));
+            as_float.push_back(static_cast<float>(vec.z()));
+        }
+
         auto id = get_next_id();
         _array_vec3s.insert({
-           id,
-           std::vector<std::array<float, 3>>(size_t(matrix.rows() * matrix.cols()))
+            id,
+            as_float
         });
-
-        auto& vec = _array_vec3s.at(id);
-
-        for (size_t y = 0; y < matrix.cols(); ++y)
-        {
-            for (size_t x = 0; x < matrix.rows(); ++x)
-            {
-                vec.push_back({
-                    static_cast<float>(matrix(x, y).at(0)),
-                    static_cast<float>(matrix(x, y).at(1)),
-                    static_cast<float>(matrix(x, y).at(2)),
-                });
-            }
-        }
-
-        return id;
     }
 
     template<typename T>
-    ProxyID State::register_matrix(const Matrix<Vector<T, 4>>& matrix)
+    ProxyID State::register_vec4_array(const std::vector<crisp::Vector<T, 4>>& data)
     {
-        auto id = get_next_id();
-        _array_vec4s.insert({
-           id,
-           std::vector<std::array<float, 4>>(size_t(matrix.rows() * matrix.cols()))
-        });
+        std::vector<float> as_float;
 
-        auto& vec = _array_vec4s.at(id);
-
-        for (size_t y = 0; y < matrix.cols(); ++y)
+        for (const auto& vec : data)
         {
-            for (size_t x = 0; x < matrix.rows(); ++x)
-            {
-                vec.push_back({
-                    static_cast<float>(matrix(x, y).at(0)),
-                    static_cast<float>(matrix(x, y).at(1)),
-                    static_cast<float>(matrix(x, y).at(2)),
-                    static_cast<float>(matrix(x, y).at(3)),
-                });
-            }
+            as_float.push_back(static_cast<float>(vec.x()));
+            as_float.push_back(static_cast<float>(vec.y()));
+            as_float.push_back(static_cast<float>(vec.z()));
+            as_float.push_back(static_cast<float>(vec.w()));
         }
 
-        return id;
+        auto id = get_next_id();
+        _array_vec4s.insert({
+            id,
+            as_float
+        });
+    }
+
+    template<size_t N>
+    void State::free_array(ProxyID id)
+    {
+        static_assert(1 <= N and N <= 4);
+
+        if (N == 1)
+            _array_vec1s.erase(id);
+        else if (N == 2)
+            _array_vec2s.erase(id);
+        else if (N == 3)
+            _array_vec3s.erase(id);
+        else if (N == 4)
+            _array_vec4s.erase(id);
+    }
+
+    template<size_t N>
+    void State::bind_array(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
+    {
+        auto location = glGetUniformLocation(program_id, var_name.c_str());
+        if (N == 1)
+            glUniform1fv(location, _array_vec1s.at(proxy_id).size(), &_array_vec1s.at(proxy_id)[0]);
+        else if (N == 2)
+            glUniform2fv(location, _array_vec2s.at(proxy_id).size(), &_array_vec2s.at(proxy_id)[0]);
+        else if (N == 3)
+            glUniform3fv(location, _array_vec3s.at(proxy_id).size(), &_array_vec3s.at(proxy_id)[0]);
+        else if (N == 4)
+            glUniform4fv(location, _array_vec4s.at(proxy_id).size(), &_array_vec4s.at(proxy_id)[0]);
     }
 
     void State::free_float(ProxyID id)
@@ -596,28 +658,6 @@ namespace crisp
     void State::free_vec4(ProxyID id)
     {
         _vec4s.erase(id);
-    }
-
-    template<size_t N>
-    void State::free_matrix(ProxyID id)
-    {
-        static_assert(0 < N and N <= 4);
-
-        switch(N)
-        {
-            case 1:
-                _array_vec1s.erase(id);
-                return;
-            case 2:
-                _array_vec2s.erase(id);
-                return;
-            case 3:
-                _array_vec3s.erase(id);
-                return;
-            case 4:
-                _array_vec4s.erase(id);
-                return;
-        };
     }
 
     void State::bind_int(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
@@ -655,7 +695,7 @@ namespace crisp
     }
 
     template<size_t N>
-    void State::bind_matrix(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
+    void State::bind_array(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
         if (N == 1)
         {

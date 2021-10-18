@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <Dense>
+
 #include <vector.hpp>
 
 namespace crisp
@@ -37,6 +39,22 @@ namespace crisp
             template<typename T>
             void set_vec4(const std::string& var_name, const crisp::Vector<T, 4>&);
 
+            template<typename T, size_t n_cols, size_t n_rows>
+            void set_matrix(const std::string& var_name, const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>&);
+
+            template<typename T>
+            void set_array(const std::string& var_name, const std::vector<T>&);
+
+            template<typename T>
+            void set_array_vec2(const std::string& var_name, const std::vector<crisp::Vector<T, 2>>&);
+
+            template<typename T>
+            void set_array_vec3(const std::string& var_name, const std::vector<crisp::Vector<T, 3>>&);
+
+            template<typename T>
+            void set_array_vec4(const std::string& var_name, const std::vector<crisp::Vector<T, 4>>&);
+
+            /*
             template<typename T>
             void set_matrix(const std::string& var_name, const Matrix<T>&);
 
@@ -52,6 +70,7 @@ namespace crisp
             void set_kernel(const std::string& var_name, const Kernel&);
 
             void set_structuring_element(const std::string& var_name, const StructuringElement&);
+             */
             
         private:
             GLNativeHandle _shader_id,
@@ -59,7 +78,7 @@ namespace crisp
 
             enum ProxyType
             {
-                INT, FLOAT, BOOL, VEC2, VEC3, VEC4, ARRAY_VEC1, ARRAY_VEC2, ARRAY_VEC3, ARRAY_VEC4, TEXTURE
+                INT, FLOAT, BOOL, VEC2, VEC3, VEC4, MATRIX, ARRAY_VEC1, ARRAY_VEC2, ARRAY_VEC3, ARRAY_VEC4, TEXTURE
             };
 
             struct ProxyEntry

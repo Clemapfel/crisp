@@ -43,8 +43,6 @@ int main()
     shader.set_active();
     shader.bind_uniforms();
 
-    TODO: test matrices
-
     // render
     State::display();
     window.display();
