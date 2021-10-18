@@ -78,7 +78,7 @@ namespace crisp
             /// @tparam T value type of matrix, has to be able to be statically cast to float
             /// @tparam n_cols: number of columns, in {2, 3, 4}
             /// @tparam n_rows: number of rows, in {2, 3, 4}
-            template<typename T, size_t n_cols, size_t n_rows>
+            template<typename T, size_t n_rows, size_t n_cols>
             void set_matrix(const std::string& var_name, const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>&);
 
             /// @brief register fixed-size array of float and bind to uniform

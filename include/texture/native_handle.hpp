@@ -5,4 +5,9 @@
 
 #pragma once
 
+/// @brief OpenGL ID: 0, 1, 2, ...
 using GLNativeHandle = unsigned int;
+
+/// @brief internal crisp::State resource ID: -1, -2, ...
+using ProxyID = int;
+

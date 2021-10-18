@@ -116,7 +116,7 @@ namespace crisp
     void Shader::set_active()
     {
         State::bind_shader_program(_program_id);
-        State::set_active_shader(this);
+        State::bind_shader(this);
     }
 
     void Shader::set_int(const std::string& var_name, int32_t v)

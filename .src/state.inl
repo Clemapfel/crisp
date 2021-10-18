@@ -9,7 +9,7 @@
 
 namespace crisp
 {
-    void State::set_active_shader(crisp::Shader* shader)
+    void State::bind_shader(crisp::Shader*)
     {
         _active_shader = shader;
     }
