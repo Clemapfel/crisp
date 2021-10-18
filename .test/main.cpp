@@ -36,7 +36,7 @@ int main()
     window.create(sf::VideoMode(image.get_size().x()-1, image.get_size().y()), "", style, context_settings);
     window.setActive(true);
 
-    auto shader = Shader("/home/clem/Workspace/crisp/include/gpu_side/.shaders/apply_mat3.frag");
+    auto shader = Shader("/home/clem/Workspace/crisp/include/gpu_side/.shaders/convolute_mat3x3.glsl");
 
     shader.set_texture("_texture", image);
     shader.set_vec2("_texture_size", image.get_size());
