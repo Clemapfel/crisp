@@ -9,7 +9,7 @@
 
 namespace crisp
 {
-    void State::bind_shader(crisp::Shader*)
+    void State::bind_shader(crisp::Shader* shader)
     {
         _active_shader = shader;
     }
@@ -120,41 +120,30 @@ namespace crisp
         if (_vertex_shader != -1)
             return;
 
-        std::ifstream file;
-        file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+        std::string source = R"(
+            #version 330 core
 
-        std::string path = "/home/clem/Workspace/crisp/include/texture/.shaders/noop.vert";
-        std::string source;
-        try
-        {
-            file.open(path);
-            std::stringstream buffer;
-            buffer << file.rdbuf();
-            file.close();
-            source = buffer.str();
-        }
-        catch (std::ifstream::failure& e)
-        {
-            std::cerr << "[ERROR] Failure to read shader at " << path << std::endl;
-            std::cerr << e.what() << std::endl;
-            throw e;
-        }
+            layout (location = 0) in vec3 _vertex_pos;
+            layout (location = 1) in vec3 _vertex_color_rgb;
+            layout (location = 2) in vec2 _vertex_tex_coord;
+
+            out vec2 _tex_coord;
+            out vec3 _vertex_color;
+
+            // DO NOT MODIFY
+
+            void main()
+            {
+                gl_Position = vec4(_vertex_pos, 1.0);
+                _vertex_color = _vertex_color_rgb;
+                _tex_coord = _vertex_tex_coord;
+            }
+        )";
 
         const char* source_ptr = source.c_str();
         auto id = glCreateShader(GL_VERTEX_SHADER);
         glShaderSource(id, 1, &source_ptr, nullptr);
         glCompileShader(id);
-
-        int compilation_success;
-        char compilation_log[1024] = "";
-        glGetShaderiv(id, GL_COMPILE_STATUS, &compilation_success);
-        glGetShaderInfoLog(id, 1024, nullptr, compilation_log);
-
-        if (not bool(compilation_success))
-        {
-            std::cerr << "[WARNING] Failed to compile shader at " << path << std::endl;
-            std::cerr << compilation_log << std::endl;
-        }
 
         _vertex_shader = id;
     }
@@ -485,8 +474,8 @@ namespace crisp
             id,
             MatrixProxy {
                 .data = as_float,
-                .n_rows = matrix.rows(),
-                .n_cols = matrix.cols()
+                .n_rows = static_cast<size_t>(matrix.rows()),
+                .n_cols = static_cast<size_t>(matrix.cols())
             }
         });
 

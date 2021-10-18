@@ -7,6 +7,7 @@
 
 #include <Dense>
 
+#include <gpu_side/native_handle.hpp>
 #include <vector.hpp>
 
 namespace crisp
@@ -18,6 +19,8 @@ namespace crisp
             /// @brief ctor
             /// @param path: absolute path to source code file
             Shader(const std::string& path);
+
+            void load_from_file(const std::string& path);
             
             /// @brief dtor, frees related gpu-side uniforms and shader program on destruction
             ~Shader();
@@ -106,8 +109,8 @@ namespace crisp
             void set_array_vec4(const std::string& var_name, const std::vector<crisp::Vector<T, 4>>&);
             
         private:
-            GLNativeHandle _shader_id,
-                           _program_id;
+            GLNativeHandle _shader_id = -1,
+                           _program_id = -1;
 
             enum ProxyType
             {

@@ -16,6 +16,18 @@ namespace crisp
         _program_id = State::register_program(_shader_id);
     }
 
+    void Shader::load_from_file(const std::string& path)
+    {
+        if (_shader_id != -1)
+            State::free_shader(_shader_id);
+
+        if (_program_id != -1)
+            State::free_program(_program_id);
+
+        _shader_id = State::register_shader(path);
+        _program_id = State::register_program(_shader_id);
+    }
+
     Shader::~Shader()
     {
         for (auto& entry : _var_name_to_proxy)

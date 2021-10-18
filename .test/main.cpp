@@ -16,6 +16,8 @@
 #include <system.hpp>
 #include <GLES3/gl3.h>
 
+#include <gpu_side/shader.hpp>
+
 #include <segmentation.hpp>
 
 using namespace crisp;
@@ -33,10 +35,10 @@ int main()
     window.create(sf::VideoMode(image.get_size().x()-1, image.get_size().y()), "", style, context_settings);
     window.setActive(true);
 
-    auto shader = Shader("/home/clem/Workspace/crisp/include/texture/.shaders/noop.frag");
+    auto shader = Shader("/home/clem/Workspace/crisp/include/gpu_side/.shaders/apply_mat3.frag");
 
     shader.set_texture("_texture", image);
-    shader.set_color("_color", RGB{1, 0, 1});
+    shader.set_matrix<float, 3, 3>("_kernel", SpatialFilter::laplacian_first_derivative());
 
     shader.set_active();
     shader.bind_uniforms();
@@ -45,8 +47,25 @@ int main()
     State::display();
     window.display();
 
-    State::get_pixel_buffer(image);
-    save_to_disk(image, "/home/clem/Workspace/crisp/.test/screenshot.png");
+    while(window.isOpen())
+    {
+        auto event = sf::Event();
+        while(window.pollEvent(event))
+        {
+            if (event.type == sf::Event::EventType::Closed)
+                window.close();
+
+            if (event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::Space)
+            {
+                shader.load_from_file("/home/clem/Workspace/crisp/include/gpu_side/.shaders/apply_mat3.frag");
+                shader.set_active();
+                shader.bind_uniforms();
+                State::display();
+                window.display();
+            }
+        }
+    }
+
     return 0;
 }
 

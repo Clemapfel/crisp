@@ -268,8 +268,8 @@ namespace crisp
             struct MatrixProxy
             {
                 std::vector<float> data;
-                size_t n_cols,
-                       n_rows;
+                size_t n_rows,
+                       n_cols;
             };
 
             static inline std::unordered_map<ProxyID, MatrixProxy> _mats = {};
