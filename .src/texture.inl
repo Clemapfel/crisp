@@ -3,7 +3,7 @@
 // Created on 09.10.21 by clem (mail@clemens-cords.com)
 //
 
-#include <texture/texture.hpp>
+#include <gpu_side/texture.hpp>
 
 namespace crisp
 {

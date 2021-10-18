@@ -12,7 +12,7 @@
 
 #include <vector.hpp>
 #include <padding_type.hpp>
-#include <texture/native_handle.hpp>
+#include <gpu_side/native_handle.hpp>
 
 namespace crisp
 {

@@ -16,8 +16,6 @@
 #include <system.hpp>
 #include <GLES3/gl3.h>
 
-#include <texture/state.hpp>
-#include <texture/shader.hpp>
 #include <segmentation.hpp>
 
 using namespace crisp;

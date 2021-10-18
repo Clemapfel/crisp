@@ -3,8 +3,8 @@
 // Created on 16.10.21 by clem (mail@clemens-cords.com)
 //
 
-#include <texture/shader.hpp>
-#include <texture/state.hpp>
+#include <gpu_side/shader.hpp>
+#include <gpu_side/state.hpp>
 #include <spatial_filter.hpp>
 #include <morphological_transform.hpp>
 

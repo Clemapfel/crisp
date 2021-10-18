@@ -97,16 +97,15 @@ add_library(crisp STATIC
         include/classification/bayes_classifier.hpp
         .src/bayes_classifier.inl
 
-        include/texture/texture.hpp
-        .src/texture.inl
-
-        include/texture/~state.hpp
-        .src/state.inl
-
-        include/texture/shader.hpp
+        include/gpu_side/shader.hpp
         .src/shader.inl
 
-        include/texture/native_handle.hpp include/texture/state.hpp include/texture/shader.hpp .src/state.inl)
+        include/gpu_side/native_handle.hpp
+
+        include/gpu_side/state.hpp
+        .src/state.inl
+
+        )
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp sfml-graphics sfml-window sfml-system fftw3 fftw3l fftw3f ${OPENGL_LIBRARIES})
