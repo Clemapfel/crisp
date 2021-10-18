@@ -489,6 +489,8 @@ namespace crisp
                 .n_cols = matrix.cols()
             }
         });
+
+        return id;
     }
 
     void State::bind_matrix(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
@@ -542,6 +544,8 @@ namespace crisp
             id,
             as_float
         });
+
+        return id;
     }
 
     template<typename T>
@@ -560,6 +564,8 @@ namespace crisp
             id,
             as_float
         });
+
+        return id;
     }
 
     template<typename T>
@@ -579,6 +585,8 @@ namespace crisp
             id,
             as_float
         });
+
+        return id;
     }
 
     template<typename T>
@@ -599,6 +607,8 @@ namespace crisp
             id,
             as_float
         });
+
+        return id;
     }
 
     template<size_t N>
@@ -692,31 +702,6 @@ namespace crisp
     {
         auto& vec = _vec3s.at(proxy_id);
         glUniform4f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1), vec.at(2), vec.at(3));
-    }
-
-    template<size_t N>
-    void State::bind_array(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
-    {
-        if (N == 1)
-        {
-            auto& matrix = _array_vec1s.at(proxy_id);
-            glUniform1fv(glGetUniformLocation(program_id, var_name.c_str()), matrix.size(), &matrix[0]);
-        }
-        else if (N == 2)
-        {
-            auto& matrix = _array_vec2s.at(proxy_id);
-            glUniform2fv(glGetUniformLocation(program_id, var_name.c_str()), matrix.size(), &matrix[0][0]);
-        }
-        else if (N == 3)
-        {
-            auto& matrix = _array_vec3s.at(proxy_id);
-            glUniform3fv(glGetUniformLocation(program_id, var_name.c_str()), matrix.size(), &matrix[0][0]);
-        }
-        else if (N == 4)
-        {
-            auto& matrix = _array_vec4s.at(proxy_id);
-            glUniform3fv(glGetUniformLocation(program_id, var_name.c_str()), matrix.size(), &matrix[0][0]);
-        }
     }
 
     void State::bind_texture(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle texture_id, size_t texture_unit)
