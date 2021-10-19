@@ -36,15 +36,11 @@ int main()
     window.create(sf::VideoMode(image.get_size().x()-1, image.get_size().y()), "", style, context_settings);
     window.setActive(true);
 
-    auto shader = Shader("/home/clem/Workspace/crisp/include/gpu_side/.shaders/convolute_vec3.glsl");
+    std::string path = "/home/clem/Workspace/crisp/include/gpu_side/.shaders/median_filter_5x5.glsl";
+    auto shader = Shader(path);
 
     shader.set_texture("_texture", image);
     shader.set_vec2("_texture_size", image.get_size());
-
-    auto matrix = SpatialFilter::laplacian_first_derivative();
-    std::cout << matrix << std::endl;
-    shader.set_vec3("_kernel", Vector<float, 3>{-1, 0, 1});
-    shader.set_bool("_vertical", false);
 
     shader.set_active();
     shader.bind_uniforms();
@@ -66,7 +62,7 @@ int main()
 
             if (event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::Space)
             {
-                shader.load_from_file("/home/clem/Workspace/crisp/include/gpu_side/.shaders/apply_mat3.frag");
+                shader.load_from_file(path);
                 shader.set_active();
                 shader.bind_uniforms();
                 State::display();
