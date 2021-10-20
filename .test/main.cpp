@@ -15,7 +15,7 @@
 #include <SFML/Graphics.hpp>
 
 #include <system.hpp>
-#include <GLES3/gl3.h>
+#include <GLES3/gl32.h>
 
 #include <gpu_side/shader.hpp>
 
@@ -36,14 +36,39 @@ int main()
     window.create(sf::VideoMode(image.get_size().x()-1, image.get_size().y()), "", style, context_settings);
     window.setActive(true);
 
-    std::string path = "/home/clem/Workspace/crisp/include/gpu_side/.shaders/median_filter_5x5.glsl";
-    auto shader = Shader(path);
+    std::string path = "/home/clem/Workspace/crisp/include/gpu_side/.shaders/test.glsl";
+    auto change_shader = Shader(path);
 
-    shader.set_texture("_texture", image);
-    shader.set_vec2("_texture_size", image.get_size());
+    GLNativeHandle buffer_id;
+    glGenFramebuffers(1, &buffer_id);
+    glBindFramebuffer(GL_FRAMEBUFFER, buffer_id);
 
-    shader.set_active();
-    shader.bind_uniforms();
+    auto texture_id = change_shader.set_texture("_texture", image);
+    change_shader.set_active();
+    change_shader.bind_uniforms();
+
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture_id, 0);
+    GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+    glDrawBuffers(1, DrawBuffers);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, buffer_id);
+    glViewport(0, 0, image.get_size().x(), image.get_size().y());
+
+    State::display();
+    window.display();
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, buffer_id);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+    glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, image.get_size().x(), image.get_size().y());
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    glPopAttrib();
+
+    State::bind_framebuffer(-1);
+
+    auto noop_shader = change_shader;
+    noop_shader.load_from_file("/home/clem/Workspace/crisp/include/gpu_side/.shaders/noop.frag");
+    noop_shader.set_active();
+    noop_shader.bind_uniforms();
 
     //https://gamedev.stackexchange.com/questions/31162/updating-texture-memory-via-shader
     //http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-14-render-to-texture/
@@ -62,9 +87,14 @@ int main()
 
             if (event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::Space)
             {
-                shader.load_from_file(path);
-                shader.set_active();
-                shader.bind_uniforms();
+                State::display();
+                window.display();
+            }
+            else if (event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::B)
+            {
+                change_shader.load_from_file(path);
+                change_shader.set_active();
+                change_shader.bind_uniforms();
                 State::display();
                 window.display();
             }

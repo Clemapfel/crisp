@@ -304,14 +304,17 @@ namespace crisp
      */
 
     template<typename Value_t, size_t N>
-    void Shader::set_texture(const std::string& var_name, const Image<Value_t, N>& tex)
+    GLNativeHandle Shader::set_texture(const std::string& var_name, const Image<Value_t, N>& tex)
     {
+        auto id = State::register_texture(tex);
         _var_name_to_proxy.insert({
             var_name,
             ProxyEntry {
-                .id = static_cast<ProxyID>(State::register_texture(tex)),
+                .id = static_cast<ProxyID>(id),
                 .type = ProxyType::TEXTURE
             }
         });
+
+        return id;
     }
 }

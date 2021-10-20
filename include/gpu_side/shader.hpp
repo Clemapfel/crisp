@@ -35,7 +35,7 @@ namespace crisp
             /// @param var_name: exact variable name from shader source code
             /// @param image
             template<typename Value_t, size_t N>
-            void set_texture(const std::string& var_name, const Image<Value_t, N>&);
+            GLNativeHandle set_texture(const std::string& var_name, const Image<Value_t, N>&);
             
             /// @brief register int and bind to uniform
             /// @param var_name: exact variable name from shader source code
@@ -108,7 +108,7 @@ namespace crisp
             template<typename T>
             void set_array_vec4(const std::string& var_name, const std::vector<crisp::Vector<T, 4>>&);
             
-        private:
+        //private:
             GLNativeHandle _shader_id = -1,
                            _program_id = -1;
 

@@ -22,6 +22,7 @@ namespace crisp
     class State
     {
         friend class Shader;
+        friend class Workspace;
 
         public:
             /// @brief ctor disabled, all members and member functions are static
@@ -54,7 +55,7 @@ namespace crisp
             template<typename T>
             static void get_pixel_buffer(Image<T, 4>& image, Vector2ui top_left = {0, 0});
 
-        protected:
+        //protected:
             /// @brief allocate integer
             /// @param value
             /// @returns id of allocated resource
@@ -239,7 +240,7 @@ namespace crisp
 
             /// @brief deallocate texture
             /// @param id: native handle of texture
-            void free_texture(GLNativeHandle);
+            static void free_texture(GLNativeHandle);
 
             /// @brief bind already allocated texture to uniform of shader program
             /// @param program_id: native handle of shader program
@@ -247,6 +248,10 @@ namespace crisp
             /// @param texture_id: native handle of texture
             /// @param texture_location: value of layout qualifier
             static void bind_texture(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle texture_id, size_t texture_location);
+
+            static GLNativeHandle register_framebuffer(GLNativeHandle texture_handle);
+            static void free_framebuffer(GLNativeHandle buffer_handle);
+            static void bind_framebuffer(GLNativeHandle buffer_handle);
 
         private:
             static inline ProxyID _current = 0;
@@ -296,6 +301,17 @@ namespace crisp
 
             static inline std::multiset<GLNativeHandle> _textures = {};
             static inline std::unordered_map<GLNativeHandle, TextureInfo> _texture_info = {};
+
+            struct FrameBufferProxy
+            {
+                GLNativeHandle buffer_handle,
+                               texture_handle;
+
+                size_t width,
+                       height;
+            };
+
+            static inline std::unordered_map<GLNativeHandle, FrameBufferProxy> _frame_buffer = {};
 
             static inline GLNativeHandle _active_texture = 0;
     };

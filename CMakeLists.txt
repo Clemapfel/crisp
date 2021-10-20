@@ -105,7 +105,7 @@ add_library(crisp STATIC
         include/gpu_side/state.hpp
         .src/state.inl
 
-        )
+        include/gpu_side/texture_workspace.hpp include/gpu_side/texture.hpp)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp sfml-graphics sfml-window sfml-system fftw3 fftw3l fftw3f ${OPENGL_LIBRARIES})

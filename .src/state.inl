@@ -719,4 +719,49 @@ namespace crisp
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     }
+
+    GLNativeHandle State::register_framebuffer(GLNativeHandle texture_handle)
+    {
+        GLNativeHandle id = 0;
+        glGenFramebuffers(1, &id);
+
+        _frame_buffer.insert({
+            id,
+            FrameBufferProxy {
+                .buffer_handle = id,
+                .texture_handle = texture_handle,
+                .width = _texture_info.at(texture_handle).width,
+                .height = _texture_info.at(texture_handle).height
+            }
+        });
+
+        return id;
+    }
+
+    void State::bind_framebuffer(GLNativeHandle buffer_handle)
+    {
+        if (buffer_handle == -1)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            return;
+        }
+
+        auto& info = _frame_buffer.at(buffer_handle);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, info.texture_handle, 0);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            std::cerr << "[WARNING] Error when binding texture " << info.texture_handle << " to framebuffer " << buffer_handle << std::endl;
+
+        glBindFramebuffer(GL_FRAMEBUFFER, buffer_handle);
+        glPushAttrib(GL_VIEWPORT_BIT);
+        glViewport(
+            0,
+            0,
+            info.width,
+            info.height
+        );
+
+        GLenum draw_buffers[] = {GL_COLOR_ATTACHMENT0};
+        glDrawBuffers(sizeof(draw_buffers), draw_buffers);
+    }
 }
