@@ -126,6 +126,54 @@ namespace crisp
             }
         }
     }
+    
+    void Shader::unbind_uniforms()
+    {
+        size_t texture_location = 0;
+        for (auto& pair : _var_name_to_proxy)
+        {
+            switch (pair.second.type)
+            {
+                case INT:
+                    State::bind_int(_program_id, pair.first, -1);
+                    break;
+                case FLOAT:
+                    State::bind_float(_program_id, pair.first, -1);
+                    break;
+                case BOOL:
+                    State::bind_bool(_program_id, pair.first, -1);
+                    break;
+                case VEC2:
+                    State::bind_vec2(_program_id, pair.first, -1);
+                    break;
+                case VEC3:
+                    State::bind_vec3(_program_id, pair.first, -1);
+                    break;
+                case VEC4:
+                    State::bind_vec4(_program_id, pair.first, -1);
+                    break;
+                case MATRIX:
+                    State::bind_matrix(_program_id, pair.first, -1);
+                    break;
+                case ARRAY_VEC1:
+                    State::bind_array<1>(_program_id, pair.first, -1);
+                    break;
+                case ARRAY_VEC2:
+                    State::bind_array<2>(_program_id, pair.first, -1);
+                    break;
+                case ARRAY_VEC3:
+                    State::bind_array<3>(_program_id, pair.first, -1);
+                    break;
+                case ARRAY_VEC4:
+                    State::bind_array<4>(_program_id, pair.first, -1);
+                    break;
+                case TEXTURE:
+                    State::bind_texture(_program_id, pair.first, -1, texture_location);
+                    texture_location += 1;
+                    break;
+            }
+        }
+    }
 
     void Shader::set_active()
     {
@@ -316,5 +364,16 @@ namespace crisp
         });
 
         return id;
+    }
+
+    void Shader::set_texture(const std::string& var_name, GLNativeHandle already_texture)
+    {
+        _var_name_to_proxy.insert_or_assign(
+            var_name,
+            ProxyEntry {
+                .id = static_cast<ProxyID>(already_texture),
+                .type = ProxyType::TEXTURE
+            }
+        );
     }
 }

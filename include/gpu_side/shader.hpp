@@ -28,6 +28,9 @@ namespace crisp
             /// @brief bind registered variables to gpu-side uniforms
             void bind_uniforms();
 
+            /// @brief unbind registered variables
+            void unbind_uniforms();
+
             /// @bief bind shaders as current fragment shader
             void set_active();
             
@@ -36,7 +39,10 @@ namespace crisp
             /// @param image
             template<typename Value_t, size_t N>
             GLNativeHandle set_texture(const std::string& var_name, const Image<Value_t, N>&);
-            
+
+            /// @brief bind an already allocated texture to the shader
+            void set_texture(const std::string& var_name, GLNativeHandle already_texture);
+
             /// @brief register int and bind to uniform
             /// @param var_name: exact variable name from shader source code
             /// @param int
@@ -108,7 +114,7 @@ namespace crisp
             template<typename T>
             void set_array_vec4(const std::string& var_name, const std::vector<crisp::Vector<T, 4>>&);
             
-        //private:
+        private:
             GLNativeHandle _shader_id = -1,
                            _program_id = -1;
 

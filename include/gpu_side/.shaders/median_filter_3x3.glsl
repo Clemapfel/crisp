@@ -62,19 +62,20 @@ void main()
     vec2 step_size = 1.f / _texture_size;
     vec4 value[9];
 
-    values[0] = texture(_texture, _tex_coord + (vec2(-1, -1) * step_size));
-    values[1] = texture(_texture, _tex_coord + (vec2(0, -1) * step_size));
-    values[2] = texture(_texture, _tex_coord + (vec2(1, -1) * step_size));
-    values[3] = texture(_texture, _tex_coord + (vec2(-1, 0) * step_size));
-    values[4] = texture(_texture, _tex_coord + (vec2(0, 0) * step_size));
-    values[5] = texture(_texture, _tex_coord + (vec2(1, 0) * step_size));
-    values[6] = texture(_texture, _tex_coord + (vec2(-1, 1) * step_size));
-    values[7] = texture(_texture, _tex_coord + (vec2(0, 1) * step_size));
-    values[8] = texture(_texture, _tex_coord + (vec2(1, 1) * step_size));
+    value[0] = texture(_texture, _tex_coord + (vec2(-1, -1) * step_size));
+    value[1] = texture(_texture, _tex_coord + (vec2(0, -1) * step_size));
+    value[2] = texture(_texture, _tex_coord + (vec2(1, -1) * step_size));
+    value[3] = texture(_texture, _tex_coord + (vec2(-1, 0) * step_size));
+    value[4] = texture(_texture, _tex_coord + (vec2(0, 0) * step_size));
+    value[5] = texture(_texture, _tex_coord + (vec2(1, 0) * step_size));
+    value[6] = texture(_texture, _tex_coord + (vec2(-1, 1) * step_size));
+    value[7] = texture(_texture, _tex_coord + (vec2(0, 1) * step_size));
+    value[8] = texture(_texture, _tex_coord + (vec2(1, 1) * step_size));
 
     mnmx6(value[0], value[1], value[2], value[3], value[4], value[5]);
     mnmx5(value[1], value[2], value[3], value[4], value[6]);
     mnmx4(value[2], value[3], value[4], value[7]);
     mnmx3(value[3], value[4], value[8]);
+
     gl_FragColor = value[4];
 }

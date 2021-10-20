@@ -252,6 +252,7 @@ namespace crisp
             static GLNativeHandle register_framebuffer(GLNativeHandle texture_handle);
             static void free_framebuffer(GLNativeHandle buffer_handle);
             static void bind_framebuffer(GLNativeHandle buffer_handle);
+            static void copy_framebuffer_to_texture(GLNativeHandle buffer_handle, GLNativeHandle texture_handle);
 
         private:
             static inline ProxyID _current = 0;
@@ -301,6 +302,7 @@ namespace crisp
 
             static inline std::multiset<GLNativeHandle> _textures = {};
             static inline std::unordered_map<GLNativeHandle, TextureInfo> _texture_info = {};
+            static inline GLNativeHandle _active_texture = -1;
 
             struct FrameBufferProxy
             {
@@ -312,8 +314,8 @@ namespace crisp
             };
 
             static inline std::unordered_map<GLNativeHandle, FrameBufferProxy> _frame_buffer = {};
+            static inline GLNativeHandle _active_buffer = -1;
 
-            static inline GLNativeHandle _active_texture = 0;
     };
 }
 

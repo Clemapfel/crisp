@@ -19,12 +19,17 @@ namespace crisp
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glBindVertexArray(_vertex_array);
-
-        if (_active_shader)
+        if (_active_shader != nullptr)
             _active_shader->bind_uniforms();
 
+        glBindVertexArray(_vertex_array);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        if (_active_buffer != -1)
+        {
+            GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+            glDrawBuffers(1, DrawBuffers);
+        }
     }
 
     template<typename T>
@@ -250,11 +255,11 @@ namespace crisp
                 if (N == 1)
                     seq = {0};
                 else if (N == 2)
-                    seq = {1, 0};
+                    seq = {0, 1};
                 else if (N == 3)
-                    seq = {2, 0, 1};
+                    seq = {0, 1, 2};
                 else if (N == 4)
-                    seq = {2, 0, 1, 3};
+                    seq = {0, 1, 2, 3};
 
                 auto px = image.at(x, image.get_size().y() - (y + 1));
 
@@ -661,40 +666,47 @@ namespace crisp
 
     void State::bind_int(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
-        glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), _ints.at(proxy_id));
+
+        glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), proxy_id == -1 ? _ints[-1] : _ints.at(proxy_id));
     }
 
     void State::bind_float(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
-        glUniform1f(glGetUniformLocation(program_id, var_name.c_str()), _floats.at(proxy_id));
+        glUniform1f(glGetUniformLocation(program_id, var_name.c_str()), proxy_id == -1 ? _floats[-1] : _floats.at(proxy_id));
     }
 
     void State::bind_bool(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
-        glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), int(_bools.at(proxy_id)));
+        glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), int(proxy_id == -1 ? _bools[-1] : _bools.at(proxy_id)));
     }
 
     void State::bind_vec2(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
-        auto& vec = _vec2s.at(proxy_id);
+        auto& vec = proxy_id == -1 ? _vec2s[-1] : _vec2s.at(proxy_id);
         glUniform2f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1));
     }
 
     void State::bind_vec3(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
-        auto& vec = _vec3s.at(proxy_id);
+        auto& vec = proxy_id == -1 ? _vec3s[-1] : _vec3s.at(proxy_id);
         auto location = glGetUniformLocation(program_id, var_name.c_str());
         glUniform3f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1), vec.at(2));
     }
 
     void State::bind_vec4(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
-        auto& vec = _vec3s.at(proxy_id);
+        auto& vec = proxy_id == -1 ? _vec4s[-1] : _vec4s.at(proxy_id);
         glUniform4f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1), vec.at(2), vec.at(3));
     }
 
     void State::bind_texture(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle texture_id, size_t texture_unit)
     {
+        if (texture_id == -1)
+        {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            return;
+        }
+
         auto location = glGetUniformLocation(program_id, var_name.c_str());
         glUniform1i(location, texture_unit);
         glActiveTexture(GL_TEXTURE0 + texture_unit);
@@ -743,25 +755,30 @@ namespace crisp
         if (buffer_handle == -1)
         {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            _active_buffer = -1;
             return;
         }
 
         auto& info = _frame_buffer.at(buffer_handle);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, info.texture_handle, 0);
-
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-            std::cerr << "[WARNING] Error when binding texture " << info.texture_handle << " to framebuffer " << buffer_handle << std::endl;
 
         glBindFramebuffer(GL_FRAMEBUFFER, buffer_handle);
-        glPushAttrib(GL_VIEWPORT_BIT);
-        glViewport(
-            0,
-            0,
-            info.width,
-            info.height
-        );
+        glViewport(0, 0, info.width, info.height);
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, info.texture_handle, 0);
+        _active_buffer = buffer_handle;
+    }
 
-        GLenum draw_buffers[] = {GL_COLOR_ATTACHMENT0};
-        glDrawBuffers(sizeof(draw_buffers), draw_buffers);
+    void State::copy_framebuffer_to_texture(GLNativeHandle buffer_handle, GLNativeHandle texture_handle)
+    {
+        auto info = _frame_buffer.at(buffer_handle);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, buffer_handle);
+        glBindTexture(GL_TEXTURE_2D, texture_handle);
+        glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, info.width, info.height);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    }
+
+    void State::free_framebuffer(GLNativeHandle buffer_handle)
+    {
+        _frame_buffer.erase(buffer_handle);
+        glDeleteFramebuffers(1, &buffer_handle);
     }
 }
