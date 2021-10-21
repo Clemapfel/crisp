@@ -238,6 +238,9 @@ namespace crisp
             template<typename T, size_t N>
             static GLNativeHandle register_texture(const Image<T, N>&);
 
+            template<typename T, size_t N>
+            static GLNativeHandle register_texture(size_t width, size_t height);
+
             /// @brief deallocate texture
             /// @param id: native handle of texture
             static void free_texture(GLNativeHandle);

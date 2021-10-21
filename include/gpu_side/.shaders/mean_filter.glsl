@@ -7,7 +7,7 @@ uniform vec2 _texture_size;
 
 uniform int _neighborhood_size;
 
-out vec4 _out;
+layout (location = 0) out vec4 _out;
 
 void main()
 {

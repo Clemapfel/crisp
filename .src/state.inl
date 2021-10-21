@@ -419,6 +419,125 @@ namespace crisp
         return texture_id;
     }
 
+    template<typename T, size_t N>
+    GLNativeHandle State::register_texture(size_t width, size_t height)
+    {
+        static_assert(0 < N and N <= 4);
+
+        GLNativeHandle texture_id;
+        glGenTextures(1, &texture_id);
+        glBindTexture(GL_TEXTURE_2D, texture_id);
+
+        if (not _vertices_initialized)
+        {
+            // vertex info
+            static float vertices[] = {
+                // pos, col, tex_coord
+                 1,  1, 0,   1, 1, 1,   1, 1, // top right
+                 1, -1, 0,   1, 1, 1,   1, 0, // bottom right
+                -1, -1, 0,   1, 1, 1,   0, 0, // bottom left
+                -1,  1, 0,   1, 1, 1,   0, 1  // top left
+            };
+
+            static unsigned int indices[] = {
+                    0, 1, 3,
+                    1, 2, 3
+            };
+
+            glGenVertexArrays(1, &_vertex_array);
+            glGenBuffers(1, &_vertex_buffer);
+            glGenBuffers(1, &_element_buffer);
+
+            glBindVertexArray(_vertex_array);
+
+            glBindBuffer(GL_ARRAY_BUFFER, _vertex_buffer);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _element_buffer);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+            // position attribute
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
+            glEnableVertexAttribArray(0);
+
+            // color attribute
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
+            glEnableVertexAttribArray(1);
+
+            // texture coord attribute
+            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
+            glEnableVertexAttribArray(2);
+
+            _vertices_initialized = true;
+        }
+
+        GLint internal_format;
+        GLint format;
+
+        size_t alignment_n = 1;
+
+        if (N == 1)
+        {
+            format = GL_RED;
+            alignment_n = 1;
+            if (std::is_same_v<T, bool>)
+                internal_format = GL_R8;
+            else
+                internal_format = GL_R32F;
+        }
+        else if (N == 2)
+        {
+            format = GL_RG;
+            alignment_n = 2;
+            if (std::is_same_v<T, bool>)
+                internal_format = GL_RG8;
+            else
+                internal_format = GL_RG32F;
+        }
+        else if (N == 3)
+        {
+            format = GL_RGB;
+            alignment_n = 1;
+            if (std::is_same_v<T, bool>)
+                internal_format = GL_RGB8;
+            else
+                internal_format = GL_RGB32F;
+        }
+        else if (N == 4)
+        {
+            format = GL_RGBA;
+            alignment_n = 4;
+            if (std::is_same_v<T, bool>)
+                internal_format = GL_RGBA8;
+            else
+                internal_format = GL_RGBA32F;
+        }
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, alignment_n);
+
+        glTexImage2D(GL_TEXTURE_2D,
+                     0,
+                     internal_format,
+                     static_cast<GLsizei>(width),
+                     static_cast<GLsizei>(height),
+                     0,
+                     format,
+                     std::is_same_v<T, bool> ? GL_UNSIGNED_BYTE : GL_FLOAT,
+                     nullptr);
+
+        _textures.insert(texture_id);
+        _texture_info.insert({
+            texture_id,
+            TextureInfo{
+                .padding_type = PaddingType::STRETCH,
+                .width = width,
+                .height = height,
+            }
+        });
+
+        return texture_id;
+    }
+
     void State::free_texture(GLNativeHandle id)
     {
         if (_textures.find(id) == _textures.end())
@@ -916,7 +1035,7 @@ namespace crisp
         {
             std::stringstream s;
             s << "[ERROR] No texture with handle "  << texture_id << " allocated" << std::endl;
-            throw std::out_of_range(s.str());
+            //throw std::out_of_range(s.str());
         }
 
         auto before = _active_program;

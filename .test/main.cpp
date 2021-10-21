@@ -25,7 +25,7 @@ using namespace crisp;
 
 int main()
 {
-    auto image = crisp::load_grayscale_image("/home/clem/Workspace/crisp/.test/opal_color.png");
+    auto image = crisp::load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
 
     sf::ContextSettings context_settings;
     context_settings.antialiasingLevel = 0;
@@ -49,23 +49,28 @@ int main()
     auto n = State::register_int(5);
     State::bind_int(median_program, "_neighborhood_size", n);
 
-    for (size_t i = 0; i < 3; ++i)
-    {
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+    GLNativeHandle buffer;
+    glGenFramebuffers(1, &buffer);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer);
 
-        State::display();
+    GLNativeHandle buffer_tex = State::register_texture(image); //State::register_texture<float, 3>(image.get_size().x(), image.get_size().y());
 
-        glBlitFramebuffer(0, 0, 0, 0, 0, 0, 0, 0, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-        glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, image.get_size().x(), image.get_size().y());
-    }
+    glBindTexture(GL_TEXTURE_2D, buffer_tex);
 
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.get_size().x(), image.get_size().y(), 0, GL_RGB, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer_tex, 0);
+    //assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+    glBindTexture(GL_TEXTURE_2D, texture);
+    State::display();
+
+    // render to screen
+    State::bind_shader_program(-1);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    //glDeleteFramebuffers(1, &buffer_handle);
-
-    State::bind_shader_program(NONE);
-    State::bind_texture(State::get_active_program_handle(), "_texture", texture, 0);
+    State::bind_texture(median_program, "_texture", buffer_tex);
+    glBindTexture(GL_TEXTURE_2D, buffer_tex);
 
     State::display();
     window.display();
