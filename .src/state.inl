@@ -416,6 +416,27 @@ namespace crisp
             }
         });
 
+        glBindTexture(GL_TEXTURE_2D, texture_id);
+
+        auto info = _texture_info.at(texture_id);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, padding_type_to_gl_padding(info.padding_type));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, padding_type_to_gl_padding(info.padding_type));
+
+        if (info.padding_type == PaddingType::ZERO)
+        {
+            float border[] = {0.f, 0.f, 0.f, 1.0f};
+            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+        }
+        else if (info.padding_type == PaddingType::ONE)
+        {
+            float border[] = {1.0f, 1.0f, 1.0f, 1.0f};
+            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+        }
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
         return texture_id;
     }
 
@@ -1038,6 +1059,8 @@ namespace crisp
             //throw std::out_of_range(s.str());
         }
 
+        glBindTexture(GL_TEXTURE_2D, texture_id);
+
         auto before = _active_program;
         if (before != program_id)
             bind_shader_program(program_id);
@@ -1045,7 +1068,6 @@ namespace crisp
         auto location = glGetUniformLocation(program_id, var_name.c_str());
         glUniform1i(location, texture_unit);
         glActiveTexture(GL_TEXTURE0 + texture_unit);
-        glBindTexture(GL_TEXTURE_2D, texture_id);
 
         auto info = _texture_info.at(texture_id);
 

@@ -7,14 +7,14 @@ uniform vec2 _texture_size;
 
 uniform int _neighborhood_size;
 
-layout (location = 0) out vec4 _out;
+out vec4 _out;
 
 void main()
 {
     vec4 value = vec4(0);
 
-    vec2 step_size = 1.f / _texture_size;
-    int half_n = int(_neighborhood_size / 2.f + 1);
+    vec2 step_size = 1.f / (_texture_size + vec2(1, 0));
+    int half_n = int(_neighborhood_size / 2.f);
 
     for (int i = 0; i < _neighborhood_size; ++i)
         for (int j = 0; j < _neighborhood_size; ++j)
