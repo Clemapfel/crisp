@@ -11,3 +11,5 @@ using GLNativeHandle = unsigned int;
 /// @brief internal crisp::State resource ID: -1, -2, ...
 using ProxyID = int;
 
+#define NONE -1u
+

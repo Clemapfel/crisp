@@ -13,17 +13,11 @@ namespace crisp
 {
     void State::display()
     {
-        if (_noop_fragment_shader == -1 or _noop_vertex_shader == -1 or _noop_program == 1)
+        if (_noop_fragment_shader == NONE or _noop_vertex_shader == NONE or _noop_program == 1)
             initialize_noop_shaders();
 
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
-
-        if (_active_buffer != -1)
-        {
-            GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
-            glDrawBuffers(1, DrawBuffers);
-        }
 
         glBindVertexArray(_vertex_array);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -119,7 +113,7 @@ namespace crisp
 
     void State::initialize_noop_shaders()
     {
-        if (_noop_fragment_shader != -1 and _noop_vertex_shader != -1 and _noop_program != -1)
+        if (_noop_fragment_shader != NONE and _noop_vertex_shader != NONE and _noop_program != NONE)
             return;
 
         std::string source = R"(
@@ -175,10 +169,15 @@ namespace crisp
         State::bind_shader_program(_noop_program);
     }
 
-    GLNativeHandle State::register_shader(const std::string& path)
+    GLNativeHandle State::register_shader(const ShaderID& id)
     {
-        if (_noop_vertex_shader == -1)
+        if (_noop_vertex_shader == NONE)
             initialize_noop_shaders();
+
+        if (id.find('/') != std::string::npos)
+            std::cerr << "[WARNING] When registering a shader, only the filename needs to be specified. Are you sure " << id << " is the filename and not the absolute path?" << std::endl;
+
+        std::string path = SHADER_PATH + id;
 
         std::ifstream file;
         file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -269,7 +268,7 @@ namespace crisp
 
     void State::bind_shader_program(GLNativeHandle program_id)
     {
-        if (program_id == -1)
+        if (program_id == NONE)
             program_id = _noop_program;
         
         verify_program_id(program_id);
@@ -533,6 +532,10 @@ namespace crisp
             s << "[ERROR] No matrix with id " << proxy_id << " registered" << std::endl;
             throw std::out_of_range(s.str());
         }
+
+        auto before = _active_program;
+        if (before != program_id)
+            bind_shader_program(program_id);
         
         auto matrix = _mats.at(proxy_id);
         auto location = glGetUniformLocation(program_id, var_name.c_str());
@@ -563,6 +566,9 @@ namespace crisp
 
         else if (matrix.n_rows == 4 and matrix.n_cols == 4)
             glUniformMatrix4fv(location, 1, true, &matrix.data[0]);
+
+        if (before != program_id)
+            bind_shader_program(before);
     }
 
     void State::free_matrix(ProxyID id)
@@ -674,7 +680,10 @@ namespace crisp
     void State::bind_array(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
         verify_program_id(proxy_id);
-        
+
+        auto before = _active_program;
+        if (before != program_id)
+            bind_shader_program(program_id);
         
         auto location = glGetUniformLocation(program_id, var_name.c_str());
         if (N == 1)
@@ -717,6 +726,9 @@ namespace crisp
             }
             glUniform4fv(location, _array_vec4s.at(proxy_id).size(), &_array_vec4s.at(proxy_id)[0]);
         }
+
+        if (before != program_id)
+            bind_shader_program(before);
     }
 
     void State::free_float(ProxyID id)
@@ -776,7 +788,15 @@ namespace crisp
             s << "[ERROR] No int with id " << proxy_id << " registered" << std::endl;
             throw std::out_of_range(s.str());
         }
+
+        auto before = _active_program;
+        if (before != program_id)
+            bind_shader_program(program_id);
+
         glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), _ints.at(proxy_id));
+
+        if (before != program_id)
+            bind_shader_program(before);
     }
 
     void State::bind_float(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
@@ -788,7 +808,15 @@ namespace crisp
             s << "[ERROR] No float with id " << proxy_id << " registered" << std::endl;
             throw std::out_of_range(s.str());
         }
+
+        auto before = _active_program;
+        if (before != program_id)
+            bind_shader_program(program_id);
+
         glUniform1f(glGetUniformLocation(program_id, var_name.c_str()), _floats.at(proxy_id));
+
+        if (before != program_id)
+            bind_shader_program(before);
     }
 
     void State::bind_bool(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
@@ -800,7 +828,15 @@ namespace crisp
             s << "[ERROR] No bool with id " << proxy_id << " registered" << std::endl;
             throw std::out_of_range(s.str());
         }
+
+        auto before = _active_program;
+        if (before != program_id)
+            bind_shader_program(program_id);
+
         glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), _bools.at(proxy_id));
+
+        if (before != program_id)
+            bind_shader_program(before);
     }
 
     void State::bind_vec2(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
@@ -812,8 +848,16 @@ namespace crisp
             s << "[ERROR] No vec2 with id " << proxy_id << " registered" << std::endl;
             throw std::out_of_range(s.str());
         }
+
+        auto before = _active_program;
+        if (before != program_id)
+            bind_shader_program(program_id);
+
         auto& vec = _vec2s.at(proxy_id);
         glUniform2f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1));
+
+        if (before != program_id)
+            bind_shader_program(before);
     }
 
     void State::bind_vec3(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
@@ -825,9 +869,17 @@ namespace crisp
             s << "[ERROR] No vec3 with id " << proxy_id << " registered" << std::endl;
             throw std::out_of_range(s.str());
         }
+
+        auto before = _active_program;
+        if (before != program_id)
+            bind_shader_program(program_id);
+
         auto& vec = _vec3s.at(proxy_id);
         auto location = glGetUniformLocation(program_id, var_name.c_str());
         glUniform3f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1), vec.at(2));
+
+        if (before != program_id)
+            bind_shader_program(before);
     }
 
     void State::bind_vec4(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
@@ -839,13 +891,21 @@ namespace crisp
             s << "[ERROR] No vec2 with id " << proxy_id << " registered" << std::endl;
             throw std::out_of_range(s.str());
         }
+
+        auto before = _active_program;
+        if (before != program_id)
+            bind_shader_program(program_id);
+
         auto& vec = _vec4s.at(proxy_id);
         glUniform4f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1), vec.at(2), vec.at(3));
+
+        if (before != program_id)
+            bind_shader_program(before);
     }
 
     void State::bind_texture(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle texture_id, size_t texture_unit)
     {
-        if (texture_id == -1)
+        if (texture_id == NONE)
         {
             glBindTexture(GL_TEXTURE_2D, 0);
             return;
@@ -858,6 +918,10 @@ namespace crisp
             s << "[ERROR] No texture with handle "  << texture_id << " allocated" << std::endl;
             throw std::out_of_range(s.str());
         }
+
+        auto before = _active_program;
+        if (before != program_id)
+            bind_shader_program(program_id);
 
         auto location = glGetUniformLocation(program_id, var_name.c_str());
         glUniform1i(location, texture_unit);
@@ -882,6 +946,9 @@ namespace crisp
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        if (before != program_id)
+            bind_shader_program(before);
     }
 
     GLNativeHandle State::register_framebuffer(GLNativeHandle texture_handle)
@@ -899,15 +966,19 @@ namespace crisp
             }
         });
 
+        glBindFramebuffer(GL_FRAMEBUFFER, id);
+        glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_handle, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
         return id;
     }
 
     void State::bind_framebuffer(GLNativeHandle buffer_handle)
     {
-        if (buffer_handle == -1)
+        if (buffer_handle == NONE)
         {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            _active_buffer = -1;
+            _active_buffer = NONE;
             return;
         }
 
@@ -922,7 +993,7 @@ namespace crisp
 
         glBindFramebuffer(GL_FRAMEBUFFER, buffer_handle);
         glViewport(0, 0, info.width, info.height);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, info.texture_handle, 0);
+
         _active_buffer = buffer_handle;
     }
 
@@ -947,6 +1018,7 @@ namespace crisp
         glBindTexture(GL_TEXTURE_2D, texture_handle);
         glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, info.width, info.height);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+        glPopAttrib();
     }
 
     void State::free_framebuffer(GLNativeHandle buffer_handle)

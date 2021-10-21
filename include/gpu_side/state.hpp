@@ -15,9 +15,12 @@
 #include <image/multi_plane_image.hpp>
 #include <gpu_side/native_handle.hpp>
 
+#define SHADER_PATH "/home/clem/Workspace/crisp/include/gpu_side/.shaders/"
+
 namespace crisp
 {
     class Shader;
+    using ShaderID = std::string;
 
     /// @brief handler that manages resource allocation and interaction between cpu-side and gpu-side resources
     class State
@@ -210,7 +213,7 @@ namespace crisp
             /// @brief load shader, compile it and allocated gpu-side
             /// @param path: absolute path to shader source code
             /// @returns native handle of shader
-            static GLNativeHandle register_shader(const std::string& path);
+            static GLNativeHandle register_shader(const ShaderID& id);
             
             /// @brief deallocate shader
             /// @param id: native handle of shader
@@ -280,19 +283,19 @@ namespace crisp
             static inline std::unordered_map<ProxyID, MatrixProxy> _mats = {};
 
             static void initialize_noop_shaders();
-            static inline GLNativeHandle _noop_vertex_shader = -1;
-            static inline GLNativeHandle _noop_fragment_shader = -1;
-            static inline GLNativeHandle _noop_program = -1;
+            static inline GLNativeHandle _noop_vertex_shader = NONE;
+            static inline GLNativeHandle _noop_fragment_shader = NONE;
+            static inline GLNativeHandle _noop_program = NONE;
 
             static inline std::multiset<GLNativeHandle> _fragment_shaders = {};
             static inline std::multiset<GLNativeHandle> _shader_programs = {};
 
-            static inline GLNativeHandle _active_program = -1;
+            static inline GLNativeHandle _active_program = NONE;
 
             static inline bool _vertices_initialized = false;
-            static inline GLNativeHandle _vertex_array = -1,
-                                         _vertex_buffer = -1,
-                                         _element_buffer = -1;
+            static inline GLNativeHandle _vertex_array = NONE,
+                                         _vertex_buffer = NONE,
+                                         _element_buffer = NONE;
 
             struct TextureInfo
             {
@@ -313,7 +316,7 @@ namespace crisp
             };
 
             static inline std::unordered_map<GLNativeHandle, FrameBufferProxy> _frame_buffer = {};
-            static inline GLNativeHandle _active_buffer = -1;
+            static inline GLNativeHandle _active_buffer = NONE;
 
             // exceptions and safety
             static void verify_program_id(GLNativeHandle);
