@@ -220,6 +220,9 @@ namespace crisp
 
     void State::free_shader(GLNativeHandle id)
     {
+        if (_fragment_shaders.find(id) == _fragment_shaders.end())
+            std::cerr << "[WARNING] Trying to free already deallocated or non-existent shader with handle " << id << std::endl;
+
         _fragment_shaders.erase(id);
         glDeleteShader(id);
     }
@@ -247,14 +250,29 @@ namespace crisp
 
     void State::free_program(GLNativeHandle id)
     {
+        if (_shader_programs.find(id) == _shader_programs.end())
+            std::cerr << "[WARNING] Trying to free already deallocated or non-existent program with handle " << id << std::endl;
+
         _shader_programs.erase(id);
         glDeleteProgram(id);
+    }
+    
+    void State::verify_program_id(GLNativeHandle program_id)
+    {
+        if (_shader_programs.find(program_id) == _shader_programs.end())
+        {
+            std::stringstream s;
+            s << "[ERROR] No shader program with handle "  << program_id << " registered" << std::endl;
+            throw std::out_of_range(s.str());
+        }
     }
 
     void State::bind_shader_program(GLNativeHandle program_id)
     {
         if (program_id == -1)
             program_id = _noop_program;
+        
+        verify_program_id(program_id);
 
         glUseProgram(program_id);
         _active_program = program_id;
@@ -404,6 +422,11 @@ namespace crisp
 
     void State::free_texture(GLNativeHandle id)
     {
+        if (_textures.find(id) == _textures.end())
+            std::cerr << "[WARNING] Trying to free already deallocated or non-existent texture with handle " << id << std::endl;
+
+        _textures.erase(id);
+        _texture_info.erase(id);
         glDeleteTextures(1, &id);
     }
 
@@ -503,6 +526,14 @@ namespace crisp
 
     void State::bind_matrix(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
+        verify_program_id(program_id);
+        if (_mats.find(proxy_id) == _mats.end())
+        {
+            std::stringstream s;
+            s << "[ERROR] No matrix with id " << proxy_id << " registered" << std::endl;
+            throw std::out_of_range(s.str());
+        }
+        
         auto matrix = _mats.at(proxy_id);
         auto location = glGetUniformLocation(program_id, var_name.c_str());
 
@@ -536,6 +567,9 @@ namespace crisp
 
     void State::free_matrix(ProxyID id)
     {
+        if (_mats.find(id) == _mats.end())
+            std::cerr << "[WARNING] Trying to free already deallocated or non-existent matrix with id " << id << std::endl;
+        
         _mats.erase(id);
     }
 
@@ -624,92 +658,188 @@ namespace crisp
     {
         static_assert(1 <= N and N <= 4);
 
-        if (N == 1)
+        if (N == 1 and _array_vec1s.find(id) != _array_vec1s.end())
             _array_vec1s.erase(id);
-        else if (N == 2)
+        else if (N == 2 and _array_vec2s.find(id) != _array_vec2s.end())
             _array_vec2s.erase(id);
-        else if (N == 3)
+        else if (N == 3 and _array_vec3s.find(id) != _array_vec3s.end())
             _array_vec3s.erase(id);
-        else if (N == 4)
+        else if (N == 4 and _array_vec4s.find(id) != _array_vec4s.end())
             _array_vec4s.erase(id);
+        else 
+            std::cerr << "[WARNING] Trying to free already deallocated or non-existent array with id " << id << std::endl;
     }
 
     template<size_t N>
     void State::bind_array(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
+        verify_program_id(proxy_id);
+        
+        
         auto location = glGetUniformLocation(program_id, var_name.c_str());
         if (N == 1)
+        {
+            if (_array_vec1s.find(proxy_id) == _array_vec1s.end())
+            {
+                std::stringstream s;
+                s << "[ERROR] No float array with id " << proxy_id << " registered" << std::endl;
+                throw std::out_of_range(s.str());
+            }
             glUniform1fv(location, _array_vec1s.at(proxy_id).size(), &_array_vec1s.at(proxy_id)[0]);
+        }
         else if (N == 2)
+        {
+            if (_array_vec2s.find(proxy_id) == _array_vec2s.end())
+            {
+                std::stringstream s;
+                s << "[ERROR] No vec2 array with id " << proxy_id << " registered" << std::endl;
+                throw std::out_of_range(s.str());
+            }
             glUniform2fv(location, _array_vec2s.at(proxy_id).size(), &_array_vec2s.at(proxy_id)[0]);
+        }
         else if (N == 3)
+        {
+            if (_array_vec3s.find(proxy_id) == _array_vec3s.end())
+            {
+                std::stringstream s;
+                s << "[ERROR] No vec3 array with id " << proxy_id << " registered" << std::endl;
+                throw std::out_of_range(s.str());
+            }
             glUniform3fv(location, _array_vec3s.at(proxy_id).size(), &_array_vec3s.at(proxy_id)[0]);
+        }
         else if (N == 4)
+        {
+            if (_array_vec3s.find(proxy_id) == _array_vec3s.end())
+            {
+                std::stringstream s;
+                s << "[ERROR] No vec4 array with id " << proxy_id << " registered" << std::endl;
+                throw std::out_of_range(s.str());
+            }
             glUniform4fv(location, _array_vec4s.at(proxy_id).size(), &_array_vec4s.at(proxy_id)[0]);
+        }
     }
 
     void State::free_float(ProxyID id)
     {
+        if (_floats.find(id) == _floats.end())
+            std::cerr << "[WARNING] Trying to free already deallocated or non-existent float with id " << id << std::endl;
+        
         _floats.erase(id);
     }
 
     void State::free_bool(ProxyID id)
     {
+        if (_bools.find(id) == _bools.end())
+            std::cerr << "[WARNING] Trying to free already deallocated or non-existent bool with id " << id << std::endl;
+        
         _bools.erase(id);
     }
 
     void State::free_int(ProxyID id)
     {
+        if (_ints.find(id) == _ints.end())
+            std::cerr << "[WARNING] Trying to free already deallocated or non-existent int with id " << id << std::endl;
+        
         _ints.erase(id);
     }
 
     void State::free_vec2(ProxyID id)
     {
+        if (_vec2s.find(id) == _vec2s.end())
+            std::cerr << "[WARNING] Trying to free already deallocated or non-existent vec2 with id " << id << std::endl;
+        
         _vec2s.erase(id);
     }
 
     void State::free_vec3(ProxyID id)
     {
+         if (_vec3s.find(id) == _vec3s.end())
+            std::cerr << "[WARNING] Trying to free already deallocated or non-existent vec3 with id " << id << std::endl;
+         
         _vec3s.erase(id);
     }
 
     void State::free_vec4(ProxyID id)
     {
+         if (_vec4s.find(id) == _vec4s.end())
+            std::cerr << "[WARNING] Trying to free already deallocated or non-existent vec4 with id " << id << std::endl;
+         
         _vec4s.erase(id);
     }
 
     void State::bind_int(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
-
-        glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), proxy_id == -1 ? _ints[-1] : _ints.at(proxy_id));
+        verify_program_id(program_id);
+        if (_ints.find(proxy_id) == _ints.end())
+        {
+            std::stringstream s;
+            s << "[ERROR] No int with id " << proxy_id << " registered" << std::endl;
+            throw std::out_of_range(s.str());
+        }
+        glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), _ints.at(proxy_id));
     }
 
     void State::bind_float(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
-        glUniform1f(glGetUniformLocation(program_id, var_name.c_str()), proxy_id == -1 ? _floats[-1] : _floats.at(proxy_id));
+        verify_program_id(program_id);
+        if (_floats.find(proxy_id) == _floats.end())
+        {
+            std::stringstream s;
+            s << "[ERROR] No float with id " << proxy_id << " registered" << std::endl;
+            throw std::out_of_range(s.str());
+        }
+        glUniform1f(glGetUniformLocation(program_id, var_name.c_str()), _floats.at(proxy_id));
     }
 
     void State::bind_bool(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
-        glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), int(proxy_id == -1 ? _bools[-1] : _bools.at(proxy_id)));
+        verify_program_id(program_id);
+        if (_bools.find(proxy_id) == _bools.end())
+        {
+            std::stringstream s;
+            s << "[ERROR] No bool with id " << proxy_id << " registered" << std::endl;
+            throw std::out_of_range(s.str());
+        }
+        glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), _bools.at(proxy_id));
     }
 
     void State::bind_vec2(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
-        auto& vec = proxy_id == -1 ? _vec2s[-1] : _vec2s.at(proxy_id);
+        verify_program_id(program_id);
+        if (_vec2s.find(proxy_id) == _vec2s.end())
+        {
+            std::stringstream s;
+            s << "[ERROR] No vec2 with id " << proxy_id << " registered" << std::endl;
+            throw std::out_of_range(s.str());
+        }
+        auto& vec = _vec2s.at(proxy_id);
         glUniform2f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1));
     }
 
     void State::bind_vec3(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
-        auto& vec = proxy_id == -1 ? _vec3s[-1] : _vec3s.at(proxy_id);
+        verify_program_id(program_id);
+        if (_vec3s.find(proxy_id) == _vec3s.end())
+        {
+            std::stringstream s;
+            s << "[ERROR] No vec3 with id " << proxy_id << " registered" << std::endl;
+            throw std::out_of_range(s.str());
+        }
+        auto& vec = _vec3s.at(proxy_id);
         auto location = glGetUniformLocation(program_id, var_name.c_str());
         glUniform3f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1), vec.at(2));
     }
 
     void State::bind_vec4(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
-        auto& vec = proxy_id == -1 ? _vec4s[-1] : _vec4s.at(proxy_id);
+        verify_program_id(program_id);
+        if (_vec4s.find(proxy_id) == _vec4s.end())
+        {
+            std::stringstream s;
+            s << "[ERROR] No vec2 with id " << proxy_id << " registered" << std::endl;
+            throw std::out_of_range(s.str());
+        }
+        auto& vec = _vec4s.at(proxy_id);
         glUniform4f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1), vec.at(2), vec.at(3));
     }
 
@@ -719,6 +849,14 @@ namespace crisp
         {
             glBindTexture(GL_TEXTURE_2D, 0);
             return;
+        }
+        
+        verify_program_id(program_id);
+        if (_textures.find(texture_id) == _textures.end())
+        {
+            std::stringstream s;
+            s << "[ERROR] No texture with handle "  << texture_id << " allocated" << std::endl;
+            throw std::out_of_range(s.str());
         }
 
         auto location = glGetUniformLocation(program_id, var_name.c_str());
@@ -773,6 +911,13 @@ namespace crisp
             return;
         }
 
+        if (_frame_buffer.find(buffer_handle) == _frame_buffer.end())
+        {
+            std::stringstream s;
+            s << "[ERROR] Not framebuffer with handle " << buffer_handle << " allocated" << std::endl;
+            throw std::out_of_range(s.str());
+        }
+        
         auto& info = _frame_buffer.at(buffer_handle);
 
         glBindFramebuffer(GL_FRAMEBUFFER, buffer_handle);
@@ -783,6 +928,20 @@ namespace crisp
 
     void State::copy_framebuffer_to_texture(GLNativeHandle buffer_handle, GLNativeHandle texture_handle)
     {
+        if (_frame_buffer.find(buffer_handle) == _frame_buffer.end())
+        {
+            std::stringstream s;
+            s << "[ERROR] Not framebuffer with handle " << buffer_handle << " allocated" << std::endl;
+            throw std::out_of_range(s.str());
+        }
+        
+        if (_textures.find(texture_handle) == _textures.end())
+        {
+            std::stringstream s;
+            s << "[ERROR] No texture with handle "  << texture_handle << " allocated" << std::endl;
+            throw std::out_of_range(s.str());
+        }
+        
         auto info = _frame_buffer.at(buffer_handle);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, buffer_handle);
         glBindTexture(GL_TEXTURE_2D, texture_handle);
@@ -792,6 +951,9 @@ namespace crisp
 
     void State::free_framebuffer(GLNativeHandle buffer_handle)
     {
+        if (_frame_buffer.find(buffer_handle) == _frame_buffer.end())
+            std::cerr << "[WARNING] Trying to free already deallocated or non-existent frame buffer with handle " << buffer_handle << std::endl;
+        
         _frame_buffer.erase(buffer_handle);
         glDeleteFramebuffers(1, &buffer_handle);
     }

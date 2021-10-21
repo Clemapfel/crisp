@@ -314,6 +314,9 @@ namespace crisp
 
             static inline std::unordered_map<GLNativeHandle, FrameBufferProxy> _frame_buffer = {};
             static inline GLNativeHandle _active_buffer = -1;
+
+            // exceptions and safety
+            static void verify_program_id(GLNativeHandle);
     };
 }
 
