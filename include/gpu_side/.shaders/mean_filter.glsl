@@ -18,5 +18,5 @@ void main()
         for (int j = 0; j < _neighborhood_size; ++j)
             value += texture(_texture, _tex_coord + (vec2(half_n - i, half_n - j) * step_size));
 
-    gl_FragColor =value.x / float(_neighborhood_size * _neighborhood_size);
+    gl_FragColor = value / float(_neighborhood_size * _neighborhood_size);
 }

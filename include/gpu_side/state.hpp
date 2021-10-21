@@ -12,6 +12,7 @@
 
 #include <vector.hpp>
 #include <padding_type.hpp>
+#include <image/multi_plane_image.hpp>
 #include <gpu_side/native_handle.hpp>
 
 namespace crisp
@@ -214,10 +215,6 @@ namespace crisp
             /// @brief deallocate shader
             /// @param id: native handle of shader
             static void free_shader(GLNativeHandle);
-
-            /// @brief set already allocated fragment shader as currently active
-            /// @param ptr: pointer to crisp::Shader
-            static void bind_shader(crisp::Shader*);
             
             /// @brief bind shader to shader program, allocate it gpu-side
             /// @param path: absolute path to shader source code
@@ -247,12 +244,14 @@ namespace crisp
             /// @param var_name: exact variable name in shader source
             /// @param texture_id: native handle of texture
             /// @param texture_location: value of layout qualifier
-            static void bind_texture(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle texture_id, size_t texture_location);
+            static void bind_texture(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle texture_id, size_t texture_location = 0);
 
             static GLNativeHandle register_framebuffer(GLNativeHandle texture_handle);
             static void free_framebuffer(GLNativeHandle buffer_handle);
             static void bind_framebuffer(GLNativeHandle buffer_handle);
             static void copy_framebuffer_to_texture(GLNativeHandle buffer_handle, GLNativeHandle texture_handle);
+
+            static GLNativeHandle get_active_program_handle();
 
         private:
             static inline ProxyID _current = 0;
@@ -280,12 +279,14 @@ namespace crisp
 
             static inline std::unordered_map<ProxyID, MatrixProxy> _mats = {};
 
-            static void initialize_vertex_shader();
-            static inline GLNativeHandle _vertex_shader = -1;
+            static void initialize_noop_shaders();
+            static inline GLNativeHandle _noop_vertex_shader = -1;
+            static inline GLNativeHandle _noop_fragment_shader = -1;
+            static inline GLNativeHandle _noop_program = -1;
+
             static inline std::multiset<GLNativeHandle> _fragment_shaders = {};
             static inline std::multiset<GLNativeHandle> _shader_programs = {};
 
-            static inline crisp::Shader* _active_shader = nullptr;
             static inline GLNativeHandle _active_program = -1;
 
             static inline bool _vertices_initialized = false;
@@ -302,20 +303,17 @@ namespace crisp
 
             static inline std::multiset<GLNativeHandle> _textures = {};
             static inline std::unordered_map<GLNativeHandle, TextureInfo> _texture_info = {};
-            static inline GLNativeHandle _active_texture = -1;
 
             struct FrameBufferProxy
             {
                 GLNativeHandle buffer_handle,
                                texture_handle;
-
                 size_t width,
                        height;
             };
 
             static inline std::unordered_map<GLNativeHandle, FrameBufferProxy> _frame_buffer = {};
             static inline GLNativeHandle _active_buffer = -1;
-
     };
 }
 

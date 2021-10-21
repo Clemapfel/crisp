@@ -4,32 +4,29 @@
 //
 
 #include <gpu_side/state.hpp>
-#include <gpu_side/shader.hpp>
 #include <boost/container/vector.hpp>
+#include <image/multi_plane_image.hpp>
+
+#include <iostream>
 
 namespace crisp
 {
-    void State::bind_shader(crisp::Shader* shader)
-    {
-        _active_shader = shader;
-    }
-
     void State::display()
     {
+        if (_noop_fragment_shader == -1 or _noop_vertex_shader == -1 or _noop_program == 1)
+            initialize_noop_shaders();
+
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
-
-        if (_active_shader != nullptr)
-            _active_shader->bind_uniforms();
-
-        glBindVertexArray(_vertex_array);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         if (_active_buffer != -1)
         {
             GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
             glDrawBuffers(1, DrawBuffers);
         }
+
+        glBindVertexArray(_vertex_array);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 
     template<typename T>
@@ -120,9 +117,9 @@ namespace crisp
         }
     }
 
-    void State::initialize_vertex_shader()
+    void State::initialize_noop_shaders()
     {
-        if (_vertex_shader != -1)
+        if (_noop_fragment_shader != -1 and _noop_vertex_shader != -1 and _noop_program != -1)
             return;
 
         std::string source = R"(
@@ -150,13 +147,38 @@ namespace crisp
         glShaderSource(id, 1, &source_ptr, nullptr);
         glCompileShader(id);
 
-        _vertex_shader = id;
+        _noop_vertex_shader = id;
+
+        source = R"(
+            #version 330 core
+
+            in vec2 _tex_coord;
+
+            uniform sampler2D _texture;
+
+            // DO NOT MODIFY
+
+            void main()
+            {
+                gl_FragColor = texture2D(_texture, _tex_coord);
+            }
+        )";
+
+        source_ptr = source.c_str();
+        id = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(id, 1, &source_ptr, nullptr);
+        glCompileShader(id);
+
+        _noop_fragment_shader = id;
+        _noop_program = State::register_program(_noop_fragment_shader);
+
+        State::bind_shader_program(_noop_program);
     }
 
     GLNativeHandle State::register_shader(const std::string& path)
     {
-        if (_vertex_shader == -1)
-            initialize_vertex_shader();
+        if (_noop_vertex_shader == -1)
+            initialize_noop_shaders();
 
         std::ifstream file;
         file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -205,7 +227,7 @@ namespace crisp
     GLNativeHandle State::register_program(GLNativeHandle fragment_shader_id)
     {
         auto program_id = glCreateProgram();
-        glAttachShader(program_id, _vertex_shader);
+        glAttachShader(program_id, _noop_vertex_shader);
         glAttachShader(program_id, fragment_shader_id);
         glLinkProgram(program_id);
 
@@ -231,6 +253,9 @@ namespace crisp
 
     void State::bind_shader_program(GLNativeHandle program_id)
     {
+        if (program_id == -1)
+            program_id = _noop_program;
+
         glUseProgram(program_id);
         _active_program = program_id;
     }
@@ -239,7 +264,6 @@ namespace crisp
     GLNativeHandle State::register_texture(const Image<T, N>& image)
     {
         static_assert(0 < N and N <= 4);
-
 
         using Data_t = typename std::conditional<std::is_same_v<T, bool>, GLboolean, float>::type;
         boost::container::vector<Data_t> data;
@@ -251,19 +275,9 @@ namespace crisp
             {
                 std::vector<size_t> seq;
 
-                // TODO: why is this workaround needed?
-                if (N == 1)
-                    seq = {0};
-                else if (N == 2)
-                    seq = {0, 1};
-                else if (N == 3)
-                    seq = {0, 1, 2};
-                else if (N == 4)
-                    seq = {0, 1, 2, 3};
-
                 auto px = image.at(x, image.get_size().y() - (y + 1));
 
-                for (size_t i : seq)
+                for (size_t i = 0; i < px.size(); ++i)
                 {
                     if (std::is_same_v<T, bool>)
                         data.push_back(bool(px.at(i)) ? 255 : 0);
@@ -780,5 +794,10 @@ namespace crisp
     {
         _frame_buffer.erase(buffer_handle);
         glDeleteFramebuffers(1, &buffer_handle);
+    }
+
+    GLNativeHandle State::get_active_program_handle()
+    {
+        return _active_program;
     }
 }

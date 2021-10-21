@@ -17,7 +17,7 @@
 #include <system.hpp>
 #include <GLES3/gl32.h>
 
-#include <gpu_side/shader.hpp>
+#include <gpu_side/state.hpp>
 
 #include <segmentation.hpp>
 
@@ -36,42 +36,21 @@ int main()
     window.create(sf::VideoMode(image.get_size().x()-1, image.get_size().y()), "", style, context_settings);
     window.setActive(true);
 
-    std::string path = "/home/clem/Workspace/crisp/include/gpu_side/.shaders/test.glsl";
-    auto change_shader = Shader(path);
+    auto median_filter = State::register_shader("/home/clem/Workspace/crisp/include/gpu_side/.shaders/mean_filter.glsl");
+    auto median_program = State::register_program(median_filter);
+    State::bind_shader_program(median_program);
 
-    GLNativeHandle buffer_id;
-    glGenFramebuffers(1, &buffer_id);
-    glBindFramebuffer(GL_FRAMEBUFFER, buffer_id);
+    auto texture = State::register_texture(image);
+    State::bind_texture(median_program, "_texture", texture);
 
-    auto texture_id = change_shader.set_texture("_texture", image);
-    change_shader.set_active();
-    change_shader.bind_uniforms();
+    auto texture_size = State::register_vec2(image.get_size());
+    State::bind_vec2(median_program, "_texture_size", texture_size);
 
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture_id, 0);
-    GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
-    glDrawBuffers(1, DrawBuffers);
+    auto n = State::register_int(5);
+    State::bind_int(median_program, "_neighborhood_size", n);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, buffer_id);
-    glViewport(0, 0, image.get_size().x(), image.get_size().y());
-
-    State::display();
-    window.display();
-
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, buffer_id);
-    glBindTexture(GL_TEXTURE_2D, texture_id);
-    glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, image.get_size().x(), image.get_size().y());
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-    glPopAttrib();
-
-    State::bind_framebuffer(-1);
-
-    auto noop_shader = change_shader;
-    noop_shader.load_from_file("/home/clem/Workspace/crisp/include/gpu_side/.shaders/noop.frag");
-    noop_shader.set_active();
-    noop_shader.bind_uniforms();
-
-    //https://gamedev.stackexchange.com/questions/31162/updating-texture-memory-via-shader
-    //http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-14-render-to-texture/
+    State::bind_shader_program(-1);
+    State::bind_shader_program(median_program);
 
     // render
     State::display();
@@ -87,14 +66,6 @@ int main()
 
             if (event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::Space)
             {
-                State::display();
-                window.display();
-            }
-            else if (event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::B)
-            {
-                change_shader.load_from_file(path);
-                change_shader.set_active();
-                change_shader.bind_uniforms();
                 State::display();
                 window.display();
             }
