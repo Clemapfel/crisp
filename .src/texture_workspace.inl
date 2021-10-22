@@ -37,6 +37,12 @@ namespace crisp
         _n_displays++;
     }
 
+    void Workspace::display()
+    {
+        draw_to_buffer();
+        swap_buffers();
+    }
+
     Workspace::~Workspace()
     {
         glDeleteFramebuffers(1, &_framebuffer);

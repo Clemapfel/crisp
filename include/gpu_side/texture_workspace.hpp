@@ -20,6 +20,8 @@ namespace crisp
             void initialize(GLNativeHandle texture);
             void draw_to_buffer();
             void swap_buffers();
+
+            void display();
             GLNativeHandle yield();
 
         private:
