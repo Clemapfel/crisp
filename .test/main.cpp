@@ -49,52 +49,23 @@ int main()
     auto n = State::register_int(5);
     State::bind_int(median_program, "_neighborhood_size", n);
 
-    if (false) {
-        GLNativeHandle buffer;
-        glGenFramebuffers(1, &buffer);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer);
-
-        GLNativeHandle buffer_tex = State::register_texture(
-                image); //State::register_texture<float, 3>(image.get_size().x(), image.get_size().y());
-
-        glBindTexture(GL_TEXTURE_2D, buffer_tex);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.get_size().x(), image.get_size().y(), 0, GL_RGB, GL_FLOAT,
-                     nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer_tex, 0);
-        //assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
-
-        glBindTexture(GL_TEXTURE_2D, texture);
-        State::display();
-
-        // render to screen
-        State::bind_shader_program(-1);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-        State::bind_texture(median_program, "_texture", buffer_tex);
-        glBindTexture(GL_TEXTURE_2D, buffer_tex);
-
-        State::display();
-        window.display();
-    }
-
     GLNativeHandle buffer;
     glGenFramebuffers(1, &buffer);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer);
 
-    GLNativeHandle buffer_tex = State::register_texture(image); //State::register_texture<float, 3>(image.get_size().x(), image.get_size().y());
+    GLNativeHandle buffer_tex = State::register_texture<float, 3>(image.get_size().x(), image.get_size().y());
 
     auto tex_a = texture,
          tex_b = buffer_tex;
 
     size_t i = 0;
-    for (i; i < 5; ++i)
+    for (i; i < 2; ++i)
     {
-        float border[] = {1.f, 1.f, 1.f, 1.0f};
+        // prevent generation loss by rounding error
+        glViewport(0, 0, image.get_size().x(), image.get_size().y());
 
         glBindTexture(GL_TEXTURE_2D, tex_b);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_b, 0);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_b, 0);
         //assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 
         glBindTexture(GL_TEXTURE_2D, tex_a);
@@ -104,11 +75,18 @@ int main()
         auto temp = tex_b;
         tex_b = tex_a;
         tex_a = temp;
-
     }
 
+    // make both textures equal
+    State::bind_shader_program(-1);
+    glBindTexture(GL_TEXTURE_2D, tex_b);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_b, 0);
+    glBindTexture(GL_TEXTURE_2D, tex_a);
+    State::bind_texture(median_program, "_texture", tex_a);
+    State::display();
+
     // render to screen
-    auto result = i % 2 == 0 ? tex_a : tex_b;
+    auto result = i % 2 == 1 ? tex_a : tex_b;
     State::bind_shader_program(-1);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     State::bind_texture(median_program, "_texture", tex_b);
@@ -127,6 +105,11 @@ int main()
 
             if (event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::Space)
             {
+                auto temp = tex_b;
+                tex_b = tex_a;
+                tex_a = temp;
+                State::bind_texture(median_program, "_texture", tex_b);
+
                 State::display();
                 window.display();
             }
