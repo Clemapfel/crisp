@@ -7,12 +7,3 @@
 
 #include <gpu_side/native_handle.hpp>
 
-namespace crisp
-{
-    struct Texture
-    {
-        Texture(GLNativeHandler id) : _id(id) {}
-
-        GLNativeHandler _id;
-    };
-}

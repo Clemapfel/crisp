@@ -36,7 +36,7 @@ int main()
     window.create(sf::VideoMode(image.get_size().x()-1, image.get_size().y()), "", style, context_settings);
     window.setActive(true);
 
-    auto median_filter = State::register_shader("test.glsl");
+    auto median_filter = State::register_shader("mean_filter.glsl");
     auto median_program = State::register_program(median_filter);
     State::bind_shader_program(median_program);
 
@@ -48,6 +48,16 @@ int main()
 
     auto n = State::register_int(5);
     State::bind_int(median_program, "_neighborhood_size", n);
+
+    auto workspace = Workspace();
+    workspace.initialize<float, 3>(texture);
+
+    for (size_t i : {1, 2})
+    {
+        workspace.draw_to_buffer();
+        workspace.swap_buffers();
+        texture = workspace.yield();
+    }
 
     /*
     GLNativeHandle buffer;
@@ -90,8 +100,8 @@ int main()
     // render to screen
     State::bind_shader_program(-1);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    State::bind_texture(median_program, "_texture", workspace.yield());
-    glBindTexture(GL_TEXTURE_2D, tex_b);
+    State::bind_texture(median_program, "_texture", texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
 
     State::display();
     window.display();
@@ -106,10 +116,17 @@ int main()
 
             if (event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::Space)
             {
-                auto temp = tex_b;
-                tex_b = tex_a;
-                tex_a = temp;
-                State::bind_texture(median_program, "_texture", tex_b);
+                workspace.draw_to_buffer();
+                workspace.swap_buffers();
+                workspace.yield();
+
+                State::display();
+                window.display();
+
+                State::bind_shader_program(-1);
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+                State::bind_texture(median_program, "_texture", texture);
+                glBindTexture(GL_TEXTURE_2D, texture);
 
                 State::display();
                 window.display();

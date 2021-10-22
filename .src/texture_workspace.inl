@@ -8,9 +8,10 @@ namespace crisp
     template<typename T, size_t N>
     void Workspace::initialize(GLNativeHandle texture)
     {
-        _texture_a = State::register_texture(image);
-        auto size = State::get_texture_size(texture);
-        _texture_b = State::register_texture<T, N>(size.x(), size.y());
+        _original = texture;
+        _texture_a = texture;
+        _size = State::get_texture_size(texture);
+        _texture_b = State::register_texture<T, N>(_size.x(), _size.y());
         glGenFramebuffers(1, &_framebuffer);
     }
 
@@ -38,25 +39,25 @@ namespace crisp
 
     Workspace::~Workspace()
     {
-        glDeleteFramebuffers(1, _framebuffer);
-        if (_textures_to_keep.find(_texture_a) != _textures_to_keep.end())
-            glDeleteTextures(1, _texture_a);
-
-        if (_textures_to_keep.find(_texture_b) != _textures_to_keep.end())
-            glDeleteTextures(1, _texture_b);
+        glDeleteFramebuffers(1, &_framebuffer);
+        glDeleteTextures(1, &_texture_b);
     }
 
     GLNativeHandle Workspace::yield()
     {
-        if (_n_displays % 2 == 0)
+        // paste buffer onto a if a is currently not the buffer
+        if (_texture_b != _original)
         {
-            _textures_to_keep.insert(_texture_b);
-            return _texture_b;
+            auto before = State::get_active_program_handle();
+            State::bind_shader_program(-1);
+            glBindTexture(GL_TEXTURE_2D, _original);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _original, 0);
+            glBindTexture(GL_TEXTURE_2D, _texture_b);
+            State::bind_texture(State::get_active_program_handle(), "_texture", _texture_b);
+            State::display();
+            State::bind_shader_program(before);
         }
-        else
-        {
-            _textures_to_keep.insert(_texture_a);
-            return _texture_a;
-        }
+
+        return _texture_a;
     }
 }
