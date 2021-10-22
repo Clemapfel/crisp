@@ -10,6 +10,7 @@
 
 namespace crisp
 {
+    /// @brief creates two textures attached to frame buffers to cycle in between for rendering to a texture and using it for the same shader
     class Workspace
     {
         public:

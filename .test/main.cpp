@@ -36,7 +36,7 @@ int main()
     window.create(sf::VideoMode(image.get_size().x()-1, image.get_size().y()), "", style, context_settings);
     window.setActive(true);
 
-    auto shader = State::register_shader("mean_filter.glsl");
+    auto shader = State::register_shader("dilate_mat3x3.glsl");
     auto program = State::register_program(shader);
     State::bind_shader_program(program);
 
@@ -46,18 +46,20 @@ int main()
     auto texture_size = State::register_vec2(image.get_size());
     State::bind_vec2(program, "_texture_size", texture_size);
 
-    auto n = State::register_int(3);
-    State::bind_int(program, "_neighborhood_size", n);
+    auto se = State::register_structuring_element(MorphologicalTransform::all_foreground(3, 3));
+    State::bind_matrix(program, "_structuring_element", se);
 
-    /*
     auto workspace = Workspace();
     workspace.initialize<float, 3>(texture);
+    workspace.display();
+    workspace.display();
+    workspace.display();
     workspace.display();
     texture = workspace.yield();
 
     // render to screen
     State::bind_shader_program(-1);
-     */
+
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, texture);
 

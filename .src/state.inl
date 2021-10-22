@@ -638,10 +638,10 @@ namespace crisp
         return id;
     }
 
-    template<typename T, size_t n_rows, size_t n_cols>
+    template<typename T>
     ProxyID State::register_matrix(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& matrix)
     {
-        static_assert(2 <= n_rows and n_rows <= 4 and 2 <= n_cols and n_cols <= 4);
+        assert(2 <= matrix.rows() and matrix.rows() <= 4 and 2 <= matrix.cols() and matrix.cols() <= 4);
         auto id = get_next_id();
 
         std::vector<float> as_float;
@@ -661,6 +661,27 @@ namespace crisp
         });
 
         return id;
+    }
+
+    ProxyID State::register_structuring_element(const StructuringElement& se)
+    {
+        Eigen::MatrixXf as_float;
+        as_float.resize(se.rows(), se.cols());
+
+        for (size_t x = 0; x < se.rows(); ++x)
+        {
+            for (size_t y = 0; y < se.cols(); ++y)
+            {
+                auto val = se(x, y);
+
+                if (val.has_value())
+                    as_float(x, y) = static_cast<float>(val.value());
+                else
+                    as_float(x, y) = -1;
+            }
+        }
+
+        return register_matrix<float>(as_float);
     }
 
     void State::bind_matrix(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)

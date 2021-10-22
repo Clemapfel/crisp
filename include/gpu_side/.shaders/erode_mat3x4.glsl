@@ -7,7 +7,7 @@ out vec4 _out;
 
 uniform sampler2D _texture;
 uniform vec2 _texture_size;
-uniform mat3 _structuring_element;
+uniform mat4x3 _structuring_element;
 
 float to_value(float v)
 {
@@ -31,6 +31,9 @@ void main()
     min_v = min(min_v,to_value(_structuring_element[2][0]) * texture(_texture, _tex_coord + (vec2(1, -1) * step_size)));
     min_v = min(min_v,to_value(_structuring_element[2][1]) * texture(_texture, _tex_coord + (vec2(1, 0) * step_size)));
     min_v = min(min_v,to_value(_structuring_element[2][2]) * texture(_texture, _tex_coord + (vec2(1, 1) * step_size)));
+    min_v = min(min_v,to_value(_structuring_element[3][0]) * texture(_texture, _tex_coord + (vec2(2, -1) * step_size)));
+    min_v = min(min_v,to_value(_structuring_element[3][1]) * texture(_texture, _tex_coord + (vec2(2, 0) * step_size)));
+    min_v = min(min_v,to_value(_structuring_element[3][2]) * texture(_texture, _tex_coord + (vec2(2, 1) * step_size)));
 
     _out = min_v;
 }

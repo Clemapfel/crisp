@@ -197,9 +197,15 @@ namespace crisp
             /// @tparam n_cols: number of cols, in {2, 3, 4}
             /// @param value
             /// @returns id: id of allocated resource
-            template<typename T, size_t n_rows, size_t n_cols>
+            template<typename T>
             static ProxyID register_matrix(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>&);
-            
+
+            /// @brief allocated structuring element as matrix
+            /// @param se: structuring elements
+            /// @returns id of allocated matrix
+            /// @note a "not care" value will be internally treated as -1.f
+            static ProxyID register_structuring_element(const StructuringElement& se);
+
             /// @brief deallocate matrix of any size
             /// @param resource_id
             static void free_matrix(ProxyID);
