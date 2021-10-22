@@ -36,7 +36,7 @@ int main()
     window.create(sf::VideoMode(image.get_size().x()-1, image.get_size().y()), "", style, context_settings);
     window.setActive(true);
 
-    auto median_filter = State::register_shader("mean_filter.glsl");
+    auto median_filter = State::register_shader("test.glsl");
     auto median_program = State::register_program(median_filter);
     State::bind_shader_program(median_program);
 
@@ -62,7 +62,6 @@ int main()
     for (i; i < 2; ++i)
     {
         // prevent generation loss by rounding error
-        glViewport(0, 0, image.get_size().x(), image.get_size().y());
 
         glBindTexture(GL_TEXTURE_2D, tex_b);
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_b, 0);
@@ -70,6 +69,7 @@ int main()
 
         glBindTexture(GL_TEXTURE_2D, tex_a);
         State::bind_texture(median_program, "_texture", tex_a);
+        glViewport(0, 0, image.get_size().x(), image.get_size().y());
         State::display();
 
         auto temp = tex_b;

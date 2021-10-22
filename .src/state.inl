@@ -1056,7 +1056,7 @@ namespace crisp
         {
             std::stringstream s;
             s << "[ERROR] No texture with handle "  << texture_id << " allocated" << std::endl;
-            //throw std::out_of_range(s.str());
+            throw std::out_of_range(s.str());
         }
 
         glBindTexture(GL_TEXTURE_2D, texture_id);
@@ -1092,83 +1092,16 @@ namespace crisp
             bind_shader_program(before);
     }
 
-    GLNativeHandle State::register_framebuffer(GLNativeHandle texture_handle)
+    Vector2ui State::get_texture_size(GLNativeHandle texture_handle)
     {
-        GLNativeHandle id = 0;
-        glGenFramebuffers(1, &id);
-
-        _frame_buffer.insert({
-            id,
-            FrameBufferProxy {
-                .buffer_handle = id,
-                .texture_handle = texture_handle,
-                .width = _texture_info.at(texture_handle).width,
-                .height = _texture_info.at(texture_handle).height
-            }
-        });
-
-        glBindFramebuffer(GL_FRAMEBUFFER, id);
-        glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_handle, 0);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        return id;
-    }
-
-    void State::bind_framebuffer(GLNativeHandle buffer_handle)
-    {
-        if (buffer_handle == NONE)
-        {
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            _active_buffer = NONE;
-            return;
-        }
-
-        if (_frame_buffer.find(buffer_handle) == _frame_buffer.end())
-        {
-            std::stringstream s;
-            s << "[ERROR] Not framebuffer with handle " << buffer_handle << " allocated" << std::endl;
-            throw std::out_of_range(s.str());
-        }
-        
-        auto& info = _frame_buffer.at(buffer_handle);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, buffer_handle);
-        glViewport(0, 0, info.width, info.height);
-
-        _active_buffer = buffer_handle;
-    }
-
-    void State::copy_framebuffer_to_texture(GLNativeHandle buffer_handle, GLNativeHandle texture_handle)
-    {
-        if (_frame_buffer.find(buffer_handle) == _frame_buffer.end())
-        {
-            std::stringstream s;
-            s << "[ERROR] Not framebuffer with handle " << buffer_handle << " allocated" << std::endl;
-            throw std::out_of_range(s.str());
-        }
-        
         if (_textures.find(texture_handle) == _textures.end())
         {
             std::stringstream s;
             s << "[ERROR] No texture with handle "  << texture_handle << " allocated" << std::endl;
             throw std::out_of_range(s.str());
         }
-        
-        auto info = _frame_buffer.at(buffer_handle);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, buffer_handle);
-        glBindTexture(GL_TEXTURE_2D, texture_handle);
-        glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, info.width, info.height);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-        glPopAttrib();
-    }
 
-    void State::free_framebuffer(GLNativeHandle buffer_handle)
-    {
-        if (_frame_buffer.find(buffer_handle) == _frame_buffer.end())
-            std::cerr << "[WARNING] Trying to free already deallocated or non-existent frame buffer with handle " << buffer_handle << std::endl;
-        
-        _frame_buffer.erase(buffer_handle);
-        glDeleteFramebuffers(1, &buffer_handle);
+        return Vector2ui{_texture_info.at(texture_handle).width, _texture_info.at(texture_handle).height};
     }
 
     GLNativeHandle State::get_active_program_handle()

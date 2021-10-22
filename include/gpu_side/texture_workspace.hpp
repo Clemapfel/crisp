@@ -13,11 +13,24 @@ namespace crisp
     class Workspace
     {
         public:
+            Workspace() = default;
+            ~Workspace();
+
             template<typename T, size_t N>
-            Texture& create(const crisp::Image<T, N>& image)
-            {
-                auto texture_id = State::register_texture<T, N>(image);
-                auto buffer_id = State::register_framebuffer(Vector2ui size);
-            }
+            void initialize(const Image<T, N>&);
+
+            void display();
+            GLNativeHandle yield();
+
+        private:
+            GLNativeHandle _texture_a, _texture_b;
+            GLNativeHandle _framebuffer;
+
+            Vector2ui _size;
+            size_t _n_displays = 0;
+
+            std::set<GLNativeHandle> _textures_to_keep;
     };
 }
+
+#include ".src/gpu_side/texure_workspace.inl"

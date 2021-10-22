@@ -238,6 +238,10 @@ namespace crisp
             template<typename T, size_t N>
             static GLNativeHandle register_texture(const Image<T, N>&);
 
+            /// @brief create an empty texture of specified size gpu-side
+            /// @param width: x-dimension of the texture
+            /// @param height: y-dimension of the texture
+            /// @returns native handle of texture
             template<typename T, size_t N>
             static GLNativeHandle register_texture(size_t width, size_t height);
 
@@ -252,11 +256,10 @@ namespace crisp
             /// @param texture_location: value of layout qualifier
             static void bind_texture(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle texture_id, size_t texture_location = 0);
 
-            static GLNativeHandle register_framebuffer(GLNativeHandle texture_handle);
-            static void free_framebuffer(GLNativeHandle buffer_handle);
-            static void bind_framebuffer(GLNativeHandle buffer_handle);
-            static void copy_framebuffer_to_texture(GLNativeHandle buffer_handle, GLNativeHandle texture_handle);
+            static Vector2ui get_texture_size(GLNativeHandle texture_handle);
 
+            /// @brief get id of currently bound shader program
+            /// @returns -1 if no programs bound, the programs native handle in {1, 2, ...} otherwise
             static GLNativeHandle get_active_program_handle();
 
         private:
