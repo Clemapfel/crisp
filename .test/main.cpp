@@ -46,14 +46,11 @@ int main()
     auto texture_size = State::register_vec2(image.get_size());
     State::bind_vec2(program, "_texture_size", texture_size);
 
-    auto se = State::register_structuring_element(MorphologicalTransform::all_foreground(3, 3));
+    auto se = State::register_structuring_element(MorphologicalTransform::square_pyramid(4));
     State::bind_matrix(program, "_structuring_element", se);
 
     auto workspace = Workspace();
     workspace.initialize<float, 3>(texture);
-    workspace.display();
-    workspace.display();
-    workspace.display();
     workspace.display();
     texture = workspace.yield();
 

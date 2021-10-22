@@ -9,7 +9,6 @@ uniform sampler2D _texture;
 uniform vec2 _texture_size;
 uniform mat4 _structuring_element;
 
-
 void main()
 {
     vec2 step_size = 1.f / _texture_size;

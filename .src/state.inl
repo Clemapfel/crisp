@@ -684,6 +684,27 @@ namespace crisp
         return register_matrix<float>(as_float);
     }
 
+    ProxyID State::register_structuring_element(const NonFlatStructuringElement& se)
+    {
+        Eigen::MatrixXf as_float;
+        as_float.resize(se.rows(), se.cols());
+
+        for (size_t x = 0; x < se.rows(); ++x)
+        {
+            for (size_t y = 0; y < se.cols(); ++y)
+            {
+                auto val = se(x, y);
+
+                if (val.has_value())
+                    as_float(x, y) = static_cast<float>(val.value());
+                else
+                    as_float(x, y) = -1;
+            }
+        }
+
+        return register_matrix<float>(as_float);
+    }
+
     void State::bind_matrix(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
         verify_program_id(program_id);

@@ -206,6 +206,12 @@ namespace crisp
             /// @note a "not care" value will be internally treated as -1.f
             static ProxyID register_structuring_element(const StructuringElement& se);
 
+            /// @brief allocated non-flat structuring element as matrix
+            /// @param se: non-flat structuring elements
+            /// @returns id of allocated matrix
+            /// @note a "not care" value will be internally treated as -1.f
+            static ProxyID register_structuring_element(const NonFlatStructuringElement& se);
+
             /// @brief deallocate matrix of any size
             /// @param resource_id
             static void free_matrix(ProxyID);

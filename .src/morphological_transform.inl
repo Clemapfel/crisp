@@ -548,7 +548,7 @@ namespace crisp
                 if (dist(i, j) <= radius)
                     out(i, j) = (1 - (dist(i, j) / radius)) * (max - min) + min;
                 else
-                    out(i, j) = std::optional<float>();
+                    out(i, j) = 0; //std::optional<float>();
 
         return out;
     }
