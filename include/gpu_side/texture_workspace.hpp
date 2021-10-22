@@ -17,20 +17,18 @@ namespace crisp
             ~Workspace();
 
             template<typename T, size_t N>
-            void initialize(const Image<T, N>&);
-
-            void display();
+            void initialize(GLNativeHandle texture);
+            void draw_to_buffer();
+            void swap_buffers();
             GLNativeHandle yield();
 
         private:
             GLNativeHandle _texture_a, _texture_b;
             GLNativeHandle _framebuffer;
-
-            Vector2ui _size;
             size_t _n_displays = 0;
 
             std::set<GLNativeHandle> _textures_to_keep;
     };
 }
 
-#include ".src/gpu_side/texure_workspace.inl"
+#include ".src/texture_workspace.inl"

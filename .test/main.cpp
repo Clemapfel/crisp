@@ -20,7 +20,7 @@
 #include <gpu_side/state.hpp>
 
 #include <segmentation.hpp>
-
+#include <gpu_side/texture_workspace.hpp>
 using namespace crisp;
 
 int main()
@@ -49,6 +49,7 @@ int main()
     auto n = State::register_int(5);
     State::bind_int(median_program, "_neighborhood_size", n);
 
+    /*
     GLNativeHandle buffer;
     glGenFramebuffers(1, &buffer);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer);
@@ -84,12 +85,12 @@ int main()
     glBindTexture(GL_TEXTURE_2D, tex_a);
     State::bind_texture(median_program, "_texture", tex_a);
     State::display();
+     */
 
     // render to screen
-    auto result = i % 2 == 1 ? tex_a : tex_b;
     State::bind_shader_program(-1);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    State::bind_texture(median_program, "_texture", tex_b);
+    State::bind_texture(median_program, "_texture", workspace.yield());
     glBindTexture(GL_TEXTURE_2D, tex_b);
 
     State::display();
