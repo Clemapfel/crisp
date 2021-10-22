@@ -463,4 +463,130 @@ namespace crisp
             for (long j = 0; j < image.get_size().y(); ++j)
                 image(i, j) = result(i, j);
     }
+
+    NonFlatStructuringElement MorphologicalTransform::square_pyramid(long dimensions)
+    {
+        NonFlatStructuringElement out;
+        out.resize(dimensions, dimensions);
+        out.setConstant(std::optional<float>());
+
+        float max = 1, min = 0;
+        const float step = (max - min) / ((dimensions - 1) / 2);
+        float current_color = min;
+        size_t offset = 0;
+
+        while (offset < ((dimensions - 1) / 2))
+        {
+            for (long x = offset; x < dimensions - offset; ++x)
+            {
+                out(x, offset) = current_color;
+                out(x, dimensions - offset - 1) = current_color;
+            }
+
+            for (long y = offset; y < dimensions - offset; ++y)
+            {
+                out(offset, y) = current_color;
+                out(dimensions - offset - 1, y) = current_color;
+            }
+
+            current_color += step;
+            offset += 1;
+        }
+
+        return out;
+    }
+
+    NonFlatStructuringElement MorphologicalTransform::diamond_pyramid(long dimensions)
+    {
+        NonFlatStructuringElement out;
+        out.resize(dimensions, dimensions);
+        out.setConstant(std::optional<float>());
+        
+        float max = 1, min = 0;
+        
+        const float step = (max - min) / ((dimensions - 1) / 2);
+        float current_color = float(min);
+        size_t offset = 0;
+
+        long half = ((dimensions - 1) / 2);
+        while (offset < half)
+        {
+            for (long x = half, y = offset; x < dimensions and y <= half; x++, y++)
+            {
+                out(x, y) = current_color;
+                out(dimensions - x - 1, y) = current_color;
+                out(x, dimensions - y - 1) = current_color;
+                out(dimensions - x - 1, dimensions - y - 1) = current_color;
+            }
+            
+            offset += 1;
+            current_color += step;
+        }
+
+        return out;
+    }
+
+    NonFlatStructuringElement MorphologicalTransform::cone(long dimensions)
+    {
+        NonFlatStructuringElement out;
+        out.resize(dimensions, dimensions);
+        out.setConstant(std::optional<float>());
+
+        float max = 1, min = 0;
+
+        assert(dimensions % 2 == 1 && "dimensions have to be odd for the structuring element to be rotationally symmetrical");
+
+        long radius = (dimensions - 1) / 2;
+        auto dist = [dimensions, r = radius](long x, long y) -> float {return sqrt((x-r)*(x-r) + (y-r)*(y-r));};
+
+        const float step = (max - min) / ((dimensions - 1) / 2);
+        float current_color = float(min);
+        size_t offset = 0;
+
+        for (long i = 0; i < dimensions; ++i)
+            for (long j = 0; j < dimensions; ++j)
+                if (dist(i, j) <= radius)
+                    out(i, j) = (1 - (dist(i, j) / radius)) * (max - min) + min;
+                else
+                    out(i, j) = std::optional<float>();
+
+        return out;
+    }
+
+    NonFlatStructuringElement MorphologicalTransform::hemisphere(long dimensions)
+    {
+        NonFlatStructuringElement out;
+        out.resize(dimensions, dimensions);
+        out.setConstant(std::optional<float>());
+
+        float max = 1, min = 0;
+
+        assert(dimensions % 2 == 1 && "dimensions have to be odd for the structuring element to be rotationally symmetrical");
+
+        long radius = (dimensions - 1) / 2;
+        auto dist = [dimensions, r = radius](long x, long y) -> float {return sqrt((x-r)*(x-r) + (y-r)*(y-r));};
+
+        const float step = (max - min) / ((dimensions - 1) / 2);
+        float current_color = float(min);
+        size_t offset = 0;
+
+        for (long i = 0; i < dimensions; ++i)
+        {
+            for (long j = 0; j < dimensions; ++j)
+            {
+                if (dist(i, j) <= radius)
+                {
+                    float v = dist(i, j) / radius;
+                    out(i, j) = sqrt(1 - v * v);
+                }
+                else
+                    out(i, j) = std::optional<float>();
+            }
+        }
+
+        return out;
+    }
+
+
+
 }

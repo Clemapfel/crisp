@@ -13,6 +13,9 @@ namespace crisp
     /// @brief matrix of std::optional<bool> used as flat structuring element, the optional element not having a value represents "don't care" elements
     using StructuringElement = Eigen::Matrix<std::optional<bool>, Eigen::Dynamic, Eigen::Dynamic>;
 
+    /// @brief matrix of std::optional<float> used as non-flat structuring element
+    using NonFlatStructuringElement = Eigen::Matrix<std::optional<float>, Eigen::Dynamic, Eigen::Dynamic>;
+
     /// @brief object representing a morphological transform using a flat structuring element
     class MorphologicalTransform
     {
@@ -129,6 +132,26 @@ namespace crisp
             /// @param dimensions: x- and y-dimensions
             /// @returns structuring element bindable with set_structuring_element
             static StructuringElement circle(long dimensions);
+
+            /// @brief non-flat structuring element in the shape of a pyramid with a square base
+            /// @param dimensions: x- and y-dimensions
+            /// @returns non-flat structuring element
+            static NonFlatStructuringElement square_pyramid(long dimensions);
+
+            /// @brief non-flat structuring element in the shape of a pyramid with a diamond base. All non-pyramid elements are "don't care"
+            /// @param dimensions: x- and y-dimensions
+            /// @returns non-flat structuring element
+            static NonFlatStructuringElement diamond_pyramid(long dimensions);
+
+            /// @brief non-flat structuring element in the shape of a pyramid with a circular base. All non-pyramid elements are "don't care"
+            /// @param dimensions: x- and y-dimensions
+            /// @returns non-flat structuring element
+            static NonFlatStructuringElement cone(long dimensions);
+
+            /// @brief non-flat structuring element in the shape of a hemisphere. All elements outside the sphere are "don't care"
+            /// @param dimensions: x- and y-dimensions
+            /// @returns non-flat structuring element
+            static NonFlatStructuringElement hemisphere(long dimensions);
 
         private:
             Vector2ui _origin;
