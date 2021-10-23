@@ -89,6 +89,10 @@ namespace crisp
         /// @param mapping: mapping of type crisp::PseudoColor::RangeMapping
         static ColorImage value_ranges_to_hue_ranges(RangeMapping& mapping, const GrayScaleImage&);
 
+        protected:
+            /// @brief serialize mapping to an array for use in glsl
+            static std::array<float, 256> range_mapping_to_array(const RangeMapping&);
+
         private:
             PseudoColor() = default;
     };

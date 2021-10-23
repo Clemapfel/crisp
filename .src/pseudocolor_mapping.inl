@@ -166,4 +166,12 @@ namespace crisp
     {
         _gray_to_inverse_hue.push_back({{min_gray, max_gray}, {min_hue, max_hue}});
     }
+
+    std::array<float, 256> PseudoColor::range_mapping_to_array(const PseudoColor::RangeMapping& mapping)
+    {
+        for (size_t i = 0; i < 256; ++i)
+        {
+            value_ranges_to_hue_ranges
+        }
+    }
 }
