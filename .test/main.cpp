@@ -46,7 +46,7 @@ int main()
     auto texture_size = State::register_vec2(image.get_size());
     State::bind_vec2(program, "_texture_size", texture_size);
 
-    auto se = State::register_structuring_element(MorphologicalTransform::square_pyramid(4));
+    auto se = State::register_structuring_element(MorphologicalTransform::all_foreground(3, 3));
     State::bind_matrix(program, "_structuring_element", se);
 
     auto workspace = Workspace();
@@ -55,7 +55,7 @@ int main()
     texture = workspace.yield();
 
     // render to screen
-    State::bind_shader_program(-1);
+    //State::bind_shader_program(-1);
 
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, texture);

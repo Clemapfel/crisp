@@ -26,7 +26,7 @@ namespace crisp
             GLNativeHandle yield();
 
         private:
-            GLNativeHandle _original;
+            GLNativeHandle _original, _last_updated;
             GLNativeHandle _texture_a, _texture_b;
             GLNativeHandle _framebuffer;
             size_t _n_displays = 0;

@@ -26,6 +26,8 @@ namespace crisp
         glViewport(0, 0, _size.x(), _size.y());
         State::display();
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+        _last_updated = _texture_b;
     }
 
     void Workspace::swap_buffers()
@@ -52,7 +54,7 @@ namespace crisp
     GLNativeHandle Workspace::yield()
     {
         // paste buffer onto a if a is currently not the buffer
-        if (_texture_b != _original)
+        if (_last_updated != _original and _n_displays != 0)
         {
             auto before = State::get_active_program_handle();
             State::bind_shader_program(-1);
@@ -64,6 +66,6 @@ namespace crisp
             State::bind_shader_program(before);
         }
 
-        return _texture_a;
+        return _original;
     }
 }
