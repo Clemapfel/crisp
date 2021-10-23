@@ -36,23 +36,24 @@ int main()
     window.create(sf::VideoMode(image.get_size().x()-1, image.get_size().y()), "", style, context_settings);
     window.setActive(true);
 
-    auto shader = State::register_shader("dilate_mat3x3.glsl");
+    auto shader = State::register_shader("slice_bitplane.glsl");
     auto program = State::register_program(shader);
     State::bind_shader_program(program);
 
     auto texture = State::register_texture(image);
     State::bind_texture(program, "_texture", texture);
 
-    auto texture_size = State::register_vec2(image.get_size());
-    State::bind_vec2(program, "_texture_size", texture_size);
 
-    auto se = State::register_structuring_element(MorphologicalTransform::all_foreground(3, 3));
-    State::bind_matrix(program, "_structuring_element", se);
+    size_t plane_i = 8;
+    auto plane_i_proxy = State::register_int(plane_i);
+    State::bind_int(program, "_bitplane", plane_i_proxy);
 
+    /*
     auto workspace = Workspace();
     workspace.initialize<float, 3>(texture);
     workspace.display();
     texture = workspace.yield();
+     */
 
     // render to screen
     //State::bind_shader_program(-1);
@@ -73,9 +74,9 @@ int main()
 
             if (event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::Space)
             {
-                //workspace.draw_to_buffer();
-                //workspace.swap_buffers();
-                //workspace.yield();
+                shader = State::register_shader("slice_bitplane.glsl");
+                program = State::register_program(shader);
+                State::bind_shader_program(program);
 
                 State::display();
                 window.display();
