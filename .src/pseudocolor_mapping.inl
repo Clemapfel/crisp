@@ -4,6 +4,7 @@
 //
 
 #include ".src/common.inl"
+#include <pseudocolor_mapping.hpp>
 
 namespace crisp
 {
@@ -169,9 +170,55 @@ namespace crisp
 
     std::array<float, 256> PseudoColor::range_mapping_to_array(const PseudoColor::RangeMapping& mapping)
     {
+        auto gray_to_hue = [mapping](float x) -> float {
+
+            for (auto& map : mapping._gray_to_hue)
+            {
+                float min_gray = map.first.first;
+                float max_gray = map.first.second;
+                float min_hue = map.second.first;
+                float max_hue = map.second.second;
+
+                if (x >= min_gray and x <= max_gray)
+                {
+                    float hue = x;
+                    hue -= min_gray;
+                    hue /= abs(max_gray - min_gray);
+
+                    hue = project(min_hue, max_hue, hue);
+
+                    return hue;
+                }
+            }
+
+            for (auto& map : mapping._gray_to_inverse_hue)
+            {
+                float min_gray = map.first.first;
+                float max_gray = map.first.second;
+                float min_hue = map.second.first;
+                float max_hue = map.second.second;
+
+                if (x >= min_gray and x <= max_gray)
+                {
+                    float hue = x;
+                    hue -= min_gray;
+                    hue /= abs(max_gray - min_gray);
+
+                    hue = project(min_hue, max_hue, hue);
+                    hue = max_hue - (hue - min_hue);
+
+                    return hue;
+                }
+            }
+
+            return -1;
+        };
+
+        std::array<float, 256> out = {};
         for (size_t i = 0; i < 256; ++i)
-        {
-            value_ranges_to_hue_ranges
-        }
+            out[i] = gray_to_hue(float(i) / 256.f);
+
+        return out;
     }
+
 }

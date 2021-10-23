@@ -154,10 +154,16 @@ namespace crisp
             static void bind_vec4(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
 
             /// @brief allocate array of floats
-            /// @param value
+            /// @param vector
             /// @returns id of allocated resource
             template<typename T>
             static ProxyID register_array(const std::vector<T>&);
+
+            /// @brief allocate array of floats
+            /// @param array
+            /// @returns id of allocated resource
+            template<typename T, size_t N>
+            static ProxyID register_array(const std::array<T, N>&);
 
             /// @brief allocate array of vec2s
             /// @param value
@@ -275,7 +281,7 @@ namespace crisp
             static GLNativeHandle get_active_program_handle();
 
         private:
-            static inline ProxyID _current = 0;
+            static inline ProxyID _current = -1;
             static ProxyID get_next_id() { return _current--;}
 
             static inline std::unordered_map<ProxyID, int> _ints = {};

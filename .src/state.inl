@@ -778,6 +778,23 @@ namespace crisp
         return id;
     }
 
+    template<typename T, size_t N>
+    ProxyID State::register_array(const std::array<T, N>& data)
+    {
+        std::vector<float> as_float;
+
+        for (const auto& x : data)
+            as_float.push_back(static_cast<float>(x));
+
+        auto id = get_next_id();
+        _array_vec1s.insert({
+            id,
+            as_float
+        });
+
+        return id;
+    }
+
     template<typename T>
     ProxyID State::register_vec2_array(const std::vector<crisp::Vector<T, 2>>& data)
     {
@@ -861,7 +878,9 @@ namespace crisp
     template<size_t N>
     void State::bind_array(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
-        verify_program_id(proxy_id);
+        static_assert(1 <= N and N <= 4, "tparam N is the number of dimensions of the innver vector type, not the number of elements in the array");
+
+        verify_program_id(program_id);
 
         auto before = _active_program;
         if (before != program_id)
