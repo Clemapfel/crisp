@@ -18,6 +18,9 @@ FIND_PACKAGE(OpenGL REQUIRED)
 
 ### CRISP #######################################################################################
 
+set(RESOURCE_PATH ${CMAKE_SOURCE_DIR})
+configure_file(/home/clem/Workspace/crisp/.src/resource_path.hpp.in /home/clem/Workspace/crisp/resource_path.hpp @ONLY)
+
 add_library(crisp STATIC
 
         include/vector.hpp
@@ -103,8 +106,7 @@ add_library(crisp STATIC
         .src/state.inl
 
         include/gpu_side/texture_workspace.hpp
-        .src/texture_workspace.inl
-        )
+        .src/texture_workspace.inl foo.h)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp sfml-graphics sfml-window sfml-system fftw3 fftw3l fftw3f ${OPENGL_LIBRARIES})
