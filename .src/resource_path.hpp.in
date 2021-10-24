@@ -1,0 +1,16 @@
+// 
+// Copyright 2021 Clemens Cords
+// Created on 24.10.21 by clem (mail@clemens-cords.com)
+//
+
+#pragma once
+
+#include <string>
+
+#cmakedefine RESOURCE_PATH "@RESOURCE_PATH@/"
+
+// template header that will be modified by cmake
+std::string get_resource_path()
+{
+    return RESOURCE_PATH;
+}
