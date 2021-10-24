@@ -72,6 +72,7 @@ This makes debugging, filter design or just understanding/explaining your own al
 + [OpenGL 3.3](https://developer.nvidia.com/opengl-driver) or newer
     - `libopengl-dev`
 + [Eigen](https://eigen.tuxfamily.org/dox/GettingStarted.html)
+    - provided as submodule
     - `libeigen3-dev`
 + [SFML](https://www.sfml-dev.org/tutorials/1.6/start-linux.php)
     - `libsfml-system2.5`
@@ -83,6 +84,10 @@ This makes debugging, filter design or just understanding/explaining your own al
     - `libfftw3-double3` 
     - `libfftw3-long3`
     - `libfftw3-quad3`
++ [sol2](https://github.com/ThePhD/sol2/)
+    - provided as submodule
++ [lua5.3](https://www.lua.org/download.html)
+    - `lua5.3` package
     
 ### Installation
 `crisp` is header only, to add it to your project, simply use:
