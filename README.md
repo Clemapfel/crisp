@@ -9,8 +9,8 @@
 + Segmentation & Clustering
 + Feature Extraction
 + Boundary and Texture Descriptors
-+ Fully Connected Neural Networks
-+ Convolutional Neural Networks
++ Neural Networks (fully connected and convolutional)
++ GPU-side hardware acceleration
 + Bayes Classification 
 + SIFT & Key Point Classification
 + Color Representations
