@@ -1,5 +1,10 @@
 #version 330 core
 
+float project(float lower_bound, float upper_bound, float value)
+{
+    return value * abs(lower_bound - upper_bound) + min(lower_bound, upper_bound);
+}
+
 in vec2 _tex_coord;
 
 out vec4 _out;

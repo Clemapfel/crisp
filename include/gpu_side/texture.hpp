@@ -7,3 +7,5 @@
 
 #include <gpu_side/native_handle.hpp>
 
+/// @brief handle for a texture that lives on the graphics card
+using Texture = GLNativeHandle;

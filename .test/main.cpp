@@ -23,6 +23,8 @@
 #include <gpu_side/texture_workspace.hpp>
 
 #include <pseudocolor_mapping.hpp>
+//#include <resource_path.hpp>
+
 using namespace crisp;
 
 int main()
@@ -38,7 +40,7 @@ int main()
     window.create(sf::VideoMode(image.get_size().x()-1, image.get_size().y()), "", style, context_settings);
     window.setActive(true);
 
-    std::string shader_id = "pseudocolor.glsl";
+    std::string shader_id = "sobel_gradient_magnitude.glsl";
     auto shader = State::register_shader(shader_id);
     auto program = State::register_program(shader);
     State::bind_shader_program(program);
@@ -46,21 +48,31 @@ int main()
     auto texture = State::register_texture(image);
     State::bind_texture(program, "_texture", texture);
 
+    auto size = State::register_vec2(image.get_size());
+    State::bind_vec2(program, "_texture_size", size);
+
+    auto workspace = Workspace();
+    workspace.initialize<float, 3>(texture);
+
+    workspace.display();
+
+    shader_id = "pseudocolor.glsl";
+    shader = State::register_shader(shader_id);
+    program = State::register_program(shader);
+    State::bind_shader_program(program);
+
     auto mapping = PseudoColor::RangeMapping();
-    mapping.add_value_range_to_hue_range(0, 0.1, 0, 1);
+    mapping.add_value_range_to_hue_range(0, 1, 0, 1);
     auto mapping_as_array = PseudoColor::range_mapping_to_array(mapping);
     auto array = State::register_array(mapping_as_array);
 
-    for (size_t i = 0; i < mapping_as_array.size(); ++i)
-        std::cout << i << " -> " << mapping_as_array[i] << std::endl;
-
     State::bind_array<1>(program, "_gray_to_hue", array);
 
-    /*
-    auto workspace = Workspace();
-    workspace.initialize<float, 3>(texture);
     workspace.display();
     texture = workspace.yield();
+
+    /*
+
      */
 
     // render to screen

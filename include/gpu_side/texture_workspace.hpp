@@ -14,15 +14,30 @@ namespace crisp
     class Workspace
     {
         public:
+            /// @brief default ctor
             Workspace() = default;
+
+            /// @brief dtor, does not deallocate texture used for initialization
             ~Workspace();
 
+            /// @brief initialize the workspace by creating a framebuffer and buffer texture
+            /// @tparam T: value type of texture in {bool, float}
+            /// @tparam N: dimensionality of value type in {1, 2, 3, 4}
+            /// @param texture: native handle of texture to be modified
             template<typename T, size_t N>
             void initialize(GLNativeHandle texture);
+
+            /// @brief apply the current fragment shader and past it's contents into the framebuffer
             void draw_to_buffer();
+
+            /// @brief swap the current buffer texture with the texture currently being used for the fragment shader
             void swap_buffers();
 
+            /// @brief applies both draw_to_buffer() and swap_buffer()
             void display();
+
+            /// @brief get the handle of the original, now modified texture
+            /// @returns handle of the texture used for initialize
             GLNativeHandle yield();
 
         private:
