@@ -36,9 +36,9 @@ namespace crisp
     GLint padding_type_to_gl_padding(PaddingType type)
     {
         if (type == ZERO)
-            return GL_CLAMP_TO_BORDER;
+            return GL_CLAMP_TO_EDGE;
         else if (type == ONE)
-            return GL_CLAMP_TO_BORDER;
+            return GL_CLAMP_TO_EDGE;
         else
             return static_cast<GLint>(type);
     }

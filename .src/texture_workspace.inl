@@ -57,7 +57,7 @@ namespace crisp
         if (_last_updated != _original and _n_displays != 0)
         {
             auto before = State::get_active_program_handle();
-            State::bind_shader_program(-1);
+            State::bind_shader_program(NONE);
             glBindTexture(GL_TEXTURE_2D, _original);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _original, 0);
             glBindTexture(GL_TEXTURE_2D, _texture_b);

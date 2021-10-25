@@ -7,7 +7,9 @@
 #include <boost/container/vector.hpp>
 #include <image/multi_plane_image.hpp>
 #include <resource_path.hpp>
+#include <GLES3/gl32.h>
 
+#include <fstream>
 #include <iostream>
 
 namespace crisp
@@ -178,7 +180,7 @@ namespace crisp
         if (id.find('/') != std::string::npos)
             std::cerr << "[WARNING] When registering a shader, only the filename needs to be specified. Are you sure " << id << " is the filename and not the absolute path?" << std::endl;
 
-        std::string path = get_resource_path() + id;
+        std::string path = get_resource_path() + "include/gpu_side/.shaders/" + id;
 
         std::ifstream file;
         file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -414,6 +416,8 @@ namespace crisp
                 .padding_type = image.get_padding_type(),
                 .width = image.get_size().x(),
                 .height = image.get_size().y(),
+                .n_planes = N,
+                .type = std::is_same_v<T, bool> ? GL_UNSIGNED_BYTE : GL_FLOAT
             }
         });
 
@@ -554,6 +558,8 @@ namespace crisp
                 .padding_type = PaddingType::STRETCH,
                 .width = width,
                 .height = height,
+                .n_planes = N,
+                .type = std::is_same_v<T, bool> ? GL_UNSIGNED_BYTE : GL_FLOAT
             }
         });
 
@@ -1169,5 +1175,47 @@ namespace crisp
     GLNativeHandle State::get_active_program_handle()
     {
         return _active_program;
+    }
+
+    std::vector<float> State::get_texture_data(GLNativeHandle id)
+    {
+        if (_textures.find(id) == _textures.end())
+        {
+            std::stringstream s;
+            s << "[ERROR] No texture with handle "  << id << " allocated" << std::endl;
+            throw std::out_of_range(s.str());
+        }
+
+        auto info = _texture_info.at(id);
+
+        std::vector<float> out;
+        out.resize(info.width * info.height * info.n_planes);
+
+        GLenum format;
+        if (info.n_planes == 1)
+            format = GL_RED;
+        else if (info.n_planes == 2)
+            format = GL_RG;
+        else if (info.n_planes == 3)
+            format = GL_RGB;
+        else if (info.n_planes == 4)
+            format = GL_RGBA;
+
+        glBindTexture(GL_TEXTURE_2D, id);
+        glGetTexImage(GL_TEXTURE_2D, 0, format, info.type, &out[0]);
+
+        return out;
+    }
+
+    typename State::TextureInfo State::get_texture_info(GLNativeHandle handle)
+    {
+        if (_textures.find(handle) == _textures.end())
+        {
+            std::stringstream s;
+            s << "[ERROR] No texture with handle " << handle << " allocated" << std::endl;
+            throw std::out_of_range(s.str());
+        }
+
+        return _texture_info.at(handle);
     }
 }

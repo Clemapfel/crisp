@@ -23,6 +23,7 @@
 
 #include <segmentation.hpp>
 #include <gpu_side/texture_workspace.hpp>
+#include <gpu_side/texture.hpp>
 
 #include <pseudocolor_mapping.hpp>
 //#include <resource_path.hpp>
@@ -59,34 +60,22 @@ int main()
     workspace.initialize<float, 3>(texture);
 
     workspace.display();
-
-    shader_id = "pseudocolor.glsl";
-    shader = State::register_shader(shader_id);
-    program = State::register_program(shader);
-    State::bind_shader_program(program);
-
-    auto mapping = PseudoColor::RangeMapping();
-    mapping.add_value_range_to_hue_range(0, 1, 0, 1);
-    auto mapping_as_array = PseudoColor::range_mapping_to_array(mapping);
-    auto array = State::register_array(mapping_as_array);
-
-    State::bind_array<1>(program, "_gray_to_hue", array);
-
     workspace.display();
     texture = workspace.yield();
 
     /*
-
-     */
-
-    // render to screen
-    //State::bind_shader_program(-1);
-
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, texture);
 
     State::display();
     window.display();
+     */
+
+    auto as_tex = Texture<float, 1>(texture);
+    auto as_img = as_tex.to_image();
+
+    save_to_disk(as_img, "/home/clem/Workspace/crisp/.test/download.png");
+    return 0;
 
     while(window.isOpen())
     {
@@ -101,7 +90,7 @@ int main()
                 shader = State::register_shader(shader_id);
                 program = State::register_program(shader);
                 State::bind_shader_program(program);
-                State::bind_array<1>(program, "_gray_to_hue", array);
+                //State::bind_array<1>(program, "_gray_to_hue", array);
 
                 State::display();
                 window.display();

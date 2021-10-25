@@ -9,11 +9,14 @@
 #include <set>
 
 #include <SFML/Graphics/Glsl.hpp>
+#include <GLES3/gl32.h>
+#include <GL/gl.h>
 
 #include <vector.hpp>
 #include <padding_type.hpp>
 #include <image/multi_plane_image.hpp>
 #include <gpu_side/native_handle.hpp>
+#include <morphological_transform.hpp>
 
 namespace crisp
 {
@@ -272,7 +275,25 @@ namespace crisp
             /// @param texture_location: value of layout qualifier
             static void bind_texture(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle texture_id, size_t texture_location = 0);
 
-            static Vector2ui get_texture_size(GLNativeHandle texture_handle);
+            /// @brief return size of texture already allocated
+            /// @param texture_handle
+            /// @returns size as vector
+            static Vector2ui get_texture_size(GLNativeHandle);
+
+            /// @brief download texture data from the gpu and return it
+            /// @returns raw data of texture
+            [[nodiscard]] static std::vector<float> get_texture_data(GLNativeHandle);
+
+            struct TextureInfo
+            {
+                PaddingType padding_type;
+                size_t width,
+                       height;
+                size_t n_planes;
+                GLenum type;
+            };
+
+            static TextureInfo get_texture_info(GLNativeHandle);
 
             /// @brief get id of currently bound shader program
             /// @returns -1 if no programs bound, the programs native handle in {1, 2, ...} otherwise
@@ -318,13 +339,6 @@ namespace crisp
             static inline GLNativeHandle _vertex_array = NONE,
                                          _vertex_buffer = NONE,
                                          _element_buffer = NONE;
-
-            struct TextureInfo
-            {
-                PaddingType padding_type;
-                size_t width,
-                       height;
-            };
 
             static inline std::multiset<GLNativeHandle> _textures = {};
             static inline std::unordered_map<GLNativeHandle, TextureInfo> _texture_info = {};
