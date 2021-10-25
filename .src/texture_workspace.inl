@@ -53,16 +53,12 @@ namespace crisp
 
     GLNativeHandle Workspace::yield()
     {
-        // paste buffer onto a if a is currently not the buffer
-        if (_last_updated != _original and _n_displays != 0)
+        // paste buffer onto original if it is currently not the buffer
+        if (_last_updated != _original)
         {
             auto before = State::get_active_program_handle();
             State::bind_shader_program(NONE);
-            glBindTexture(GL_TEXTURE_2D, _original);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _original, 0);
-            glBindTexture(GL_TEXTURE_2D, _texture_b);
-            State::bind_texture(State::get_active_program_handle(), "_texture", _texture_b);
-            State::display();
+            draw_to_buffer();
             State::bind_shader_program(before);
         }
 

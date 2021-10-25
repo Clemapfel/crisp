@@ -78,12 +78,18 @@ namespace crisp
                 for (size_t n = 0; n < N; ++n)
                     to_push.at(n) = data[i + n];
 
-                out(x, y) = to_push;
+                out(x, _height - y) = to_push;
                 i += N;
             }
         }
 
         return out;
+    }
+
+    template<typename T, size_t N>
+    GLNativeHandle Texture<T, N>::get_handle() const
+    {
+        return _handle;
     }
 }
 

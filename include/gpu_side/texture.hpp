@@ -8,9 +8,9 @@
 #include <gpu_side/native_handle.hpp>
 #include <image/multi_plane_image.hpp>
 
-/// @brief handle for a texture that lives on the graphics card
 namespace crisp
 {
+    /// @brief object representing an image living on the graphics card
     template<typename T, size_t N>
     class Texture
     {
@@ -18,16 +18,41 @@ namespace crisp
         static_assert(1 <= N and N <= 4, "Only 1 to 4 plane textures are supported for GPU-side processing");
 
         public:
+            /// @brief default ctor, not memory is allocated
             Texture() = default;
+
+            /// @brief bind an already existing texture to this object
+            /// @param already_allocated_handle: gl native handle of already allocated texture
             Texture(GLNativeHandle already_allocated_handle);
+
+            /// @brief create a texture from am image
+            /// @param image: of the same type and dimensionality
             Texture(const Image<T, N>&);
+
+            /// @brief create an empty texture
+            /// @param width: x-dimension
+            /// @param height: y-dimensions
             Texture(size_t width, size_t height);
+
+            /// @brief dtor, deallocates managed gpu-side texture
             ~Texture();
 
+            /// @brief create from image, deallocates currently managed texture, if it exists
+            /// @param image
             void create_from(const Image<T, N>&);
+
+            /// @brief create empty, deallocates currently managed texture, if it exists
+            /// @param width: x-dimension
+            /// @param height: y-dimension
             void create(size_t width, size_t height);
 
+            /// @brief download the data from the graphics card and transform it into an cpu-side image
+            /// @returns image
             [[nodiscard]] Image<T, N> to_image() const;
+
+            /// @brief access the native OpenGL handle of the texture
+            /// @returns handle
+            GLNativeHandle get_handle() const;
 
         private:
             size_t _width, _height;

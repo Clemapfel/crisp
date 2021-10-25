@@ -60,7 +60,6 @@ int main()
     workspace.initialize<float, 3>(texture);
 
     workspace.display();
-    workspace.display();
     texture = workspace.yield();
 
     /*
