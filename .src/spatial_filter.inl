@@ -147,9 +147,11 @@ namespace crisp
 
             case MEAN:
                 apply_mean_to(image, result);
+                break;
 
             case MEDIAN:
                 apply_median_to(image, result);
+                break;
         }
 
         for (int x = 0; x < image.get_size().x(); ++x)

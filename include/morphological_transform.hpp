@@ -67,6 +67,12 @@ namespace crisp
             template<typename Image_t>
             void erode(Image_t& image, const Image_t& mask);
 
+            /// @brief geodesically erode a texture with the current structuring element
+            /// @param texture
+            /// @param mask: mask image used to limit dilation
+            template<typename T, size_t N>
+            void erode(Texture<T, N>& image, const Texture<T, N>& mask);
+
             /// @brief dilate an image with the current structuring element
             /// @param image: image to be modified
             template<typename Image_t>
@@ -82,6 +88,12 @@ namespace crisp
             /// @param mask: mask image used to limit dilation
             template<typename Image_t>
             void dilate(Image_t& image, const Image_t& mask);
+
+            /// @brief geodesically dilate a texture with the current structuring element
+            /// @param texture
+            /// @param mask: mask image used to limit dilation
+            template<typename T, size_t N>
+            void dilate(Texture<T, N>& image, const Texture<T, N>& mask);
 
             /// @brief erode, then dilate an image
             /// @param image: image to be modified

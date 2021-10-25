@@ -34,10 +34,13 @@ int main()
 {
     sol::state state;
 
-    auto image = crisp::load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
-
+    auto image = crisp::load_color_image("/home/clem/Workspace/crisp/docs/morphological_transform/.resources/grayscale_template.png");
+    auto mask = crisp::load_color_image("/home/clem/Workspace/crisp/docs/morphological_transform/.resources/mask.png");
     sf::ContextSettings context_settings;
     context_settings.antialiasingLevel = 0;
+    context_settings.minorVersion = 3;
+    context_settings.majorVersion = 3;
+    context_settings.attributeFlags = context_settings.Core | context_settings.Default;
 
     auto style = sf::Style::Titlebar | sf::Style::Close;
 
@@ -46,13 +49,36 @@ int main()
     window.setActive(true);
 
     auto as_tex = Texture<float, 3>(image);
+    auto mask_tex = Texture<float, 3>(mask);
 
+    /*
     auto filter = MorphologicalTransform();
     filter.set_structuring_element(filter.all_foreground(3, 3));
-    filter.close(as_tex);
+    filter.erode(as_tex, mask_tex);
+     */
 
-    State::bind_shader_program(NONE);
-    State::bind_texture(State::get_active_program_handle(), "_texture", as_tex);
+    auto shader = State::register_shader("geodesic_compare_erode.glsl");
+    auto program = State::register_program(shader);
+    State::free_shader(shader);
+
+    glUseProgram(program);
+
+    glUniform1i(glGetUniformLocation(program, "_texture"), 0);
+    glUniform1i(glGetUniformLocation(program, "_mask"), 1);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, as_tex);
+
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_2D, mask_tex);
+
+    /*
+    State::bind_shader_program(program);
+    State::bind_texture(program, "_texture", as_tex.get_handle(), 0);
+    State::bind_texture(program, "_mask", mask_tex.get_handle(), 1);
+    */
+    //State::bind_shader_program(NONE);
+    //State::bind_texture(State::get_active_program_handle(), "_texture", as_tex);
     State::display();
     window.display();
 

@@ -61,7 +61,6 @@ namespace crisp
             /// @returns size
             Vector2ui get_size() const;
 
-        protected:
             /// @brief access the native OpenGL handle of the texture
             /// @returns handle
             GLNativeHandle get_handle() const;

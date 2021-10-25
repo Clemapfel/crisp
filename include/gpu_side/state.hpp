@@ -9,8 +9,7 @@
 #include <set>
 
 #include <SFML/Graphics/Glsl.hpp>
-#include <GLES3/gl32.h>
-#include <GL/gl.h>
+#include <GLES3/gl3.h>
 
 #include <vector.hpp>
 #include <padding_type.hpp>

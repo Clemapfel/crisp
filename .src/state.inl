@@ -1119,6 +1119,7 @@ namespace crisp
     {
         if (texture_id == NONE)
         {
+            glActiveTexture(GL_TEXTURE0 + texture_unit);
             glBindTexture(GL_TEXTURE_2D, 0);
             return;
         }
@@ -1131,15 +1132,23 @@ namespace crisp
             throw std::out_of_range(s.str());
         }
 
-        glBindTexture(GL_TEXTURE_2D, texture_id);
-
         auto before = _active_program;
         if (before != program_id)
             bind_shader_program(program_id);
 
-        auto location = glGetUniformLocation(program_id, var_name.c_str());
-        glUniform1i(location, texture_unit);
+        TODO: set unfirom1i has to happen before binding the first texture
+
+        glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), texture_unit);
+
         glActiveTexture(GL_TEXTURE0 + texture_unit);
+        glBindTexture(GL_TEXTURE_2D, texture_id);
+
+        /*
+        auto location = glGetUniformLocation(program_id, var_name.c_str());
+        glUniform1i(location, GL_TEXTURE0 + texture_unit);
+
+        glActiveTexture(GL_TEXTURE0 + texture_unit);
+        glBindTexture(GL_TEXTURE_2D, texture_id);
 
         auto info = _texture_info.at(texture_id);
 
@@ -1159,6 +1168,7 @@ namespace crisp
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        */
 
         if (before != program_id)
             bind_shader_program(before);
