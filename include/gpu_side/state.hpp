@@ -15,8 +15,6 @@
 #include <image/multi_plane_image.hpp>
 #include <gpu_side/native_handle.hpp>
 
-#define SHADER_PATH "/home/clem/Workspace/crisp/include/gpu_side/.shaders/"
-
 namespace crisp
 {
     class Shader;

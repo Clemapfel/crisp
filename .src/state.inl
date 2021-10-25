@@ -6,6 +6,7 @@
 #include <gpu_side/state.hpp>
 #include <boost/container/vector.hpp>
 #include <image/multi_plane_image.hpp>
+#include <resource_path.hpp>
 
 #include <iostream>
 
@@ -177,7 +178,7 @@ namespace crisp
         if (id.find('/') != std::string::npos)
             std::cerr << "[WARNING] When registering a shader, only the filename needs to be specified. Are you sure " << id << " is the filename and not the absolute path?" << std::endl;
 
-        std::string path = SHADER_PATH + id;
+        std::string path = get_resource_path() + id;
 
         std::ifstream file;
         file.exceptions(std::ifstream::failbit | std::ifstream::badbit);

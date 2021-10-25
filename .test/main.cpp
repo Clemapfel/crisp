@@ -17,6 +17,8 @@
 #include <system.hpp>
 #include <GLES3/gl32.h>
 
+#include <sol.hpp>
+
 #include <gpu_side/state.hpp>
 
 #include <segmentation.hpp>
@@ -29,6 +31,8 @@ using namespace crisp;
 
 int main()
 {
+    sol::state state;
+
     auto image = crisp::load_grayscale_image("/home/clem/Workspace/crisp/.test/opal_color.png");
 
     sf::ContextSettings context_settings;

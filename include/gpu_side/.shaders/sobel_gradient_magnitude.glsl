@@ -43,6 +43,7 @@ void main()
 
     float gx = 0;
 
+    // skipping kernel entries 0 is performance equivalent to convolution with the seperated kernel
     gx += sobel_x[0][0] * img[0][0];
     gx += sobel_x[0][1] * img[0][1];
     gx += sobel_x[0][2] * img[0][2];

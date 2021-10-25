@@ -11,6 +11,6 @@ using GLNativeHandle = unsigned int;
 /// @brief internal crisp::State resource ID: -1, -2, ...
 using ProxyID = int;
 
-/// @brief default GL no value marker
+/// @brief default OpenGL no value marker
 #define NONE 0
 
