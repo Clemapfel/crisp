@@ -16,7 +16,7 @@
 #include <padding_type.hpp>
 #include <image/multi_plane_image.hpp>
 #include <gpu_side/native_handle.hpp>
-#include <morphological_transform.hpp>
+#include <structuring_element.hpp>
 
 namespace crisp
 {

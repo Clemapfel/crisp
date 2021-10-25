@@ -3,6 +3,9 @@
 // Created on 10.09.21 by clem (mail@clemens-cords.com)
 //
 
+#include <gpu_side/texture.hpp>
+#include <gpu_side/state.hpp>
+
 namespace crisp
 {
     void MorphologicalTransform::set_structuring_element(StructuringElement se)
@@ -195,6 +198,36 @@ namespace crisp
                 image(x, y) = result(x, y);
     }
 
+    template<typename T, size_t N>
+    void MorphologicalTransform::erode(Texture<T, N>& texture)
+    {
+        auto workspace = texture._workspace;
+        
+        assert(_structuring_element.rows() < 5 and _structuring_element.cols() < 5 && "GPU-side morphological transforms are only supported for structuring elements of size m*n where m, n in {2, 3, 4}");
+
+        std::stringstream shader_id;
+        shader_id << "erode_mat" << _structuring_element.cols() << "x" << _structuring_element.rows() << ".glsl";
+
+        auto shader = State::register_shader(shader_id.str());
+        auto program = State::register_program(shader);
+        State::free_shader(shader);
+
+        auto size = State::register_vec2(texture.get_size());
+        auto se = State::register_structuring_element(_structuring_element);
+
+        State::bind_shader_program(program);
+        State::bind_texture(program, "_texture", texture.get_handle());
+        State::bind_vec2(program, "_texture_size", size);
+        State::bind_matrix(program, "_structuring_element", se);
+
+        workspace.display();
+        workspace.yield();
+
+        State::free_program(program);
+        State::free_vec2(size);
+        State::free_matrix(se);
+    }
+
     template<typename Image_t>
     void MorphologicalTransform::dilate(Image_t& image)
     {
@@ -206,6 +239,36 @@ namespace crisp
         for (long x = 0; x < image.get_size().x(); ++x)
             for (long y = 0; y < image.get_size().x(); ++y)
                 image(x, y) = result(x, y);
+    }
+
+    template<typename T, size_t N>
+    void MorphologicalTransform::dilate(Texture<T, N>& texture)
+    {
+        auto workspace = texture._workspace;
+
+        assert(_structuring_element.rows() < 5 and _structuring_element.cols() < 5 && "GPU-side morphological transforms are only supported for structuring elements of size m*n where m, n in {2, 3, 4}");
+
+        std::stringstream shader_id;
+        shader_id << "dilate_mat" << _structuring_element.cols() << "x" << _structuring_element.rows() << ".glsl";
+
+        auto shader = State::register_shader(shader_id.str());
+        auto program = State::register_program(shader);
+        State::free_shader(shader);
+
+        auto size = State::register_vec2(texture.get_size());
+        auto se = State::register_structuring_element(_structuring_element);
+
+        State::bind_shader_program(program);
+        State::bind_texture(program, "_texture", texture.get_handle());
+        State::bind_vec2(program, "_texture_size", size);
+        State::bind_matrix(program, "_structuring_element", se);
+
+        workspace.display();
+        workspace.yield();
+
+        State::free_program(program);
+        State::free_vec2(size);
+        State::free_matrix(se);
     }
 
     template<typename Image_t>
@@ -255,11 +318,99 @@ namespace crisp
         dilate(image);
     }
 
+    template<typename T, size_t N>
+    void MorphologicalTransform::open(Texture<T, N>& texture)
+    {
+        auto workspace = texture._workspace;
+
+        assert(_structuring_element.rows() < 5 and _structuring_element.cols() < 5 && "GPU-side morphological transforms are only supported for structuring elements of size m*n where m, n in {2, 3, 4}");
+
+        std::stringstream shader_id;
+        shader_id << "erode_mat" << _structuring_element.cols() << "x" << _structuring_element.rows() << ".glsl";
+
+        auto shader = State::register_shader(shader_id.str());
+        auto program = State::register_program(shader);
+        State::free_shader(shader);
+
+        auto size = State::register_vec2(texture.get_size());
+        auto se = State::register_structuring_element(_structuring_element);
+
+        State::bind_shader_program(program);
+        State::bind_texture(program, "_texture", texture.get_handle());
+        State::bind_vec2(program, "_texture_size", size);
+        State::bind_matrix(program, "_structuring_element", se);
+
+        workspace.display();
+
+        State::free_program(program);
+        std::stringstream new_shader_id;
+        new_shader_id << "dilate_mat" << _structuring_element.cols() << "x" << _structuring_element.rows() << ".glsl";
+
+        shader = State::register_shader(new_shader_id.str());
+        program = State::register_program(shader);
+        State::free_shader(shader);
+        State::bind_shader_program(program);
+        State::bind_texture(program, "_texture", texture.get_handle());
+        State::bind_vec2(program, "_texture_size", size);
+        State::bind_matrix(program, "_structuring_element", se);
+
+        workspace.display();
+        workspace.yield();
+
+        State::free_program(program);
+        State::free_vec2(size);
+        State::free_matrix(se);
+    }
+
     template<typename Image_t>
     void MorphologicalTransform::close(Image_t& image)
     {
         dilate(image);
         erode(image);
+    }
+
+    template<typename T, size_t N>
+    void MorphologicalTransform::close(Texture<T, N>& texture)
+    {
+        auto workspace = texture._workspace;
+
+        assert(_structuring_element.rows() < 5 and _structuring_element.cols() < 5 && "GPU-side morphological transforms are only supported for structuring elements of size m*n where m, n in {2, 3, 4}");
+
+        std::stringstream shader_id;
+        shader_id << "dilate_mat" << _structuring_element.cols() << "x" << _structuring_element.rows() << ".glsl";
+
+        auto shader = State::register_shader(shader_id.str());
+        auto program = State::register_program(shader);
+        State::free_shader(shader);
+
+        auto size = State::register_vec2(texture.get_size());
+        auto se = State::register_structuring_element(_structuring_element);
+
+        State::bind_shader_program(program);
+        State::bind_texture(program, "_texture", texture.get_handle());
+        State::bind_vec2(program, "_texture_size", size);
+        State::bind_matrix(program, "_structuring_element", se);
+
+        workspace.display();
+
+        State::free_program(program);
+        std::stringstream new_shader_id;
+        new_shader_id << "erode_mat" << _structuring_element.cols() << "x" << _structuring_element.rows() << ".glsl";
+
+        shader = State::register_shader(new_shader_id.str());
+        program = State::register_program(shader);
+        State::free_shader(shader);
+        State::bind_shader_program(program);
+        State::bind_texture(program, "_texture", texture.get_handle());
+        State::bind_vec2(program, "_texture_size", size);
+        State::bind_matrix(program, "_structuring_element", se);
+
+        workspace.display();
+        workspace.yield();
+
+        State::free_program(program);
+        State::free_vec2(size);
+        State::free_matrix(se);
     }
 
     StructuringElement MorphologicalTransform::all_dont_care(long nrows, long ncols)

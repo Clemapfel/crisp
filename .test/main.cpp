@@ -47,9 +47,9 @@ int main()
 
     auto as_tex = Texture<float, 3>(image);
 
-    auto filter = SpatialFilter();
-    filter.set_kernel(filter.box(3));
-    filter.apply_to(as_tex);
+    auto filter = MorphologicalTransform();
+    filter.set_structuring_element(filter.all_foreground(3, 3));
+    filter.close(as_tex);
 
     State::bind_shader_program(NONE);
     State::bind_texture(State::get_active_program_handle(), "_texture", as_tex);

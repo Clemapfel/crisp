@@ -19,6 +19,7 @@ namespace crisp
         static_assert(1 <= N and N <= 4, "Only 1 to 4 plane textures are supported for GPU-side processing");
 
         friend class SpatialFilter;
+        friend class MorphologicalTransform;
 
         public:
             /// @brief default ctor, not memory is allocated
