@@ -8,6 +8,7 @@
 #include <image/multi_plane_image.hpp>
 #include <image/color_image.hpp>
 #include <image/grayscale_image.hpp>
+#include <gpu_side/texture.hpp>
 
 #include <Dense>
 
@@ -53,10 +54,10 @@ namespace crisp
                 NORMALIZED_CONVOLUTION = 1,
 
                 /// @brief compute minimum of elements weighted by kernel in kernel-sized neighborhood
-                MINIMUM = 2,
+                MINIMUM [[deprecated("Does not work on Textures. Use morphological operations instead")]] = 2,
 
                 /// @brief compute maximum of elements weighted by kernel in kernel-sized neighborhood
-                MAXIMUM = 3,
+                MAXIMUM [[deprecated("Does not work on Textures. Use morphological operations instead")]] = 3,
 
                 /// @brief compute mean of elements weighted by kernel in kernel-sized neighborhood
                 MEAN = 4,
@@ -72,6 +73,10 @@ namespace crisp
             /// @param image
             template<typename Image_t>
             void apply_to(Image_t&);
+
+            /// @brief apply filter to a texture
+            template<typename T, size_t N>
+            void apply_to(Texture<T, N>&);
 
             /// @brief specify evaluation function
             /// @param evaluation_function

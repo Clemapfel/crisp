@@ -7,6 +7,7 @@
 
 #include <gpu_side/native_handle.hpp>
 #include <image/multi_plane_image.hpp>
+#include <gpu_side/texture_workspace.hpp>
 
 namespace crisp
 {
@@ -16,6 +17,8 @@ namespace crisp
     {
         static_assert(std::is_same_v<T, float> or std::is_same_v<T, bool>, "Only bool and 32-bit float are supported for GPU-side processing");
         static_assert(1 <= N and N <= 4, "Only 1 to 4 plane textures are supported for GPU-side processing");
+
+        friend class SpatialFilter;
 
         public:
             /// @brief default ctor, not memory is allocated
@@ -37,6 +40,9 @@ namespace crisp
             /// @brief dtor, deallocates managed gpu-side texture
             ~Texture();
 
+            /// @brief decay to native handle for easier sytnax
+            operator GLNativeHandle();
+
             /// @brief create from image, deallocates currently managed texture, if it exists
             /// @param image
             void create_from(const Image<T, N>&);
@@ -50,6 +56,11 @@ namespace crisp
             /// @returns image
             [[nodiscard]] Image<T, N> to_image() const;
 
+            /// @brief get size of texture
+            /// @returns size
+            Vector2ui get_size() const;
+
+        protected:
             /// @brief access the native OpenGL handle of the texture
             /// @returns handle
             GLNativeHandle get_handle() const;
@@ -57,6 +68,8 @@ namespace crisp
         private:
             size_t _width, _height;
             GLNativeHandle _handle = NONE;
+
+            Workspace _workspace;
     };
 }
 

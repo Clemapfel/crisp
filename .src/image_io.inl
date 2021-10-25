@@ -97,6 +97,33 @@ namespace crisp
         return out;
     }
 
+    bool save_to_disk(const Image<float, 3>& in, std::string path)
+    {
+        sf::Image image;
+        image.create(in.get_size().x(), in.get_size().y());
+
+        for (size_t x = 0; x < in.get_size().x(); ++x)
+        {
+            for (size_t y = 0; y < in.get_size().y(); ++y)
+            {
+                Vector3f color_in = in(x, y);
+                image.setPixel(x, y, sf::Color(uint8_t(color_in.x() * 255),
+                                               uint8_t(color_in.y() * 255),
+                                               uint8_t(color_in.z() * 255),
+                                               uint8_t(255)));
+            }
+        }
+
+        if (not image.saveToFile(path))
+        {
+            std::cerr << "[WARNING] could not save to file " << path << std::endl;
+            return false;
+        }
+
+        return true;
+    }
+
+
     bool save_to_disk(const ColorImage& in, std::string path)
     {
         sf::Image image;

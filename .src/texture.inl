@@ -50,12 +50,14 @@ namespace crisp
         _width = img.get_size().x();
         _height = img.get_size().y();
         _handle = State::register_texture<T, N>(img);
+        _workspace.initialize<T, N>(_handle);
     }
 
     template<typename T, size_t N>
     void Texture<T, N>::create(size_t width, size_t height)
     {
         State::register_texture<T, N>(width, height);
+        _workspace.initialize<T, N>(_handle);
     }
 
     template<typename T, size_t N>
@@ -87,7 +89,19 @@ namespace crisp
     }
 
     template<typename T, size_t N>
+    Vector2ui Texture<T, N>::get_size() const
+    {
+        return Vector2ui{_width, _height};
+    }
+
+    template<typename T, size_t N>
     GLNativeHandle Texture<T, N>::get_handle() const
+    {
+        return _handle;
+    }
+
+    template<typename T, size_t N>
+    Texture<T, N>::operator GLNativeHandle()
     {
         return _handle;
     }

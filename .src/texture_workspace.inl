@@ -58,7 +58,7 @@ namespace crisp
         {
             auto before = State::get_active_program_handle();
             State::bind_shader_program(NONE);
-            draw_to_buffer();
+            display();
             State::bind_shader_program(before);
         }
 

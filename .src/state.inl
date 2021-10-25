@@ -169,6 +169,7 @@ namespace crisp
         _noop_fragment_shader = id;
         _noop_program = State::register_program(_noop_fragment_shader);
 
+        _shader_programs.insert(_noop_program);
         State::bind_shader_program(_noop_program);
     }
 
@@ -272,8 +273,11 @@ namespace crisp
     void State::bind_shader_program(GLNativeHandle program_id)
     {
         if (program_id == NONE)
+        {
+            initialize_noop_shaders();
             program_id = _noop_program;
-        
+        }
+
         verify_program_id(program_id);
 
         glUseProgram(program_id);

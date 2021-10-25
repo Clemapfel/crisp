@@ -34,7 +34,7 @@ int main()
 {
     sol::state state;
 
-    auto image = crisp::load_grayscale_image("/home/clem/Workspace/crisp/.test/opal_color.png");
+    auto image = crisp::load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
 
     sf::ContextSettings context_settings;
     context_settings.antialiasingLevel = 0;
@@ -45,36 +45,16 @@ int main()
     window.create(sf::VideoMode(image.get_size().x()-1, image.get_size().y()), "", style, context_settings);
     window.setActive(true);
 
-    std::string shader_id = "sobel_gradient_magnitude.glsl";
-    auto shader = State::register_shader(shader_id);
-    auto program = State::register_program(shader);
-    State::bind_shader_program(program);
+    auto as_tex = Texture<float, 3>(image);
 
-    auto texture = State::register_texture(image);
-    State::bind_texture(program, "_texture", texture);
+    auto filter = SpatialFilter();
+    filter.set_kernel(filter.box(3));
+    filter.apply_to(as_tex);
 
-    auto size = State::register_vec2(image.get_size());
-    State::bind_vec2(program, "_texture_size", size);
-
-    auto workspace = Workspace();
-    workspace.initialize<float, 3>(texture);
-
-    workspace.display();
-    texture = workspace.yield();
-
-    /*
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
+    State::bind_shader_program(NONE);
+    State::bind_texture(State::get_active_program_handle(), "_texture", as_tex);
     State::display();
     window.display();
-     */
-
-    auto as_tex = Texture<float, 1>(texture);
-    auto as_img = as_tex.to_image();
-
-    save_to_disk(as_img, "/home/clem/Workspace/crisp/.test/download.png");
-    return 0;
 
     while(window.isOpen())
     {
@@ -86,11 +66,6 @@ int main()
 
             if (event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::Space)
             {
-                shader = State::register_shader(shader_id);
-                program = State::register_program(shader);
-                State::bind_shader_program(program);
-                //State::bind_array<1>(program, "_gray_to_hue", array);
-
                 State::display();
                 window.display();
             }
