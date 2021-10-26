@@ -61,16 +61,21 @@ int main()
     auto program = State::register_program(shader);
     State::free_shader(shader);
 
+    //State::bind_shader_program(program);
+    State::bind_texture(program, "_texture", as_tex, 0);
+    State::bind_texture(program, "_mask", mask_tex, 1);
+
+    /*
     glUseProgram(program);
 
     glUniform1i(glGetUniformLocation(program, "_texture"), 0);
-    glUniform1i(glGetUniformLocation(program, "_mask"), 1);
-
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, as_tex);
 
+    glUniform1i(glGetUniformLocation(program, "_mask"), 1);
     glActiveTexture(GL_TEXTURE0 + 1);
     glBindTexture(GL_TEXTURE_2D, mask_tex);
+     */
 
     /*
     State::bind_shader_program(program);

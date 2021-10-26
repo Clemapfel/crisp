@@ -1132,21 +1132,15 @@ namespace crisp
             throw std::out_of_range(s.str());
         }
 
-        auto before = _active_program;
-        if (before != program_id)
-            bind_shader_program(program_id);
-
-        TODO: set unfirom1i has to happen before binding the first texture
+        if (_active_program != program_id)
+        {
+            std::cerr << "[WARNING] Binding texture " << texture_id << " to uniform \"" << var_name << "\" in program "
+                      << program_id << " even though the program is not currently bound." << std::endl;
+            std::cerr << "[LOG] Changed active program to program " << program_id << std::endl;
+            State::bind_shader_program(program_id);
+        }
 
         glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), texture_unit);
-
-        glActiveTexture(GL_TEXTURE0 + texture_unit);
-        glBindTexture(GL_TEXTURE_2D, texture_id);
-
-        /*
-        auto location = glGetUniformLocation(program_id, var_name.c_str());
-        glUniform1i(location, GL_TEXTURE0 + texture_unit);
-
         glActiveTexture(GL_TEXTURE0 + texture_unit);
         glBindTexture(GL_TEXTURE_2D, texture_id);
 
@@ -1168,10 +1162,6 @@ namespace crisp
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        */
-
-        if (before != program_id)
-            bind_shader_program(before);
     }
 
     Vector2ui State::get_texture_size(GLNativeHandle texture_handle)
