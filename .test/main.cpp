@@ -49,41 +49,22 @@ int main()
     window.setActive(true);
 
     auto as_tex = Texture<float, 3>(image);
+    auto original = Texture<float, 3>(image);
     auto mask_tex = Texture<float, 3>(mask);
 
-    /*
     auto filter = MorphologicalTransform();
     filter.set_structuring_element(filter.all_foreground(3, 3));
-    filter.erode(as_tex, mask_tex);
-     */
+    filter.erode(as_tex);
 
     auto shader = State::register_shader("geodesic_compare_erode.glsl");
     auto program = State::register_program(shader);
     State::free_shader(shader);
 
-    //State::bind_shader_program(program);
-    State::bind_texture(program, "_texture", as_tex, 0);
-    State::bind_texture(program, "_mask", mask_tex, 1);
-
-    /*
-    glUseProgram(program);
-
-    glUniform1i(glGetUniformLocation(program, "_texture"), 0);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, as_tex);
-
-    glUniform1i(glGetUniformLocation(program, "_mask"), 1);
-    glActiveTexture(GL_TEXTURE0 + 1);
-    glBindTexture(GL_TEXTURE_2D, mask_tex);
-     */
-
-    /*
     State::bind_shader_program(program);
     State::bind_texture(program, "_texture", as_tex.get_handle(), 0);
-    State::bind_texture(program, "_mask", mask_tex.get_handle(), 1);
-    */
-    //State::bind_shader_program(NONE);
-    //State::bind_texture(State::get_active_program_handle(), "_texture", as_tex);
+    State::bind_texture(program, "_original", original.get_handle(), 1);
+    State::bind_texture(program, "_mask", mask_tex.get_handle(), 2);
+
     State::display();
     window.display();
 
@@ -97,6 +78,15 @@ int main()
 
             if (event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::Space)
             {
+                shader = State::register_shader("geodesic_compare_erode.glsl");
+                program = State::register_program(shader);
+                State::free_shader(shader);
+
+                State::bind_shader_program(program);
+                State::bind_texture(program, "_texture", as_tex.get_handle(), 0);
+                State::bind_texture(program, "_original", original.get_handle(), 1);
+                State::bind_texture(program, "_mask", mask_tex.get_handle(), 2);
+
                 State::display();
                 window.display();
             }

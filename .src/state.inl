@@ -1117,6 +1117,12 @@ namespace crisp
 
     void State::bind_texture(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle texture_id, size_t texture_unit)
     {
+        if (program_id == NONE)
+        {
+            initialize_noop_shaders();
+            program_id = _noop_program;
+        }
+
         if (texture_id == NONE)
         {
             glActiveTexture(GL_TEXTURE0 + texture_unit);

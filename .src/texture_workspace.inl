@@ -54,13 +54,10 @@ namespace crisp
     GLNativeHandle Workspace::yield()
     {
         // paste buffer onto original if it is currently not the buffer
-        if (_last_updated != _original)
-        {
-            auto before = State::get_active_program_handle();
-            State::bind_shader_program(NONE);
-            display();
-            State::bind_shader_program(before);
-        }
+        auto before = State::get_active_program_handle();
+        State::bind_shader_program(NONE);
+        display();
+        State::bind_shader_program(before);
 
         return _original;
     }
