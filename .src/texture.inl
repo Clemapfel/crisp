@@ -45,6 +45,24 @@ namespace crisp
     }
 
     template<typename T, size_t N>
+    Texture<T, N>::Texture(const Texture<T, N>& other)
+    {
+        _handle = State::register_texture<T, N>(other.get_handle());
+        _width = other.get_size().x();
+        _height = other.get_size().y();
+    }
+
+    template<typename T, size_t N>
+    Texture<T, N>& Texture<T, N>::operator=(const Texture<T, N>& other)
+    {
+        _handle = State::register_texture<T, N>(other.get_handle());
+        _width = other.get_size().x();
+        _height = other.get_size().y();
+
+        return *this;
+    }
+
+    template<typename T, size_t N>
     void Texture<T, N>::create_from(const Image<T, N>& img)
     {
         _width = img.get_size().x();

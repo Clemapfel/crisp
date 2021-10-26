@@ -25,9 +25,27 @@ namespace crisp
             /// @brief default ctor, not memory is allocated
             Texture() = default;
 
+            /// @brief copy constructor, hardware accelerated and extremely fast
+            /// @param other
+            Texture(const Texture<T, N>& other);
+
+            /// @brief copy assignment, hardware accelerated and extremely fast
+            /// @param other
+            /// @returns reference to self after assignment
+            Texture<T, N>& operator=(const Texture<T, N>& other);
+
             /// @brief bind an already existing texture to this object
             /// @param already_allocated_handle: gl native handle of already allocated texture
             Texture(GLNativeHandle already_allocated_handle);
+
+            /// @brief move ctor defaulted
+            /// @param other
+            Texture(Texture<T, N>&& other) = default;
+
+            /// @brief move assignment operator defaulted
+            /// @param other
+            /// @returns reference to self after assignment
+            Texture<T, N>& operator=(Texture<T, N>&& other) noexcept = default;
 
             /// @brief create a texture from am image
             /// @param image: of the same type and dimensionality
@@ -41,7 +59,7 @@ namespace crisp
             /// @brief dtor, deallocates managed gpu-side texture
             ~Texture();
 
-            /// @brief decay to native handle for easier sytnax
+            /// @brief decay to native handle for easier syntax
             operator GLNativeHandle();
 
             /// @brief create from image, deallocates currently managed texture, if it exists

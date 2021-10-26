@@ -624,7 +624,6 @@ namespace crisp
         State::bind_shader_program(before);
 
         return out;
-
     }
 
     void State::free_texture(GLNativeHandle id)
