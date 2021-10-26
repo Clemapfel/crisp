@@ -570,6 +570,63 @@ namespace crisp
         return texture_id;
     }
 
+    template<typename T, size_t N>
+    GLNativeHandle State::register_texture(GLNativeHandle to_copy)
+    {
+        if (_textures.find(to_copy) == _textures.end())
+        {
+            std::stringstream s;
+            s << "[ERROR] No texture with handle "  << to_copy << " allocated" << std::endl;
+            throw std::out_of_range(s.str());
+        }
+
+        auto info = _texture_info.at(to_copy);
+        auto out = State::register_texture<T, N>(info.width, info.height);
+
+        glBindTexture(GL_TEXTURE_2D, out);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, padding_type_to_gl_padding(info.padding_type));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, padding_type_to_gl_padding(info.padding_type));
+
+        if (info.padding_type == PaddingType::ZERO)
+        {
+            float border[] = {0.f, 0.f, 0.f, 1.0f};
+            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+        }
+        else if (info.padding_type == PaddingType::ONE)
+        {
+            float border[] = {1.0f, 1.0f, 1.0f, 1.0f};
+            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+        }
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        // past to_copy onto out via framebuffer attachment
+        GLNativeHandle buffer;
+        glGenFramebuffers(1, &buffer);
+
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer);
+        glBindTexture(GL_TEXTURE_2D, out);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, out, 0);
+
+        auto before = _active_program;
+
+        glBindTexture(GL_TEXTURE_2D, to_copy);
+        State::bind_shader_program(NONE);
+        State::bind_texture(NONE, "_texture", to_copy);
+        glViewport(0, 0, info.width, info.height);
+
+        State::display();
+
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, NONE);
+        glDeleteFramebuffers(1, &buffer);
+        State::bind_shader_program(before);
+
+        return out;
+
+    }
+
     void State::free_texture(GLNativeHandle id)
     {
         if (_textures.find(id) == _textures.end())

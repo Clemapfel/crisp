@@ -49,9 +49,8 @@ int main()
     window.setActive(true);
 
     auto as_tex = Texture<float, 3>(image);
-    auto original = Texture<float, 3>(image);
+    auto original = State::register_texture<float, 3>(as_tex.get_handle());
     auto mask_tex = Texture<float, 3>(mask);
-
     auto filter = MorphologicalTransform();
     filter.set_structuring_element(filter.all_foreground(3, 3));
     filter.erode(as_tex);
@@ -62,7 +61,7 @@ int main()
 
     State::bind_shader_program(program);
     State::bind_texture(program, "_texture", as_tex.get_handle(), 0);
-    State::bind_texture(program, "_original", original.get_handle(), 1);
+    State::bind_texture(program, "_original", original, 1);
     State::bind_texture(program, "_mask", mask_tex.get_handle(), 2);
 
     State::display();
@@ -84,7 +83,7 @@ int main()
 
                 State::bind_shader_program(program);
                 State::bind_texture(program, "_texture", as_tex.get_handle(), 0);
-                State::bind_texture(program, "_original", original.get_handle(), 1);
+                State::bind_texture(program, "_original", original, 1);
                 State::bind_texture(program, "_mask", mask_tex.get_handle(), 2);
 
                 State::display();

@@ -263,6 +263,12 @@ namespace crisp
             template<typename T, size_t N>
             static GLNativeHandle register_texture(size_t width, size_t height);
 
+            /// @brief create a deep-copy of an already existing texture
+            /// @param to_copy: handle of already existing texture
+            /// @returns native handle of resulting texture
+            template<typename T, size_t N>
+            static GLNativeHandle register_texture(GLNativeHandle to_copy);
+
             /// @brief deallocate texture
             /// @param id: native handle of texture
             static void free_texture(GLNativeHandle);
