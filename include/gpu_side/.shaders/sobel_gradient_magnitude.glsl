@@ -1,8 +1,15 @@
+// Copyright 2021 Clemens Cords (mail@clemens-cords.com)
+
 #version 330 core
 
 float project(float lower_bound, float upper_bound, float value)
 {
     return value * abs(lower_bound - upper_bound) + min(lower_bound, upper_bound);
+}
+
+float to_grayscale(vec4 rgba)
+{
+    return (rgba.r + rgba.g + rgba.b) / 3;
 }
 
 in vec2 _tex_coord;
@@ -11,11 +18,6 @@ out vec4 _out;
 
 uniform sampler2D _texture;
 uniform vec2 _texture_size;
-
-float to_grayscale(vec4 rgba)
-{
-    return (rgba.r + rgba.g + rgba.b) / 3;
-}
 
 void main()
 {

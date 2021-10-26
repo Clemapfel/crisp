@@ -1,3 +1,5 @@
+// Copyright 2021 Clemens Cords (mail@clemens-cords.com)
+
 #version 330 core
 
 vec3 hsv_to_rgb(vec3 rgb)

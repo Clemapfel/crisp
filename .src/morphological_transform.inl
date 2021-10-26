@@ -295,6 +295,7 @@ namespace crisp
     void MorphologicalTransform::erode(Texture<T, N>& texture, const Texture<T, N>& mask)
     {
         auto workspace = texture._workspace;
+        auto original = texture;
 
         assert(_structuring_element.rows() < 5 and _structuring_element.cols() < 5 && "GPU-side morphological transforms are only supported for structuring elements of size m*n where m, n in {2, 3, 4}");
 
@@ -324,8 +325,9 @@ namespace crisp
         State::free_shader(shader);
 
         State::bind_shader_program(program);
+        State::bind_texture(program, "_mask", mask.get_handle(), 2);
+        State::bind_texture(program, "_original", original.get_handle(), 1);
         State::bind_texture(program, "_texture", texture.get_handle(), 0);
-        State::bind_texture(program, "_mask", mask.get_handle(), 1);
 
         workspace.display();
         workspace.yield();
@@ -351,6 +353,50 @@ namespace crisp
                 else
                     image(x, y) = std::min(result(x, y), mask(x, y));
             }
+    }
+
+    template<typename T, size_t N>
+    void MorphologicalTransform::dilate(Texture<T, N>& texture, const Texture<T, N>& mask)
+    {
+        auto workspace = texture._workspace;
+        auto original = texture;
+
+        assert(_structuring_element.rows() < 5 and _structuring_element.cols() < 5 && "GPU-side morphological transforms are only supported for structuring elements of size m*n where m, n in {2, 3, 4}");
+
+        std::stringstream shader_id;
+        shader_id << "dilate_mat" << _structuring_element.cols() << "x" << _structuring_element.rows() << ".glsl";
+
+        auto shader = State::register_shader(shader_id.str());
+        auto program = State::register_program(shader);
+        State::free_shader(shader);
+
+        auto size = State::register_vec2(texture.get_size());
+        auto se = State::register_structuring_element(_structuring_element);
+
+        State::bind_shader_program(program);
+        State::bind_texture(program, "_texture", texture.get_handle());
+        State::bind_vec2(program, "_texture_size", size);
+        State::bind_matrix(program, "_structuring_element", se);
+
+        workspace.display();
+
+        State::free_program(program);
+        State::free_vec2(size);
+        State::free_matrix(se);
+
+        shader = State::register_shader("geodesic_compare_dilate.glsl");
+        program = State::register_program(shader);
+        State::free_shader(shader);
+
+        State::bind_shader_program(program);
+        State::bind_texture(program, "_mask", mask.get_handle(), 2);
+        State::bind_texture(program, "_original", original.get_handle(), 1);
+        State::bind_texture(program, "_texture", texture.get_handle(), 0);
+
+        workspace.display();
+        workspace.yield();
+
+        State::free_program(program);
     }
 
     template<typename Image_t>
