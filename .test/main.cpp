@@ -34,8 +34,7 @@ int main()
 {
     sol::state state;
 
-    auto image = crisp::load_color_image("/home/clem/Workspace/crisp/docs/morphological_transform/.resources/grayscale_template.png");
-    auto mask = crisp::load_color_image("/home/clem/Workspace/crisp/docs/morphological_transform/.resources/mask.png");
+    auto image = crisp::load_color_image("/home/clem/Workspace/crisp/docs/segmentation/.resources/opal_non_uniform.png");
     sf::ContextSettings context_settings;
     context_settings.antialiasingLevel = 0;
     context_settings.minorVersion = 3;
@@ -48,21 +47,18 @@ int main()
     window.create(sf::VideoMode(image.get_size().x()-1, image.get_size().y()), "", style, context_settings);
     window.setActive(true);
 
-    auto as_tex = Texture<float, 3>(image);
-    auto original = State::register_texture<float, 3>(as_tex.get_handle());
-    auto mask_tex = Texture<float, 3>(mask);
-    auto filter = MorphologicalTransform();
-    filter.set_structuring_element(filter.all_foreground(3, 3));
-    filter.erode(as_tex);
+    auto texture = Texture<float, 3>(image);
 
-    auto shader = State::register_shader("geodesic_compare_erode.glsl");
+    auto shader = State::register_shader("segmentation.glsl");
     auto program = State::register_program(shader);
-    State::free_shader(shader);
+
+    auto size = State::register_vec2(texture.get_size());
+    auto neighborhood = State::register_int(3);
 
     State::bind_shader_program(program);
-    State::bind_texture(program, "_texture", as_tex.get_handle(), 0);
-    State::bind_texture(program, "_original", original, 1);
-    State::bind_texture(program, "_mask", mask_tex.get_handle(), 2);
+    State::bind_texture(program, "_texture", texture.get_handle());
+    State::bind_vec2(program, "_texture_size", size);
+    State::bind_int(program, "_neighborhood_size", neighborhood);
 
     State::display();
     window.display();
@@ -77,15 +73,6 @@ int main()
 
             if (event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::Space)
             {
-                shader = State::register_shader("geodesic_compare_erode.glsl");
-                program = State::register_program(shader);
-                State::free_shader(shader);
-
-                State::bind_shader_program(program);
-                State::bind_texture(program, "_texture", as_tex.get_handle(), 0);
-                State::bind_texture(program, "_original", original, 1);
-                State::bind_texture(program, "_mask", mask_tex.get_handle(), 2);
-
                 State::display();
                 window.display();
             }
