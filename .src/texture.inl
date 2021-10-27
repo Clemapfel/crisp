@@ -39,6 +39,12 @@ namespace crisp
     }
 
     template<typename T, size_t N>
+    Texture<T, N>::Texture(const std::vector<float>& data)
+    {
+
+    }
+
+    template<typename T, size_t N>
     Texture<T, N>::Texture(size_t width, size_t height)
     {
         create(width, height);

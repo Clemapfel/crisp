@@ -12,7 +12,7 @@ namespace crisp
         out.create(get_size().x(), get_size().y());
 
         size_t m = get_size().x(),
-             n = get_size().y();
+               n = get_size().y();
 
         for (size_t x = 0, i = 0; x < m; ++x)
         {

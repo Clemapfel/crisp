@@ -449,6 +449,137 @@ namespace crisp
         return texture_id;
     }
 
+    template<size_t N>
+    GLNativeHandle State::register_texture(size_t width, size_t height, const std::vector<float>& data)
+    {
+        static_assert(0 < N and N <= 4);
+        assert(data.size() == width * height * N);
+
+        GLNativeHandle texture_id;
+        glGenTextures(1, &texture_id);
+
+        glBindTexture(GL_TEXTURE_2D, texture_id);
+
+        if (not _vertices_initialized)
+        {
+            // vertex info
+            static float vertices[] = {
+                // pos, col, tex_coord
+                 1,  1, 0,   1, 1, 1,   1, 1, // top right
+                 1, -1, 0,   1, 1, 1,   1, 0, // bottom right
+                -1, -1, 0,   1, 1, 1,   0, 0, // bottom left
+                -1,  1, 0,   1, 1, 1,   0, 1  // top left
+            };
+
+            static unsigned int indices[] = {
+                    0, 1, 3,
+                    1, 2, 3
+            };
+
+            glGenVertexArrays(1, &_vertex_array);
+            glGenBuffers(1, &_vertex_buffer);
+            glGenBuffers(1, &_element_buffer);
+
+            glBindVertexArray(_vertex_array);
+
+            glBindBuffer(GL_ARRAY_BUFFER, _vertex_buffer);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _element_buffer);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+            // position attribute
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
+            glEnableVertexAttribArray(0);
+
+            // color attribute
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
+            glEnableVertexAttribArray(1);
+
+            // texture coord attribute
+            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
+            glEnableVertexAttribArray(2);
+
+            _vertices_initialized = true;
+        }
+
+        GLint internal_format;
+        GLint format;
+
+        size_t alignment_n = 1;
+
+        if (N == 1)
+        {
+            format = GL_RED;
+            alignment_n = 1;
+            internal_format = GL_R32F;
+        }
+        else if (N == 2)
+        {
+            format = GL_RG;
+            alignment_n = 2;
+            internal_format = GL_RG32F;
+        }
+        else if (N == 3)
+        {
+            format = GL_RGB;
+            alignment_n = 1;
+            internal_format = GL_RGB32F;
+        }
+        else if (N == 4)
+        {
+            format = GL_RGBA;
+            alignment_n = 4;
+            internal_format = GL_RGBA32F;
+        }
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, alignment_n);
+
+        glTexImage2D(GL_TEXTURE_2D,
+                     0,
+                     internal_format,
+                     static_cast<GLsizei>(width),
+                     static_cast<GLsizei>(height),
+                     0,
+                     format,
+                     GL_FLOAT,
+                     &data[0]);
+
+        _textures.insert(texture_id);
+        _texture_info.insert({
+            texture_id,
+            TextureInfo{
+                .padding_type = PaddingType::MIRROR,
+                .width = width,
+                .height = width,
+                .n_planes = N,
+                .type = GL_FLOAT
+            }
+        });
+
+        glBindTexture(GL_TEXTURE_2D, texture_id);
+
+        auto info = _texture_info.at(texture_id);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, padding_type_to_gl_padding(info.padding_type));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, padding_type_to_gl_padding(info.padding_type));
+
+        if (info.padding_type == PaddingType::ZERO)
+        {
+            float border[] = {0.f, 0.f, 0.f, 1.0f};
+            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+        }
+        else if (info.padding_type == PaddingType::ONE)
+        {
+            float border[] = {1.0f, 1.0f, 1.0f, 1.0f};
+            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+        }
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        return texture_id;
+    }
     template<typename T, size_t N>
     GLNativeHandle State::register_texture(size_t width, size_t height)
     {
@@ -1067,6 +1198,20 @@ namespace crisp
             bind_shader_program(before);
     }
 
+    void State::set_int(GLNativeHandle program_id, const std::string& var_name, int i)
+    {
+        verify_program_id(program_id);
+
+        auto before = _active_program;
+        if (before != program_id)
+            bind_shader_program(program_id);
+
+        glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), i);
+
+        if (before != program_id)
+            bind_shader_program(before);
+    }
+
     void State::bind_float(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
         verify_program_id(program_id);
@@ -1087,6 +1232,20 @@ namespace crisp
             bind_shader_program(before);
     }
 
+    void State::set_float(GLNativeHandle program_id, const std::string& var_name, float f)
+    {
+        verify_program_id(program_id);
+
+        auto before = _active_program;
+        if (before != program_id)
+            bind_shader_program(program_id);
+
+        glUniform1f(glGetUniformLocation(program_id, var_name.c_str()), f);
+
+        if (before != program_id)
+            bind_shader_program(before);
+    }
+
     void State::bind_bool(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
         verify_program_id(program_id);
@@ -1102,6 +1261,20 @@ namespace crisp
             bind_shader_program(program_id);
 
         glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), _bools.at(proxy_id));
+
+        if (before != program_id)
+            bind_shader_program(before);
+    }
+
+    void State::set_bool(GLNativeHandle program_id, const std::string& var_name, bool b)
+    {
+        verify_program_id(program_id);
+
+        auto before = _active_program;
+        if (before != program_id)
+            bind_shader_program(program_id);
+
+        glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), b);
 
         if (before != program_id)
             bind_shader_program(before);

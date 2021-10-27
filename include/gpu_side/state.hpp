@@ -75,6 +75,12 @@ namespace crisp
             /// @param proxy_id: id of resource
             static void bind_int(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
 
+            /// @brief bind free integer to uniform of shader program
+            /// @param program_id: native handle of shader program
+            /// @param var_name: exact variable name in shader source
+            /// @param int
+            static void set_int(GLNativeHandle program_id, const std::string& var_name, int);
+
             /// @brief allocate float
             /// @param value
             /// @returns id of allocated resource
@@ -90,6 +96,12 @@ namespace crisp
             /// @param proxy_id: id of resource
             static void bind_float(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
 
+            /// @brief bind free float to uniform of shader program
+            /// @param program_id: native handle of shader program
+            /// @param var_name: exact variable name in shader source
+            /// @param float
+            static void set_float(GLNativeHandle program_id, const std::string& var_name, float);
+
             /// @brief allocate bool
             /// @param value
             /// @returns id of allocated resource
@@ -104,6 +116,12 @@ namespace crisp
             /// @param var_name: exact variable name in shader source
             /// @param proxy_id: id of resource
             static void bind_bool(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
+
+            /// @brief bind free bool to uniform of shader program
+            /// @param program_id: native handle of shader program
+            /// @param var_name: exact variable name in shader source
+            /// @param bool
+            static void set_bool(GLNativeHandle program_id, const std::string& var_name, bool);
 
             /// @brief allocate vec2
             /// @param value
@@ -268,6 +286,12 @@ namespace crisp
             /// @returns native handle of resulting texture
             template<typename T, size_t N>
             static GLNativeHandle register_texture(GLNativeHandle to_copy);
+
+            /// @brief create texture from raw data
+            /// @param data: OpenGL compliant formatted array
+            /// @returns native handle of resulting texture
+            template<size_t N>
+            static GLNativeHandle register_texture(size_t widht, size_t height, const std::vector<float>& data);
 
             /// @brief deallocate texture
             /// @param id: native handle of texture

@@ -34,8 +34,7 @@ int main()
 {
     sol::state state;
 
-    auto image = ColorImage();//crisp::load_color_image("/home/clem/Workspace/crisp/docs/segmentation/.resources/opal_non_uniform.png");
-    image.create(400, 500, RGB{1, 0, 1});
+    auto image = crisp::load_grayscale_image("/home/clem/Workspace/crisp/docs/segmentation/.resources/opal_non_uniform.png");
 
     sf::ContextSettings context_settings;
     context_settings.antialiasingLevel = 0;
@@ -46,32 +45,20 @@ int main()
     auto style = sf::Style::Titlebar | sf::Style::Close;
 
     auto window = sf::RenderWindow();
-    window.create(sf::VideoMode(image.get_size().x()-1, image.get_size().y()), "", style, context_settings);
+    window.create(sf::VideoMode(2*image.get_size().x(), 2*image.get_size().y()), "", style, context_settings);
     window.setActive(true);
 
-    auto texture = Texture<float, 3>(image);
+    TODO: benchmarking object
 
-    auto shader = State::register_shader("bandpass_butterworth.glsl");
+    auto transform = FourierTransform<SPEED>();
+    transform.transform_from(image);
+
+    auto texture = State::register_texture<1>(2 * image.get_size().x(), 2 * image.get_size().y(), transform.get_spectrum());
+
+    auto shader = State::register_shader("visualize_fourier.glsl");
     auto program = State::register_program(shader);
-
-    auto pass_factor = State::register_float(1);
-    auto reject_factor = State::register_float(0);
-    auto cutoff_a = State::register_float(0.4);
-    auto cutoff_b = State::register_float(0.25);
-
-    auto size = State::register_vec2(texture.get_size());
-    auto offset = State::register_vec2(Vector2f{0.0, 0.0});
-    auto order = State::register_int(3);
-
     State::bind_shader_program(program);
-    State::bind_float(program, "_cutoff", cutoff_a);
-    State::bind_float(program, "_cutoff_a", cutoff_a);
-    State::bind_float(program, "_cutoff_b", cutoff_b);
-    State::bind_float(program, "_pass_factor", pass_factor);
-    State::bind_float(program, "_reject_factor", reject_factor);
-    State::bind_vec2(program, "_texture_size", size);
-    State::bind_vec2(program, "_offset", offset);
-    State::bind_int(program, "_order", order);
+    State::bind_texture(program, "_texture", texture);
 
     State::display();
     window.display();
@@ -86,6 +73,11 @@ int main()
 
             if (event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::Space)
             {
+                shader = State::register_shader("visualize_fourier.glsl");
+                program = State::register_program(shader);
+                State::bind_shader_program(program);
+                State::bind_texture(program, "_texture", texture);
+
                 State::display();
                 window.display();
             }
