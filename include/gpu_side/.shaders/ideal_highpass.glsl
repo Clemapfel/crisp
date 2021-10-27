@@ -21,7 +21,7 @@ void main()
     pos.y *= to_square;
 
     if (distance(pos, vec2(0.5, 0.5 * to_square) + vec2(_offset.x, -1 * _offset.y)) < _cutoff_frequency)
-        _out = vec4(vec3(_pass_factor), 1);
-    else
         _out = vec4(vec3(_reject_factor), 1);
+    else
+        _out = vec4(vec3(_pass_factor), 1);
 }

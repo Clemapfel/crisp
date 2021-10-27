@@ -10,7 +10,9 @@ uniform vec2 _texture_size;
 
 uniform float _pass_factor;
 uniform float _reject_factor;
-uniform float _cutoff_frequency;
+
+uniform float _cutoff_a;
+uniform float _cutoff_b;
 
 uniform vec2 _offset;
 
@@ -20,8 +22,13 @@ void main()
     float to_square = _texture_size.y / _texture_size.x;
     pos.y *= to_square;
 
-    if (distance(pos, vec2(0.5, 0.5 * to_square) + vec2(_offset.x, -1 * _offset.y)) < _cutoff_frequency)
-        _out = vec4(vec3(_pass_factor), 1);
-    else
+    vec2 center = vec2(0.5, 0.5 * to_square) + vec2(_offset.x, -1 * _offset.y);
+    float upper = max(_cutoff_a, _cutoff_b);
+    float lower = min(_cutoff_a, _cutoff_b);
+    float dist = distance(center, pos);
+
+    if (dist >= lower && dist <= upper)
         _out = vec4(vec3(_reject_factor), 1);
+    else
+        _out = vec4(vec3(_pass_factor), 1);
 }
