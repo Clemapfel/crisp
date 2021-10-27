@@ -43,10 +43,10 @@ namespace crisp
         return image;
     }
 
-    inline void FrequencyDomainFilter::set_offset(size_t x_dist_from_center, size_t y_dist_from_center, bool force_symmetry)
+    inline void FrequencyDomainFilter::set_offset(float x_dist_from_center, float y_dist_from_center, bool force_symmetry)
     {
         _offset_symmetrical = force_symmetry;
-        _offset = Vector2ui{x_dist_from_center, y_dist_from_center};
+        _offset = Vector2f{x_dist_from_center, y_dist_from_center};
         _values_initialized = false;
     }
 
@@ -92,12 +92,16 @@ namespace crisp
             {
                 if (_offset_symmetrical)
                 {
-                    _values.emplace_back(std::max(_function(std::max<int>(x - _offset.x(), 0), std::max<int>(y - _offset.y(), 0)), _function(std::max<int>(x + _offset.x(), 0), std::max<int>(y + _offset.y(), 0))));
+                    _values.emplace_back(std::max(
+                            _function(std::max<int>(x - _offset.x() * _size.x(), 0),
+                                      std::max<int>(y - _offset.y() * _size.y(), 0)),
+                            _function(std::max<int>(x + _offset.x() * _size.x(), 0),
+                                      std::max<int>(y + _offset.y() * _size.y(), 0))));
                 }
                 else
                 {
                     _values.emplace_back(
-                            _function(std::max<int>(x - _offset.x(), 0), std::max<int>(y - _offset.y(), 0)));
+                            _function(std::max<int>(x - _offset.x() * _size.x(), 0), std::max<int>(y - _offset.y() * _size.y(), 0)));
                 }
             }
 
@@ -106,8 +110,8 @@ namespace crisp
 
     inline double FrequencyDomainFilter::distance(size_t x_in, size_t y_in)
     {
-        auto x = x_in -_size.x() / 2.f;
-        auto y = y_in - _size.y() / 2.f;
+        auto x = (float(x_in) / float(_size.x())) - 0.5;
+        auto y = (float(y_in) / float(_size.y())) - 0.5;
         return sqrt(x*x + y*y);
     }
 

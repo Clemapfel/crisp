@@ -214,7 +214,7 @@ where
 + ``pass_factor`` is the factor the coefficients in the passing (low frequency, inner) region are multiplied by. By default, this factor is 1
 + ``reject_factor`` is the factor the coefficients in the attenuating (high frequency, outer) region are multiplied by. By default, this factor is 0
 
-The cut-off frequency will usually be a value in `[0, min(m, n)]` where `2*m*2*n` the size of the spectrum, though there is no mechanism to specifically enforce this.
+The cut-off frequency will usually be a value in `[0, 0.5]`, though there is no mechanism to specifically enforce this.
 
 ## 3.2.2 High-Pass Filters
 
@@ -245,7 +245,7 @@ where
 + ``pass_factor`` is the factor the coefficients in the passing (high frequency, outer) region are multiplied by. By default, this factor is 1
 + ``reject_factor`` is the factor the coefficients in the attenuating (lower frequency, inner) region are multiplied by. By default, this factor is 0
 
-The cutoff frequency will again usually be in `[0, min(m, n)]`, where `2*m*2*n` the size of the region`
+The cutoff frequency will again usually be in `[0, 0.5]`.
 
 As you may have noticed the high-pass filter is the inverse of the low-pass filter, that is for a high-pass filter H, low-pass filter I with the same cutoff frequency, reject- and pass-factor, it holds true that: ``identity - H = I`` and ``identity - I = H``. We will see later how we can use arithmetic operations like these to our advantage.
 
@@ -280,7 +280,7 @@ where
 + ``pass_factor`` is the factor the coefficients in the passing (inside the "bad") region are multiplied by. By default, this factor is 1
 + ``reject_factor`` is the factor the coefficients in the attenuating (outside the "donut") region are multiplied by. By default, this factor is 0
 
-Where `cutoff_min`, `cutoff_max` will usually be in `[0, min(m, n)]`.
+Where `cutoff_min`, `cutoff_max` in `[0, 0.5]` and `cutoff_min < cutoff_max`.
 
 ## 3.2.4 Band-Reject Filters
 
@@ -313,7 +313,7 @@ where
 + ``pass_factor`` is the factor the coefficients in the passing (outside the band) region are multiplied by. By default, this factor is 1
 + ``reject_factor`` is the factor the coefficients in the attenuating (inside the band) region are multiplied by. By default, this factor is 0
 
-Where `cutoff_min`, `cutoff_max` in `[0, min(m, n)]` and `cutoff_min < cutoff_max`.
+Where `cutoff_min`, `cutoff_max` in `[0, 0.5]` and `cutoff_min < cutoff_max`.
 
 ## 3.3 Modifying a Filter
 
@@ -370,10 +370,8 @@ void set_offset(
 ```
 
 Where 
-+ `x_dist_from_center` is the x-offset, usually in [0, m]
-+ `y_dist_from_center` is the y-offset, usually in [0, n]
-
-For a spectrum of size '2*m*2*n'.
++ `x_dist_from_center` is the x-offset, usually in `[-0.5, +0.5]`
++ `y_dist_from_center` is the y-offset, usually in `[-0.5, +0.5]`
 
 To illustrate what this function does exactly, let's consider a practical example: We first define a butterworth bandpass filter of a relatively high order. This way, we still don't have a completely sharp transition, but we're also not as "smokey" as with a proper gaussian filter:
 
@@ -384,8 +382,8 @@ spectrum.transform_from(image);
 
 auto filter = FrequencyDomainFilter(spectrum);
 filter.as_butterworth_bandpass(
-        0.25 * spectrum.get_size().x(), // lower cutoff
-        0.3 * spectrum.get_size().x(),  // upper cutoff
+        0.25, // lower cutoff
+        0.3,  // upper cutoff
         4,  // order
         1,  // passing factor
         0   // attenuating factor
@@ -398,8 +396,8 @@ We can then offset it with ``set_offset``, for now we leave ``force_symmetry`` o
 
 ```cpp
 filter.set_offset(
-    -0.2 * spectrum.get_size().x(), // x offset
-    -0.1 * spectrum.get_size().y(), // y offset
+    -0.2, // x offset
+    -0.1, // y offset
     false); // force symmetry
 ```
 ![](./.resources/with_offset.png)
@@ -409,8 +407,7 @@ As expected, the filter's center moved towards the top-left of the image.
 Multiplying a fourier spectrum with a filter that is not symmetrical will result in its phase angle shifting. This usually corrupts the resulting image. To prevent this, we can turn on ``force_symmetry``, which automatically mirrors the offset filter across the center, resulting in a symmetrical shape:
 
 ```cpp
-filter.set_offset(
-    -0.2 * spectrum.get_size().x(),-0.1 * spectrum.get_size().y(), true);
+filter.set_offset(-0.2, -0.1, true);
 ```
 
 ![](./.resources/with_symmetry.png)<br>
@@ -436,10 +433,10 @@ We can now design our filter by first creating a fresh, ideal high-pass filter. 
 
 ```cpp 
 auto filter = FrequencyDomainFilter();
-filter.as_ideal_highpass(0.4 * spectrum.get_size().x());
+filter.as_ideal_highpass(0.4);
 
 auto lowpass = FrequencyDomainFilter();
-lowpass.as_gaussian_lowpass(0.1 * spectrum.get_size().x());
+lowpass.as_gaussian_lowpass(0.1);
 
 filter += lowpass;
 filter.normalize();
