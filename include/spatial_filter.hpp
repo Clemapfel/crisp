@@ -53,12 +53,6 @@ namespace crisp
                 /// @brief compute sum weighted by kernel and divide by sum of kernel elements
                 NORMALIZED_CONVOLUTION = 1,
 
-                /// @brief compute minimum of elements weighted by kernel in kernel-sized neighborhood
-                MINIMUM [[deprecated("Does not work on Textures. Use morphological operations instead")]] = 2,
-
-                /// @brief compute maximum of elements weighted by kernel in kernel-sized neighborhood
-                MAXIMUM [[deprecated("Does not work on Textures. Use morphological operations instead")]] = 3,
-
                 /// @brief compute mean of elements weighted by kernel in kernel-sized neighborhood
                 MEAN = 4,
 

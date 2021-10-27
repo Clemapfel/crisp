@@ -34,7 +34,9 @@ int main()
 {
     sol::state state;
 
-    auto image = crisp::load_color_image("/home/clem/Workspace/crisp/docs/segmentation/.resources/opal_non_uniform.png");
+    auto image = ColorImage();//crisp::load_color_image("/home/clem/Workspace/crisp/docs/segmentation/.resources/opal_non_uniform.png");
+    image.create(200, 500, RGB{1, 0, 1});
+
     sf::ContextSettings context_settings;
     context_settings.antialiasingLevel = 0;
     context_settings.minorVersion = 3;
@@ -49,16 +51,19 @@ int main()
 
     auto texture = Texture<float, 3>(image);
 
-    auto shader = State::register_shader("segmentation.glsl");
+    auto shader = State::register_shader("ideal_lowpass.glsl");
     auto program = State::register_program(shader);
 
+    auto pass_factor = State::register_float(1);
+    auto reject_factor = State::register_float(0);
+    auto cutoff = State::register_float(0.5);
     auto size = State::register_vec2(texture.get_size());
-    auto neighborhood = State::register_int(3);
 
     State::bind_shader_program(program);
-    State::bind_texture(program, "_texture", texture.get_handle());
+    State::bind_float(program, "_cutoff_frequency", cutoff);
+    State::bind_float(program, "_pass_factor", pass_factor);
+    State::bind_float(program, "_reject_factor", reject_factor);
     State::bind_vec2(program, "_texture_size", size);
-    State::bind_int(program, "_neighborhood_size", neighborhood);
 
     State::display();
     window.display();

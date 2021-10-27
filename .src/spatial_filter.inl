@@ -137,14 +137,6 @@ namespace crisp
                 apply_normalized_convolution_to(image, result);
                 break;
 
-            case MINIMUM:
-                apply_min_to(image, result);
-                break;
-
-            case MAXIMUM:
-                apply_max_to(image, result);
-                break;
-
             case MEAN:
                 apply_mean_to(image, result);
                 break;
