@@ -51,7 +51,7 @@ int main()
 
     auto texture = Texture<float, 3>(image);
 
-    auto shader = State::register_shader("ideal_bandpass.glsl");
+    auto shader = State::register_shader("bandpass_butterworth.glsl");
     auto program = State::register_program(shader);
 
     auto pass_factor = State::register_float(1);
@@ -60,16 +60,18 @@ int main()
     auto cutoff_b = State::register_float(0.25);
 
     auto size = State::register_vec2(texture.get_size());
-    auto offset = State::register_vec2(Vector2f{0.05, 0.1});
+    auto offset = State::register_vec2(Vector2f{0.0, 0.0});
+    auto order = State::register_int(3);
 
     State::bind_shader_program(program);
-    State::bind_float(program, "_cutoff_frequency", cutoff_a);
+    State::bind_float(program, "_cutoff", cutoff_a);
     State::bind_float(program, "_cutoff_a", cutoff_a);
     State::bind_float(program, "_cutoff_b", cutoff_b);
     State::bind_float(program, "_pass_factor", pass_factor);
     State::bind_float(program, "_reject_factor", reject_factor);
     State::bind_vec2(program, "_texture_size", size);
     State::bind_vec2(program, "_offset", offset);
+    State::bind_int(program, "_order", order);
 
     State::display();
     window.display();
