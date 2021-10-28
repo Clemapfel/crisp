@@ -56,7 +56,7 @@ int main()
     Texture<float, 1> texture = transform.as_texture();
     std::cout << benchmark.execute<Texture<float, 1>&>(100, texture) << std::endl;
 
-    auto shader = State::register_shader("bandpass_gaussian.glsl");
+    auto shader = State::register_shader("lowpass_butterworth.glsl");
     auto program = State::register_program(shader);
 
     State::bind_shader_program(program);

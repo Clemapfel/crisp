@@ -20,8 +20,11 @@ void main()
     float to_square = _texture_size.y / _texture_size.x;
     pos.y *= to_square;
 
+    float dist_left = distance(pos, vec2(0.5, 0.5 * to_square) + vec2(_offset.x, -1 * _offset.y));
+    float dist_right = distance(pos, vec2(0.5, 0.5 * to_square) + vec2(-1 * _offset.x, _offset.y));
+
     float factor;
-    if (distance(pos, vec2(0.5, 0.5 * to_square) + vec2(_offset.x, -1 * _offset.y)) < _cutoff)
+    if (dist_left < _cutoff || dist_right < _cutoff)
         factor = _reject_factor;
     else
         factor = _pass_factor;

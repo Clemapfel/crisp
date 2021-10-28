@@ -22,13 +22,17 @@ void main()
     float to_square = _texture_size.y / _texture_size.x;
     pos.y *= to_square;
 
-    vec2 center = vec2(0.5, 0.5 * to_square) + vec2(_offset.x, -1 * _offset.y);
+    vec2 center_left = vec2(0.5, 0.5 * to_square) + vec2(_offset.x, -1 * _offset.y);
+    vec2 center_right = vec2(0.5, 0.5 * to_square) + vec2(-1 * _offset.x, _offset.y);
+
     float upper = max(_cutoff_a, _cutoff_b);
     float lower = min(_cutoff_a, _cutoff_b);
-    float dist = distance(center, pos);
+
+    float dist_left = distance(center_left, pos);
+    float dist_right = distance(center_right, pos);
 
     float factor;
-    if (dist >= lower && dist <= upper)
+    if ((dist_left >= lower && dist_left <= upper) || (dist_right >= lower && dist_right <= upper))
         factor = _pass_factor;
     else
         factor = _reject_factor;
