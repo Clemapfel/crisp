@@ -8,6 +8,7 @@
 #include <vector.hpp>
 #include <image/multi_plane_image.hpp>
 #include <image/grayscale_image.hpp>
+#include <gpu_side/texture.hpp>
 
 #include <complex>
 #include <vector>
@@ -60,6 +61,10 @@ namespace crisp
             /// @brief visualize the transforms phase angles as an image
             /// @returns linearly scaled grayscale image of size m*n*2 where m, n size of the original transformed image
             [[nodiscard]] GrayScaleImage phase_angle_as_image() const;
+
+            /// @brief visualize spectrum as texture
+            /// @returns linearly scaled texture of size m*n*2 where m, n size of the original transformed image
+            [[nodiscard]] Texture<float, 1> as_texture() const;
 
             /// @brief get the complex coefficient at the specified position, (0,0) being the top-left origin
             /// @param x: the row index, range [0, 2*m]

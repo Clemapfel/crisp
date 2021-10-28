@@ -51,12 +51,13 @@ int main()
     auto transform = FourierTransform<SPEED>();
     transform.transform_from(image);
 
-    auto texture = State::register_texture<1>(2 * image.get_size().x(), 2 * image.get_size().y(), transform.get_spectrum());
+    auto benchmark = Benchmark([&](Texture<float, 1>& tex){tex = transform.as_texture();});
 
-    auto shader = State::register_shader("visualize_fourier.glsl");
-    auto program = State::register_program(shader);
-    State::bind_shader_program(program);
-    State::bind_texture(program, "_texture", texture);
+    Texture<float, 1> texture = transform.as_texture();
+    std::cout << benchmark.execute<Texture<float, 1>&>(100, texture) << std::endl;
+
+    State::bind_shader_program(NONE);
+    State::bind_texture(NONE, "_texture", texture.get_handle());
 
     State::display();
     window.display();
@@ -71,10 +72,10 @@ int main()
 
             if (event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::Space)
             {
-                shader = State::register_shader("visualize_fourier.glsl");
-                program = State::register_program(shader);
-                State::bind_shader_program(program);
-                State::bind_texture(program, "_texture", texture);
+                //shader = State::register_shader("visualize_fourier.glsl");
+                //program = State::register_program(shader);
+                //State::bind_shader_program(program);
+                //State::bind_texture(program, "_texture", texture);
 
                 State::display();
                 window.display();

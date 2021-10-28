@@ -87,6 +87,10 @@ namespace crisp
             /// @returns handle
             GLNativeHandle get_handle() const;
 
+            /// @brief access internal texture workspace
+            /// @returns workspace
+            Workspace& get_workspace();
+
         private:
             size_t _width, _height;
             GLNativeHandle _handle = NONE;

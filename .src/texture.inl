@@ -30,18 +30,13 @@ namespace crisp
         auto size = State::get_texture_size(already_allocated_handle);
         _width = size.x();
         _height = size.y();
+        _workspace.initialize<T, N>(_handle);
     }
 
     template<typename T, size_t N>
     Texture<T, N>::Texture(const Image<T, N>& img)
     {
         create_from(img);
-    }
-
-    template<typename T, size_t N>
-    Texture<T, N>::Texture(const std::vector<float>& data)
-    {
-
     }
 
     template<typename T, size_t N>
@@ -56,6 +51,8 @@ namespace crisp
         _handle = State::register_texture<T, N>(other.get_handle());
         _width = other.get_size().x();
         _height = other.get_size().y();
+        _workspace = other._workspace;
+
     }
 
     template<typename T, size_t N>
@@ -128,6 +125,12 @@ namespace crisp
     Texture<T, N>::operator GLNativeHandle()
     {
         return _handle;
+    }
+
+    template<typename T, size_t N>
+    Workspace& Texture<T, N>::get_workspace()
+    {
+        return _workspace;
     }
 }
 

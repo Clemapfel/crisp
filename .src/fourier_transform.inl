@@ -61,6 +61,61 @@ namespace crisp
     }
 
     template<FourierTransformMode Mode>
+    Texture<float, 1> FourierTransform<Mode>::as_texture() const
+    {
+        auto out = Texture<float, 1>(State::register_texture<1>(_size.x(), _size.y(), _spectrum));
+
+        auto& workspace = out.get_workspace();
+
+        auto shader = State::register_shader("visualize_fourier.glsl");
+        auto program = State::register_program(shader);
+        State::free_shader(shader);
+
+        State::bind_shader_program(program);
+        auto min = State::register_float(_min_spectrum);
+        auto max = State::register_float(_max_spectrum);
+        State::bind_float(program, "_min", min);
+        State::bind_float(program, "_max", max);
+        State::bind_texture(program, "_texture", out.get_handle());
+
+        workspace.display();
+        workspace.yield();
+
+        return out;
+
+        /*
+        std::vector<float> data;
+        data.reserve(_size.x() * _size.y());
+
+        size_t m = get_size().x(),
+               n = get_size().y();
+
+        for (size_t x = 0, i = 0; x < m; ++x)
+        {
+            for (size_t y = 0; y < n; ++y, ++i)
+            {
+                Value_t value = log(1 + _spectrum.at(i));
+
+                if (_min_spectrum < 0)
+                {
+                    value += _min_spectrum;
+                    value /= _max_spectrum;
+                }
+                else
+                {
+                    value -= _min_spectrum;
+                    value /= (_max_spectrum + _min_spectrum);
+                }
+
+                data.push_back(value);
+            }
+        }
+
+        return Texture<float, 1>(State::register_texture<1>(_size.x(), _size.y(), data));
+         */
+    }
+
+    template<FourierTransformMode Mode>
     std::complex<typename FourierTransform<Mode>::Value_t> FourierTransform<Mode>::get_coefficient(size_t x, size_t y) const
     {
         return std::polar(_spectrum.at(x * y), _phase_angle.at(x * y));
