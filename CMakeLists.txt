@@ -112,7 +112,10 @@ add_library(crisp STATIC
         .src/state.inl
 
         include/gpu_side/texture_workspace.hpp
-        .src/texture_workspace.inl foo.h .src/texture.inl .src/structuring_element.hpp)
+        .src/texture_workspace.inl foo.h .src/texture.inl
+
+        include/benchmark.hpp
+        .src/benchmark.inl)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp

@@ -26,6 +26,7 @@
 #include <gpu_side/texture.hpp>
 
 #include <pseudocolor_mapping.hpp>
+#include <benchmark.hpp>
 //#include <resource_path.hpp>
 
 using namespace crisp;
@@ -33,7 +34,6 @@ using namespace crisp;
 int main()
 {
     sol::state state;
-
     auto image = crisp::load_grayscale_image("/home/clem/Workspace/crisp/docs/segmentation/.resources/opal_non_uniform.png");
 
     sf::ContextSettings context_settings;
@@ -47,8 +47,6 @@ int main()
     auto window = sf::RenderWindow();
     window.create(sf::VideoMode(2*image.get_size().x(), 2*image.get_size().y()), "", style, context_settings);
     window.setActive(true);
-
-    TODO: benchmarking object
 
     auto transform = FourierTransform<SPEED>();
     transform.transform_from(image);
