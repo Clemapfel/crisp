@@ -7,20 +7,20 @@
 
 namespace crisp
 {
-    inline FrequencyDomainFilter::FrequencyDomainFilter(size_t width, size_t height)
+    FrequencyDomainFilter<CPU_SIDE>::FrequencyDomainFilter(size_t width, size_t height)
         : _size{width, height}
     {
         as_identity();
     }
 
     template<FourierTransformMode Mode>
-    inline FrequencyDomainFilter::FrequencyDomainFilter(const FourierTransform<Mode>& transform)
+    FrequencyDomainFilter<CPU_SIDE>::FrequencyDomainFilter(const FourierTransform<Mode>& transform)
     {
         _size = Vector2ui{transform.get_size().x(), transform.get_size().y()};
         as_identity();
     }
 
-    inline const std::vector<double> & FrequencyDomainFilter::get_values() const
+    const std::vector<double> & FrequencyDomainFilter<CPU_SIDE>::get_values() const
     {
         if (not _values_initialized)
             initialize();
@@ -29,7 +29,7 @@ namespace crisp
     }
 
     template<typename Image_t>
-    inline Image_t FrequencyDomainFilter::as_image() const
+    Image_t FrequencyDomainFilter<CPU_SIDE>::as_image() const
     {
         static_assert(Image_t::Value_t::size() == 1);
 
@@ -43,14 +43,14 @@ namespace crisp
         return image;
     }
 
-    inline void FrequencyDomainFilter::set_offset(float x_dist_from_center, float y_dist_from_center, bool force_symmetry)
+    void FrequencyDomainFilter<CPU_SIDE>::set_offset(float x_dist_from_center, float y_dist_from_center, bool force_symmetry)
     {
         _offset_symmetrical = force_symmetry;
         _offset = Vector2f{x_dist_from_center, y_dist_from_center};
         _values_initialized = false;
     }
 
-    inline void FrequencyDomainFilter::normalize(double new_min, double new_max)
+    void FrequencyDomainFilter<CPU_SIDE>::normalize(double new_min, double new_max)
     {
         if (not _values_initialized)
             initialize();
@@ -71,18 +71,18 @@ namespace crisp
         }
     }
 
-    inline Vector2ui FrequencyDomainFilter::get_size() const
+    Vector2ui FrequencyDomainFilter<CPU_SIDE>::get_size() const
     {
         return _size;
     }
 
-    inline void FrequencyDomainFilter::set_size(Vector2ui size)
+    void FrequencyDomainFilter<CPU_SIDE>::set_size(Vector2ui size)
     {
         _size = size;
         _values_initialized = false;
     }
 
-    inline void FrequencyDomainFilter::initialize() const
+    void FrequencyDomainFilter<CPU_SIDE>::initialize() const
     {
         _values.clear();
         _values.reserve(_size.x() * _size.y());
@@ -108,21 +108,21 @@ namespace crisp
         _values_initialized = true;
     }
 
-    inline double FrequencyDomainFilter::distance(size_t x_in, size_t y_in)
+    double FrequencyDomainFilter<CPU_SIDE>::distance(size_t x_in, size_t y_in)
     {
         auto x = (float(x_in) / float(_size.x())) - 0.5;
         auto y = (float(y_in) / float(_size.y())) - 0.5;
         return sqrt(x*x + y*y);
     }
 
-    inline void FrequencyDomainFilter::as_identity()
+    void FrequencyDomainFilter<CPU_SIDE>::as_identity()
     {
         _values_initialized = false;
         _function = [](int x, int y) -> double {return 1;};
     }
 
     // IDEAL
-    inline void FrequencyDomainFilter::as_ideal_lowpass(double cutoff_frequency, double pass_factor, double reject_factor)
+    void FrequencyDomainFilter<CPU_SIDE>::as_ideal_lowpass(double cutoff_frequency, double pass_factor, double reject_factor)
     {
         _values_initialized = false;
         _function = [this, cutoff_frequency, pass_factor, reject_factor](int x, int y) -> double {
@@ -130,13 +130,13 @@ namespace crisp
         };
     }
 
-    inline void FrequencyDomainFilter::as_ideal_highpass(double cutoff_frequency, double pass_factor, double reject_factor)
+    void FrequencyDomainFilter<CPU_SIDE>::as_ideal_highpass(double cutoff_frequency, double pass_factor, double reject_factor)
     {
         _values_initialized = false;
         _function = [this, cutoff_frequency, pass_factor, reject_factor](int x, int y) -> double {return distance(x, y) < cutoff_frequency ? reject_factor : pass_factor;};
     }
 
-    inline void FrequencyDomainFilter::as_ideal_bandreject(double lower_cutoff, double higher_cutoff, double pass_factor, double reject_factor)
+    void FrequencyDomainFilter<CPU_SIDE>::as_ideal_bandreject(double lower_cutoff, double higher_cutoff, double pass_factor, double reject_factor)
     {
         _values_initialized = false;
         _function = [this, lower_cutoff, higher_cutoff, pass_factor, reject_factor](int x, int y) -> double {
@@ -145,7 +145,7 @@ namespace crisp
         };
     }
 
-    inline void FrequencyDomainFilter::as_ideal_bandpass(double lower_cutoff, double higher_cutoff, double pass_factor, double reject_factor)
+    void FrequencyDomainFilter<CPU_SIDE>::as_ideal_bandpass(double lower_cutoff, double higher_cutoff, double pass_factor, double reject_factor)
     {
         _values_initialized = false;
         _function = [this, lower_cutoff, higher_cutoff, pass_factor, reject_factor](int x, int y) -> double {
@@ -156,7 +156,7 @@ namespace crisp
 
     // GAUSSIAN
 
-    inline void FrequencyDomainFilter::as_gaussian_lowpass(double cutoff_frequency, double pass_factor, double reject_factor)
+    void FrequencyDomainFilter<CPU_SIDE>::as_gaussian_lowpass(double cutoff_frequency, double pass_factor, double reject_factor)
     {
         _values_initialized = false;
         _function = [this, cutoff_frequency, pass_factor, reject_factor](int x, int y) -> double {
@@ -168,7 +168,7 @@ namespace crisp
         
     }
 
-    inline void FrequencyDomainFilter::as_gaussian_highpass(double cutoff_frequency, double pass_factor, double reject_factor)
+    void FrequencyDomainFilter<CPU_SIDE>::as_gaussian_highpass(double cutoff_frequency, double pass_factor, double reject_factor)
     {
         _values_initialized = false;
         _function = [this, cutoff_frequency, pass_factor, reject_factor](int x, int y) -> double {
@@ -180,7 +180,7 @@ namespace crisp
         
     }
 
-    inline void FrequencyDomainFilter::as_gaussian_bandreject(double lower_cutoff, double higher_cutoff, double pass_factor,
+    void FrequencyDomainFilter<CPU_SIDE>::as_gaussian_bandreject(double lower_cutoff, double higher_cutoff, double pass_factor,
                                                     double reject_factor)
     {
         _values_initialized = false;
@@ -194,7 +194,7 @@ namespace crisp
         
     }
 
-    inline void FrequencyDomainFilter::as_gaussian_bandpass(double lower_cutoff, double higher_cutoff, double pass_factor,
+    void FrequencyDomainFilter<CPU_SIDE>::as_gaussian_bandpass(double lower_cutoff, double higher_cutoff, double pass_factor,
                                                     double reject_factor)
     {
         _values_initialized = false;
@@ -210,7 +210,7 @@ namespace crisp
 
     // BUTTERWORTH
 
-    inline void FrequencyDomainFilter::as_butterworth_lowpass(double cutoff_frequency, size_t order, double pass_factor, double reject_factor)
+    void FrequencyDomainFilter<CPU_SIDE>::as_butterworth_lowpass(double cutoff_frequency, size_t order, double pass_factor, double reject_factor)
     {
         assert(order > 0);
 
@@ -222,7 +222,7 @@ namespace crisp
     }
 
 
-    inline void FrequencyDomainFilter::as_butterworth_highpass(double cutoff_frequency, size_t order, double pass_factor, double reject_factor)
+    void FrequencyDomainFilter<CPU_SIDE>::as_butterworth_highpass(double cutoff_frequency, size_t order, double pass_factor, double reject_factor)
     {
         assert(order > 0);
 
@@ -234,7 +234,7 @@ namespace crisp
         
     }
 
-    inline void FrequencyDomainFilter::as_butterworth_bandreject(double lower_cutoff, double higher_cutoff, size_t order, double pass_factor, double reject_factor)
+    void FrequencyDomainFilter<CPU_SIDE>::as_butterworth_bandreject(double lower_cutoff, double higher_cutoff, size_t order, double pass_factor, double reject_factor)
     {
         assert(order > 0);
 
@@ -250,7 +250,7 @@ namespace crisp
         
     }
 
-    inline void FrequencyDomainFilter::as_butterworth_bandpass(double lower_cutoff, double higher_cutoff, size_t order, double pass_factor, double reject_factor)
+    void FrequencyDomainFilter<CPU_SIDE>::as_butterworth_bandpass(double lower_cutoff, double higher_cutoff, size_t order, double pass_factor, double reject_factor)
     {
         _values_initialized = false;
         _function = [this, lower_cutoff, higher_cutoff, order, pass_factor, reject_factor](int x, int y) -> double {
@@ -265,7 +265,7 @@ namespace crisp
     }
 
     template<FourierTransformMode Mode>
-    void FrequencyDomainFilter::apply_to(FourierTransform<Mode>& fourier) const
+    void FrequencyDomainFilter<CPU_SIDE>::apply_to(FourierTransform<Mode>& fourier) const
     {
         assert(fourier.get_size().x() == get_size().x() and fourier.get_size().y() == get_size().y());
 
@@ -277,7 +277,7 @@ namespace crisp
                 fourier.get_component(x, y) *= _values.at(i);
     }
 
-    inline FrequencyDomainFilter FrequencyDomainFilter::operator+(const FrequencyDomainFilter& other) const
+    FrequencyDomainFilter<CPU_SIDE> FrequencyDomainFilter<CPU_SIDE>::operator+(const FrequencyDomainFilter& other) const
     {
         assert(_size == other._size);
 
@@ -296,7 +296,7 @@ namespace crisp
         return out;
     }
 
-    inline FrequencyDomainFilter FrequencyDomainFilter::operator-(const FrequencyDomainFilter& other) const
+    FrequencyDomainFilter<CPU_SIDE> FrequencyDomainFilter<CPU_SIDE>::operator-(const FrequencyDomainFilter& other) const
     {
         assert(_size == other._size);
 
@@ -315,7 +315,7 @@ namespace crisp
         return out;
     }
 
-    inline FrequencyDomainFilter FrequencyDomainFilter::operator*(const FrequencyDomainFilter& other) const
+    FrequencyDomainFilter<CPU_SIDE> FrequencyDomainFilter<CPU_SIDE>::operator*(const FrequencyDomainFilter& other) const
     {
         assert(_size == other._size);
 
@@ -334,7 +334,7 @@ namespace crisp
         return out;
     }
 
-    inline FrequencyDomainFilter FrequencyDomainFilter::operator/(const FrequencyDomainFilter& other) const
+    FrequencyDomainFilter<CPU_SIDE> FrequencyDomainFilter<CPU_SIDE>::operator/(const FrequencyDomainFilter& other) const
     {
         assert(_size == other._size);
 
@@ -353,7 +353,7 @@ namespace crisp
         return out;
     }
 
-    inline FrequencyDomainFilter& FrequencyDomainFilter::operator+=(const FrequencyDomainFilter& other)
+    FrequencyDomainFilter<CPU_SIDE>& FrequencyDomainFilter<CPU_SIDE>::operator+=(const FrequencyDomainFilter& other)
     {
         assert(_size == other._size);
 
@@ -369,7 +369,7 @@ namespace crisp
         return *this;
     }
 
-    inline FrequencyDomainFilter& FrequencyDomainFilter::operator-=(const FrequencyDomainFilter& other)
+    FrequencyDomainFilter<CPU_SIDE>& FrequencyDomainFilter<CPU_SIDE>::operator-=(const FrequencyDomainFilter& other)
     {
         assert(_size == other._size);
 
@@ -385,7 +385,7 @@ namespace crisp
         return *this;
     }
 
-    inline FrequencyDomainFilter& FrequencyDomainFilter::operator*=(const FrequencyDomainFilter& other)
+    FrequencyDomainFilter<CPU_SIDE>& FrequencyDomainFilter<CPU_SIDE>::operator*=(const FrequencyDomainFilter& other)
     {
         assert(_size == other._size);
 
@@ -401,7 +401,7 @@ namespace crisp
         return *this;
     }
 
-    inline FrequencyDomainFilter& FrequencyDomainFilter::operator/=(const FrequencyDomainFilter& other)
+    FrequencyDomainFilter<CPU_SIDE>& FrequencyDomainFilter<CPU_SIDE>::operator/=(const FrequencyDomainFilter& other)
     {
         assert(_size == other._size);
 
@@ -417,7 +417,7 @@ namespace crisp
         return *this;
     }
 
-    inline double& FrequencyDomainFilter::operator()(size_t x, size_t y)
+    double& FrequencyDomainFilter<CPU_SIDE>::operator()(size_t x, size_t y)
     {
         if (not _values_initialized)
             initialize();
@@ -425,7 +425,7 @@ namespace crisp
         return _values[y + _size.y() * x];
     }
 
-    inline double FrequencyDomainFilter::operator()(size_t x, size_t y) const
+    double FrequencyDomainFilter<CPU_SIDE>::operator()(size_t x, size_t y) const
     {
         if (not _values_initialized)
             initialize();
@@ -433,7 +433,7 @@ namespace crisp
         return _values[y + _size.y() * x];
     }
 
-    inline double & FrequencyDomainFilter::at(size_t x, size_t y)
+    double & FrequencyDomainFilter<CPU_SIDE>::at(size_t x, size_t y)
     {
         if (not _values_initialized)
             initialize();
@@ -441,7 +441,7 @@ namespace crisp
         return _values.at(y + _size.y() * x);
     }
 
-    inline double FrequencyDomainFilter::at(size_t x, size_t y) const
+    double FrequencyDomainFilter<CPU_SIDE>::at(size_t x, size_t y) const
     {
         if (not _values_initialized)
             initialize();

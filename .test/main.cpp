@@ -56,8 +56,30 @@ int main()
     Texture<float, 1> texture = transform.as_texture();
     std::cout << benchmark.execute<Texture<float, 1>&>(100, texture) << std::endl;
 
-    State::bind_shader_program(NONE);
-    State::bind_texture(NONE, "_texture", texture.get_handle());
+    auto shader = State::register_shader("bandpass_gaussian.glsl");
+    auto program = State::register_program(shader);
+
+    State::bind_shader_program(program);
+    State::bind_texture(program, "_texture", texture.get_handle());
+
+    auto pass_factor = State::register_float(1);
+    auto reject_factor = State::register_float(0);
+    auto cutoff_a = State::register_float(0.4);
+    auto cutoff_b = State::register_float(0.25);
+
+    auto size = State::register_vec2(texture.get_size());
+    auto offset = State::register_vec2(Vector2f{0.1, 0.1});
+    auto order = State::register_int(3);
+
+    State::bind_float(program, "_cutoff_frequency", cutoff_a);
+    State::bind_float(program, "_cutoff", cutoff_a);
+    State::bind_float(program, "_cutoff_a", cutoff_a);
+    State::bind_float(program, "_cutoff_b", cutoff_b);
+    State::bind_float(program, "_pass_factor", pass_factor);
+    State::bind_float(program, "_reject_factor", reject_factor);
+    State::bind_vec2(program, "_texture_size", size);
+    State::bind_vec2(program, "_offset", offset);
+    State::bind_int(program, "_order", order);
 
     State::display();
     window.display();

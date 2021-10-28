@@ -27,8 +27,11 @@ void main()
     float lower = min(_cutoff_a, _cutoff_b);
     float dist = distance(center, pos);
 
+    float factor;
     if (dist >= lower && dist <= upper)
-        _out = vec4(vec3(_pass_factor), 1);
+        factor = _pass_factor;
     else
-        _out = vec4(vec3(_reject_factor), 1);
+        factor = _reject_factor;
+
+    _out = texture(_texture, _tex_coord) * factor;
 }

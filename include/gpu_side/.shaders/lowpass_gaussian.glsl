@@ -26,5 +26,7 @@ void main()
     pos.y *= to_square;
 
     float dist = distance(pos, vec2(0.5, 0.5 * to_square) + vec2(_offset.x, -1 * _offset.y));
-    _out = vec4(project(_reject_factor, _pass_factor, exp(-1 * (dist * dist) / (_cutoff / 2))));
+    float factor = project(_reject_factor, _pass_factor, exp(-1 * (dist * dist) / (_cutoff / 2)));
+
+    _out = texture(_texture, _tex_coord) * factor;
 }

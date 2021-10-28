@@ -6,11 +6,16 @@
 #pragma once
 
 #include <fourier_transform.hpp>
+#include <gpu_side/is_gpu_side.hpp>
 
 namespace crisp
 {
+    template<typename side = CPU_SIDE>
+    class FrequencyDomainFilter;
+
     /// @brief filter intended to be applied to frequency-domain transforms such as the fourier transform
-    class FrequencyDomainFilter
+    template<>
+    class FrequencyDomainFilter<CPU_SIDE>
     {
         public:
             /// @brief construct the filter of a specified size
@@ -24,6 +29,8 @@ namespace crisp
             FrequencyDomainFilter(const FourierTransform<Mode>&);
 
             /// @brief multiply the filter with a fourier spectrum
+            /// @tparam gpu_side: use hardware acceleration
+            /// @tparam mode: performance mode of transform, usually auto deduced
             /// @param spectrum: the spectrum to be modified
             template<FourierTransformMode Mode>
             void apply_to(FourierTransform<Mode>&) const;
@@ -213,6 +220,129 @@ namespace crisp
             void initialize() const;
             mutable bool _values_initialized = false;
             mutable std::vector<double> _values;
+    };
+
+    /// @brief gpu-side version of frequency domain filter, less flexible but much faster
+    template<>
+    class FrequencyDomainFilter<GPU_SIDE>
+    {
+        public:
+            /// @brief construct filter
+            /// @param width: the x-dimension of the spectrum the filter will be applied to
+            /// @param height: the y-dimensions of the spectrum the filter will be applied to
+            FrequencyDomainFilter(size_t width, size_t height);
+
+            /// @brief construct filter of the same size as the spectrum
+            /// @param spectrum
+            template<FourierTransformMode Mode>
+            FrequencyDomainFilter(const FourierTransform<Mode>&);
+
+            /// @brief multiply the filter with a fourier spectrum
+            /// @tparam gpu_side: use hardware acceleration
+            /// @tparam mode: performance mode of transform, usually auto deduced
+            /// @param spectrum: the spectrum to be modified
+            template<FourierTransformMode Mode>
+            void apply_to(FourierTransform<Mode>&) const;
+
+            /// @brief resize the filter
+            /// @param size: vector where .x is the x-dimensions and .y the y-dimensions of the spectrum the filter will be applied to
+            void set_size(Vector2ui);
+
+            /// @brief get the filters dimensions
+            /// @returns vector where .x is the width, .y the height of the filter
+            Vector2ui get_size() const;
+
+            /// @brief visualize filter as texture
+            /// @returns texture
+            Texture<float, 1> as_texture() const;
+
+
+
+
+            /// @brief identity filter
+            /// @returns filter where all elements are 1
+            void as_identity();
+
+            /// @brief shape into an ideal-lowpass filter. The resulting filter will pass lower frequencies closer to the center of the spectrum and reject higher frequencies
+            /// @param cutoff_frequency: radius of the passing region, in [0, 0.5]
+            /// @param pass_factor: maximum value of the filter in the passing region
+            /// @param reject_factor: minimum value of the filter in the rejecting region
+            void as_ideal_lowpass(double cutoff_frequency, double pass_factor = 1, double reject_factor = 0);
+
+            /// @brief shape into a gaussian lowpass filter. The resulting filter will pass lower frequencies closer to the center of the spectrum and reject higher frequencies
+            /// @param cutoff_frequency: radius of the passing region, in [0, 0.5]
+            /// @param pass_factor: maximum value of the filter in the passing region
+            /// @param reject_factor: minimum value of the filter in the rejecting region
+            void as_gaussian_lowpass(double cutoff_frequency, double pass_factor = 1, double reject_factor = 0);
+
+            /// @brief shape into a butterworth lowpass filter of specified order. The resulting filter will pass lower frequencies closer to the center of the spectrum and reject higher frequencies
+            /// @param cutoff_frequency: radius of the passing region, in [0, 0.5]
+            /// @param pass_factor: maximum value of the filter in the passing region
+            /// @param reject_factor: minimum value of the filter in the rejecting region
+            void as_butterworth_lowpass(double cutoff_frequency, size_t order, double pass_factor = 1, double reject_factor = 0);
+
+            /// @brief shape into an ideal-highpass filter. The resulting filter will reject lower frequencies closer to the center of the spectrum and pass higher frequencies
+            /// @param cutoff_frequency: radius of the rejecting region, in [0, 0.5]
+            /// @param pass_factor: maximum value in the passing region
+            /// @param reject_factor: maximum value in the rejecting region
+            void as_ideal_highpass(double cutoff_frequency, double pass_factor = 1, double reject_factor = 0);
+
+            /// @brief shape into a gaussian highpass filter. The resulting filter will reject lower frequencies closer to the center of the spectrum and pass higher frequencies
+            /// @param cutoff_frequency: radius of the rejecting region, in [0, 0.5]
+            /// @param pass_factor: maximum value in the passing region
+            /// @param reject_factor: maximum value in the rejecting region
+            void as_gaussian_highpass(double cutoff_frequency, double pass_factor = 1, double reject_factor = 0);
+
+            /// @brief shape into a butterworth highpass filter of specified order. The resulting filter will reject lower frequencies closer to the center of the spectrum and pass higher frequencies
+            /// @param cutoff_frequency: radius of the rejecting region, in [0, 0.5]
+            /// @param pass_factor: maximum value in the passing region
+            /// @param reject_factor: maximum value in the rejecting region
+            void as_butterworth_highpass(double cutoff_frequency, size_t order, double pass_factor = 1, double reject_factor = 0);
+
+            /// @brief shape into an ideal bandpass filter. The resulting filter will pass frequencies inside the band interval and reject others
+            /// @param lower_cutoff: lower bound, in [0, 0.5]
+            /// @param high_cutoff: upper bound, in [0, 0.5]
+            /// @param pass_factor: maximum value in the passing region
+            /// @param reject_factor: maximum value in the rejecting region
+            void as_ideal_bandpass(double lower_cutoff, double higher_cutoff, double pass_factor = 1, double reject_factor = 0);
+
+            /// @brief shape into a gaussian bandpass filter. The resulting filter will pass frequencies inside the band interval and reject others
+            /// @param lower_cutoff: lower bound, in [0, 0.5]
+            /// @param high_cutoff: upper bound, in [0, 0.5]
+            /// @param pass_factor: maximum value in the passing region
+            /// @param reject_factor: maximum value in the rejecting region
+            void as_gaussian_bandpass(double lower_cutoff, double higher_cutoff, double pass_factor = 1, double reject_factor = 0);
+
+            /// @brief shape into a butterworth bandpass filter of specified order. The resulting filter will pass frequencies inside the band interval and reject others
+            /// @param lower_cutoff: lower bound, in [0, 0.5]
+            /// @param high_cutoff: upper bound, in [0, 0.5]
+            /// @param pass_factor: maximum value in the passing region
+            /// @param reject_factor: maximum value in the rejecting region
+            void as_butterworth_bandpass(double lower_cutoff, double higher_cutoff, size_t order, double pass_factor = 1, double reject_factor = 0);
+
+            /// @brief shape into an ideal bandreject filter. The resulting filter will reject frequencies inside the band and pass others
+            /// @param lower_cutoff: lower bound, in [0, 0.5]
+            /// @param high_cutoff: upper bound, in [0, 0.5]
+            /// @param pass_factor: maximum value in the passing region
+            /// @param reject_factor: maximum value in the rejecting region
+            void as_ideal_bandreject(double lower_cutoff, double higher_cutoff, double pass_factor = 1, double reject_factor = 0);
+
+            /// @brief shape into a gaussian bandreject filter. The resulting filter will reject frequencies inside the band and pass others
+            /// @param lower_cutoff: lower bound, in [0, 0.5]
+            /// @param high_cutoff: upper bound, in [0, 0.5]
+            /// @param pass_factor: maximum value in the passing region
+            /// @param reject_factor: maximum value in the rejecting region
+            void as_gaussian_bandreject(double lower_cutoff, double higher_cutoff, double pass_factor = 1, double reject_factor = 0);
+
+            /// @brief shape into a butterworth bandreject filter. The resulting filter will reject frequencies inside the band and pass others
+            /// @param lower_cutoff: lower bound, in [0, 0.5]
+            /// @param high_cutoff: upper bound, in [0, 0.5]
+            /// @param pass_factor: maximum value in the passing region
+            /// @param reject_factor: maximum value in the rejecting region
+            void as_butterworth_bandreject(double lower_cutoff, double higher_cutoff, size_t order, double pass_factor = 1, double reject_factor = 0);
+
+        private:
+
     };
 }
 

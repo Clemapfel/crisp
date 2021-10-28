@@ -32,5 +32,7 @@ void main()
     float width = upper - lower;
     float center = lower + width / 2.f;
     float value = (dist*dist - center*center) / (dist*width);
-    _out = vec4(1 - project(_reject_factor, _pass_factor, exp(-1 * value*value)));
+    float factor = 1 - project(_reject_factor, _pass_factor, exp(-1 * value*value));
+
+    _out = texture(_texture, _tex_coord) * factor;
 }

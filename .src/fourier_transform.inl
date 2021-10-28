@@ -72,10 +72,8 @@ namespace crisp
         State::free_shader(shader);
 
         State::bind_shader_program(program);
-        auto min = State::register_float(_min_spectrum);
-        auto max = State::register_float(_max_spectrum);
-        State::bind_float(program, "_min", min);
-        State::bind_float(program, "_max", max);
+        State::set_float(program, "_min", _min_spectrum);
+        State::set_float(program, "_max", _max_spectrum);
         State::bind_texture(program, "_texture", out.get_handle());
 
         workspace.display();

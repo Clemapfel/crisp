@@ -75,7 +75,7 @@ namespace crisp
 
             /// @brief load from frequency domain filter
             /// @param filter: frequency domain filter
-            void create_from(const FrequencyDomainFilter&);
+            void create_from(const FrequencyDomainFilter<CPU_SIDE>&);
 
             /// @brief load from filter kernel
             /// @param kernel: spatial filter kernel

@@ -32,6 +32,8 @@ void main()
     float lower = _cutoff_b;
     float width = upper - lower;
     float center = lower + width / 2.f;
-    _out = vec4(1 - project(_reject_factor, _pass_factor, 1.f / (1.f + pow((dist*width) / (dist*dist - center*center), 2*_order))));
+    float factor = 1 - project(_reject_factor, _pass_factor, 1.f / (1.f + pow((dist*width) / (dist*dist - center*center), 2*_order)));
     // sic, 1 - x for bandpass
+
+    _out = texture(_texture, _tex_coord) * factor;
 }

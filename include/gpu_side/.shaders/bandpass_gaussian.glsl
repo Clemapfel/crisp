@@ -26,11 +26,19 @@ void main()
     float to_square = _texture_size.y / _texture_size.x;
     pos.y *= to_square;
 
-    float dist = distance(pos, vec2(0.5, 0.5 * to_square) + vec2(_offset.x, -1 * _offset.y));
+    float dist_left = distance(pos, vec2(0.5, 0.5 * to_square) + vec2(_offset.x, -1 * _offset.y));
+    float dist_right = distance(pos, vec2(0.5, 0.5 * to_square) + vec2(-1 * _offset.x, _offset.y));
+
     float upper = _cutoff_a;
     float lower = _cutoff_b;
     float width = upper - lower;
     float center = lower + width / 2.f;
-    float value = (dist*dist - center*center) / (dist*width);
-    _out = vec4(project(_reject_factor, _pass_factor, exp(-1 * value*value)));
+
+    float value_left = (dist_left*dist_left - center*center) / (dist_left*width);
+    float factor_left = project(_reject_factor, _pass_factor, exp(-1 * value_left*value_left));
+
+    float value_right = (dist_right*dist_right - center*center) / (dist_right*width);
+    float factor_right = project(_reject_factor, _pass_factor, exp(-1 * value_right*value_right));
+
+    _out = texture(_texture, _tex_coord) * max(factor_left, factor_right);
 }

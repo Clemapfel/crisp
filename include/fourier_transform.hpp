@@ -37,7 +37,9 @@ namespace crisp
     template<FourierTransformMode Mode = BALANCED>
     class FourierTransform
     {
+        template<typename>
         friend class FrequencyDomainFilter;
+
         using Value_t = typename std::conditional<Mode == SPEED, float, typename std::conditional<Mode == ACCURACY, long double, double>::type>::type;
 
         public:
