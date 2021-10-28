@@ -227,15 +227,8 @@ namespace crisp
     class FrequencyDomainFilter<GPU_SIDE>
     {
         public:
-            /// @brief construct filter
-            /// @param width: the x-dimension of the spectrum the filter will be applied to
-            /// @param height: the y-dimensions of the spectrum the filter will be applied to
-            FrequencyDomainFilter(size_t width, size_t height);
-
-            /// @brief construct filter of the same size as the spectrum
-            /// @param spectrum
-            template<FourierTransformMode Mode>
-            FrequencyDomainFilter(const FourierTransform<Mode>&);
+            /// @brief default ctor
+            FrequencyDomainFilter();
 
             /// @brief multiply the filter with a fourier spectrum
             /// @tparam gpu_side: use hardware acceleration
@@ -244,20 +237,10 @@ namespace crisp
             template<FourierTransformMode Mode>
             void apply_to(FourierTransform<Mode>&) const;
 
-            /// @brief resize the filter
-            /// @param size: vector where .x is the x-dimensions and .y the y-dimensions of the spectrum the filter will be applied to
-            void set_size(Vector2ui);
-
-            /// @brief get the filters dimensions
-            /// @returns vector where .x is the width, .y the height of the filter
-            Vector2ui get_size() const;
-
-            /// @brief visualize filter as texture
-            /// @returns texture
-            Texture<float, 1> as_texture() const;
-
-
-
+            /// @brief set the filters offset, symmetry is automatically enforced
+            /// @param x_dist_from_center: x offset
+            /// @param y_dist_from_center: y offset
+            void set_offset(double x_dist_from_center, double y_dist_from_center);
 
             /// @brief identity filter
             /// @returns filter where all elements are 1
@@ -342,8 +325,14 @@ namespace crisp
             void as_butterworth_bandreject(double lower_cutoff, double higher_cutoff, size_t order, double pass_factor = 1, double reject_factor = 0);
 
         private:
+            GLNativeHandle _program;
 
+            double _cutoff_a, _cutoff_b;
+            double _pass_factor, _reject_factor;
+            Vector2f _offset = Vector2f{0, 0};
+            size_t _order = 0;
     };
 }
 
 #include ".src/frequency_domain_filter.inl"
+#include ".src/frequency_domain_filter_gpu.inl"
