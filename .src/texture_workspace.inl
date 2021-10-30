@@ -64,4 +64,22 @@ namespace crisp
 
         return _original;
     }
+
+    GLNativeHandle Workspace::get_framebuffer() const
+    {
+        return _framebuffer;
+    }
+
+    GLNativeHandle Workspace::get_texture() const
+    {
+        return _original;
+    }
+
+    GLNativeHandle Workspace::get_buffer_texture() const
+    {
+        if (_original != _texture_a)
+            return _texture_a;
+        else
+            return _texture_b;
+    }
 }

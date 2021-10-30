@@ -1344,6 +1344,32 @@ namespace crisp
             bind_shader_program(before);
     }
 
+    template<size_t N>
+    void State::set_vec(GLNativeHandle program_id, const std::string& var_name, Vector<float, N> vec)
+    {
+        static_assert(2 <= N and N <= 4);
+
+        auto before = _active_program;
+        if (before != program_id)
+            bind_shader_program(program_id);
+
+        switch (N)
+        {
+            case 2:
+                glUniform2f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1));
+                break;
+            case 3:
+                glUniform3f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1), vec.at(2));
+                break;
+            case 4:
+                glUniform4f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1), vec.at(2), vec.at(3));
+                break;
+        }
+
+        if (before != program_id)
+            bind_shader_program(before);
+    }
+
     void State::bind_texture(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle texture_id, size_t texture_unit)
     {
         if (program_id == NONE)

@@ -51,6 +51,17 @@ int main()
     auto transform = FourierTransform<SPEED>();
     transform.transform_from(image);
 
+    auto filter = FrequencyDomainFilter<GPU_SIDE>(transform);
+    filter.as_gaussian_bandpass(0.2, 0.3);
+    //filter.apply_to(transform);
+
+    auto img = transform.as_image();
+    auto tex = Texture<float, 1>(img);
+    State::bind_shader_program(NONE);
+    //State::bind_texture(NONE, "_texture", tex.get_handle());
+    State::display();
+
+    /*
     auto benchmark = Benchmark([&](Texture<float, 1>& tex){tex = transform.as_texture();});
 
     Texture<float, 1> texture = transform.as_texture();
@@ -80,8 +91,8 @@ int main()
     State::bind_vec2(program, "_texture_size", size);
     State::bind_vec2(program, "_offset", offset);
     State::bind_int(program, "_order", order);
+    */
 
-    State::display();
     window.display();
 
     while(window.isOpen())
@@ -94,10 +105,12 @@ int main()
 
             if (event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::Space)
             {
-                //shader = State::register_shader("visualize_fourier.glsl");
-                //program = State::register_program(shader);
-                //State::bind_shader_program(program);
-                //State::bind_texture(program, "_texture", texture);
+                filter.apply_to(transform);
+                img = transform.as_image();
+                tex = Texture<float, 1>(img);
+                State::bind_shader_program(NONE);
+                State::bind_texture(NONE, "_texture", tex.get_handle());
+                State::display();
 
                 State::display();
                 window.display();

@@ -40,6 +40,18 @@ namespace crisp
             /// @returns handle of the texture used for initialize
             GLNativeHandle yield();
 
+            /// @brief get the handle of the framebuffer
+            /// @returns handle
+            GLNativeHandle get_framebuffer() const;
+
+            /// @brief get the handle of the buffer texture
+            /// @returns handle
+            GLNativeHandle get_buffer_texture() const;
+
+            /// @brief get the handle of texture
+            /// @returns handle
+            GLNativeHandle get_texture() const;
+
         private:
             GLNativeHandle _original, _last_updated;
             GLNativeHandle _texture_a, _texture_b;

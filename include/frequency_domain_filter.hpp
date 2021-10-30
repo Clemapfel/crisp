@@ -227,8 +227,15 @@ namespace crisp
     class FrequencyDomainFilter<GPU_SIDE>
     {
         public:
-            /// @brief default ctor
-            FrequencyDomainFilter();
+            /// @brief construct the filter of a specified size
+            /// @param width: the x-dimension of the spectrum the filter will be applied to
+            /// @param height: the y-dimensions of the spectrum the filter will be applied to
+            FrequencyDomainFilter(size_t width, size_t height);
+
+            /// @brief construct filter of the same size as the spectrum
+            /// @param spectrum
+            template<FourierTransformMode Mode>
+            FrequencyDomainFilter(const FourierTransform<Mode>&);
 
             /// @brief multiply the filter with a fourier spectrum
             /// @tparam gpu_side: use hardware acceleration
@@ -331,6 +338,8 @@ namespace crisp
             double _pass_factor, _reject_factor;
             Vector2f _offset = Vector2f{0, 0};
             size_t _order = 0;
+
+            Vector2f _size;
     };
 }
 

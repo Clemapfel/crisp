@@ -8,15 +8,47 @@
 
 namespace crisp
 {
-    FrequencyDomainFilter<GPU_SIDE>::FrequencyDomainFilter()
-    {
-        _program = NONE;
-    }
+    FrequencyDomainFilter<GPU_SIDE>::FrequencyDomainFilter(size_t width, size_t height)
+        : _program(NONE), _size(Vector2f{float(width), float(height)})
+    {}
+    
+    template<FourierTransformMode Mode>
+    FrequencyDomainFilter<GPU_SIDE>::FrequencyDomainFilter(const FourierTransform<Mode>& transform)
+        : FrequencyDomainFilter(transform.get_size().x(), transform.get_size().y())
+    {}
 
     template<FourierTransformMode Mode>
-    void FrequencyDomainFilter<GPU_SIDE>::apply_to(FourierTransform <Mode>&) const
+    void FrequencyDomainFilter<GPU_SIDE>::apply_to(FourierTransform<Mode>& transform) const
     {
+        auto tex = State::register_texture<1>(size_t(_size.x()), size_t(_size.y()), transform._spectrum);
 
+        auto before = State::get_active_program_handle();
+        State::bind_shader_program(_program);
+        
+        State::set_float(_program, "_cutoff", _cutoff_a);   // a equal to b for non-bandpass
+        State::set_float(_program, "_cutoff_a", _cutoff_a);
+        State::set_float(_program, "_cutoff_b", _cutoff_b);
+        State::set_float(_program, "_pass_factor", _pass_factor);
+        State::set_float(_program, "_reject_factor", _reject_factor);
+        State::set_vec<2>(_program, "_texture_size", _size);
+        State::set_vec<2>(_program, "_offset", _offset);
+        State::set_int(_program, "_order", _order);
+        State::bind_texture(_program, "_texture", tex);
+
+        State::bind_shader_program(_program);
+        State::display();
+        //workspace.draw_to_buffer();
+
+        //glBindTexture(GL_TEXTURE_2D, workspace.get_buffer_texture());
+        //glGetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_FLOAT, &transform._spectrum[0]);
+
+        // download framebuffer into transform memory
+        glReadPixels(0, 0, _size.x(), _size.y(), GL_R32F, GL_FLOAT, &transform._spectrum[0]);
+
+        State::free_texture(tex);
+
+        // undo
+        State::bind_shader_program(before);
     }
 
     void FrequencyDomainFilter<GPU_SIDE>::as_identity()

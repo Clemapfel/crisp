@@ -171,6 +171,14 @@ namespace crisp
             /// @param proxy_id: id of resource
             static void bind_vec4(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
 
+            /// @brief bind vector of specified size to program
+            /// @tparam N: vector dimensionality in {2, 3, 4}
+            /// @param program_id: native handle of shader program
+            /// @param var_name: exact variable name in shader source
+            /// @param vector
+            template<size_t N>
+            static void set_vec(GLNativeHandle program_id, const std::string& var_name, Vector<float, N>);
+
             /// @brief allocate array of floats
             /// @param vector
             /// @returns id of allocated resource
@@ -302,6 +310,7 @@ namespace crisp
             /// @param var_name: exact variable name in shader source
             /// @param texture_id: native handle of texture
             /// @param texture_location: value of layout qualifier
+            /// @notes when binding multiple textures to the same program, start with the texture with the *highest* texture unit first, then proceed towards the lowest
             static void bind_texture(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle texture_id, size_t texture_location = 0);
 
             /// @brief return size of texture already allocated
