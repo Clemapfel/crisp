@@ -115,7 +115,7 @@ add_library(crisp STATIC
         .src/texture_workspace.inl foo.h .src/texture.inl
 
         include/benchmark.hpp
-        .src/benchmark.inl .src/frequency_domain_filter_gpu.inl include/gpu_side/is_gpu_side.hpp)
+        .src/benchmark.inl .src/frequency_domain_filter_gpu.inl include/gpu_side/is_gpu_side.hpp )
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp
@@ -136,4 +136,9 @@ include_directories("./")
 
 add_executable(TEST .test/main.cpp)
 target_link_libraries(TEST crisp)
+
+add_executable(GPU_SIDE docs/hardware_acceleration/.resources/main.cpp)
+target_link_libraries(GPU_SIDE crisp)
+
+
 

@@ -9,7 +9,7 @@ Spatially Independent Noise using Gaussian, Gamma, Uniform, Salt-and-Pepper Dist
 #include <noise_generator.hpp>
 ```
 
-## Table of Content
+## Table of Contents
 
 1. [**Introduction**](#1-introduction)
 2. [**Spatially Invariant Noise**](#2-noise-generator-for-spatially-invariant-noise)<br>
