@@ -8,6 +8,7 @@
 #include <image/multi_plane_image.hpp>
 #include <resource_path.hpp>
 #include <GLES3/gl32.h>
+#include <GL/gl.h>
 
 #include <fstream>
 #include <iostream>
@@ -116,7 +117,7 @@ namespace crisp
 
     void State::initialize_noop_shaders()
     {
-        if (_noop_fragment_shader != NONE and _noop_vertex_shader != NONE and _noop_program != NONE)
+        if (_noop_initialized)
             return;
 
         std::string source = R"(
@@ -167,6 +168,7 @@ namespace crisp
         glCompileShader(id);
 
         _noop_fragment_shader = id;
+        _noop_initialized = true;
         _noop_program = State::register_program(_noop_fragment_shader);
 
         _shader_programs.insert(_noop_program);

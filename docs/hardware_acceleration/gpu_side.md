@@ -22,7 +22,7 @@ Textures, Shaders, Graphics Card Interface, Hardware Accelerated Versions of Spa
 
 ## Table of Contents
 
-## 1. Benchmarks
+## 1. Motivation & Benchmarks
 
 When reproducing some of the examples in the past chapters, you may have noticed that it's runtime can vary and that some algorithms are quite slow. This is not necessarily due to the implementation, rather, some operations are just inherently very costly. Consider an image of size 1920x1080, this image has 2 073 600 pixels. Each of them has to be allocated, move from the disk to the ram, transformed into a color, etc.. If we now want to operate on the image, each operation will have to be executed 2073600 times. 
 
@@ -35,7 +35,7 @@ struct Benchmark
     Benchmark(Function_t&& lambda);
     
     template<typename... Args_t>
-    float execute(Args_t...);
+    float execute(size_t number_of_cycles, Args_t...);
 }
 ```
 
@@ -45,9 +45,112 @@ Using our familiar image of a bird:<br>
 
 ![](.resources/color_opal.png)<br>
 
-We want to measure the time it takes to create a deep-copy of this image. The image is 483*483 = 233289 pixels in size and each pixel has three, 32-bit floats (one of each RGB color plane).
+We want to measure the time it takes to create a deep-copy of this image. The image is `483*483 = 233289` pixels in size and each pixel has three, 32-bit floats (one of each RGB color plane).
 
 ```cpp
+#include <benchmark.hpp>
+
+auto image = load_color_image(get_resource_path() * "/docs/hardware_acceleration/.resources/color_opal.png");
+
+auto copy_benchmark = Benchmark([&](){
+    volatile auto deep_copy = image;
+});
+
+std::cout << copy_benchmark.execute(1000) << std::endl;
+```
+
+Here we're creating a lambda that allocates a copy of the image and the deep-copies each pixel value into the new image. The `volatile` specified here is used to prevent the compiler from optimizing out the unused variable. 
+We then execute the benchmark 1000 times and print the average time per cycle to the console. On this machine, the benchmark reports a time of `86404.3` microseconds on average which is about 0.09s. This doesn't sound that bad but is relativey slow considering the relatively low size of the image. 
+
+To address this runtime issue, `crisp` offers what is basically a high-performance mode. Using this mode, all operations take place on the graphics card which is optimized for image operations on a hardware level. The gpu-side equivalent of an image is called a *texture*. We will learn more about how it works exactly soon but for now we just want to see how much faster it is:
+
+```cpp
+#include <benchmark.hpp>
+#include <gpu_side/texture.hpp>
+
+auto image = load_color_image(get_resource_path() * "/docs/hardware_acceleration/.resources/color_opal.png");
+
+// create a texture from the image
+auto texture = Texture<float, 3>(image);
+
+auto copy_benchmark = Benchmark([&](){
+    volatile auto texture_deep_copy = texture;
+});
+
+std::cout << copy_benchmark.execute(1000) << std::endl;
+```
+Here we're first loading the image, then creating a texture from the image. Inside the lambda we then deep copy this texture once per cycle. The benchmark reports an average time (in microseconds) of:
+
+```
+2.675
+```
+
+That's... a lot faster. This result is not erronous, each call did indeed allocated a new image of the same size and copy all data from the original into the new image. Comparing 2.675 microseconds to 86404.3 microseconds we get a sense of just how much faster gpu-side computation is. Now, dealing with many 60fps streams at the same time seems a lot more doable.
+
+## 2. Introduction to GPU-Side Computing
+
+To understand why textures are so much faster and how to properly utilize them, we need to achieve a certain amount of base-knowledge about how graphics cards work. Similary to the [deep learning tutorial](../feature_classification/feature_classification_and_deep_learning.md), this article will only offer the minimum amount of knowledge needed to use and understand `crisp`s functions. A proper introduction to graphics-card interaction is available on the authors [blog](www.clemens-cords.com/https://clemens-cords.com/post/).
+
+All computers have a CPU (central processing unit), this is the hardware unit that does the work of moving and combining memory using *operations*. Each CPU architecture has a certain set of operations and hardware is structured in a way that makes these operations very fast. Because we need objects to use for the operations, we need a memory. The CPU has a small amount of memory called a *cache*, this memory is extremely fast to access. Slightly slower but much, much larger memory is called the RAM, this where our program and most of the data we handle live during runtime. When loading an image, we load the data from the harddrive into the RAM. Then, when we operate on the image the CPU loads the data from the RAM into the cache, transforms it and then puts it back into the RAM so we can use it for other things.
+The graphics card is similarly structured, it has a processing unit now called the GPU (graphics processing unit) which again has a set of instructions. Unlike the CPU, these instructions are more limited but specialized. Similarly to RAM the graphics card has it's own memory, usually completely separate fromt he computers RAM. To distinguish the two, we will refer to the gpu-side RAM as [VRAM](https://en.wikipedia.org/wiki/Video_RAM_(dual-ported_DRAM)#Video_DRAM_(VRAM)), note however that VRAM is only one type of gpu-side memory, other types include (WRAM, MDRAM, SGRAM, etc.). 
+
+It is important to realize this separation, the graphics card has no way of accessing both the disk as well as the RAM and similarly the CPU has no way of accessing the GPU or the VRAM. To allow for gpu-side computation, we first need to move objects into the VRAM. This can be relatively costly but the GPU makes up for this by being extremely good at matrix-operations. Recall that images can be conceptualized as a matrix of pixel values. On the CPU each of these values would have to processed one-by-one, while the GPU can often move and compute comparatively large matrices with a single, hardware-level operation.
+
+## 2.1 Handles
+
+When dealing with gpu-side objects, we do not have access to the memory and we thus do not have a reference or pointer to the object, instead the objects are identified cpu-side using a *handle*:
+
+```cpp
+// in gpu_side/native_handle.hpp
+
+using GLNativeHandle = unsigned int; // 1, 2, ...
+using ProxyID = int; // -1, -2, ...
+
+#define NONE 0
+```
+
+There are two types of handles in crisp, `GLNativeHandle` are handles generated by OpenGL, the library used to interface with the graphics card. `GLNativeHandle` start at 1 and continue upwards, they are always positive. To not accidentally confuse the two, `crisp` furthermore defines a `ProxyID` which is the handle used by objects generated with `crisp` alone. `ProxyID`s start at -1 and continue downwards. Because of this, the two types of handles cannot be mixed and during debugging, it's easy to distinguish the two by simple looking at the value.
+For better legibility, `crisp` offers a c-constant `NONE` which is the handle referring to the gpu-side NULL object (similar to C++s `nullptr`). If we want a variable to be bound to nothing, we set the handle of it's value `NONE`. 
+
+In summary, when we interact with a gpu-side object in C++, we are only interacting with it's *handle*. If we want to change the value of the object, we need use to a *shader* if the object is a texture or we need to manually send the value over to the graphics card if the object is a trivial type such as a single number or a vector.
+
+## 2.2 Value Types
+The set of operations of the GPU is very limited compared to C++s, the following list is an exhaustive list of all gpu-side types used in `crisp`:
+
+#### Scalars: `int`, `uint`, `bool`, `float`
+There are only 32-bit integers and 32-bit floats. For convenience, `crisp` offers an interface that also supports `bools`, even though gpu-side they not actual 1-bit objects. 
+
+#### Vectors: `vec2`, `vec3`, `vec4`
+All vectors are vectors of 32-bit floats. There are only 3 size of vectors: 2, 3 and 4
+
+#### Matrices: `Mat2`, `Mat3`, `Mat4`, `Mat2x3`, `Mat3x2`, `Mat2x4`, `Mat4x2`, etc.
+
+Matrixes can only have a size of `m*n` where m, n in {2, 3, 4}. Matrices of size 2x2 are called `mat2`, 3x3 are called `mat3` and 4x4 `mat4`. For non-square matrices, the types name is `matnxm` where n is the number of columns and m is the number of rows. For example, a 2-column, 4-row matrix has the type `Mat2x4` while a 4-column, 2-row matrix is of type `Mat4x2`. If we want a matrix with only one row or one column, we will have to use a vector instead.
+
+#### Arrays: `float[]`, `vec2[]`, `mat4x2[]`, etc.
+
+All value types mentioned so far can also be in arrays. This means that we cannot have arrays of array, only `float`, `int`, `bool`, all 4 vector types and all 16 matrix types.
+
+#### Textures: `sampler2D`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

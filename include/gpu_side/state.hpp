@@ -367,6 +367,7 @@ namespace crisp
             static inline GLNativeHandle _noop_vertex_shader = NONE;
             static inline GLNativeHandle _noop_fragment_shader = NONE;
             static inline GLNativeHandle _noop_program = NONE;
+            static inline bool _noop_initialized = false;
 
             static inline std::multiset<GLNativeHandle> _fragment_shaders = {};
             static inline std::multiset<GLNativeHandle> _shader_programs = {};

@@ -29,12 +29,6 @@ namespace crisp
             template<typename... Args_t>
             float execute(size_t n_cycles, Args_t... args);
 
-            /// @brief measure duration of a single cycles
-            /// @param args: arguments used for bound lambda
-            /// @return time per cycle, in microseconds
-            template<typename... Args_t>
-            float execute(Args_t... args);
-
         private:
             Function_t _function;
     };
