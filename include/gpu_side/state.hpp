@@ -81,6 +81,27 @@ namespace crisp
             /// @param int
             static void set_int(GLNativeHandle program_id, const std::string& var_name, int);
 
+            /// @brief allocate unsigned integer
+            /// @param value
+            /// @returns id of allocated resource
+            static ProxyID register_uint(size_t);
+
+            /// @brief deallocate unsigned integer
+            /// @param resource_id
+            static void free_uint(ProxyID);
+
+            /// @brief bind already allocated unsigned integer to uniform of shader program
+            /// @param program_id: native handle of shader program
+            /// @param var_name: exact variable name in shader source
+            /// @param proxy_id: id of resource
+            static void bind_uint(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
+
+            /// @brief bind free unsigned integer to uniform of shader program
+            /// @param program_id: native handle of shader program
+            /// @param var_name: exact variable name in shader source
+            /// @param int
+            static void set_uint(GLNativeHandle program_id, const std::string& var_name, int);
+
             /// @brief allocate float
             /// @param value
             /// @returns id of allocated resource
@@ -342,6 +363,7 @@ namespace crisp
             static ProxyID get_next_id() { return _current--;}
 
             static inline std::unordered_map<ProxyID, int> _ints = {};
+            static inline std::unordered_map<ProxyID, unsigned int> _uints = {};
             static inline std::unordered_map<ProxyID, float> _floats = {};
             static inline std::unordered_map<ProxyID, bool> _bools = {};
 

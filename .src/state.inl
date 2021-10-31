@@ -776,6 +776,13 @@ namespace crisp
         return id;
     }
 
+    ProxyID State::register_uint(size_t v)
+    {
+        auto id = get_next_id();
+        _uints.insert({id, v});
+        return id;
+    }
+
     ProxyID State::register_float(float v)
     {
         auto id = get_next_id();
@@ -1156,6 +1163,14 @@ namespace crisp
         _ints.erase(id);
     }
 
+    void State::free_uint(ProxyID id)
+    {
+        if (_uints.find(id) == _uints.end())
+            std::cerr << "[WARNING] Trying to free already deallocated or non-existent int with id " << id << std::endl;
+
+        _uints.erase(id);
+    }
+
     void State::free_vec2(ProxyID id)
     {
         if (_vec2s.find(id) == _vec2s.end())
@@ -1209,6 +1224,40 @@ namespace crisp
             bind_shader_program(program_id);
 
         glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), i);
+
+        if (before != program_id)
+            bind_shader_program(before);
+    }
+
+    void State::bind_uint(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
+    {
+        verify_program_id(program_id);
+        if (_ints.find(proxy_id) == _ints.end())
+        {
+            std::stringstream s;
+            s << "[ERROR] No int with id " << proxy_id << " registered" << std::endl;
+            throw std::out_of_range(s.str());
+        }
+
+        auto before = _active_program;
+        if (before != program_id)
+            bind_shader_program(program_id);
+
+        glUniform1ui(glGetUniformLocation(program_id, var_name.c_str()), _ints.at(proxy_id));
+
+        if (before != program_id)
+            bind_shader_program(before);
+    }
+
+    void State::set_uint(GLNativeHandle program_id, const std::string& var_name, int i)
+    {
+        verify_program_id(program_id);
+
+        auto before = _active_program;
+        if (before != program_id)
+            bind_shader_program(program_id);
+
+        glUniform1ui(glGetUniformLocation(program_id, var_name.c_str()), i);
 
         if (before != program_id)
             bind_shader_program(before);

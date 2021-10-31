@@ -96,7 +96,11 @@ The graphics card is similarly structured, it has a processing unit now called t
 
 It is important to realize this separation, the graphics card has no way of accessing both the disk as well as the RAM and similarly the CPU has no way of accessing the GPU or the VRAM. To allow for gpu-side computation, we first need to move objects into the VRAM. This can be relatively costly but the GPU makes up for this by being extremely good at matrix-operations. Recall that images can be conceptualized as a matrix of pixel values. On the CPU each of these values would have to processed one-by-one, while the GPU can often move and compute comparatively large matrices with a single, hardware-level operation.
 
-## 2.1 Handles
+## 2.1 `crisp::State`
+
+Interacting with the graphics card through OpenGL can be quite cumbersome and frankly hard, users need to know a lot of things to do basic operations like assignment. To make this easier, `crisp` offers an interface class called `crisp::State` (in `gpu_side/state.hpp`). This class has only static members and functions and is a representation of the current state of the graphics card context. 
+
+## 2.2 Handles
 
 When dealing with gpu-side objects, we do not have access to the memory and we thus do not have a reference or pointer to the object, instead the objects are identified cpu-side using a *handle*:
 
@@ -114,24 +118,126 @@ For better legibility, `crisp` offers a c-constant `NONE` which is the handle re
 
 In summary, when we interact with a gpu-side object in C++, we are only interacting with it's *handle*. If we want to change the value of the object, we need use to a *shader* if the object is a texture or we need to manually send the value over to the graphics card if the object is a trivial type such as a single number or a vector.
 
-## 2.2 Value Types
-The set of operations of the GPU is very limited compared to C++s, the following list is an exhaustive list of all gpu-side types used in `crisp`:
+## 2.3 Value Types
 
-#### Scalars: `int`, `uint`, `bool`, `float`
-There are only 32-bit integers and 32-bit floats. For convenience, `crisp` offers an interface that also supports `bools`, even though gpu-side they not actual 1-bit objects. 
+For an object of type `foo` and value `value:
++ `auto foo_handle = State::register_foo(value)` allocates the objects gpu-side, assigns it the value `value` and returns it's handle which is saved in the variable `foo_handle`.
++ `State::free_foo(foo_handle)` deallocates the object with the handle `foo_handle`
 
-#### Vectors: `vec2`, `vec3`, `vec4`
+So for example if we want to create a gpu-side variable that is a simple bool:
+
+```cpp
+{
+auto cpu_side_bool = true;
+auto gpu_side_bool_handle = State::register_bool(cpu_side_bool);
+} // here, C++ deallocates cpu_side_bool, however the memory on the graphic card still persists
+
+// manually deallocate it to actually free the memory
+State::free_bool(gpu_side_bool_handle);
+```
+
+It's important to remember that both the value and ownership of gpu-side variables are completely separate from it's cpu-side handle. If we somehow loose the handle, the memory on the graphic card persists which can lead to memory piling up so it is important to be mindful of that.
+
+This section talks about what types of objects there are, due to the specific set of gpu operations, the number of types is very limited compared to C++s. The following list is exhaustive:
+
+### Scalars: `int`, `uint`, `bool`, `float`
+There are only 32-bit integers and 32-bit floats. For convenience, `crisp` offers an interface that also supports `bools`, even though gpu-side they not actual 1-bit objects.
+
+We can allocate and free numbers using:
+```cpp
+State::register_int(int);
+State::register_uint(size_t);
+State::register_bool(bool);
+State::register_float(float);
+
+State::free_int(int);
+State::free_uint(size_t);
+State::free_bool(bool);
+State::free_float(float);
+```
+
+### Vectors: `vec2`, `vec3`, `vec4`
 All vectors are vectors of 32-bit floats. There are only 3 size of vectors: 2, 3 and 4
 
-#### Matrices: `Mat2`, `Mat3`, `Mat4`, `Mat2x3`, `Mat3x2`, `Mat2x4`, `Mat4x2`, etc.
+We allocate and free vectors using:
+
+```cpp
+State::register_vec2(crisp::Vector<T, 2>);
+State::register_vec3(crisp::Vector<T, 3>);
+State::register_vec4(crisp::Vector<T, 4>);
+
+State::free_vec2(crisp::Vector<T, 2>);
+State::free_vec3(crisp::Vector<T, 3>);
+State::free_vec4(crisp::Vector<T, 4>);
+```
+Note that while `State`s functions take vectors of any value type, the are cast to 32-bit float before being send to the graphics card.
+
+### Matrices: `Mat2`, `Mat3`, `Mat4`, `Mat2x3`, `Mat3x2`, `Mat2x4`, `Mat4x2`, etc.
 
 Matrixes can only have a size of `m*n` where m, n in {2, 3, 4}. Matrices of size 2x2 are called `mat2`, 3x3 are called `mat3` and 4x4 `mat4`. For non-square matrices, the types name is `matnxm` where n is the number of columns and m is the number of rows. For example, a 2-column, 4-row matrix has the type `Mat2x4` while a 4-column, 2-row matrix is of type `Mat4x2`. If we want a matrix with only one row or one column, we will have to use a vector instead.
 
-#### Arrays: `float[]`, `vec2[]`, `mat4x2[]`, etc.
+We allocate and free matrices using:
 
-All value types mentioned so far can also be in arrays. This means that we cannot have arrays of array, only `float`, `int`, `bool`, all 4 vector types and all 16 matrix types.
+```cpp
+State::register_matrix(Matrix<T>);
+State::free_matrix(Matrix<T>);
+```
+We do not need to specify the size of the matrix, `crisp` automatically detects it and allocates the corresponding gpu-side typed matrix. If the matrix handed to the state is not size `N`, `M` where `N, M in {2, 3, 4}` an exception will be raised.
 
-#### Textures: `sampler2D`
+### Arrays: `float[]`, `vec2[]`, `mat4x2[]`, etc.
+
+All value types mentioned so far can also be in arrays. This means that we cannot have arrays of array, only arrays of `float`, `int`, `bool`, all 4 vector types and all 16 matrix types.
+
+We register an array using:
+
+```cpp
+```
+
+## 2.4 Shaders
+
+Along the trivial types mentioned above, `crisp::State` offers two more variables to bind: *textures* (which we will learn in the next section), and *shaders*. A shader is a program, it's source code is stored somewhere and when it is registered, source code is send to OpenGL and compiled into essentially a binary. We can do so like this:
+
+```cpp
+auto shader_source = State::register_shader("/path/to/shader.glsl");
+```
+
+In `crisp`, all user-defined shaders are fragment shaders. This is because 2d image processing does not need any 3D functionality like depth, vertices, stencils, etc.. Each shader has the following form:
+
+```glsl
+#version 330 core
+
+// shader input/output
+in vec2 _tex_coord;
+out vec4 _out;
+
+// uniforms
+uniform sampler2D _texture;
+
+// main
+void main()
+{
+    vec4 fragment_color = texture2D(_texture, _tex_coord);
+    // do something
+    _out = fragment_color;
+}
+
+```
+
+We see that each fragment shader gets handed exactly one argument from the vertex shader called `_tex_coord`. This is the spatial position of the fragment currently modified using the shader. After the shader has done it's job, `_out` is written to which will make the corresponding fragment appear the color specified in the shader. Each fragment shader furthermore has at least one uniform: `_texture`. Note that this uniform is compulsory and `crisp` assumes that it is always present and always spelled exactly like that. If we want more than one texture uniform we can do so, however one of them will have to be called `_texture`.
+
+After compiling the shader via `register_shader`, we need to package the binary into a full *shader program* that the graphics card can actually use. We do so using:
+
+```cpp
+auto shader_source = State::register_shader("/path/to/shader.glsl");
+auto shader_program = State::register_program(shader);
+State::free_shader(shader_source);
+```
+
+After we registered the program, the shader is now no longer needed so it can be safely freed. We now have a functioning shader program, to use it we simply call `State::bind_shader_program(shader_program)` which will make it 
+
+
+
+
 
 
 
