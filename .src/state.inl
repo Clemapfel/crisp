@@ -797,50 +797,21 @@ namespace crisp
         return id;
     }
 
-    template<typename T>
-    ProxyID State::register_vec2(const Vector<T, 2>& vec)
+    template<size_t N, typename T>
+    ProxyID State::register_vec(const Vector<T, N>& vec)
     {
+        static_assert(2 <= N and N <= 4);
+
         auto id = get_next_id();
-        _vec2s.insert({
+
+        std::vector<float> to_push;
+        for (size_t i = 0; i < N; ++i)
+            to_push.push_back(vec.at(i));
+        _vecs.insert({
             id,
-            std::array<float, 2>{
-                static_cast<float>(vec.x()),
-                static_cast<float>(vec.y())
-            }
+            to_push
         });
 
-        return id;
-    }
-
-    template<typename T>
-    ProxyID State::register_vec3(const Vector<T, 3>& vec)
-    {
-        auto id = get_next_id();
-        _vec3s.insert({
-            id,
-            std::array<float, 3>{
-                static_cast<float>(vec.x()),
-                static_cast<float>(vec.y()),
-                static_cast<float>(vec.z())
-            }
-        });
-
-        return id;
-    }
-
-    template<typename T>
-    ProxyID State::register_vec4(const Vector<T, 4>& vec)
-    {
-        auto id = get_next_id();
-        _vec4s.insert({
-            id,
-            std::array<float, 4>{
-                static_cast<float>(vec.x()),
-                static_cast<float>(vec.y()),
-                static_cast<float>(vec.z()),
-                static_cast<float>(vec.w())
-            }
-        });
 
         return id;
     }
@@ -1171,28 +1142,12 @@ namespace crisp
         _uints.erase(id);
     }
 
-    void State::free_vec2(ProxyID id)
+    void State::free_vec(ProxyID id)
     {
-        if (_vec2s.find(id) == _vec2s.end())
+        if (_vecs.find(id) == _vecs.end())
             std::cerr << "[WARNING] Trying to free already deallocated or non-existent vec2 with id " << id << std::endl;
         
-        _vec2s.erase(id);
-    }
-
-    void State::free_vec3(ProxyID id)
-    {
-         if (_vec3s.find(id) == _vec3s.end())
-            std::cerr << "[WARNING] Trying to free already deallocated or non-existent vec3 with id " << id << std::endl;
-         
-        _vec3s.erase(id);
-    }
-
-    void State::free_vec4(ProxyID id)
-    {
-         if (_vec4s.find(id) == _vec4s.end())
-            std::cerr << "[WARNING] Trying to free already deallocated or non-existent vec4 with id " << id << std::endl;
-         
-        _vec4s.erase(id);
+        _vecs.erase(id);
     }
 
     void State::bind_int(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
@@ -1331,13 +1286,13 @@ namespace crisp
             bind_shader_program(before);
     }
 
-    void State::bind_vec2(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
+    void State::bind_vec(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
         verify_program_id(program_id);
-        if (_vec2s.find(proxy_id) == _vec2s.end())
+        if (_vecs.find(proxy_id) == _vecs.end())
         {
             std::stringstream s;
-            s << "[ERROR] No vec2 with id " << proxy_id << " registered" << std::endl;
+            s << "[ERROR] No vector with id " << proxy_id << " registered" << std::endl;
             throw std::out_of_range(s.str());
         }
 
@@ -1345,51 +1300,14 @@ namespace crisp
         if (before != program_id)
             bind_shader_program(program_id);
 
-        auto& vec = _vec2s.at(proxy_id);
-        glUniform2f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1));
+        auto& vec = _vecs.at(proxy_id);
 
-        if (before != program_id)
-            bind_shader_program(before);
-    }
-
-    void State::bind_vec3(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
-    {
-        verify_program_id(program_id);
-        if (_vec3s.find(proxy_id) == _vec3s.end())
-        {
-            std::stringstream s;
-            s << "[ERROR] No vec3 with id " << proxy_id << " registered" << std::endl;
-            throw std::out_of_range(s.str());
-        }
-
-        auto before = _active_program;
-        if (before != program_id)
-            bind_shader_program(program_id);
-
-        auto& vec = _vec3s.at(proxy_id);
-        auto location = glGetUniformLocation(program_id, var_name.c_str());
-        glUniform3f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1), vec.at(2));
-
-        if (before != program_id)
-            bind_shader_program(before);
-    }
-
-    void State::bind_vec4(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
-    {
-        verify_program_id(program_id);
-        if (_vec4s.find(proxy_id) == _vec4s.end())
-        {
-            std::stringstream s;
-            s << "[ERROR] No vec2 with id " << proxy_id << " registered" << std::endl;
-            throw std::out_of_range(s.str());
-        }
-
-        auto before = _active_program;
-        if (before != program_id)
-            bind_shader_program(program_id);
-
-        auto& vec = _vec4s.at(proxy_id);
-        glUniform4f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1), vec.at(2), vec.at(3));
+        if (vec.size() == 2)
+            glUniform2f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1));
+        else if (vec.size() == 3)
+            glUniform3f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1), vec.at(2));
+        else if (vec.size() == 4)
+            glUniform4f(glGetUniformLocation(program_id, var_name.c_str()), vec.at(0), vec.at(1), vec.at(2), vec.at(3));
 
         if (before != program_id)
             bind_shader_program(before);

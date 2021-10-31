@@ -20,72 +20,6 @@ Textures, Shaders, Graphics Card Interface, Hardware Accelerated Versions of Spa
 #include <benchmark.hpp>
 ```
 
-## Table of Contents
-
-## 1. Motivation & Benchmarks
-
-When reproducing some of the examples in the past chapters, you may have noticed that it's runtime can vary and that some algorithms are quite slow. This is not necessarily due to the implementation, rather, some operations are just inherently very costly. Consider an image of size 1920x1080, this image has 2 073 600 pixels. Each of them has to be allocated, move from the disk to the ram, transformed into a color, etc.. If we now want to operate on the image, each operation will have to be executed 2073600 times. 
-
-To investigate the nature of this behavior, `crisp` offers a very compact benchmarking object:
-
-```cpp
-template<typename Function_t>
-struct Benchmark
-{
-    Benchmark(Function_t&& lambda);
-    
-    template<typename... Args_t>
-    float execute(size_t number_of_cycles, Args_t...);
-}
-```
-
-When creating the object, we hand it a lambda which is saved in the benchmark object. When we call `execute`, we forward the arguments to the lambda and lambda is then itself executed. The benchmark object calculates the time it takes for the lambda to return and reports the time in microseconds.
-
-Using our familiar image of a bird:<br>
-
-![](.resources/color_opal.png)<br>
-
-We want to measure the time it takes to create a deep-copy of this image. The image is `483*483 = 233289` pixels in size and each pixel has three, 32-bit floats (one of each RGB color plane).
-
-```cpp
-#include <benchmark.hpp>
-
-auto image = load_color_image(get_resource_path() * "/docs/hardware_acceleration/.resources/color_opal.png");
-
-auto copy_benchmark = Benchmark([&](){
-    volatile auto deep_copy = image;
-});
-
-std::cout << copy_benchmark.execute(1000) << std::endl;
-```
-
-Here we're creating a lambda that allocates a copy of the image and the deep-copies each pixel value into the new image. The `volatile` specified here is used to prevent the compiler from optimizing out the unused variable. 
-We then execute the benchmark 1000 times and print the average time per cycle to the console. On this machine, the benchmark reports a time of `86404.3` microseconds on average which is about 0.09s. This doesn't sound that bad but is relativey slow considering the relatively low size of the image. 
-
-To address this runtime issue, `crisp` offers what is basically a high-performance mode. Using this mode, all operations take place on the graphics card which is optimized for image operations on a hardware level. The gpu-side equivalent of an image is called a *texture*. We will learn more about how it works exactly soon but for now we just want to see how much faster it is:
-
-```cpp
-#include <benchmark.hpp>
-#include <gpu_side/texture.hpp>
-
-auto image = load_color_image(get_resource_path() * "/docs/hardware_acceleration/.resources/color_opal.png");
-
-// create a texture from the image
-auto texture = Texture<float, 3>(image);
-
-auto copy_benchmark = Benchmark([&](){
-    volatile auto texture_deep_copy = texture;
-});
-
-std::cout << copy_benchmark.execute(1000) << std::endl;
-```
-Here we're first loading the image, then creating a texture from the image. Inside the lambda we then deep copy this texture once per cycle. The benchmark reports an average time (in microseconds) of:
-
-```
-2.675
-```
-
-That's... a lot faster. This result is not erronous, each call did indeed allocated a new image of the same size and copy all data from the original into the new image. Comparing 2.675 microseconds to 86404.3 microseconds we get a sense of just how much faster gpu-side computation is. Now, dealing with many 60fps streams at the same time seems a lot more doable.
 
 ## 2. Introduction to GPU-Side Computing
 
@@ -162,13 +96,11 @@ All vectors are vectors of 32-bit floats. There are only 3 size of vectors: 2, 3
 We allocate and free vectors using:
 
 ```cpp
-State::register_vec2(crisp::Vector<T, 2>);
-State::register_vec3(crisp::Vector<T, 3>);
-State::register_vec4(crisp::Vector<T, 4>);
+template<size_t N, typename T>
+State::register_vec(crisp::Vector<T, N>);
 
-State::free_vec2(crisp::Vector<T, 2>);
-State::free_vec3(crisp::Vector<T, 3>);
-State::free_vec4(crisp::Vector<T, 4>);
+template<size_t N, typename T>
+State::free_vec(crisp::Vector<T, N>);
 ```
 Note that while `State`s functions take vectors of any value type, the are cast to 32-bit float before being send to the graphics card.
 
@@ -195,7 +127,7 @@ We register an array using:
 
 ## 2.4 Shaders
 
-Along the trivial types mentioned above, `crisp::State` offers two more variables to bind: *textures* (which we will learn in the next section), and *shaders*. A shader is a program, it's source code is stored somewhere on the disk and when it is registered, source code is send to OpenGL and compiled into essentially a binary. We can do so like this:
+Along the trivial types mentioned above, `crisp::State` offers two more variables to bind: *textures* (which we will learn in the next section), and *shaders*. A shader is a program, it's source code is stored somewhere on the disk and when it is registered, the source code is send to OpenGL and compiled into essentially a binary during runtime. We can do so like this:
 
 ```cpp
 auto shader_source = State::register_shader("/path/to/shader.glsl");
@@ -233,7 +165,11 @@ auto shader_program = State::register_program(shader);
 State::free_shader(shader_source);
 ```
 
-After we registered the program, the shader is now no longer needed so it can be safely freed. We now have a functioning shader program, to use it we simply call `State::bind_shader_program(shader_program)` which will make it 
+After we registered the program, the shader is now no longer needed so it can be safely freed. We now have a functioning shader program, to use it we simply call `State::bind_shader_program(shader_program)` which will make it active until another program is registered. If we want to disable the program without replacing it, we call `State::bind_shader_program(NONE)`.
+
+## 2.5 Textures
+
+
 
 
 

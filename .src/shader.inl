@@ -46,13 +46,13 @@ namespace crisp
                     State::free_bool(entry.second.id);
                     break;
                 case VEC2:
-                    State::free_vec2(entry.second.id);
+                    State::free_vec(entry.second.id);
                     break;
                 case VEC3:
-                    State::free_vec3(entry.second.id);
+                    State::free_vec(entry.second.id);
                     break;
                 case VEC4:
-                    State::free_vec4(entry.second.id);
+                    State::free_vec(entry.second.id);
                     break;
                 case MATRIX:
                     State::free_matrix(entry.second.id);
@@ -96,13 +96,13 @@ namespace crisp
                     State::bind_bool(_program_id, pair.first, pair.second.id);
                     break;
                 case VEC2:
-                    State::bind_vec2(_program_id, pair.first, pair.second.id);
+                    State::bind_vec(_program_id, pair.first, pair.second.id);
                     break;
                 case VEC3:
-                    State::bind_vec3(_program_id, pair.first, pair.second.id);
+                    State::bind_vec(_program_id, pair.first, pair.second.id);
                     break;
                 case VEC4:
-                    State::bind_vec4(_program_id, pair.first, pair.second.id);
+                    State::bind_vec(_program_id, pair.first, pair.second.id);
                     break;
                 case MATRIX:
                     State::bind_matrix(_program_id, pair.first, pair.second.id);
@@ -144,13 +144,13 @@ namespace crisp
                     State::bind_bool(_program_id, pair.first, -1);
                     break;
                 case VEC2:
-                    State::bind_vec2(_program_id, pair.first, -1);
+                    State::bind_vec(_program_id, pair.first, -1);
                     break;
                 case VEC3:
-                    State::bind_vec3(_program_id, pair.first, -1);
+                    State::bind_vec(_program_id, pair.first, -1);
                     break;
                 case VEC4:
-                    State::bind_vec4(_program_id, pair.first, -1);
+                    State::bind_vec(_program_id, pair.first, -1);
                     break;
                 case MATRIX:
                     State::bind_matrix(_program_id, pair.first, -1);
@@ -220,7 +220,7 @@ namespace crisp
         _var_name_to_proxy.insert({
             var_name,
             ProxyEntry {
-                .id = State::register_vec2(vec),
+                .id = State::register_vec<2>(vec),
                 .type = ProxyType::VEC2
             }
         });
@@ -232,7 +232,7 @@ namespace crisp
         _var_name_to_proxy.insert({
             var_name,
             ProxyEntry {
-                .id = State::register_vec3(vec),
+                .id = State::register_vec<3>(vec),
                 .type = ProxyType::VEC3
             }
         });
@@ -244,7 +244,7 @@ namespace crisp
         _var_name_to_proxy.insert({
             var_name,
             ProxyEntry {
-                .id = State::register_vec4(vec),
+                .id = State::register_vec<4>(vec),
                 .type = ProxyType::VEC4
             }
         });
@@ -317,7 +317,7 @@ namespace crisp
         _var_name_to_proxy.insert({
             var_name,
             ProxyEntry {
-                .id = State::register_vec3(as_vec),
+                .id = State::register_vec<3>(as_vec),
                 .type = ProxyType::VEC3
             }
         });

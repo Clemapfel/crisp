@@ -78,8 +78,8 @@ int main()
     auto cutoff_a = State::register_float(0.4);
     auto cutoff_b = State::register_float(0.25);
 
-    auto size = State::register_vec2(texture.get_size());
-    auto offset = State::register_vec2(Vector2f{0.1, 0.1});
+    auto size = State::register_vec<2>(texture.get_size());
+    auto offset = State::register_vec<2>(Vector2f{0.1, 0.1});
     auto order = State::register_int(3);
 
     State::bind_float(program, "_cutoff_frequency", cutoff_a);

@@ -69,6 +69,7 @@ namespace crisp
             void apply_to(Image_t&);
 
             /// @brief apply filter to a texture
+            /// @param texture
             template<typename T, size_t N>
             void apply_to(Texture<T, N>&);
 

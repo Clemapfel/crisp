@@ -84,7 +84,7 @@ namespace crisp
             /// @brief allocate unsigned integer
             /// @param value
             /// @returns id of allocated resource
-            static ProxyID register_uint(int);
+            static ProxyID register_uint(size_t);
 
             /// @brief deallocate unsigned integer
             /// @param resource_id
@@ -96,12 +96,11 @@ namespace crisp
             /// @param proxy_id: id of resource
             static void bind_uint(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
 
-            /// @brief bindfree  unsigned integer to uniform of shader program
+            /// @brief bind free  unsigned integer to uniform of shader program
             /// @param program_id: native handle of shader program
             /// @param var_name: exact variable name in shader source
             /// @param int
             static void set_uint(GLNativeHandle program_id, const std::string& var_name, int);
-
 
             /// @brief allocate float
             /// @param value
@@ -145,56 +144,26 @@ namespace crisp
             /// @param bool
             static void set_bool(GLNativeHandle program_id, const std::string& var_name, bool);
 
-            /// @brief allocate vec2
-            /// @param value
-            /// @returns id of allocated resource
-            template<typename T>
-            static ProxyID register_vec2(const Vector<T, 2>&);
+            /// @brief register vector of size 2, 3 or 4
+            /// @tparam N: size of vector
+            /// @tparam T: value type of vector, will be static cast to float
+            /// @param vector
+            /// @returns resulting handle
+            template<size_t N, typename T>
+            static ProxyID register_vec(const Vector<T, N>&);
 
-            /// @brief deallocate vec2
-            /// @param resource_id
-            static void free_vec2(ProxyID);
+            /// @brief free vector of any size
+            /// @param vector id
+            static void free_vec(ProxyID);
 
-            /// @brief bind already allocated vec2 to uniform of shader program
+            /// @brief bind vector of any size
             /// @param program_id: native handle of shader program
             /// @param var_name: exact variable name in shader source
-            /// @param proxy_id: id of resource
-            static void bind_vec2(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
+            /// @param id of vector
+            static void bind_vec(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
 
-            /// @brief allocate vec3
-            /// @param value
-            /// @returns id of allocated resource
-            template<typename T>
-            static ProxyID register_vec3(const Vector<T, 3>&);
-
-            /// @brief deallocate vec3
-            /// @param resource_id
-            static void free_vec3(ProxyID);
-
-            /// @brief bind already allocated vec3 to uniform of shader program
-            /// @param program_id: native handle of shader program
-            /// @param var_name: exact variable name in shader source
-            /// @param proxy_id: id of resource
-            static void bind_vec3(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
-
-            /// @brief allocate vec3
-            /// @param value
-            /// @returns id of allocated resource
-            template<typename T>
-            static ProxyID register_vec4(const Vector<T, 4>&);
-            
-            /// @brief deallocate vec4
-            /// @param resource_id
-            static void free_vec4(ProxyID);
-
-            /// @brief bind already allocated vec4 to uniform of shader program
-            /// @param program_id: native handle of shader program
-            /// @param var_name: exact variable name in shader source
-            /// @param proxy_id: id of resource
-            static void bind_vec4(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
-
-            /// @brief bind vector of specified size to program
-            /// @tparam N: vector dimensionality in {2, 3, 4}
+            /// @brief directly bind a vector, is free once a different program is bound
+            /// @tparam N: size of vector, in {2, 3, 4}
             /// @param program_id: native handle of shader program
             /// @param var_name: exact variable name in shader source
             /// @param vector
@@ -364,12 +333,11 @@ namespace crisp
             static ProxyID get_next_id() { return _current--;}
 
             static inline std::unordered_map<ProxyID, int> _ints = {};
+            static inline std::unordered_map<ProxyID, unsigned int> _uints = {};
             static inline std::unordered_map<ProxyID, float> _floats = {};
             static inline std::unordered_map<ProxyID, bool> _bools = {};
 
-            static inline std::unordered_map<ProxyID, std::array<float, 2>> _vec2s = {};
-            static inline std::unordered_map<ProxyID, std::array<float, 3>> _vec3s = {};
-            static inline std::unordered_map<ProxyID, std::array<float, 4>> _vec4s = {};
+            static inline std::unordered_map<ProxyID, std::vector<float>> _vecs = {};
 
             static inline std::unordered_map<ProxyID, std::vector<float>> _array_vec1s = {};
             static inline std::unordered_map<ProxyID, std::vector<float>> _array_vec2s = {};

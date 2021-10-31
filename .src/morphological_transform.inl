@@ -212,19 +212,19 @@ namespace crisp
         auto program = State::register_program(shader);
         State::free_shader(shader);
 
-        auto size = State::register_vec2(texture.get_size());
+        auto size = State::register_vec<2>(texture.get_size());
         auto se = State::register_structuring_element(_structuring_element);
 
         State::bind_shader_program(program);
         State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_vec2(program, "_texture_size", size);
+        State::bind_vec(program, "_texture_size", size);
         State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
         workspace.yield();
 
         State::free_program(program);
-        State::free_vec2(size);
+        State::free_vec(size);
         State::free_matrix(se);
     }
 
@@ -255,19 +255,19 @@ namespace crisp
         auto program = State::register_program(shader);
         State::free_shader(shader);
 
-        auto size = State::register_vec2(texture.get_size());
+        auto size = State::register_vec<2>(texture.get_size());
         auto se = State::register_structuring_element(_structuring_element);
 
         State::bind_shader_program(program);
         State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_vec2(program, "_texture_size", size);
+        State::bind_vec(program, "_texture_size", size);
         State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
         workspace.yield();
 
         State::free_program(program);
-        State::free_vec2(size);
+        State::free_vec(size);
         State::free_matrix(se);
     }
 
@@ -306,18 +306,18 @@ namespace crisp
         auto program = State::register_program(shader);
         State::free_shader(shader);
 
-        auto size = State::register_vec2(texture.get_size());
+        auto size = State::register_vec<2>(texture.get_size());
         auto se = State::register_structuring_element(_structuring_element);
 
         State::bind_shader_program(program);
         State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_vec2(program, "_texture_size", size);
+        State::bind_vec(program, "_texture_size", size);
         State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
 
         State::free_program(program);
-        State::free_vec2(size);
+        State::free_vec(size);
         State::free_matrix(se);
 
         shader = State::register_shader("geodesic_compare_erode.glsl");
@@ -370,18 +370,18 @@ namespace crisp
         auto program = State::register_program(shader);
         State::free_shader(shader);
 
-        auto size = State::register_vec2(texture.get_size());
+        auto size = State::register_vec<2>(texture.get_size());
         auto se = State::register_structuring_element(_structuring_element);
 
         State::bind_shader_program(program);
         State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_vec2(program, "_texture_size", size);
+        State::bind_vec(program, "_texture_size", size);
         State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
 
         State::free_program(program);
-        State::free_vec2(size);
+        State::free_vec(size);
         State::free_matrix(se);
 
         shader = State::register_shader("geodesic_compare_dilate.glsl");
@@ -420,12 +420,12 @@ namespace crisp
         auto program = State::register_program(shader);
         State::free_shader(shader);
 
-        auto size = State::register_vec2(texture.get_size());
+        auto size = State::register_vec<2>(texture.get_size());
         auto se = State::register_structuring_element(_structuring_element);
 
         State::bind_shader_program(program);
         State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_vec2(program, "_texture_size", size);
+        State::bind_vec(program, "_texture_size", size);
         State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
@@ -439,14 +439,14 @@ namespace crisp
         State::free_shader(shader);
         State::bind_shader_program(program);
         State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_vec2(program, "_texture_size", size);
+        State::bind_vec(program, "_texture_size", size);
         State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
         workspace.yield();
 
         State::free_program(program);
-        State::free_vec2(size);
+        State::free_vec(size);
         State::free_matrix(se);
     }
 
@@ -471,12 +471,12 @@ namespace crisp
         auto program = State::register_program(shader);
         State::free_shader(shader);
 
-        auto size = State::register_vec2(texture.get_size());
+        auto size = State::register_vec<2>(texture.get_size());
         auto se = State::register_structuring_element(_structuring_element);
 
         State::bind_shader_program(program);
         State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_vec2(program, "_texture_size", size);
+        State::bind_vec(program, "_texture_size", size);
         State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
@@ -490,14 +490,14 @@ namespace crisp
         State::free_shader(shader);
         State::bind_shader_program(program);
         State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_vec2(program, "_texture_size", size);
+        State::bind_vec(program, "_texture_size", size);
         State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
         workspace.yield();
 
         State::free_program(program);
-        State::free_vec2(size);
+        State::free_vec(size);
         State::free_matrix(se);
     }
 

@@ -62,6 +62,9 @@ namespace crisp::Segmentation
     template<typename Inner_t>
     BinaryImage neighborhood_threshold(const Image<Inner_t>&, size_t neighborhood_size = 5);
 
+    template<typename T, size_t N>
+    Texture<T, N> neighborhood_threshold(const Texture<T, N>&, size_t neighborhood_size, size_t correction);
+
     /// @brief cluster image but create n superpixels and k-means clustering inside their boundaries
     /// @param image: input image
     /// @param n_superpixels

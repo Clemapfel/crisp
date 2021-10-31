@@ -170,7 +170,7 @@ namespace crisp
         auto program = State::register_program(shader);
         State::free_shader(shader);
 
-        auto size = State::register_vec2(texture.get_size());
+        auto size = State::register_vec<2>(texture.get_size());
 
         ProxyID kernel;
         ProxyID vec_layout_maybe;
@@ -183,14 +183,14 @@ namespace crisp
 
             if (_kernel.cols() == 2)
             {
-                kernel = State::register_vec2(Vector2f{
+                kernel = State::register_vec<2>(Vector2f{
                         _kernel(0, 0),
                         _kernel(0, 1)
                 });
             }
             else if (_kernel.cols() == 3)
             {
-                kernel = State::register_vec3(Vector3f{
+                kernel = State::register_vec<3>(Vector3f{
                    _kernel(0, 0),
                    _kernel(0, 1),
                    _kernel(0, 2)
@@ -198,7 +198,7 @@ namespace crisp
             }
             else if (_kernel.cols() == 4)
             {
-                kernel = State::register_vec3(Vector3f{
+                kernel = State::register_vec<3>(Vector3f{
                    _kernel(0, 0),
                    _kernel(0, 1),
                    _kernel(0, 2),
@@ -212,14 +212,14 @@ namespace crisp
 
             if (_kernel.rows() == 2)
             {
-                kernel = State::register_vec3(Vector3f{
+                kernel = State::register_vec<3>(Vector3f{
                    _kernel(0, 0),
                    _kernel(1, 0),
                 });
             }
             else if (_kernel.rows() == 3)
             {
-                kernel = State::register_vec3(Vector3f{
+                kernel = State::register_vec<3>(Vector3f{
                    _kernel(0, 0),
                    _kernel(1, 0),
                    _kernel(2, 0),
@@ -227,7 +227,7 @@ namespace crisp
             }
             else if (_kernel.rows() == 4)
             {
-                kernel = State::register_vec3(Vector3f{
+                kernel = State::register_vec<3>(Vector3f{
                    _kernel(0, 0),
                    _kernel(1, 0),
                    _kernel(2, 0),
@@ -238,7 +238,7 @@ namespace crisp
 
         State::bind_shader_program(program);
         State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_vec2(program, "_texture_size", size);
+        State::bind_vec(program, "_texture_size", size);
         State::bind_matrix(program, "_kernel", kernel);
 
         if (_kernel.cols() == 1 or _kernel.rows() == 1)
@@ -248,7 +248,7 @@ namespace crisp
         workspace.yield();
 
         State::free_program(program);
-        State::free_vec2(size);
+        State::free_vec(size);
         State::free_matrix(kernel);
     }
 
