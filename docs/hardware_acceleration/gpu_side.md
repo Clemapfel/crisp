@@ -195,13 +195,13 @@ We register an array using:
 
 ## 2.4 Shaders
 
-Along the trivial types mentioned above, `crisp::State` offers two more variables to bind: *textures* (which we will learn in the next section), and *shaders*. A shader is a program, it's source code is stored somewhere and when it is registered, source code is send to OpenGL and compiled into essentially a binary. We can do so like this:
+Along the trivial types mentioned above, `crisp::State` offers two more variables to bind: *textures* (which we will learn in the next section), and *shaders*. A shader is a program, it's source code is stored somewhere on the disk and when it is registered, source code is send to OpenGL and compiled into essentially a binary. We can do so like this:
 
 ```cpp
 auto shader_source = State::register_shader("/path/to/shader.glsl");
 ```
 
-In `crisp`, all user-defined shaders are fragment shaders. This is because 2d image processing does not need any 3D functionality like depth, vertices, stencils, etc.. Each shader has the following form:
+In `crisp`, all user-defined shaders are fragment shaders. This is because 2d image processing does not need any 3D functionality like depth, vertices, stencils, etc. so it is all handled implicitely by `crisp` in the background. When we refer to shaders, henceforth we always mean fragment shaders. Each shader has the following form:
 
 ```glsl
 #version 330 core
