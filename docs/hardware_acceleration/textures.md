@@ -249,11 +249,91 @@ Once again, the performance increase is significant. If you are curious what the
 
 # 5. Thresholding
 
+Two new thresholding functions were added with release of the gpu-side module:
 
+```cpp
+template<typename T, size_t N>
+Texture<T, N> manual_threshold(const Texture<T, N>&, float threshold);
 
+template<typename T, size_t N>
+Texture<T, N> local_threshold(const Texture<T, N>&, size_t neighborhood_size, size_t correction);
+```
 
+`manual_threshold` is self-explanatory, it works just like the cpu-side version. `local_threshold` replaces all other thresholding operations for textures, it is specifically designed to be extremely fast and highly resistant to non-uniform lightning. Recall our corrupted image from the [segmentation tutorial](../segmentation/segmentation.md):
 
+![](../segmentation/.resources/non_uniform.png)<br>
 
+Filtering this image with cpu-side otsu's method showed significant corruption due to the non-uniform lighting:
 
+![](../segmentation/.resources/otsu_02.png)<br>
 
+Transforming the original image into a 1-plane texture, we skip comparing the runtime, just like before the gpu-side computation is far faster. 
+
+The `local_threshold` takes two arguments:
+
++ `neighborhood_size`: is a measure of the area the local mean is computed in. The higher the size, the more resistant the algorithm is to non-uniform lighting
++ `correction`: correction applies an erode-like noise reduction step at the end of the thresholding operation for no additional cost
+
+```cpp
+auto image = load_grayscale_image(get_resource_path() + "docs/segmentation/.resources/non_uniform.png")
+auto texture = Texture<float, 1>(image);
+
+auto thresholded = Segmentation::local_threshold(texture, 7, 0);
+```
+
+![](.resources/threshold_c0.png)<br>
+
+We note that the "SAMPLE" text was isolated flawleslly with minimal artifacting. Overall the gpu-side thresholding operation is optimized for edge detection and in this case bothb the bird, text and straw the bird is preching one were clearly defined and isolated. This thresholding operation was conducted with a neighborhood size scale factor of 7 and a correction of 0. Setting the correction to 1 we get the following:
+
+![](.resources/threshold_c1.png)<br>
+
+We note that the shapes were smoothed out and much of the noise of the background is gone. If we raise the correction further to let's say 4, the image starts to become negatively effected:
+
+![](.resources/threshold_c4.png)<br>
+
+Parts of the bird were thinned to the point that the edge is now missing. 
+
+Textures only have a single thresholding operation because it is very flexible. By fine-tuning the two parameters, a vast array of images can be succesfully thresholded, especially if the intention is to highlight solid shapes like letters or regions of a single color. 
+
+Recommended values for the neighborhood size scale factor are {1, 2, 3, ..., 25} while the correction should be kept lower than 5. 
+
+# 6. Spectral Filtering
+
+While it is currently (as of `crisp` 0.9) not possible to fourier transform cpu-side, it is possible to *filter* the spectrum gpu side. With the hardware module, `crisp::FrequencyDOmainFilter` now has a new template argument:
+
+```cpp
+template<typename side = CPU_SIDE>
+class FrequencyDomainFilter;
+```
+
+`FrequencyDomainFilter<CPU_SIDE>` works just like before, however `FrequencyDomainFilter<GPU_SIDE>` is a partial specialization that offers a subset of the functions of the cpu-side version:
+
+```cpp
+struct FrequencyDomainFilter<GPU_SIDE>
+{
+    // create from size
+    FrequencyDomainFilter(size_t width, size_t height);
+    
+    // create from spectrum by measuring size
+    template<FourierTransformMode Mode>
+    FrequencyDomainFilter(const FourierTransform<Mode>&);
+    
+    // apply to spectrum gpu-side
+    template<FourierTransformMode Mode>
+    void apply_to(FourierTransform<Mode>&) const;
+    
+    // set offset, symmetry always enforced
+    void set_offset(double x_dist_from_center, double y_dist_from_center);
+    
+    // all filter shaping functions are of course available
+    void as_ideal_lowpass(float, float, float);
+    void as_gaussian_lowpass(float, float, float);
+    void as_butterworth_lowpass(float, size_t, float, float);
+    etc.
+}
+```
+
+We see that while the functionality is the same, we can no longer manually edited specific parts of the filter using `operator()(size_t, size_t)`. Furthermore we can no longer combine filters using arithmetic operations. The price for this lowered flexiblity is an astronomical increase in runtime:
+
+```cpp
 

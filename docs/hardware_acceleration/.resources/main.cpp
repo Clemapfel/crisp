@@ -12,6 +12,7 @@
 #include <benchmark.hpp>
 #include <spatial_filter.hpp>
 #include <morphological_transform.hpp>
+#include <segmentation.hpp>
 
 #include <gpu_side/texture.hpp>
 
@@ -19,7 +20,7 @@ using namespace crisp;
 
 int main()
 {
-    auto image = crisp::load_color_image(get_resource_path() + "docs/hardware_acceleration/.resources/color_opal.png");
+    auto image = crisp::load_grayscale_image(get_resource_path() + "docs/segmentation/.resources/non_uniform.png");
 
     sf::ContextSettings context_settings;
     context_settings.antialiasingLevel = 0;
@@ -33,16 +34,19 @@ int main()
     window.create(sf::VideoMode(image.get_size().x(), image.get_size().y()), "", style, context_settings);
     window.setActive(true);
 
-    auto texture = Texture<float, 3>(image);
+    auto texture = Texture<float, 1>(image);
 
-    auto transform = MorphologicalTransform();
-    transform.set_structuring_element(transform.all_foreground(4, 4));
+    for (size_t n = 1; n < 5; ++n)
+    {
+        auto res = Segmentation::threshold(texture, n, 0);
+        save_to_disk(res.to_image(), get_resource_path() + "docs/hardware_acceleration/.resources/threshold_n" + std::to_string(n) + ".png");
+    }
 
-    auto filter_texture = Benchmark([&](){
-        transform.open(texture);
-    });
-
-    std::cout << "texture: " << filter_texture.execute(100) << "ms" << std::endl;
+    for (size_t c = 0; c < 5; ++c)
+    {
+        auto res = Segmentation::threshold(texture, 7, c);
+        save_to_disk(res.to_image(), get_resource_path() + "docs/hardware_acceleration/.resources/threshold_c" + std::to_string(c) + ".png");
+    }
 
     State::bind_shader_program(NONE);
     State::bind_texture(NONE, "_texture", texture.get_handle());

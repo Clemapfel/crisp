@@ -51,7 +51,7 @@ namespace crisp
         _handle = State::register_texture<T, N>(other.get_handle());
         _width = other.get_size().x();
         _height = other.get_size().y();
-        _workspace = other._workspace;
+        _workspace.initialize<T, N>(_handle);
 
     }
 
@@ -61,6 +61,7 @@ namespace crisp
         _handle = State::register_texture<T, N>(other.get_handle());
         _width = other.get_size().x();
         _height = other.get_size().y();
+        _workspace.initialize<T, N>(_handle);
 
         return *this;
     }

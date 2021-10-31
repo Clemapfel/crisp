@@ -358,6 +358,29 @@ namespace crisp::Segmentation
         return out;
     }
 
+    template<typename T, size_t N>
+    Texture<T, N> threshold(const Texture<T, N>& texture, size_t neighborhood_size, size_t correction)
+    {
+        assert(neighborhood_size > 0);
+
+        auto out = texture;
+
+        auto shader = State::register_shader("local_threshold.glsl");
+        auto program = State::register_program(shader);
+        State::bind_shader_program(program);
+        State::free_shader(shader);
+
+        State::set_vec<2>(program, "_texture_size", Vector2f{float(texture.get_size().x()), float(texture.get_size().y())});
+        State::set_uint(program, "_neighborhood_size", neighborhood_size);
+        State::set_uint(program, "_correction", correction);
+
+        auto& workspace = out.get_workspace();
+        workspace.display();
+        workspace.yield();
+
+        return out;
+    }
+
     template<typename Image_t>
     Image_t superpixel_clustering(const Image_t& image, size_t n_superpixels, size_t max_n_iterations)
     {
