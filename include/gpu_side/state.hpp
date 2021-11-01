@@ -23,6 +23,7 @@ namespace crisp
     using ShaderID = std::string;
 
     /// @brief handler that manages resource allocation and interaction between cpu-side and gpu-side resources
+    /// @note do not interact with this class unless you know what you are doing, intended for internal use only
     class State
     {
         friend class Shader;
@@ -59,7 +60,6 @@ namespace crisp
             template<typename T>
             static void get_pixel_buffer(Image<T, 4>& image, Vector2ui top_left = {0, 0});
 
-        //protected:
             /// @brief allocate integer
             /// @param value
             /// @returns id of allocated resource
@@ -290,7 +290,7 @@ namespace crisp
             /// @param data: OpenGL compliant formatted array
             /// @returns native handle of resulting texture
             template<size_t N>
-            static GLNativeHandle register_texture(size_t widht, size_t height, const std::vector<float>& data);
+            static GLNativeHandle register_texture(size_t width, size_t height, const std::vector<float>& data);
 
             /// @brief deallocate texture
             /// @param id: native handle of texture
@@ -332,7 +332,6 @@ namespace crisp
             void set_internal_context_active();
 
         private:
-
             // context
             static inline sf::ContextSettings context_settings = sf::ContextSettings(
                     0,

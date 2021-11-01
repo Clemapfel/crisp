@@ -20,14 +20,28 @@ Textures, Hardware Accelerated Versions of Spatial Filter, Spectral Filters, Mor
 #include <benchmark.hpp>
 ```
 
-
 ## Table of Contents
+
+0. [**Foreword**](#0-foreword)<br>
+1. [**Motivation & Benchmarking**](#1-motivation--benchmarking)<br>
+2. [**Textures**](#2-textures)<br>
+    2.1 [**Loading Texture**](#2-textures)<br>
+    2.2 [**Saving Textures**](#22-saving-textures)<br>
+    2.3 [**Texture Transforms**](#23-modifying-textures)<br>
+3. [**GPU-Side Spatial Filters**](#3-spatial-filtering)<br>
+4. [**GPU-Side Morphological Transforms**](#4-morphological-transforms)<br>
+5. [**GPU-Side Segmentation**](#5-segmentation)<br>
+   5.1 [**Thresholding**](#51-thresholding)<br>
+   5.2 [**Segmentation**](#52-segmentation)<br>
+6. [**GPU-Side Spectral Filters**](#6-spectral-filtering)<br>
+7. [**GPU-Side Deep Learning**](#7-deep-learning)<br>
+
 
 ## 0. Foreword
 
 The inner workings GPU-side computation on a hardware level can be quite complicated and require a serious amount of knowledge to fully grasp. This tutorial is not intended to introduce gpu-side processing in general, rather it will give just enough potentially new information so anyone can still use the hardware-accelerated versions of `crisp` functiosn introduced in past tutorials. If you want to learn how to get down in the weeds and do every step yourself, consider reading the graphics card interface tutorial `crisp::State` on the [author's blog](www.clemens-cords.com/posts).
 
-## 1. Motivation & Benchmarks
+## 1. Motivation & Benchmarking
 
 When reproducing some of the examples in the past chapters, you may have noticed that the runtime can vary and that some algorithms can be quite slow. This is not necessarily due to a fulat in implementation, rather, some operations are just inherently very costly. Consider an image of size 1920x1080, this image has 2073600 pixels. Each of them has to be allocated, moved from the disk to the ram, transformed into a color, etc.. If we now want to operate on the image, each operation will have to be executed at least 2073600 times, sometimes twice as much if a temporary buffer image is needed. 
 
@@ -94,6 +108,8 @@ That's... a lot faster. This result is not erronous, each call did indeed alloca
 
 # 2. Textures
 
+## 2.1 Loading Textures
+
 Textures are the gpu-side equivalent of images. Similar to images they have a *value type* and a number of *planes*. The template for textures looks familiar:
 
 ```cpp
@@ -146,7 +162,7 @@ Most of the time we don't want to just view our texture, rather we would like to
 
 While the textures sport a lot of the same functions as `crisp::Image` such as `get_size`, and move- and copy assignment/construction, we have no way to modify the texture directly once it it loaded into the graphics cards memory. All modification has to be done through `crisp::State` (see Section 0). It is therefore recommended for most users to do any manual modification to the image before exporting it as a texture. 
 
-# 2.3 Saving Textures
+# 2.2 Saving Textures
 
 After we changed our texture, we often want to save it to the disk. This is not possible directly, we first need to move the texture back from VRAM into RAM. The easiest way to do this is to just convert it back to an image and save that image:
 
@@ -160,6 +176,10 @@ save_to_disk(as_image, "path/to/image.png");
 ```
 
 Textures can be quite inflexibly so it is sometime necessary to move them back and forth between VRAM and RAM to get the full functionality of `crisp`. While this is expensive, it can sometimes be worth it because while moving the texture to the graphics card may take, let's say, 1s (the actual time is far lower but for the sake of simplicity, let's assume it does take 1s), if we then save more than 2s in runtime because of hardware accelerated operations, we can move the texture back to ram, incuring another 1s but our program is still overall faster than if we did it all in RAM. Saving a texture to disk is one such case.
+
+# 2.3 Modifying Textures
+
+(this feature is not yet implemented)
 
 # 3. Spatial Filtering
 
@@ -269,7 +289,9 @@ Once again, the performance increase is significant. If you are curious what the
 
 ![](./.resources/opened.png)<br>
 
-# 5. Thresholding
+# 5. Segmentation
+
+## 5.1 Thresholding
 
 Two new thresholding functions were added with release of the gpu-side module:
 
@@ -318,6 +340,10 @@ Parts of the bird were thinned to the point that the edge is now missing.
 Textures only have a single thresholding operation because it is very flexible. By fine-tuning the two parameters, a vast array of images can be succesfully thresholded, especially if the intention is to highlight solid shapes like letters or regions of a single color. 
 
 Recommended values for the neighborhood size scale factor are {1, 2, 3, ..., 25} while the correction should be kept lower than 5. 
+
+## 5.2 Segmentation
+
+(this feature is not yet implemented)
 
 # 6. Spectral Filtering
 
@@ -387,5 +413,9 @@ cpu-side: 1.39101e+06ms
 gpu-side: 4197ms
 ```
 Once again the performance increase is extremely significant. 
+
+# 7. Deep Learning
+
+(this feature is not yet implemented)
 
 
