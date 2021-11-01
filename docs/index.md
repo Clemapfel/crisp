@@ -7,25 +7,29 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 ---
 
 ## Table of Contents
-1. [**Images**](#images)<br>
+1. [**Images & Textures**](#images)<br>
    1.1 [Modifying Images](#modifying-images)<br>
    1.2 [Image Planes](#image-planes)<br>
    1.3 [Histgroams](#image-histograms)<br>
    1.4 [Whole Image Transforms](#whole-image-transforms)<br>
+   1.5 [Textures](#modifying-textures)<br>
 2. [**Spatial Domain Filtering**](#filtering-in-the-spatial-domain)<br>
     2.1 [Kernels](#kernels)<br>
     2.2 [crisp::SpatialFilter](#filter)<br>
     2.3 [Evaluation Functions](#evaluation-function)<br>
     2.4 [Pre-Defined Kernels](#pre-defined-kernels)<br>
+    2.5 [GPU-Side Filtering](#hardware-accelerated-spatial-filters)<br>
 3. [**Morphological Transforms**](#morphological-transforms)<br>
     3.1 [Structuring Element](#structuring-element)<br>
     3.2 [Pre-Defined Structuring Elements](#pre-defined-structuring-elements)<br>
     3.3 [Types of Transforms](#transforms)<br>
+    3.4 [GPU-Side Transforms](#)
 4. [**Segmentation**](#segmentation)<br>
     4.1 [crisp::ImageSegment](#crispimagesegment)<br>
     4.2 [Thresholding](#thresholding)<br>
     4.3 [Edge Detection](#edge-detection)<br>
     4.4 [Clustering](#clustering)<br>
+    4.5 [GPU-Side Segmentation](#gpu-side-segmentation)<br>
 5. [**Feature Extraction**](#feature-extraction)<br>
     5.1 [crisp::ImageRegion](#crispimageregion)<br>
     5.2 [Boundary](#boundary)<br>
@@ -40,6 +44,7 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
     7.1 [Fourier Transform](#fourier-transform)<br>
     7.2 [Spectral Filters](#spectral-filters)<br>
     7.3 [Pre-Defined Filter Types](#filter-types)<br>
+    7.4 [GPU-Side Spectral Filters]()<br>
 8. [**Vectors**](#vectors)<br>
     8.1 [General](#general)<br>
     8.2 [Arithmetics & Comparison](#arithmetics--comparisons)<br>
@@ -95,6 +100,11 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 + [Bitplane Decomposition](./image/image.md/#54-bitplane-decomposition)
 + [Wavelet Transform](./image/image.md/#55-wavelet-transform)
 
+#### Modifying Textures
++ [Loading Textures](./hardware_acceleration/textures.md/#2-textures)
++ [Saving Textures](./hardware_acceleration/textures.md/#22-saving-textures)
++ [Modifying Textures](./hardware_acceleration/textures.md/#23-modifying-textures)
+
 ---
 
 ## [Filtering in the Spatial Domain](./spatial_filters/spatial_domain_filtering.md/)
@@ -140,6 +150,9 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 + [Sobel Gradient](./spatial_filters/spatial_domain_filtering.md/#494-sobel)
 + [Kirsch Compass](./spatial_filters/spatial_domain_filtering.md/#495-kirsch-compass)
 
+#### Hardware Accelerated Spatial Filters
++ [GPU-Side Filtering](./hardware_acceleration/textures.md/#3-spatial-filtering)
+
 ---
 
 ## [Morphological Transforms](./morphological_transform/morphological_transform.md/)
@@ -171,6 +184,9 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 + [Hit-or-Miss Transform](./morphological_transform/morphological_transform.md/#37-hit-or-miss-transform)
 + [Pattern Replacement](./morphological_transform/morphological_transform.md/#38-pattern-replacement)
 
+#### Hardware Accelerated Transforms
++ [GPU-Side morphological transform](./hardware_acceleration/textures.md/#4-morphologcial-transforms)
+
 ---
 
 ## [Segmentation](./segmentation/segmentation.md)
@@ -201,6 +217,10 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 + [k-means Clustering](./segmentation/segmentation.md/#41-k-means-clustering)
 + [Superpixel Clustering](./segmentation/segmentation.md/#42-superpixel-clustering)
 + [Clustering by Region Growing](./segmentation/segmentation.md/#43-region-growing-clustering)
+
+#### GPU-Side Segmentation
++ [GPU-Side Thresholding](./hardware_acceleration/textures.md/#51-thresholding)
++ [GPU-Side Segmentation](./hardware_acceleration/textures.md/#52-segmentation)
 
 ---
 
@@ -275,7 +295,7 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
   
 #### Deep Learning
 + [Fully Connected Neural Networks](./feature_classification/feature_classification_and_deep_learning.md/#3-neural-networks)
-
++ [GPU-Side Back Propagation](./hardware_acceleration/textures.md/#7-deep-learning)
 ---
 
 ## [Frequency Domain](./frequency_domain/frequency_domain_filtering.md)
@@ -318,6 +338,9 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
   - [Ideal](./frequency_domain/frequency_domain_filtering.md/#324-band-reject-filters)
   - [Gaussian](./frequency_domain/frequency_domain_filtering.md/#324-band-reject-filters)
   - [Butterworth](./frequency_domain/frequency_domain_filtering.md/#324-band-reject-filters)
+    
+#### Hardware Accelerated Spectral Filters
++ [GPU-Side Spectral Filtering](./hardware_acceleration/textures.md/#6-spectral-filtering)
     
 ---
 

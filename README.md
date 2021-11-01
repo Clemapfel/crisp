@@ -114,6 +114,7 @@ Consider reading the tutorials in order, this will teach important principles of
 10. [Segmentation](./docs/segmentation/segmentation.md)
 11. [Feature Extraction](./docs/feature_extraction/feature_extraction.md)
 12. [Deep Learning](./docs/feature_classification/feature_classification_and_deep_learning.md)
+13. [Hardware Acceleration](./docs/hardware_acceleration/textures.md)
 
 ## [Documentation](./docs/index.md)
 
