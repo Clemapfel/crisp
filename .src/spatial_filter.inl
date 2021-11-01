@@ -151,6 +151,7 @@ namespace crisp
                 image(x, y) = result(x, y);
     }
 
+
     template<typename T, size_t N>
     void SpatialFilter::apply_to(Texture<T, N>& texture)
     {
@@ -252,6 +253,7 @@ namespace crisp
         State::free_matrix(kernel);
     }
 
+
     float SpatialFilter::operator()(size_t x, size_t y) const
     {
         return _kernel(x, y);
@@ -263,7 +265,7 @@ namespace crisp
         return _kernel(x, y);
     }
 
-    
+
     void SpatialFilter::set_kernel(Kernel kernel)
     {
         _kernel = kernel;
@@ -274,19 +276,18 @@ namespace crisp
                 _kernel_sum += _kernel(x, y);
     }
 
-    
     Kernel& SpatialFilter::get_kernel()
     {
         return _kernel;
     }
 
-    
+
     void SpatialFilter::set_evaluation_function(SpatialFilter::EvaluationFunction function)
     {
         _evaluation_function = function;
     }
 
-    
+
     Kernel SpatialFilter::identity(size_t dimensions)
     {
         assert(dimensions != 0);
@@ -307,7 +308,7 @@ namespace crisp
         return out;
     }
 
-    
+
     Kernel SpatialFilter::one(size_t dimensions)
     {
         assert(dimensions != 0);
@@ -317,7 +318,7 @@ namespace crisp
         return out;
     }
 
-    
+
     Kernel SpatialFilter::box(size_t dimensions, float value)
     {
         assert(dimensions != 0);
@@ -327,7 +328,7 @@ namespace crisp
         return out;
     }
 
-    
+
     Kernel SpatialFilter::normalized_box(size_t dimension)
     {
         assert(dimension != 0);

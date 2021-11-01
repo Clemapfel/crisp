@@ -12,6 +12,8 @@
 namespace crisp
 {
     /// @brief object representing an image living on the graphics card
+    /// @tparam T: value type, one of {bool, float}
+    /// @tparam N: number of planes, one of {1, 2, 3, 4}
     template<typename T, size_t N>
     class Texture
     {

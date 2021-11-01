@@ -10,9 +10,6 @@
 
 namespace crisp
 {
-    using Clock = sf::Clock;
-    using Duration = sf::Time;
-
     /// @brief simple benchmark object used for profiling
     template<typename Function_t>
     class Benchmark
@@ -22,9 +19,9 @@ namespace crisp
             /// @param lambda
             Benchmark(Function_t&& lambda);
 
-            /// @brief measure average cycle duration
-            /// @param n_cycles: number of executes
-            /// @param args: arguments used for bound lambda
+            /// @brief measure average cycle duration by executing stored lambda many times
+            /// @param n_cycles: number of cycles
+            /// @param args: arguments forwarded to bound lambda
             /// @return time per cycle, in microseconds
             template<typename... Args_t>
             float execute(size_t n_cycles, Args_t... args);

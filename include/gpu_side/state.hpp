@@ -20,6 +20,8 @@
 namespace crisp
 {
     class Shader;
+
+    /// @brief resource id of internal shaders
     using ShaderID = std::string;
 
     /// @brief handler that manages resource allocation and interaction between cpu-side and gpu-side resources
@@ -313,15 +315,28 @@ namespace crisp
             /// @returns raw data of texture
             [[nodiscard]] static std::vector<float> get_texture_data(GLNativeHandle);
 
+            /// @brief object that holds information about registered textures
             struct TextureInfo
             {
+                /// @brief type of padding
                 PaddingType padding_type;
-                size_t width,
-                       height;
+
+                /// @brief x-dimension of texture
+                size_t width;
+
+                /// @brief y-dimension of texture
+                size_t height;
+
+                /// @brief number of planes
                 size_t n_planes;
+
+                /// @brief gl-type, one of GL_RED, GL_RG, GL_RGB, GL_RGBA
                 GLenum type;
             };
 
+            /// @brief get stored texture info
+            /// @param texture_handle
+            /// @returns texture info as State::TextureInfo object
             static TextureInfo get_texture_info(GLNativeHandle);
 
             /// @brief get id of currently bound shader program
