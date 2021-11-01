@@ -13,6 +13,8 @@
 #include <spatial_filter.hpp>
 #include <morphological_transform.hpp>
 #include <segmentation.hpp>
+#include <fourier_transform.hpp>
+#include <frequency_domain_filter.hpp>
 
 #include <gpu_side/texture.hpp>
 
@@ -20,8 +22,9 @@ using namespace crisp;
 
 int main()
 {
-    auto image = crisp::load_grayscale_image(get_resource_path() + "docs/segmentation/.resources/non_uniform.png");
+    auto image = crisp::load_color_image(get_resource_path() + "docs/segmentation/.resources/non_uniform.png");
 
+    /*
     sf::ContextSettings context_settings;
     context_settings.antialiasingLevel = 0;
     context_settings.minorVersion = 3;
@@ -30,24 +33,28 @@ int main()
 
     auto style = sf::Style::Titlebar | sf::Style::Close;
 
-    auto window = sf::RenderWindow();
-    window.create(sf::VideoMode(image.get_size().x(), image.get_size().y()), "", style, context_settings);
-    window.setActive(true);
+    auto context = sf::Context(context_settings, image.get_size().x(), image.get_size().y());
+    context.setActive(true);
+     */
 
-    auto texture = Texture<float, 1>(image);
+    auto texture = Texture<float, 3>(image);
 
-    for (size_t n = 1; n < 5; ++n)
-    {
-        auto res = Segmentation::threshold(texture, n, 0);
-        save_to_disk(res.to_image(), get_resource_path() + "docs/hardware_acceleration/.resources/threshold_n" + std::to_string(n) + ".png");
-    }
+    auto shader = State::register_shader("sobel_gradient_magnitude.glsl");
+    auto program = State::register_program(shader);
+    State::bind_shader_program(program);
+    State::bind_texture(program, "_texture", texture.get_handle());
+    auto size = State::register_vec<2>(texture.get_size());
+    State::bind_vec(program, "_texture_size", size);
 
-    for (size_t c = 0; c < 5; ++c)
-    {
-        auto res = Segmentation::threshold(texture, 7, c);
-        save_to_disk(res.to_image(), get_resource_path() + "docs/hardware_acceleration/.resources/threshold_c" + std::to_string(c) + ".png");
-    }
+    auto workspace = texture.get_workspace();
+    workspace.display();
+    workspace.yield();
 
+    auto as_image = texture.to_image();
+    save_to_disk(as_image, "/home/clem/Workspace/crisp/.test/out.png");
+    return 0;
+
+    /*
     State::bind_shader_program(NONE);
     State::bind_texture(NONE, "_texture", texture.get_handle());
     State::display();
@@ -66,5 +73,6 @@ int main()
     }
 
     return 0;
+     */
 }
 

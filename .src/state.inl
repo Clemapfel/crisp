@@ -1375,6 +1375,7 @@ namespace crisp
         glBindTexture(GL_TEXTURE_2D, texture_id);
 
         auto info = _texture_info.at(texture_id);
+        glViewport(0, 0, info.width, info.height);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, padding_type_to_gl_padding(info.padding_type));
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, padding_type_to_gl_padding(info.padding_type));
@@ -1451,5 +1452,10 @@ namespace crisp
         }
 
         return _texture_info.at(handle);
+    }
+
+    void State::set_internal_context_active()
+    {
+        _context.setActive(true);
     }
 }

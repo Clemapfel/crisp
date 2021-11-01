@@ -328,7 +328,22 @@ namespace crisp
             /// @returns -1 if no programs bound, the programs native handle in {1, 2, ...} otherwise
             static GLNativeHandle get_active_program_handle();
 
+            /// @brief set the internal context as the active context
+            void set_internal_context_active();
+
         private:
+
+            // context
+            static inline sf::ContextSettings context_settings = sf::ContextSettings(
+                    0,
+                    0,
+                    0,
+                    3,
+                    3,
+                    sf::ContextSettings::Attribute::Core | sf::ContextSettings::Attribute::Default);
+            static inline sf::Context _context = sf::Context(context_settings, 1, 1);
+
+            // proxies
             static inline ProxyID _current = -1;
             static ProxyID get_next_id() { return _current--;}
 

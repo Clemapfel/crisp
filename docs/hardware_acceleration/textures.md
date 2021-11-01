@@ -4,10 +4,17 @@
 
 # Hardware Accelerated Image Processing
 
-Textures, Hardware Accelerated Versions of Spatial Filter, Spectral Filters, Morphological Operations
+Textures, Hardware Accelerated Versions of Spatial Filter, Spectral Filters, Morphological Operations, Thresholding
 
 ```cpp
 #include <gpu_side/textures.hpp>
+#include <gpu_side/texture_workspace.hpp>
+#include <gpu_Side/state.hpp>
+#include <gpu_side/is_gpu_side.hpp>
+#include <gpu_side/native_handle.hpp>
+
+// all of the above collected in:
+#include <gpu_side.hpp>
 
 // separate:
 #include <benchmark.hpp>
@@ -18,11 +25,11 @@ Textures, Hardware Accelerated Versions of Spatial Filter, Spectral Filters, Mor
 
 ## 0. Foreword
 
-GPU-side computation can be quite difficult and require a serious amount of knowledge to fully grasp. This tutorial only covers the areas of `crisp` that make use of the graphics card in a way so abstract that it is just as easy as the regular `crisp` functions and algorithms. For an in-depth tutorial on the graphics card interface `crisp::State`, please visit the [authors blog](www.clemens-cords.com/posts).
+The inner workings GPU-side computation on a hardware level can be quite complicated and require a serious amount of knowledge to fully grasp. This tutorial is not intended to introduce gpu-side processing in general, rather it will give just enough potentially new information so anyone can still use the hardware-accelerated versions of `crisp` functiosn introduced in past tutorials. If you want to learn how to get down in the weeds and do every step yourself, consider reading the graphics card interface tutorial `crisp::State` on the [author's blog](www.clemens-cords.com/posts).
 
 ## 1. Motivation & Benchmarks
 
-When reproducing some of the examples in the past chapters, you may have noticed that it's runtime can vary and that some algorithms are quite slow. This is not necessarily due to the implementation, rather, some operations are just inherently very costly. Consider an image of size 1920x1080, this image has 2 073 600 pixels. Each of them has to be allocated, move from the disk to the ram, transformed into a color, etc.. If we now want to operate on the image, each operation will have to be executed 2073600 times. 
+When reproducing some of the examples in the past chapters, you may have noticed that the runtime can vary and that some algorithms can be quite slow. This is not necessarily due to a fulat in implementation, rather, some operations are just inherently very costly. Consider an image of size 1920x1080, this image has 2073600 pixels. Each of them has to be allocated, moved from the disk to the ram, transformed into a color, etc.. If we now want to operate on the image, each operation will have to be executed at least 2073600 times, sometimes twice as much if a temporary buffer image is needed. 
 
 To investigate the nature of this behavior, `crisp` offers a very compact benchmarking object:
 
@@ -37,13 +44,13 @@ struct Benchmark
 }
 ```
 
-When creating the object, we hand it a lambda which is saved in the benchmark object. When we call `execute`, we forward the arguments to the lambda and lambda is then itself executed. The benchmark object calculates the time it takes for the lambda to return and reports the time in microseconds.
+When creating the object, we hand it a lambda capture which is saved in the benchmark object. When we call `execute`, we forward the arguments to the lambda and lambda is then itself executed. The benchmark object calculates the time it takes for the lambda to return and reports the time in microseconds. This is repeated `number_of_cycles`many times and the average time per cycle is returned.
 
 Using our familiar image of a bird:<br>
 
 ![](.resources/color_opal.png)<br>
 
-We want to measure the time it takes to create a deep-copy of this image. The image is `483*483 = 233289` pixels in size and each pixel has three, 32-bit floats (one of each RGB color plane).
+We want to measure the time it takes to create a deep-copy of this image. The image is `483*483 = 233289` pixels in size and each pixel has three, 32-bit floats (one for each RGB color plane) so at least `233289 * 32 * 3` bits or about 2.8mb have to copied as `crisp::Images` are uncompressed while in active memory.
 
 ```cpp
 #include <benchmark.hpp>
@@ -54,13 +61,13 @@ auto copy_benchmark = Benchmark([&](){
     volatile auto deep_copy = image;
 });
 
-std::cout << copy_benchmark.execute(1000) << std::endl;
+std::cout << copy_benchmark.execute(1000) << "μs" << std::endl;
 ```
 
-Here we're creating a lambda that allocates a copy of the image and the deep-copies each pixel value into the new image. The `volatile` specified here is used to prevent the compiler from optimizing out the unused variable. 
-We then execute the benchmark 1000 times and print the average time per cycle to the console. On this machine, the benchmark reports a time of `86404.3` microseconds on average which is about 0.09s. This doesn't sound that bad but is relativey slow considering the relatively low size of the image. 
+Here we're creating a lambda that allocates a copy of the image, then deep-copies each pixel value into the new image. The `volatile` specifier here is used to prevent the compiler from optimizing out the unused variable. 
+We then execute the benchmark 1000 times and print the average time per cycle to the console. On this machine, the benchmark reports a time of `86404.3` microseconds on average which is about 0.09s. This doesn't sound that bad but it is relativey slow considering the relatively low resolution of the image. If our application runs at 60fps, we could only copy two images per frame, and that is if we don't do anything else that frame.
 
-To address this runtime issue, `crisp` offers what is basically a high-performance mode. Using this mode, all operations take place on the graphics card which is optimized for image operations on a hardware level. The gpu-side equivalent of an image is called a *texture*. We will learn more about how it works exactly soon but for now we just want to see how much faster it is:
+To address this runtime issue, `crisp` offers what is basically a high-performance version of images called a *texture*. Handeling of textures is done on the graphics card which is optimized for such operations on a hardware level. We will learn more about how to create texture and how they work exactly soon, but for now we just want to see how much faster it is:
 
 ```cpp
 #include <benchmark.hpp>
@@ -68,26 +75,26 @@ To address this runtime issue, `crisp` offers what is basically a high-performan
 
 auto image = load_color_image(get_resource_path() * "/docs/hardware_acceleration/.resources/color_opal.png");
 
-// create a texture from the image
+// create a RGB texture from the image
 auto texture = Texture<float, 3>(image);
 
 auto copy_benchmark = Benchmark([&](){
     volatile auto texture_deep_copy = texture;
 });
 
-std::cout << copy_benchmark.execute(1000) << std::endl;
+std::cout << copy_benchmark.execute(1000) << "μs" << std::endl;
 ```
 Here we're first loading the image, then creating a texture from the image. Inside the lambda we then deep copy this texture once per cycle. The benchmark reports an average time (in microseconds) of:
 
 ```
-2.675
+2.675 μs
 ```
 
-That's... a lot faster. This result is not erronous, each call did indeed allocated a new image of the same size and copy all data from the original into the new image. Comparing 2.675 microseconds to 86404.3 microseconds we get a sense of just how much faster gpu-side computation is. Now, dealing with many 60fps streams at the same time seems a lot more doable.
+That's... a lot faster. This result is not erronous, each call did indeed allocated a new image of the same size and copy all data from the original into the new image, the difference is that it alle happened in the graphics cards memory. Comparing 2.675 microseconds to 86404.3 microseconds we get a sense of just how much faster gpu-side computation is. Now, dealing with many images during a single frame at 60fps sounds a lot more doable.
 
 # 2. Textures
 
-Textures are the gpu-side equivalent of images. Similar to images they have a *value type* and a number of *planes*. Because we are limited to types supported natively by the graphics card. The template for textures looks familiar:
+Textures are the gpu-side equivalent of images. Similar to images they have a *value type* and a number of *planes*. The template for textures looks familiar:
 
 ```cpp
 // in gpu_side/texture.hpp
@@ -102,7 +109,7 @@ class Texture
 }
 ```
 
-We see that textures, like multi-plane images, take two template parameters: the *value type* `T` and the number of planes `N`. Unlike images, however, we are somewhat limited here. There are only two possible value types: `bool` and 32-bit `float`. Furthermore we can only have up to a maximum amount of 4 planes.
+We see that textures, like multi-plane images, take two template parameters: the *value type* `T` and the number of planes `N`. Unlike images, however, we are somewhat limited here. There are only two possible value types: `bool` and 32-bit `float`. Furthermore we can only have up to a maximum amount of 4 planes. This is because only textures of these types fully benefit from hardware-acceleration and are supported by the graphics card.
 
 We can create a texture from an image like so:
 
@@ -119,7 +126,7 @@ State::display();
 
 ![](.resources/texture_window.png)<br>
 
-As expected, rendering the texture we see that it identical to our now familiar image of a bird.
+As expected, rendering the texture we see that it is identical to our now familiar image of a bird.
 
 When creating the texture, we need to make sure that it has the same number of planes as the original image, otherwise a static assertion is raised. We now want to create a 1-plane texture using the grayscale version of our image of a bird:
 
@@ -133,11 +140,26 @@ State::display();
 
 ![](.resources/texture_red.png)<br>
 
-Instead of a grayscale image we see that the image is red. This is correct behavior, when rendering a texture to the screen, it is always first converted into rgba format. Since we only have one plane in the actual data of the texture, the graphics set the red component to our data and keeps all other components at 1. This is why when working with less than 3 or 4-plane images where the 4th component is not the alpha component can be quite confusing when rendering them to the screen. It is important to always remember that in memory, the data layout is correct and the confusion only arrises once the data is renderered to the screen.
+Instead of a grayscale image we see that the image is red. This is correct behavior, when rendering a texture to the screen, it is always first converted into rgba format. Since we only have one plane in the actual data of the texture, the graphics card sets the red component to our intensity data and keeps all other components at 0. This is why when working with less than 3 or 4-plane images where the 4th component is not the alpha component can be quite confusing when rendering them to the screen. It is important to always remember that in memory, the data layout is correct and the confusion only arrises once the data is renderered to the screen.
 
-Most of the time we don't want to just view our texture, we can do so with the image in the first place, rather we would like to modify the texture and use the hardware acceleration for faster results. 
+Most of the time we don't want to just view our texture, rather we would like to modify the texture and use the hardware acceleration for faster results. 
 
-While the textures sport a lot of the same functions as `crisp::Image` such as `get_size`, and move- and copy assignment/construction, we have no way to modify the texture directly once it it loaded into the graphics cards memory. All modification has to either be done through `crisp::State` (see Section 0) or internally. It is therefore recommended for most users to do any manual modification to the image, then export it to a texture for more specialized used such as filtering. 
+While the textures sport a lot of the same functions as `crisp::Image` such as `get_size`, and move- and copy assignment/construction, we have no way to modify the texture directly once it it loaded into the graphics cards memory. All modification has to be done through `crisp::State` (see Section 0). It is therefore recommended for most users to do any manual modification to the image before exporting it as a texture. 
+
+# 2.3 Saving Textures
+
+After we changed our texture, we often want to save it to the disk. This is not possible directly, we first need to move the texture back from VRAM into RAM. The easiest way to do this is to just convert it back to an image and save that image:
+
+```cpp
+Texture<float, 3> texture = /* ... */
+        
+auto as_image = texture.to_image(); 
+// image will be Image<float, 3>
+
+save_to_disk(as_image, "path/to/image.png");
+```
+
+Textures can be quite inflexibly so it is sometime necessary to move them back and forth between VRAM and RAM to get the full functionality of `crisp`. While this is expensive, it can sometimes be worth it because while moving the texture to the graphics card may take, let's say, 1s (the actual time is far lower but for the sake of simplicity, let's assume it does take 1s), if we then save more than 2s in runtime because of hardware accelerated operations, we can move the texture back to ram, incuring another 1s but our program is still overall faster than if we did it all in RAM. Saving a texture to disk is one such case.
 
 # 3. Spatial Filtering
 
@@ -165,8 +187,8 @@ auto filter_texture = Benchmark([&](){
     filter.apply_to(texture);
 });
 
-std::cout << "image: " << filter_image.execute(100) << "ms" << std::endl;
-std::cout << "texture: " << filter_texture.execute(100) << "ms" << std::endl;
+std::cout << "image: " << filter_image.execute(100) << "μs" << std::endl;
+std::cout << "texture: " << filter_texture.execute(100) << "μs" << std::endl;
 ```
 ```
 image: 1.70168e+06ms
@@ -236,8 +258,8 @@ auto filter_texture = Benchmark([&](){
     transform.open(texture);
 });
 
-std::cout << "image: " << filter_image.execute(100) << "ms" << std::endl;
-std::cout << "texture: " << filter_texture.execute(100) << "ms" << std::endl;
+std::cout << "image: " << filter_image.execute(100) << "μs" << std::endl;
+std::cout << "texture: " << filter_texture.execute(100) << "μs" << std::endl;
 ```
 ```
 image: 9.38551e+06ms
@@ -333,7 +355,37 @@ struct FrequencyDomainFilter<GPU_SIDE>
 }
 ```
 
-We see that while the functionality is the same, we can no longer manually edited specific parts of the filter using `operator()(size_t, size_t)`. Furthermore we can no longer combine filters using arithmetic operations. The price for this lowered flexiblity is an astronomical increase in runtime:
+We see that while the functionality in terms of constrcutors and the apply function is the same, we can no longer manually edited specific parts of the filter using `operator()(size_t, size_t)`. Furthermore we can no longer combine filters using arithmetic operations. However the trade-off will be worth it if the increase in performance is high enough.
+
+We write a small benchmark that simply creates a bandpass filter and applies it to the fourier spectrum. We use the above shown image of a bird which is of size 483x483, thus the fourier spectrum will have 2*483 x 2*483 = 933156 coefficients (pixels):
 
 ```cpp
+auto texture = Texture<float, 1>(image);
+auto spectrum = FourierTransform<SPEED>();
+spectrum.transform_from(image);
+
+auto cpu_side = Benchmark([&](){
+    auto filter = FrequencyDomainFilter<CPU_SIDE>(spectrum);
+    filter.as_gaussian_bandpass(0.1, 0.3, 1, 0);
+    filter.apply_to(spectrum);
+});
+
+auto gpu_side = Benchmark([&](){
+    auto filter = FrequencyDomainFilter<GPU_SIDE>(spectrum);
+    filter.as_gaussian_bandpass(0.1, 0.3, 1, 0);
+    filter.apply_to(spectrum);
+});
+
+std::cout << "cpu-side: " << cpu_side.execute(10) << "μs" << std::endl;
+std::cout << "gpu-side: " << gpu_side.execute(10) << "μs" << std::endl;
+```
+
+We choose the `SPEED` configuration of the fourier transform because, as mentioned in the [frequency domain tutorial](../frequency_domain/frequency_domain_filtering.md), it is the only configuration to be feasible run in real-time on mid-end systems. The benchmark report the following times:
+
+```
+cpu-side: 1.39101e+06ms
+gpu-side: 4197ms
+```
+Once again the performance increase is extremely significant. 
+
 
