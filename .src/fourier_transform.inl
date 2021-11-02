@@ -12,7 +12,7 @@ namespace crisp
         out.create(get_size().x(), get_size().y());
 
         size_t m = get_size().x(),
-             n = get_size().y();
+               n = get_size().y();
 
         for (size_t x = 0, i = 0; x < m; ++x)
         {
@@ -57,6 +57,28 @@ namespace crisp
                 out(x, y) = value;
             }
         }
+        return out;
+    }
+
+    template<FourierTransformMode Mode>
+    Texture<float, 1> FourierTransform<Mode>::as_texture() const
+    {
+        auto out = Texture<float, 1>(State::register_texture<1>(_size.x(), _size.y(), _spectrum));
+
+        auto& workspace = out.get_workspace();
+
+        auto shader = State::register_shader("visualize_fourier.glsl");
+        auto program = State::register_program(shader);
+        State::free_shader(shader);
+
+        State::bind_shader_program(program);
+        State::set_float(program, "_min", _min_spectrum);
+        State::set_float(program, "_max", _max_spectrum);
+        State::bind_texture(program, "_texture", out.get_handle());
+
+        workspace.display();
+        workspace.yield();
+
         return out;
     }
 

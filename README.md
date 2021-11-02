@@ -1,4 +1,4 @@
-# CRISP: Real-Time Interactive Signal Processing Library (v0.6.2)
+# CRISP: Real-Time Interactive Signal Processing Library (v0.8.3)
 
 ## What is `crisp`?
 `crisp` is a library implementing most image-processing needs from scratch. This includes:
@@ -124,6 +124,7 @@ Consider reading the tutorials in order, this will teach important principles of
 10. [Segmentation](./docs/segmentation/segmentation.md)
 11. [Feature Extraction](./docs/feature_extraction/feature_extraction.md)
 12. [Deep Learning](./docs/feature_classification/feature_classification_and_deep_learning.md)
+13. [Hardware Acceleration](./docs/hardware_acceleration/textures.md)
 
 ## [Documentation](./docs/index.md)
 

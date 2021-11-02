@@ -7,11 +7,13 @@
 
 #include <Dense>
 #include <vector.hpp>
+#include <gpu_side/texture.hpp>
+#include <structuring_element.hpp>
 
 namespace crisp
 {
-    /// @brief matrix of std::optional<bool> used as flat structuring element, the optional element not having a value represents "don't care" elements
-    using StructuringElement = Eigen::Matrix<std::optional<bool>, Eigen::Dynamic, Eigen::Dynamic>;
+    template<typename, size_t>
+    class Texture;
 
     /// @brief object representing a morphological transform using a flat structuring element
     class MorphologicalTransform
@@ -54,16 +56,32 @@ namespace crisp
             template<typename Image_t>
             void erode(Image_t& image);
 
+            /// @brief erode a texture with the current structuring element
+            /// @param texture
+            template<typename T, size_t N>
+            void erode(Texture<T, N>& texture);
+
             /// @brief geodesically erode an image with the current structuring element
             /// @param image: image to be modified
             /// @param mask: mask image used to limit erosion
             template<typename Image_t>
             void erode(Image_t& image, const Image_t& mask);
 
+            /// @brief geodesically erode a texture with the current structuring element
+            /// @param texture
+            /// @param mask: mask image used to limit dilation
+            template<typename T, size_t N>
+            void erode(Texture<T, N>& image, const Texture<T, N>& mask);
+
             /// @brief dilate an image with the current structuring element
             /// @param image: image to be modified
             template<typename Image_t>
             void dilate(Image_t& image);
+
+            /// @brief erode a texture with the current structuring element
+            /// @param texture
+            template<typename T, size_t N>
+            void dilate(Texture<T, N>& texture);
 
             /// @brief geodesically dilate an image with the current structuring element
             /// @param image: image to be modified
@@ -71,15 +89,31 @@ namespace crisp
             template<typename Image_t>
             void dilate(Image_t& image, const Image_t& mask);
 
+            /// @brief geodesically dilate a texture with the current structuring element
+            /// @param texture
+            /// @param mask: mask image used to limit dilation
+            template<typename T, size_t N>
+            void dilate(Texture<T, N>& image, const Texture<T, N>& mask);
+
             /// @brief erode, then dilate an image
             /// @param image: image to be modified
             template<typename Image_t>
             void open(Image_t& image);
 
+            /// @brief erode, then dilate a texture
+            /// @param texture
+            template<typename T, size_t N>
+            void open(Texture<T, N>& texture);
+
             /// @brief dilate, then erode an image
             /// @param image: image to be modified
             template<typename Image_t>
             void close(Image_t& image);
+
+            /// @brief dilate, then erode a texture
+            /// @param texture
+            template<typename T, size_t N>
+            void close(Texture<T, N>& texture);
 
             /// @brief set all pixels where the structuring element occurs in the image to 1, zero otherwise
             /// @param image: image to be modified
@@ -129,6 +163,26 @@ namespace crisp
             /// @param dimensions: x- and y-dimensions
             /// @returns structuring element bindable with set_structuring_element
             static StructuringElement circle(long dimensions);
+
+            /// @brief non-flat structuring element in the shape of a pyramid with a square base
+            /// @param dimensions: x- and y-dimensions
+            /// @returns non-flat structuring element
+            static NonFlatStructuringElement square_pyramid(long dimensions);
+
+            /// @brief non-flat structuring element in the shape of a pyramid with a diamond base. All non-pyramid elements are "don't care"
+            /// @param dimensions: x- and y-dimensions
+            /// @returns non-flat structuring element
+            static NonFlatStructuringElement diamond_pyramid(long dimensions);
+
+            /// @brief non-flat structuring element in the shape of a pyramid with a circular base. All non-pyramid elements are "don't care"
+            /// @param dimensions: x- and y-dimensions
+            /// @returns non-flat structuring element
+            static NonFlatStructuringElement cone(long dimensions);
+
+            /// @brief non-flat structuring element in the shape of a hemisphere. All elements outside the sphere are "don't care"
+            /// @param dimensions: x- and y-dimensions
+            /// @returns non-flat structuring element
+            static NonFlatStructuringElement hemisphere(long dimensions);
 
         private:
             Vector2ui _origin;

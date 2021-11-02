@@ -7,25 +7,29 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 ---
 
 ## Table of Contents
-1. [**Images**](#images)<br>
+1. [**Images & Textures**](#images)<br>
    1.1 [Modifying Images](#modifying-images)<br>
    1.2 [Image Planes](#image-planes)<br>
    1.3 [Histgroams](#image-histograms)<br>
    1.4 [Whole Image Transforms](#whole-image-transforms)<br>
+   1.5 [Textures](#modifying-textures)<br>
 2. [**Spatial Domain Filtering**](#filtering-in-the-spatial-domain)<br>
     2.1 [Kernels](#kernels)<br>
     2.2 [crisp::SpatialFilter](#filter)<br>
     2.3 [Evaluation Functions](#evaluation-function)<br>
     2.4 [Pre-Defined Kernels](#pre-defined-kernels)<br>
+    2.5 [GPU-Side Filtering](#hardware-accelerated-spatial-filters)<br>
 3. [**Morphological Transforms**](#morphological-transforms)<br>
     3.1 [Structuring Element](#structuring-element)<br>
     3.2 [Pre-Defined Structuring Elements](#pre-defined-structuring-elements)<br>
     3.3 [Types of Transforms](#transforms)<br>
+    3.4 [GPU-Side Transforms](#hardware-accelerated-spectral-filters)<br>
 4. [**Segmentation**](#segmentation)<br>
     4.1 [crisp::ImageSegment](#crispimagesegment)<br>
     4.2 [Thresholding](#thresholding)<br>
     4.3 [Edge Detection](#edge-detection)<br>
     4.4 [Clustering](#clustering)<br>
+    4.5 [GPU-Side Segmentation](#gpu-side-segmentation)<br>
 5. [**Feature Extraction**](#feature-extraction)<br>
     5.1 [crisp::ImageRegion](#crispimageregion)<br>
     5.2 [Boundary](#boundary)<br>
@@ -40,19 +44,23 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
     7.1 [Fourier Transform](#fourier-transform)<br>
     7.2 [Spectral Filters](#spectral-filters)<br>
     7.3 [Pre-Defined Filter Types](#filter-types)<br>
-8. [**Vectors**](#vectors)<br>
-    8.1 [General](#general)<br>
-    8.2 [Arithmetics & Comparison](#arithmetics--comparisons)<br>
-9. [**Color**](#color)<br>
-    9.1 [Color Representations](#color-representations)<br>
-    9.2 [Pseudo Color](#pseudo-color)<br>
-10. [**Noise**](#noise)<br>
-    10.1 [crisp::NoiseGenerator](#general)<br>
-    10.2 [Types of Noise](#types-of-noise)<br>
-11. [**System**](#system)<br>
-    11.1 [Image I/O](#image-io)<br>
-    11.2 [Rendering](#rendering)<br>
-    11.3 [User Input](#keyboardmouse-input)<br>
+    7.4 [GPU-Side Spectral Filters](#)<br>
+8. [**GPU-Side Computing**](#gpu-side-computing)<br>
+    8.1 [Textures](#textures)<br>
+    8.2 [Graphics Card Interface](#graphics-card-interface)<br>
+9. [**Vectors**](#vectors)<br>
+    9.1 [General](#general)<br>
+    9.2 [Arithmetics & Comparison](#arithmetics--comparisons)<br>
+10. [**Color**](#color)<br>
+    10.1 [Color Representations](#color-representations)<br>
+    10.2 [Pseudo Color](#pseudo-color)<br>
+11. [**Noise**](#noise)<br>
+    11.1 [crisp::NoiseGenerator](#general)<br>
+    11.2 [Types of Noise](#types-of-noise)<br>
+12. [**System**](#system)<br>
+    12.1 [Image I/O](#image-io)<br>
+    12.2 [Rendering](#rendering)<br>
+    12.3 [User Input](#keyboardmouse-input)<br>
 ---
 
 ## [Images](./image/image.md)
@@ -94,6 +102,11 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 + [Gradient Magnitude](./image/image.md/#53-compute-gradient-magnitude)
 + [Bitplane Decomposition](./image/image.md/#54-bitplane-decomposition)
 + [Wavelet Transform](./image/image.md/#55-wavelet-transform)
+
+#### Modifying Textures
++ [Loading Textures](./hardware_acceleration/textures.md/#2-textures)
++ [Saving Textures](./hardware_acceleration/textures.md/#22-saving-textures)
++ [Modifying Textures](./hardware_acceleration/textures.md/#23-modifying-textures)
 
 ---
 
@@ -140,6 +153,9 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 + [Sobel Gradient](./spatial_filters/spatial_domain_filtering.md/#494-sobel)
 + [Kirsch Compass](./spatial_filters/spatial_domain_filtering.md/#495-kirsch-compass)
 
+#### Hardware Accelerated Spatial Filters
++ [GPU-Side Filtering](./hardware_acceleration/textures.md/#3-spatial-filtering)
+
 ---
 
 ## [Morphological Transforms](./morphological_transform/morphological_transform.md/)
@@ -171,6 +187,9 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 + [Hit-or-Miss Transform](./morphological_transform/morphological_transform.md/#37-hit-or-miss-transform)
 + [Pattern Replacement](./morphological_transform/morphological_transform.md/#38-pattern-replacement)
 
+#### Hardware Accelerated Transforms
++ [GPU-Side morphological transform](./hardware_acceleration/textures.md/#4-morphologcial-transforms)
+
 ---
 
 ## [Segmentation](./segmentation/segmentation.md)
@@ -201,6 +220,10 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 + [k-means Clustering](./segmentation/segmentation.md/#41-k-means-clustering)
 + [Superpixel Clustering](./segmentation/segmentation.md/#42-superpixel-clustering)
 + [Clustering by Region Growing](./segmentation/segmentation.md/#43-region-growing-clustering)
+
+#### GPU-Side Segmentation
++ [GPU-Side Thresholding](./hardware_acceleration/textures.md/#51-thresholding)
++ [GPU-Side Segmentation](./hardware_acceleration/textures.md/#52-segmentation)
 
 ---
 
@@ -275,7 +298,7 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
   
 #### Deep Learning
 + [Fully Connected Neural Networks](./feature_classification/feature_classification_and_deep_learning.md/#3-neural-networks)
-
++ [GPU-Side Back Propagation](./hardware_acceleration/textures.md/#7-deep-learning)
 ---
 
 ## [Frequency Domain](./frequency_domain/frequency_domain_filtering.md)
@@ -319,7 +342,32 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
   - [Gaussian](./frequency_domain/frequency_domain_filtering.md/#324-band-reject-filters)
   - [Butterworth](./frequency_domain/frequency_domain_filtering.md/#324-band-reject-filters)
     
+#### Hardware Accelerated Spectral Filters
++ [GPU-Side Spectral Filtering](./hardware_acceleration/textures.md/#6-spectral-filtering)
+    
 ---
+
+## [GPU-Side Computing](./hardware_acceleration/textures.md)
+
+```cpp
+#include <gpu_side/textures.hpp>
+#include <gpu_side/texture_workspace.hpp>
+#include <gpu_Side/state.hpp>
+#include <gpu_side/is_gpu_side.hpp>
+#include <gpu_side/native_handle.hpp>
+
+// all of the above collected in:
+#include <gpu_side.hpp>
+```
+
+#### [Textures](./hardware_acceleration/textures.md/#2-textures)
++ [Loading Textures](./hardware_acceleration/textures.md/#2-textures)
++ [Saving Textures](./hardware_acceleration/textures.md/#22-saving_textures)
++ [Texture Transforms](./hardware_acceleration/textures.md/#23-modifying-textures)
+
+#### Graphics Card Interface
+
+(this documentation is not yet completed)
 
 ## [Vectors](./vector/vector.md)
 

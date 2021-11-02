@@ -137,19 +137,13 @@ namespace crisp
                 apply_normalized_convolution_to(image, result);
                 break;
 
-            case MINIMUM:
-                apply_min_to(image, result);
-                break;
-
-            case MAXIMUM:
-                apply_max_to(image, result);
-                break;
-
             case MEAN:
                 apply_mean_to(image, result);
+                break;
 
             case MEDIAN:
                 apply_median_to(image, result);
+                break;
         }
 
         for (int x = 0; x < image.get_size().x(); ++x)
@@ -157,7 +151,109 @@ namespace crisp
                 image(x, y) = result(x, y);
     }
 
-    
+
+    template<typename T, size_t N>
+    void SpatialFilter::apply_to(Texture<T, N>& texture)
+    {
+        auto workspace = texture._workspace;
+
+        assert(_kernel.rows() < 5 and _kernel.cols() < 5 && "GPU-side spatial filtering is only supported for kernels of size m*n where m, n in {1, 2, 3, 4}");
+
+        std::stringstream shader_id;
+        if (_kernel.rows() == 1)
+            shader_id << "convolute_vec" << _kernel.cols() << ".glsl";
+        else if (_kernel.rows() == 1)
+            shader_id << "convolute_vec" << _kernel.rows() << ".glsl";
+        else
+            shader_id << "convolute_mat" << _kernel.cols() << "x" << _kernel.rows() << ".glsl";
+
+        auto shader = State::register_shader(shader_id.str());
+        auto program = State::register_program(shader);
+        State::free_shader(shader);
+
+        auto size = State::register_vec<2>(texture.get_size());
+
+        ProxyID kernel;
+        ProxyID vec_layout_maybe;
+
+        if (_kernel.cols() != 1 and _kernel.rows() != 1)
+            kernel = State::register_matrix(_kernel);
+        else if (_kernel.rows() != 1)
+        {
+            vec_layout_maybe = State::register_bool(false);
+
+            if (_kernel.cols() == 2)
+            {
+                kernel = State::register_vec<2>(Vector2f{
+                        _kernel(0, 0),
+                        _kernel(0, 1)
+                });
+            }
+            else if (_kernel.cols() == 3)
+            {
+                kernel = State::register_vec<3>(Vector3f{
+                   _kernel(0, 0),
+                   _kernel(0, 1),
+                   _kernel(0, 2)
+                });
+            }
+            else if (_kernel.cols() == 4)
+            {
+                kernel = State::register_vec<3>(Vector3f{
+                   _kernel(0, 0),
+                   _kernel(0, 1),
+                   _kernel(0, 2),
+                   _kernel(0, 3)
+                });
+            }
+        }
+        else if (_kernel.cols() != 1)
+        {
+            vec_layout_maybe = State::register_bool(false);
+
+            if (_kernel.rows() == 2)
+            {
+                kernel = State::register_vec<3>(Vector3f{
+                   _kernel(0, 0),
+                   _kernel(1, 0),
+                });
+            }
+            else if (_kernel.rows() == 3)
+            {
+                kernel = State::register_vec<3>(Vector3f{
+                   _kernel(0, 0),
+                   _kernel(1, 0),
+                   _kernel(2, 0),
+                });
+            }
+            else if (_kernel.rows() == 4)
+            {
+                kernel = State::register_vec<3>(Vector3f{
+                   _kernel(0, 0),
+                   _kernel(1, 0),
+                   _kernel(2, 0),
+                   _kernel(3, 0)
+                });
+            }
+        }
+
+        State::bind_shader_program(program);
+        State::bind_texture(program, "_texture", texture.get_handle());
+        State::bind_vec(program, "_texture_size", size);
+        State::bind_matrix(program, "_kernel", kernel);
+
+        if (_kernel.cols() == 1 or _kernel.rows() == 1)
+            State::bind_bool(program, "_vertical", vec_layout_maybe);
+
+        workspace.display();
+        workspace.yield();
+
+        State::free_program(program);
+        State::free_vec(size);
+        State::free_matrix(kernel);
+    }
+
+
     float SpatialFilter::operator()(size_t x, size_t y) const
     {
         return _kernel(x, y);
@@ -169,7 +265,7 @@ namespace crisp
         return _kernel(x, y);
     }
 
-    
+
     void SpatialFilter::set_kernel(Kernel kernel)
     {
         _kernel = kernel;
@@ -180,19 +276,18 @@ namespace crisp
                 _kernel_sum += _kernel(x, y);
     }
 
-    
     Kernel& SpatialFilter::get_kernel()
     {
         return _kernel;
     }
 
-    
+
     void SpatialFilter::set_evaluation_function(SpatialFilter::EvaluationFunction function)
     {
         _evaluation_function = function;
     }
 
-    
+
     Kernel SpatialFilter::identity(size_t dimensions)
     {
         assert(dimensions != 0);
@@ -213,7 +308,7 @@ namespace crisp
         return out;
     }
 
-    
+
     Kernel SpatialFilter::one(size_t dimensions)
     {
         assert(dimensions != 0);
@@ -223,7 +318,7 @@ namespace crisp
         return out;
     }
 
-    
+
     Kernel SpatialFilter::box(size_t dimensions, float value)
     {
         assert(dimensions != 0);
@@ -233,7 +328,7 @@ namespace crisp
         return out;
     }
 
-    
+
     Kernel SpatialFilter::normalized_box(size_t dimension)
     {
         assert(dimension != 0);

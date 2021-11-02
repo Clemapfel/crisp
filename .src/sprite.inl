@@ -158,7 +158,7 @@ namespace crisp
         update();
     }
 
-    inline void Sprite::create_from(const FrequencyDomainFilter& filter)
+    inline void Sprite::create_from(const FrequencyDomainFilter<CPU_SIDE>& filter)
     {
         sf::Image temp;
         temp.create(filter.get_size().x(), filter.get_size().y());

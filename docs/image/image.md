@@ -21,7 +21,7 @@ Multi-Dimensional Images of Arbitrary Type, Plane-Wise and Whole-Image Processin
 #include <histogram.hpp>
 ```
 
-## Table of Content
+## Table of Contents
 
 1. [**Introduction**](#1-introduction)</br>
 2. [**Image I/O**](#2-image-io)</br>

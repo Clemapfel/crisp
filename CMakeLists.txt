@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -lstdc++fs -pthread -lpthread")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -lstdc++fs -pthread -lpthread -lGL")
 set(CMAKE_CXX_STANDARD 20)
 
 project(crisp)
@@ -7,13 +7,25 @@ project(crisp)
 ### DEPENDENCIES ################################################################################
 
 # SFML
-set(SFML_DIR "/usr/include/SFML") # modify this SFML is located somewhere else
+set(SFML_DIR "/usr/include/SFML") # modify this if SFML is located somewhere else
 find_package(SFML 2.5.1 COMPONENTS graphics window system REQUIRED)
 
 # EIGEN
 include_directories("./eigen/Eigen")
 
+# OpenGL
+FIND_PACKAGE(OpenGL REQUIRED)
+
+# sol2
+include_directories("./sol2/include/sol")
+include_directories("./sol2/include")
+include_directories("/usr/include/lua5.3")
+find_package(Lua REQUIRED)
+
 ### CRISP #######################################################################################
+
+set(RESOURCE_PATH ${CMAKE_SOURCE_DIR})
+configure_file(/home/clem/Workspace/crisp/.src/resource_path.hpp.in /home/clem/Workspace/crisp/resource_path.hpp @ONLY)
 
 add_library(crisp STATIC
 
@@ -67,6 +79,7 @@ add_library(crisp STATIC
 
         include/frequency_domain_filter.hpp
         .src/frequency_domain_filter.inl
+        .src/frequency_domain_filter_gpu.inl
 
         include/fourier_transform.hpp
         .src/fourier_transform.inl
@@ -93,48 +106,37 @@ add_library(crisp STATIC
 
         include/classification/bayes_classifier.hpp
         .src/bayes_classifier.inl
-        docs/feature_classification/deep_learning_example.cpp)
+
+        include/gpu_side/native_handle.hpp
+        include/gpu_side/state.hpp
+        .src/state.inl
+
+        include/gpu_side/texture_workspace.hpp
+        .src/texture_workspace.inl foo.h .src/texture.inl
+
+        include/benchmark.hpp
+        .src/benchmark.inl
+
+        include/gpu_side/is_gpu_side.hpp
+        include/gpu_side/gpu_side.hpp)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
-target_link_libraries(crisp sfml-graphics sfml-window sfml-system fftw3 fftw3l fftw3f)
+target_link_libraries(crisp
+        sfml-graphics
+        sfml-window
+        sfml-system
+        fftw3
+        fftw3l
+        fftw3f
+        ${OPENGL_LIBRARIES}
+        ${LUA_LIBRARIES})
 
 include_directories("./include")
 include_directories("./")
-
-### EXAMPLES ####################################################################################
-
-add_executable(EXAMPLE_COLOR docs/color/.resources/color_example.cpp)
-target_link_libraries(EXAMPLE_COLOR crisp)
-
-add_executable(EXAMPLE_FREQUENCY_DOMAIN docs/frequency_domain/.resources/frequency_domain_example.cpp)
-target_link_libraries(EXAMPLE_FREQUENCY_DOMAIN crisp)
-
-add_executable(EXAMPLE_IMAGE docs/image/.resources/image_example.cpp)
-target_link_libraries(EXAMPLE_IMAGE crisp)
-
-add_executable(EXAMPLE_MORPHOLOGICAL_TRANSFORM docs/morphological_transform/.resources/morphological_transform_example.cpp)
-target_link_libraries(EXAMPLE_MORPHOLOGICAL_TRANSFORM crisp)
-
-add_executable(EXAMPLE_SEGMENTATION docs/segmentation/.resources/segmentation_example.cpp)
-target_link_libraries(EXAMPLE_SEGMENTATION crisp)
-
-add_executable(EXAMPLE_SPATIAL_FILTER docs/spatial_filters/.resources/spatial_filter_example.cpp)
-target_link_libraries(EXAMPLE_SPATIAL_FILTER crisp)
-
-add_executable(EXAMPLE_SYSTEM docs/system/system_example.cpp)
-target_link_libraries(EXAMPLE_SYSTEM crisp)
-
-add_executable(EXAMPLE_FEATURE_EXTRACTION docs/feature_extraction/.resources/feature_extraction_example.cpp)
-target_link_libraries(EXAMPLE_FEATURE_EXTRACTION crisp)
-
-add_executable(EXAMPLE_NOISE docs/noise/.resources/noise_main.cpp)
-target_link_libraries(EXAMPLE_NOISE crisp)
-
-add_executable(EXAMPLE_DEEP_LEARNING docs/feature_classification/deep_learning_example.cpp)
-target_link_libraries(EXAMPLE_DEEP_LEARNING crisp)
 
 ### TESTS #######################################################################################
 
 add_executable(TEST .test/main.cpp)
 target_link_libraries(TEST crisp)
+
 

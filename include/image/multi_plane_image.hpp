@@ -6,7 +6,7 @@
 #pragma once
 
 #include <vector.hpp>
-#include <image/padding_type.hpp>
+#include <padding_type.hpp>
 #include <color.hpp>
 
 #include <type_traits>
@@ -147,7 +147,7 @@ namespace crisp
             /// @return const iterator to past-the-end element
             auto end() const;
 
-        protected:
+        //protected:
             Eigen::Matrix<Value_t, Eigen::Dynamic, Eigen::Dynamic> _data;
 
         private:
