@@ -37,13 +37,10 @@ It's called visual computing, after all. Here's a non-exhaustive list of things 
 
 This makes debugging, filter design or just understanding/explaining your own algorithms much easier and more intuitive.
 
-`crisp` is **fast AND flexible**
-+ images live in ram and are operated upon by the CPU
-+ very easy to understand and interface with. Allows for high flexibility
-+ textures live in vram and are operated upon by the GPU
-+ harder to interact with, textures make up for this by being extremely fast as they make full use of hardware-acceleration
-+ all algorithms work on textures and images
-+ textures can be transformed into images and vice-versa
+`crisp` is **fast and flexible**
++ for full flexibility, `crisp::Image` lives in RAM and is operated upon by the CPU
++ for best performance, `crisp::Texture` lives in VRAM and is operated upon by the GPU
++ GPU-side computation makes large-scale real-time processing possible on mid-end machines
 
 `crisp` is **well documented**<br>
 + [full tutorials](#tutorial) are available for all features
@@ -69,7 +66,7 @@ This makes debugging, filter design or just understanding/explaining your own al
 + [cmake](https://cmake.org/install/)
 + [gcc10](https://gcc.gnu.org/install/download.html) or newer 
     - `libgcc-10-dev`
-+ [OpenGL 3.3](https://developer.nvidia.com/opengl-driver) or newer
++ [OpenGL 3.3 ES](https://developer.nvidia.com/opengl-driver) or newer
     - `libopengl-dev`
 + [Eigen](https://eigen.tuxfamily.org/dox/GettingStarted.html)
     - provided as submodule
