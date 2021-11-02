@@ -45,7 +45,7 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
     7.2 [Spectral Filters](#spectral-filters)<br>
     7.3 [Pre-Defined Filter Types](#filter-types)<br>
     7.4 [GPU-Side Spectral Filters](#)<br>
-8. [**GPU-Side Computing**](#gpu-side-computing)
+8. [**GPU-Side Computing**](#gpu-side-computing)<br>
     8.1 [Textures](#textures)<br>
     8.2 [Graphics Card Interface](#graphics-card-interface)<br>
 9. [**Vectors**](#vectors)<br>
