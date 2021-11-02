@@ -23,7 +23,7 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
     3.1 [Structuring Element](#structuring-element)<br>
     3.2 [Pre-Defined Structuring Elements](#pre-defined-structuring-elements)<br>
     3.3 [Types of Transforms](#transforms)<br>
-    3.4 [GPU-Side Transforms](#)
+    3.4 [GPU-Side Transforms](#hardware-accelerated-spectral-filters)<br>
 4. [**Segmentation**](#segmentation)<br>
     4.1 [crisp::ImageSegment](#crispimagesegment)<br>
     4.2 [Thresholding](#thresholding)<br>
@@ -44,20 +44,23 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
     7.1 [Fourier Transform](#fourier-transform)<br>
     7.2 [Spectral Filters](#spectral-filters)<br>
     7.3 [Pre-Defined Filter Types](#filter-types)<br>
-    7.4 [GPU-Side Spectral Filters]()<br>
-8. [**Vectors**](#vectors)<br>
-    8.1 [General](#general)<br>
-    8.2 [Arithmetics & Comparison](#arithmetics--comparisons)<br>
-9. [**Color**](#color)<br>
-    9.1 [Color Representations](#color-representations)<br>
-    9.2 [Pseudo Color](#pseudo-color)<br>
-10. [**Noise**](#noise)<br>
-    10.1 [crisp::NoiseGenerator](#general)<br>
-    10.2 [Types of Noise](#types-of-noise)<br>
-11. [**System**](#system)<br>
-    11.1 [Image I/O](#image-io)<br>
-    11.2 [Rendering](#rendering)<br>
-    11.3 [User Input](#keyboardmouse-input)<br>
+    7.4 [GPU-Side Spectral Filters](#)<br>
+8. [**GPU-Side Computing**](#gpu-side-computing)
+    8.1 [Textures](#textures)<br>
+    8.2 [Graphics Card Interface](#graphics-card-interface)<br>
+9. [**Vectors**](#vectors)<br>
+    9.1 [General](#general)<br>
+    9.2 [Arithmetics & Comparison](#arithmetics--comparisons)<br>
+10. [**Color**](#color)<br>
+    10.1 [Color Representations](#color-representations)<br>
+    10.2 [Pseudo Color](#pseudo-color)<br>
+11. [**Noise**](#noise)<br>
+    11.1 [crisp::NoiseGenerator](#general)<br>
+    11.2 [Types of Noise](#types-of-noise)<br>
+12. [**System**](#system)<br>
+    12.1 [Image I/O](#image-io)<br>
+    12.2 [Rendering](#rendering)<br>
+    12.3 [User Input](#keyboardmouse-input)<br>
 ---
 
 ## [Images](./image/image.md)
@@ -343,6 +346,28 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 + [GPU-Side Spectral Filtering](./hardware_acceleration/textures.md/#6-spectral-filtering)
     
 ---
+
+## [GPU-Side Computing](./hardware_acceleration/textures.md)
+
+```cpp
+#include <gpu_side/textures.hpp>
+#include <gpu_side/texture_workspace.hpp>
+#include <gpu_Side/state.hpp>
+#include <gpu_side/is_gpu_side.hpp>
+#include <gpu_side/native_handle.hpp>
+
+// all of the above collected in:
+#include <gpu_side.hpp>
+```
+
+#### [Textures](./hardware_acceleration/textures.md/#2-textures)
++ [Loading Textures](./hardware_acceleration/textures.md/#2-textures)
++ [Saving Textures](./hardware_acceleration/textures.md/#22-saving_textures)
++ [Texture Transforms](./hardware_acceleration/textures.md/#23-modifying-textures)
+
+#### Graphics Card Interface
+
+(this documentation is not yet completed)
 
 ## [Vectors](./vector/vector.md)
 

@@ -3,15 +3,16 @@
 // Created on 16.10.21 by clem (mail@clemens-cords.com)
 //
 
-#include <gpu_side/state.hpp>
-#include <boost/container/vector.hpp>
-#include <image/multi_plane_image.hpp>
-#include <resource_path.hpp>
 #include <GLES3/gl32.h>
 #include <GL/gl.h>
+#include <boost/container/vector.hpp>
 
 #include <fstream>
 #include <iostream>
+
+#include <gpu_side/state.hpp>
+#include <image/multi_plane_image.hpp>
+#include <resource_path.hpp>
 
 namespace crisp
 {
