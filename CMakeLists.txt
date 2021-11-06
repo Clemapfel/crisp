@@ -117,8 +117,7 @@ add_library(crisp STATIC
         include/benchmark.hpp
         .src/benchmark.inl
 
-        include/gpu_side/is_gpu_side.hpp
-        include/gpu_side/gpu_side.hpp)
+        include/gpu_side/is_gpu_side.hpp)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp
@@ -138,5 +137,8 @@ include_directories("./")
 
 add_executable(TEST .test/main.cpp)
 target_link_libraries(TEST crisp)
+
+add_executable(VIDEO include/video/video_test.cpp)
+target_link_libraries(VIDEO crisp)
 
 
