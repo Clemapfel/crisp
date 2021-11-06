@@ -138,7 +138,4 @@ include_directories("./")
 add_executable(TEST .test/main.cpp)
 target_link_libraries(TEST crisp)
 
-add_executable(VIDEO include/video/video_test.cpp)
-target_link_libraries(VIDEO crisp)
-
 
