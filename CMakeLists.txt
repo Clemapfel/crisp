@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.19)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -lstdc++fs -pthread -lpthread -lGL")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}-std=c++2a -lstdc++fs -pthread -lpthread -lGL")
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_BUILD_TYPE Debug)
 
 project(crisp)
 
@@ -21,6 +23,11 @@ include_directories("./sol2/include/sol")
 include_directories("./sol2/include")
 include_directories("/usr/include/lua5.3")
 find_package(Lua REQUIRED)
+
+# OpenCV
+SET("OpenCV_DIR" "/usr/share/OpenCV")
+find_package(OpenCV REQUIRED)
+
 
 ### CRISP #######################################################################################
 
@@ -118,7 +125,7 @@ add_library(crisp STATIC
         .src/benchmark.inl
 
         include/gpu_side/is_gpu_side.hpp
-        include/gpu_side/gpu_side.hpp)
+        include/video/video_file.hpp .src/video_file.inl)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp
@@ -129,14 +136,19 @@ target_link_libraries(crisp
         fftw3l
         fftw3f
         ${OPENGL_LIBRARIES}
-        ${LUA_LIBRARIES})
+        ${LUA_LIBRARIES}
+        ${OpenCV_LIBS})
 
 include_directories("./include")
 include_directories("./")
+include_directories("/usr/include/opencv4")
 
 ### TESTS #######################################################################################
 
 add_executable(TEST .test/main.cpp)
 target_link_libraries(TEST crisp)
+
+add_executable(VIDEO include/video/video_test.cpp)
+target_link_libraries(VIDEO crisp)
 
 

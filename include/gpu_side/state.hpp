@@ -11,6 +11,8 @@
 #include <SFML/Graphics/Glsl.hpp>
 #include <GLES3/gl3.h>
 
+#include <SFML/Window.hpp>
+
 #include <vector.hpp>
 #include <padding_type.hpp>
 #include <image/multi_plane_image.hpp>
@@ -291,8 +293,14 @@ namespace crisp
             /// @brief create texture from raw data
             /// @param data: OpenGL compliant formatted array
             /// @returns native handle of resulting texture
-            template<size_t N>
-            static GLNativeHandle register_texture(size_t width, size_t height, const std::vector<float>& data);
+            template<typename T, size_t N>
+            static GLNativeHandle register_texture(size_t width, size_t height, const std::vector<T>& data);
+
+            /// @brief create texture from raw data
+            /// @param data: OpenGL compliant formatted array
+            /// @returns native handle of resulting texture
+            template<typename T, size_t N>
+            static GLNativeHandle register_texture(size_t width, size_t height, T* data);
 
             /// @brief deallocate texture
             /// @param id: native handle of texture
