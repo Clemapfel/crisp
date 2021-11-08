@@ -40,6 +40,11 @@ namespace crisp
             /// @brief decays vector to element for N = 1, throws static assertion if N > 1
             explicit (N != 1) operator T() const;
 
+            /// @brief cast vector to different value type
+            /// @tparam NewT: new numerical value type
+            template<typename NewT>
+            Vector<NewT, N> cast_to() const;
+
             /// @brief access data without bounds checking
             /// @param index
             /// @returns reference to component

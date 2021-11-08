@@ -44,6 +44,18 @@ namespace crisp
     }
 
     template<typename T, size_t N>
+    template<typename NewT>
+    Vector<NewT, N> Vector<T, N>::cast_to() const
+    {
+        auto out = Vector<NewT, N>();
+
+        for (size_t i = 0; i < N; ++i)
+            out.at(i) = static_cast<NewT>(at(i));
+
+        return out;
+    }
+
+    template<typename T, size_t N>
     T& Vector<T, N>::operator[](size_t i) noexcept
     {
         return Eigen::Array<T, 1, N>::operator()(0, i);
