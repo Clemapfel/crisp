@@ -109,7 +109,7 @@ namespace crisp
         assert(info.width == _size.x() and info.height == _size.y());
 
         glBindTexture(GL_TEXTURE_2D, tex.get_handle());
-        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_RGB, &_frames.at(i).at<float>(0, 0));
+        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, _frames.at(i).data);
     }
 
     void VideoFile::cache()
