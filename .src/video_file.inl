@@ -10,43 +10,13 @@
 #include <video/video_file.hpp>
 
 #include <opencv4/opencv2/videoio.hpp>
+#include <opencv4/opencv2/core.hpp>
 
 namespace crisp
 {
     VideoFile::VideoFile()
         : _capture()
     {}
-
-    void VideoFile::create(std::string path)
-    {
-        _capture.open(path);
-
-        if (not _capture.isOpened())
-        {
-            std::stringstream str;
-            str << "[ERROR] Unable to open video file at " << path << std::endl;
-            throw std::invalid_argument(str.str());
-        }
-
-        _n_frames = size_t(_capture.get(cv::VideoCaptureProperties::CAP_PROP_FRAME_COUNT));
-        _size.x() = size_t(_capture.get(cv::VideoCaptureProperties::CAP_PROP_FRAME_WIDTH));
-        _size.y() = size_t(_capture.get(cv::VideoCaptureProperties::CAP_PROP_FRAME_HEIGHT));
-    }
-
-    size_t VideoFile::get_n_frames() const
-    {
-        return _n_frames;
-    }
-
-    size_t VideoFile::get_current_frame() const
-    {
-        return _current_frame;
-    }
-
-    Vector2ui VideoFile::get_size() const
-    {
-        return _size;
-    }
 
     void VideoFile::cache_frames_until(size_t i)
     {
@@ -63,6 +33,60 @@ namespace crisp
 
         if (_current_frame >= _n_frames)
             _capture.release();
+    }
+
+    void VideoFile::load(std::string path)
+    {
+        _capture.open(path);
+
+        if (not _capture.isOpened())
+        {
+            std::stringstream str;
+            str << "[ERROR] Unable to open video file at " << path << std::endl;
+            throw std::invalid_argument(str.str());
+        }
+
+        _fps = size_t(_capture.get(cv::VideoCaptureProperties::CAP_PROP_FPS));
+        _codec = _capture.get(cv::VideoCaptureProperties::CAP_PROP_FOURCC);
+        _n_frames = size_t(_capture.get(cv::VideoCaptureProperties::CAP_PROP_FRAME_COUNT));
+        _size.x() = size_t(_capture.get(cv::VideoCaptureProperties::CAP_PROP_FRAME_WIDTH));
+        _size.y() = size_t(_capture.get(cv::VideoCaptureProperties::CAP_PROP_FRAME_HEIGHT));
+    }
+
+    void VideoFile::save(std::string path)
+    {
+        auto out = cv::VideoWriter();
+        out.open(path, _codec, _fps, cv::Size(_size.x(), _size.y()));
+        if (not out.isOpened())
+        {
+            std::stringstream str;
+            str << "[WARNING] Unable to write video file to " << path << std::endl;
+            str << "[LOG] No video file saved." << std::endl;
+            return;
+        }
+
+        for (size_t i = 0; i < _frames.size(); ++i)
+        {
+            cv::Mat& frame = _frames.at(i);
+            cv::normalize(frame, frame, 0.0, 255, cv::NORM_MINMAX, CV_8U);
+            cv::flip(frame, frame, 0);
+            out.write(frame);
+        }
+    }
+
+    size_t VideoFile::get_n_frames() const
+    {
+        return _n_frames;
+    }
+
+    size_t VideoFile::get_current_frame() const
+    {
+        return _current_frame;
+    }
+
+    Vector2ui VideoFile::get_size() const
+    {
+        return _size;
     }
 
     Texture<float, 3> VideoFile::get_frame(size_t i)

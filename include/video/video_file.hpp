@@ -31,12 +31,15 @@ namespace crisp
             /// @brief modify video frame by downloading the current state of the texture into cache
             void set_frame(size_t i, Texture<float, 3>&);
 
-            /// @brief download all frames into vram at once
+            /// @brief download all frames into the cache at once
             void cache();
 
             /// @brief open a stream from a video file
             /// @param path: absolute path to file
-            void create(std::string path);
+            void load(std::string path);
+
+            /// @brief save the current state of the video file to disk
+            void save(std::string path);
 
             /// @brief get total number of frame
             size_t get_n_frames() const;
@@ -51,6 +54,10 @@ namespace crisp
             void cache_frames_until(size_t i);
 
             Vector2ui _size;
+            double _fps = 0;
+            int _codec;
+            int _codec_format;
+
             size_t _n_frames = 0;
 
             size_t _current_frame = 0;

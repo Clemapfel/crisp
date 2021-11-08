@@ -23,7 +23,7 @@ using namespace crisp;
 int main()
 {
     auto video = VideoFile();
-    video.create("/home/clem/Workspace/crisp/include/video/horse.mp4");
+    video.load("/home/clem/Workspace/crisp/include/video/horse.mp4");
 
     auto size = video.get_size();
 
@@ -48,15 +48,39 @@ int main()
     size_t frame_i = 0;
     auto tex = video.get_frame(0);
 
+    for (size_t i = 0; i < video.get_n_frames(); ++i)
+    {
+        auto frame = video.get_frame(i);
+        auto workspace = frame.get_workspace();
+
+        State::bind_shader_program(program);
+        State::bind_texture(program, "_texture", video.get_frame(frame_i));
+        State::set_vec<2>(program, "_texture_size", video.get_size().cast_to<float>());
+
+        workspace.display();
+        auto out = workspace.yield();
+
+        video.set_frame(i, frame);
+
+        State::bind_shader_program(NONE);
+        State::bind_texture(NONE, "_texture", frame);
+        State::display();
+        window.display();
+    }
+
+    video.save("/home/clem/Workspace/crisp/include/video/out.mp4");
+    return 0;
+
+    /*
     while(window.isOpen())
     {
         tex = video.get_frame(frame_i);
         filter.apply_to(tex);
         video.set_frame(frame_i, tex);
 
-        State::bind_shader_program(NONE);
-        State::bind_texture(NONE, "_texture", video.get_frame(frame_i));
-        //State::set_vec<2>(program, "_texture_size", video.get_size().cast_to<float>());
+        State::bind_shader_program(program);
+        State::bind_texture(program, "_texture", video.get_frame(frame_i));
+        State::set_vec<2>(program, "_texture_size", video.get_size().cast_to<float>());
         State::display();
         window.display();
 
@@ -81,7 +105,7 @@ int main()
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
-    }
+    }*/
 
     return 0;
 }
