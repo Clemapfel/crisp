@@ -26,9 +26,13 @@ namespace crisp
             VideoFile();
 
             /// @brief retrieve the nths frame from a file
-            Texture<float, 3> get_frame(size_t i);
+            /// @param i: frame index
+            /// @returns newly allocated texture by value
+            [[nodiscard]] Texture<float, 3> get_frame(size_t i);
 
             /// @brief modify video frame by downloading the current state of the texture into cache
+            /// @param i: frame index
+            /// @param texture: texture holding the new frame data, has to be of same size
             void set_frame(size_t i, Texture<float, 3>&);
 
             /// @brief download all frames into the cache at once
@@ -39,16 +43,21 @@ namespace crisp
             void load(std::string path);
 
             /// @brief save the current state of the video file to disk
+            /// @param path: absolute path to file including file extension
+            /// @note the output file is assumed to have identical encoding, resolution and depth as the original input file, regardless of any processing that took place in the mean time
             void save(std::string path);
 
             /// @brief get total number of frame
+            /// @returns size_t
             size_t get_n_frames() const;
 
-            /// @brief get current frame index
-            size_t get_current_frame() const;
-
             /// @brief get resolution
+            /// @returns vector
             Vector2ui get_size() const;
+
+            /// @brief get frames per second
+            /// @returns float
+            float get_fps() const;
 
         private:
             void cache_frames_until(size_t i);

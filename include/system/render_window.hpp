@@ -41,6 +41,9 @@ namespace crisp
             /// @returns false if minimized, true otherwise
             bool is_open() const;
 
+            /// @brief activate the window as the currently active OpenGL context
+            void set_active();
+
             /// @brief close the window
             using sf::RenderWindow::close;
 

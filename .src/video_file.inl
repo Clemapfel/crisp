@@ -79,14 +79,14 @@ namespace crisp
         return _n_frames;
     }
 
-    size_t VideoFile::get_current_frame() const
-    {
-        return _current_frame;
-    }
-
     Vector2ui VideoFile::get_size() const
     {
         return _size;
+    }
+
+    float VideoFile::get_fps() const
+    {
+        return _fps;
     }
 
     Texture<float, 3> VideoFile::get_frame(size_t i)
@@ -116,14 +116,4 @@ namespace crisp
     {
         cache_frames_until(_n_frames);
     }
-
-
-
-
-
-
-
-
-
-
 }
