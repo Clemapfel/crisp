@@ -791,6 +791,7 @@ namespace crisp
         _textures.erase(id);
         _texture_info.erase(id);
         glDeleteTextures(1, &id);
+        std::cout << "freed " << id << std::endl;
     }
 
     ProxyID State::register_int(int v)

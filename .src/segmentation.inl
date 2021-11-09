@@ -370,7 +370,6 @@ namespace crisp::Segmentation
         State::bind_shader_program(program);
         State::free_shader(shader);
 
-        State::set_vec<2>(program, "_texture_size", Vector2f{float(texture.get_size().x()), float(texture.get_size().y())});
         State::set_uint(program, "_neighborhood_size", neighborhood_size);
         State::set_uint(program, "_correction", correction);
 

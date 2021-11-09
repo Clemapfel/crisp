@@ -30,7 +30,6 @@ namespace crisp
         State::set_float(_program, "_cutoff_b", _cutoff_b);
         State::set_float(_program, "_pass_factor", _pass_factor);
         State::set_float(_program, "_reject_factor", _reject_factor);
-        State::set_vec<2>(_program, "_texture_size", _size);
         State::set_vec<2>(_program, "_offset", _offset);
         State::set_int(_program, "_order", _order);
         State::bind_texture(_program, "_texture", tex);

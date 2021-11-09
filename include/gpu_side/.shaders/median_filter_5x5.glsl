@@ -3,7 +3,6 @@
 in vec2 _tex_coord;
 
 uniform sampler2D _texture;
-uniform vec2 _texture_size;
 
 // reference used: https://casual-effects.com/research/McGuire2008Median/median5.pix
 
@@ -35,7 +34,7 @@ void t25(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, i
 
 void main()
 {
-    vec2 step_size = 1.f / _texture_size;
+    vec2 step_size = 1.f / textureSize(_texture, 0);
     vec4 value[25];
 
     value[0] = texture(_texture, _tex_coord + (vec2(-2, -2) * step_size));

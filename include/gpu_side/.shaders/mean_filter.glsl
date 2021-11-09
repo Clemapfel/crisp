@@ -5,7 +5,6 @@
 in vec2 _tex_coord;
 
 uniform sampler2D _texture;
-uniform vec2 _texture_size;
 
 uniform int _neighborhood_size;
 
@@ -15,7 +14,7 @@ void main()
 {
     vec4 value = vec4(0);
 
-    vec2 step_size = 1.f / (_texture_size + vec2(1, 0));
+    vec2 step_size = 1.f / (textureSize(_texture, 0) + vec2(1, 0));
     int half_n = int(_neighborhood_size / 2.f);
 
     for (int i = 0; i < _neighborhood_size; ++i)

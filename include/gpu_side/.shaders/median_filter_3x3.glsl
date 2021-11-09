@@ -3,7 +3,6 @@
 in vec2 _tex_coord;
 
 uniform sampler2D _texture;
-uniform vec2 _texture_size;
 
 // reference used: https://casual-effects.com/research/McGuire2008Median/median.pix
 
@@ -59,7 +58,7 @@ void mnmx6(inout vec4 a, inout vec4 b, inout vec4 c, inout vec4 d, inout vec4 e,
 
 void main()
 {
-    vec2 step_size = 1.f / _texture_size;
+    vec2 step_size = 1.f / textureSize(_texture, 0);
     vec4 value[9];
 
     value[0] = texture(_texture, _tex_coord + (vec2(-1, -1) * step_size));

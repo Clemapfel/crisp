@@ -13,15 +13,13 @@ float to_grayscale(vec4 rgba)
 }
 
 in vec2 _tex_coord;
-
 out vec4 _out;
 
 uniform sampler2D _texture;
-uniform vec2 _texture_size;
 
 void main()
 {
-    vec2 step_size = 1.f / _texture_size;
+    vec2 step_size = 1.f / textureSize(_texture, 0);
 
     const mat3 sobel_x = mat3(1, 0, -1,
                               2, 0, -2,
