@@ -1,123 +1,89 @@
 // 
 // Copyright 2021 Clemens Cords
-// Created on 07.09.21 by clem (mail@clemens-cords.com)
+// Created on 06.11.21 by clem (mail@clemens-cords.com)
 //
 
-#include <classification/fully_connected_neural_network.hpp>
-#include <classification/bayes_classifier.hpp>
-#include <thread>
-#include <iostream>
-#include <fstream>
+#include <opencv4/opencv2/core.hpp>
+#include <opencv4/opencv2/video.hpp>
+#include <opencv4/opencv2/videoio.hpp>
 
-#include <SFML/OpenGL.hpp>
-#include <SFML/Window/Context.hpp>
-#include <SFML/Graphics/RenderTexture.hpp>
-#include <SFML/Graphics.hpp>
-
-#include <system.hpp>
-#include <GLES3/gl32.h>
-
-#include <sol.hpp>
-
-#include <gpu_side/state.hpp>
-
-#include <segmentation.hpp>
-#include <gpu_side/texture_workspace.hpp>
 #include <gpu_side/texture.hpp>
-
-#include <pseudocolor_mapping.hpp>
+#include <system/image_io.hpp>
 #include <benchmark.hpp>
-//#include <resource_path.hpp>
+#include <spatial_filter.hpp>
+#include <system/render_window.hpp>
+#include <morphological_transform.hpp>
+
+#include <SFML/Window.hpp>
+#include <SFML/Graphics.hpp>
+#include <thread>
+
+#include <gpu_side/hardware_accelerated_matrix.hpp>
 
 using namespace crisp;
 
 int main()
 {
-    sol::state state;
-    auto image = crisp::load_grayscale_image("/home/clem/Workspace/crisp/docs/segmentation/.resources/opal_non_uniform.png");
+    auto window = RenderWindow();
+    window.create(300, 300);
+    window.set_active();
 
-    sf::ContextSettings context_settings;
-    context_settings.antialiasingLevel = 0;
-    context_settings.minorVersion = 3;
-    context_settings.majorVersion = 3;
-    context_settings.attributeFlags = context_settings.Core | context_settings.Default;
+    Eigen::MatrixXf left, right, control_out;
 
-    auto style = sf::Style::Titlebar | sf::Style::Close;
+    left.resize(3, 3);
+    left.setRandom();
 
-    auto window = sf::RenderWindow();
-    window.create(sf::VideoMode(2*image.get_size().x(), 2*image.get_size().y()), "", style, context_settings);
-    window.setActive(true);
+    right.resize(3, 5);
+    right.setRandom();
 
-    auto transform = FourierTransform<SPEED>();
-    transform.transform_from(image);
+    control_out = left * right;
 
-    auto filter = FrequencyDomainFilter<GPU_SIDE>(transform);
-    filter.as_gaussian_bandpass(0.2, 0.3);
-    //filter.apply_to(transform);
+    auto tex_left = Texture<float, 1>(State::register_texture<float, 1>(left.rows(), left.cols(), left.data()));
+    auto tex_right = Texture<float, 1>(State::register_texture<float, 1>(right.rows(), right.cols(), right.data()));
+    auto tex_out = Texture<float, 1>(State::register_texture<float, 1>(left.rows(), right.cols()));
+    auto dummy = Texture<float, 1>(State::register_texture<float, 1>(left.rows(), right.cols()));
 
-    auto img = transform.as_image();
-    auto tex = Texture<float, 1>(img);
-    State::bind_shader_program(NONE);
-    //State::bind_texture(NONE, "_texture", tex.get_handle());
-    State::display();
-
-    /*
-    auto benchmark = Benchmark([&](Texture<float, 1>& tex){tex = transform.as_texture();});
-
-    Texture<float, 1> texture = transform.as_texture();
-    std::cout << benchmark.execute<Texture<float, 1>&>(100, texture) << std::endl;
-
-    auto shader = State::register_shader("lowpass_butterworth.glsl");
+    auto shader = State::register_shader("matrix.glsl");
     auto program = State::register_program(shader);
+    State::free_shader(shader);
 
     State::bind_shader_program(program);
-    State::bind_texture(program, "_texture", texture.get_handle());
+    State::bind_texture(program, "_left", tex_left, 2);
+    State::bind_texture(program, "_right", tex_right, 1);
 
-    auto pass_factor = State::register_float(1);
-    auto reject_factor = State::register_float(0);
-    auto cutoff_a = State::register_float(0.4);
-    auto cutoff_b = State::register_float(0.25);
+    GLNativeHandle buffer;
+    glGenFramebuffers(1, &buffer);
 
-    auto size = State::register_vec<2>(texture.get_size());
-    auto offset = State::register_vec<2>(Vector2f{0.1, 0.1});
-    auto order = State::register_int(3);
+    glActiveTexture(GL_TEXTURE0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer);
+    glBindTexture(GL_TEXTURE_2D, tex_out);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_out, 0);
 
-    State::bind_float(program, "_cutoff_frequency", cutoff_a);
-    State::bind_float(program, "_cutoff", cutoff_a);
-    State::bind_float(program, "_cutoff_a", cutoff_a);
-    State::bind_float(program, "_cutoff_b", cutoff_b);
-    State::bind_float(program, "_pass_factor", pass_factor);
-    State::bind_float(program, "_reject_factor", reject_factor);
-    State::bind_vec2(program, "_texture_size", size);
-    State::bind_vec2(program, "_offset", offset);
-    State::bind_int(program, "_order", order);
-    */
+    glBindTexture(GL_TEXTURE_2D, dummy);
+    glViewport(0, 0, tex_out.get_size().x(), tex_out.get_size().y());
 
-    window.display();
+    State::display();
 
-    while(window.isOpen())
+    auto data = State::get_texture_data(tex_out);
+
+    std::cout << "OUT\t\t\tCONTROL" << std::endl;
+    for (size_t i = 0; i < data.size(); ++i)
+        std::cout << data[i] << "\t" << control_out.data()[i] << std::endl;
+
+    return 0;
+
+    while (window.is_open())
     {
-        auto event = sf::Event();
-        while(window.pollEvent(event))
+        auto time = window.update();
+
+        if (InputHandler::was_key_pressed(RIGHT))
         {
-            if (event.type == sf::Event::EventType::Closed)
-                window.close();
-
-            if (event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::Space)
-            {
-                filter.apply_to(transform);
-                img = transform.as_image();
-                tex = Texture<float, 1>(img);
-                State::bind_shader_program(NONE);
-                State::bind_texture(NONE, "_texture", tex.get_handle());
-                State::display();
-
-                State::display();
-                window.display();
-            }
+        }
+        else if (InputHandler::was_key_pressed(LEFT))
+        {
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
 
     return 0;
