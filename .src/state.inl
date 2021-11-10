@@ -224,6 +224,31 @@ namespace crisp
         return shader_id;
     }
 
+    GLNativeHandle State::register_shader_from_source(std::string source)
+    {
+        if (_noop_vertex_shader == NONE)
+            initialize_noop_shaders();
+
+        const char* source_ptr = source.c_str();
+        auto shader_id = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(shader_id, 1, &source_ptr, nullptr);
+        glCompileShader(shader_id);
+
+        int compilation_success;
+        char compilation_log[1024] = "";
+        glGetShaderiv(shader_id, GL_COMPILE_STATUS, &compilation_success);
+        glGetShaderInfoLog(shader_id, 1024, nullptr, compilation_log);
+
+        if (compilation_success == GL_FALSE)
+        {
+            std::cerr << "[WARNING] Failed to compile shader " << shader_id << std::endl;
+            std::cerr << compilation_log << std::endl;
+        }
+
+        _fragment_shaders.insert(shader_id);
+        return shader_id;
+    }
+
     void State::free_shader(GLNativeHandle id)
     {
         if (_fragment_shaders.find(id) == _fragment_shaders.end())

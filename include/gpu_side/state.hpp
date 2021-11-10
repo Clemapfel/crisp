@@ -253,6 +253,8 @@ namespace crisp
             /// @param path: absolute path to shader source code
             /// @returns native handle of shader
             static GLNativeHandle register_shader(const ShaderID& id);
+
+            static GLNativeHandle register_shader_from_source(std::string);
             
             /// @brief deallocate shader
             /// @param id: native handle of shader

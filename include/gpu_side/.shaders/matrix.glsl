@@ -8,6 +8,7 @@ out vec4 _out;
 uniform sampler2D _left;
 uniform sampler2D _right;
 
+
 void main()
 {
     int row_index = int(textureSize(_left, 0).x * _tex_coord.x);

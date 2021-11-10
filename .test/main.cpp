@@ -19,6 +19,7 @@
 #include <thread>
 
 #include <gpu_side/hardware_accelerated_matrix.hpp>
+#include <sol.hpp>
 
 using namespace crisp;
 
@@ -30,46 +31,76 @@ int main()
 
     Eigen::MatrixXf left, right, control_out;
 
-    left.resize(3, 3);
+    left.resize(1024, 1024);
     left.setRandom();
 
-    right.resize(3, 5);
+    right.resize(1024, 1024);
     right.setRandom();
 
     control_out = left * right;
 
-    auto tex_left = Texture<float, 1>(State::register_texture<float, 1>(left.rows(), left.cols(), left.data()));
-    auto tex_right = Texture<float, 1>(State::register_texture<float, 1>(right.rows(), right.cols(), right.data()));
-    auto tex_out = Texture<float, 1>(State::register_texture<float, 1>(left.rows(), right.cols()));
-    auto dummy = Texture<float, 1>(State::register_texture<float, 1>(left.rows(), right.cols()));
+    auto state = sol::state();
+    state.open_libraries(
+            sol::lib::base,
+            sol::lib::package,
+            sol::lib::coroutine,
+            sol::lib::os,
+            sol::lib::math,
+            sol::lib::table,
+            sol::lib::string,
+            sol::lib::io,
+            sol::lib::utf8,
+            sol::lib::debug);
 
-    auto shader = State::register_shader("matrix.glsl");
+    state.safe_script_file("/home/clem/Workspace/crisp/include/gpu_side/.code_generation/matrix_multiplication.lua");
+
+    std::stringstream script;
+    script << "shader = generate(" << left.rows() << ", " << left.cols() << ", " << right.rows() << ", " << right.cols() << ")" << std::endl;
+    state.safe_script(script.str());
+
+    std::string source = state["shader"];
+
+    auto shader = State::register_shader("matrix.glsl");//State::register_shader_from_source(source);
     auto program = State::register_program(shader);
     State::free_shader(shader);
 
-    State::bind_shader_program(program);
-    State::bind_texture(program, "_left", tex_left, 2);
-    State::bind_texture(program, "_right", tex_right, 1);
+    auto tex_out = Texture<float, 1>(State::register_texture<float, 1>(left.rows(), right.cols()));
+    auto dummy = Texture<float, 1>(State::register_texture<float, 1>(left.rows(), right.cols()));
 
-    GLNativeHandle buffer;
-    glGenFramebuffers(1, &buffer);
+    std::vector<float> data;
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer);
-    glBindTexture(GL_TEXTURE_2D, tex_out);
-    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_out, 0);
+    auto gpu_side = Benchmark([&]()
+    {
+        auto tex_left = Texture<float, 1>(State::register_texture<float, 1>(left.rows(), left.cols(), left.data()));
+        auto tex_right = Texture<float, 1>(State::register_texture<float, 1>(right.rows(), right.cols(), right.data()));
 
-    glBindTexture(GL_TEXTURE_2D, dummy);
-    glViewport(0, 0, tex_out.get_size().x(), tex_out.get_size().y());
+        State::bind_shader_program(program);
+        State::bind_texture(program, "_left", tex_left, 2);
+        State::bind_texture(program, "_right", tex_right, 1);
 
-    State::display();
+        GLNativeHandle buffer;
+        glGenFramebuffers(1, &buffer);
 
-    auto data = State::get_texture_data(tex_out);
+        glActiveTexture(GL_TEXTURE0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer);
+        glBindTexture(GL_TEXTURE_2D, tex_out);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_out, 0);
 
-    std::cout << "OUT\t\t\tCONTROL" << std::endl;
+        glBindTexture(GL_TEXTURE_2D, dummy);
+        glViewport(0, 0, tex_out.get_size().x(), tex_out.get_size().y());
+
+        State::display();
+
+        data = State::get_texture_data(tex_out);
+    });
+
+    std::cout << "GPU: " << gpu_side.execute(10) << std::endl;
+
+    float error = 0;
     for (size_t i = 0; i < data.size(); ++i)
-        std::cout << data[i] << "\t" << control_out.data()[i] << std::endl;
+        error += abs(data[i] - control_out.data()[i]);
 
+    std::cout << "Mean Error: " << error / data.size() << std::endl;
     return 0;
 
     while (window.is_open())
