@@ -23,6 +23,14 @@ namespace crisp
         init();
     }
 
+    HardwareAcceleratedMatrix::HardwareAcceleratedMatrix(GLNativeHandle texture)
+    {
+        auto info = State::get_texture_info(texture);
+        _n_rows = info.width;
+        _n_cols = info.height;
+        _texture = Texture<float, 1>(texture);
+    }
+
     HardwareAcceleratedMatrix::HardwareAcceleratedMatrix(const HardwareAcceleratedMatrix& other)
         : _n_rows(other._n_rows), _n_cols(other._n_cols), _texture(other._texture.get_handle())
     {
@@ -34,6 +42,15 @@ namespace crisp
         _n_rows = other._n_rows;
         _n_cols = other._n_cols;
         _texture = Texture<float, 1>(other._texture.get_handle());
+
+        return *this;
+    }
+
+    HardwareAcceleratedMatrix & HardwareAcceleratedMatrix::operator=(HardwareAcceleratedMatrix&& other) noexcept
+    {
+        _n_rows = other._n_rows;
+        _n_cols = other._n_cols;
+        _texture = std::move(other._texture);
 
         return *this;
     }
@@ -84,7 +101,7 @@ namespace crisp
 
     void HardwareAcceleratedMatrix::init()
     {
-        if (not (_product == -1 or _ewise_sum == -1 or _ewise_product == -1 or _scalar_sum == -1 or _scalar_product == -1 or _transpose == -1))
+        if (not (_product == -1 or _ewise_sum == -1 or _ewise_product == -1 or _ewise_divide == -1 or _scalar_sum == -1 or _scalar_product == -1 or _transpose == -1))
             return;
 
         glGenFramebuffers(1, &_buffer);
@@ -95,6 +112,10 @@ namespace crisp
 
         shader = State::register_shader("matrix_operation/ewise_product.glsl");
         _ewise_product = State::register_program(shader);
+        State::free_shader(shader);
+
+        shader = State::register_shader("matrix_operation/ewise_divide.glsl");
+        _ewise_divide = State::register_program(shader);
         State::free_shader(shader);
 
         shader = State::register_shader("matrix_operation/scalar_add.glsl");
@@ -114,33 +135,49 @@ namespace crisp
         State::free_shader(shader);
     }
 
-    HardwareAcceleratedMatrix& HardwareAcceleratedMatrix::operator+(float scalar)
+    HardwareAcceleratedMatrix HardwareAcceleratedMatrix::operator+(float scalar) const
     {
-        _buffer_texture = _texture;
+        auto out = HardwareAcceleratedMatrix(_texture.get_size().x(), _texture.get_size().y());
 
         State::bind_shader_program(_scalar_sum);
-        State::bind_texture(_scalar_sum, "_left", _buffer_texture, 0);
+        State::bind_texture(_scalar_sum, "_left", _texture.get_handle(), 0);
         State::set_float(_scalar_sum, "_scalar", scalar);
 
         glActiveTexture(GL_TEXTURE0);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
-        glBindTexture(GL_TEXTURE_2D, _texture);
-        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
+        glBindTexture(GL_TEXTURE_2D, out._texture);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, out._texture, 0);
 
-        glBindTexture(GL_TEXTURE_2D, _buffer_texture);
+        glBindTexture(GL_TEXTURE_2D, _texture.get_handle());
         glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
         
+        State::display();
+
+        return out;
+    }
+
+    HardwareAcceleratedMatrix& HardwareAcceleratedMatrix::operator+=(float scalar)
+    {
+        _buffer_texture = _texture;
+
+        State::bind_shader_program(_scalar_sum);
+        State::bind_texture(_scalar_sum, "_left", _buffer_texture.get_handle(), 0);
+        State::set_float(_scalar_sum, "_scalar", scalar);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
+        glBindTexture(GL_TEXTURE_2D, _texture.get_handle());
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture.get_handle(), 0);
+
+        glBindTexture(GL_TEXTURE_2D, _buffer_texture.get_handle());
+        glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
+
         State::display();
 
         return *this;
     }
 
-    HardwareAcceleratedMatrix& HardwareAcceleratedMatrix::operator+=(float scalar)
-    {
-        return (*this) = (*this) + scalar;
-    }
-
-    HardwareAcceleratedMatrix& HardwareAcceleratedMatrix::operator-(float scalar)
+    HardwareAcceleratedMatrix HardwareAcceleratedMatrix::operator-(float scalar) const
     {
         return operator+(-1.f * scalar);
     }
@@ -150,20 +187,41 @@ namespace crisp
         return operator+=(-1.f * scalar);
     }
 
-    HardwareAcceleratedMatrix& HardwareAcceleratedMatrix::operator*(float scalar)
+    HardwareAcceleratedMatrix HardwareAcceleratedMatrix::operator*(float scalar) const
     {
-        _buffer_texture = _texture;
+        auto out = HardwareAcceleratedMatrix(_texture.get_size().x(), _texture.get_size().y());
 
         State::bind_shader_program(_scalar_product);
-        State::bind_texture(_scalar_product, "_left", _buffer_texture, 0);
+        State::bind_texture(_scalar_product, "_left", _texture.get_handle(), 0);
         State::set_float(_scalar_product, "_scalar", scalar);
 
         glActiveTexture(GL_TEXTURE0);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
-        glBindTexture(GL_TEXTURE_2D, _texture);
-        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
+        glBindTexture(GL_TEXTURE_2D, out._texture);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, out._texture, 0);
 
-        glBindTexture(GL_TEXTURE_2D, _buffer_texture);
+        glBindTexture(GL_TEXTURE_2D, _texture.get_handle());
+        glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
+
+        State::display();
+
+        return out;
+    }
+
+    HardwareAcceleratedMatrix& HardwareAcceleratedMatrix::operator*=(float scalar)
+    {
+        _buffer_texture = _texture;
+
+        State::bind_shader_program(_scalar_product);
+        State::bind_texture(_scalar_product, "_left", _buffer_texture.get_handle(), 0);
+        State::set_float(_scalar_product, "_scalar", scalar);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
+        glBindTexture(GL_TEXTURE_2D, _texture.get_handle());
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture.get_handle(), 0);
+
+        glBindTexture(GL_TEXTURE_2D, _buffer_texture.get_handle());
         glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
 
         State::display();
@@ -171,21 +229,381 @@ namespace crisp
         return *this;
     }
 
-    HardwareAcceleratedMatrix& HardwareAcceleratedMatrix::operator*=(float scalar)
-    {
-        return (*this) = (*this) * scalar;
-    }
-
-    HardwareAcceleratedMatrix& HardwareAcceleratedMatrix::operator/(float scalar)
+    HardwareAcceleratedMatrix HardwareAcceleratedMatrix::operator/(float scalar) const
     {
         return operator*(1.f / scalar);
     }
 
     HardwareAcceleratedMatrix& HardwareAcceleratedMatrix::operator/=(float scalar)
     {
-        return operator*=(1.fim / scalar);
+        return operator*=(1.f / scalar);
     }
 
+    HardwareAcceleratedMatrix HardwareAcceleratedMatrix::operator+(const HardwareAcceleratedMatrix& other) const
+    {
+        auto out = HardwareAcceleratedMatrix(_texture.get_size().x(), _texture.get_size().y());
 
+        State::bind_shader_program(_ewise_sum);
+        State::bind_texture(_ewise_sum, "_left", _texture.get_handle(), 2);
+        State::bind_texture(_ewise_sum, "_right", other._texture.get_handle(), 1);
+        State::set_float(_ewise_sum, "_right_scalar", +1.f);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
+        glBindTexture(GL_TEXTURE_2D, out._texture);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, out._texture, 0);
+
+        glBindTexture(GL_TEXTURE_2D, NONE);
+        glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
+
+        State::display();
+
+        return out;
+    }
+
+    HardwareAcceleratedMatrix& HardwareAcceleratedMatrix::operator+=(const HardwareAcceleratedMatrix& other)
+    {
+        _buffer_texture = _texture;
+
+        if (other._texture.get_handle() != _texture.get_handle())
+        {
+            State::bind_shader_program(_ewise_sum);
+            State::bind_texture(_ewise_sum, "_left", _buffer_texture.get_handle(), 2);
+            State::bind_texture(_ewise_sum, "_right", other._texture.get_handle(), 1);
+            State::set_float(_ewise_sum, "_right_scalar", +1.f);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
+            glBindTexture(GL_TEXTURE_2D, _texture);
+            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
+
+            glBindTexture(GL_TEXTURE_2D, NONE);
+            glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
+
+            State::display();
+
+            return *this;
+        }
+
+        // edge case: += with itself
+        // allocate on more texture to avoid _texture being in read and draw buffer
+        auto additional_buffer = _texture;
+
+        State::bind_shader_program(_ewise_sum);
+        State::bind_texture(_ewise_sum, "_left", _buffer_texture.get_handle(), 2);
+        State::bind_texture(_ewise_sum, "_right", additional_buffer.get_handle(), 1);
+        State::set_float(_ewise_sum, "_right_scalar", +1.f);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
+        glBindTexture(GL_TEXTURE_2D, _texture);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
+
+        glBindTexture(GL_TEXTURE_2D, NONE);
+        glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
+
+        State::display();
+
+        return *this;
+    }
+
+    HardwareAcceleratedMatrix HardwareAcceleratedMatrix::operator-(const HardwareAcceleratedMatrix& other) const
+    {
+        auto out = HardwareAcceleratedMatrix(_texture.get_size().x(), _texture.get_size().y());
+
+        State::bind_shader_program(_ewise_sum);
+        State::bind_texture(_ewise_sum, "_left", _texture.get_handle(), 2);
+        State::bind_texture(_ewise_sum, "_right", other._texture.get_handle(), 1);
+        State::set_float(_ewise_sum, "_right_scalar", -1.f);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
+        glBindTexture(GL_TEXTURE_2D, out._texture);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, out._texture, 0);
+
+        glBindTexture(GL_TEXTURE_2D, NONE);
+        glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
+
+        State::display();
+
+        return out;
+    }
+
+    HardwareAcceleratedMatrix& HardwareAcceleratedMatrix::operator-=(const HardwareAcceleratedMatrix& other)
+    {
+        _buffer_texture = _texture;
+
+        if (other._texture.get_handle() != _texture.get_handle())
+        {
+            State::bind_shader_program(_ewise_sum);
+            State::bind_texture(_ewise_sum, "_left", _buffer_texture.get_handle(), 2);
+            State::bind_texture(_ewise_sum, "_right", other._texture.get_handle(), 1);
+            State::set_float(_ewise_sum, "_right_scalar", -1.f);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
+            glBindTexture(GL_TEXTURE_2D, _texture);
+            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
+
+            glBindTexture(GL_TEXTURE_2D, NONE);
+            glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
+
+            State::display();
+
+            return *this;
+        }
+
+        // edge case: -= with itself
+        auto additional_buffer = _texture;
+
+        State::bind_shader_program(_ewise_sum);
+        State::bind_texture(_ewise_sum, "_left", _buffer_texture.get_handle(), 2);
+        State::bind_texture(_ewise_sum, "_right", additional_buffer.get_handle(), 1);
+        State::set_float(_ewise_sum, "_right_scalar", -1.f);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
+        glBindTexture(GL_TEXTURE_2D, _texture);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
+
+        glBindTexture(GL_TEXTURE_2D, NONE);
+        glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
+
+        State::display();
+
+        return *this;
+    }
+
+    HardwareAcceleratedMatrix HardwareAcceleratedMatrix::operator*(const HardwareAcceleratedMatrix& other) const
+    {
+        auto out = HardwareAcceleratedMatrix(_texture.get_size().x(), _texture.get_size().y());
+
+        State::bind_shader_program(_ewise_product);
+        State::bind_texture(_ewise_product, "_left", _texture.get_handle(), 2);
+        State::bind_texture(_ewise_product, "_right", other._texture.get_handle(), 1);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
+        glBindTexture(GL_TEXTURE_2D, out._texture);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, out._texture, 0);
+
+        glBindTexture(GL_TEXTURE_2D, NONE);
+        glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
+
+        State::display();
+
+        return out;
+    }
+
+    HardwareAcceleratedMatrix& HardwareAcceleratedMatrix::operator*=(const HardwareAcceleratedMatrix& other)
+    {
+        _buffer_texture = _texture;
+
+        if (other._texture.get_handle() != _texture.get_handle())
+        {
+            State::bind_shader_program(_ewise_product);
+            State::bind_texture(_ewise_product, "_left", _buffer_texture.get_handle(), 2);
+            State::bind_texture(_ewise_product, "_right", other._texture.get_handle(), 1);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
+            glBindTexture(GL_TEXTURE_2D, _texture);
+            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
+
+            glBindTexture(GL_TEXTURE_2D, NONE);
+            glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
+
+            State::display();
+
+            return *this;
+        }
+
+        // edge case
+        auto additional_buffer = _texture;
+
+        State::bind_shader_program(_ewise_product);
+        State::bind_texture(_ewise_product, "_left", _buffer_texture.get_handle(), 2);
+        State::bind_texture(_ewise_product, "_right", additional_buffer.get_handle(), 1);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
+        glBindTexture(GL_TEXTURE_2D, _texture);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
+
+        glBindTexture(GL_TEXTURE_2D, NONE);
+        glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
+
+        State::display();
+
+        return *this;
+    }
+
+    HardwareAcceleratedMatrix HardwareAcceleratedMatrix::operator/(const HardwareAcceleratedMatrix& other) const
+    {
+        auto out = HardwareAcceleratedMatrix(_texture.get_size().x(), _texture.get_size().y());
+
+        State::bind_shader_program(_ewise_divide);
+        State::bind_texture(_ewise_divide, "_left", _texture.get_handle(), 2);
+        State::bind_texture(_ewise_divide, "_right", other._texture.get_handle(), 1);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
+        glBindTexture(GL_TEXTURE_2D, out._texture);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, out._texture, 0);
+
+        glBindTexture(GL_TEXTURE_2D, NONE);
+        glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
+
+        State::display();
+
+        return out;
+    }
+
+    HardwareAcceleratedMatrix& HardwareAcceleratedMatrix::operator/=(const HardwareAcceleratedMatrix& other)
+    {
+        _buffer_texture = _texture;
+
+        if (other._texture.get_handle() != _texture.get_handle())
+        {
+            State::bind_shader_program(_ewise_divide);
+            State::bind_texture(_ewise_divide, "_left", _buffer_texture.get_handle(), 2);
+            State::bind_texture(_ewise_divide, "_right", other._texture.get_handle(), 1);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
+            glBindTexture(GL_TEXTURE_2D, _texture);
+            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
+
+            glBindTexture(GL_TEXTURE_2D, NONE);
+            glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
+
+            State::display();
+
+            return *this;
+        }
+
+        // edge case
+        auto additional_buffer = _texture;
+
+        State::bind_shader_program(_ewise_divide);
+        State::bind_texture(_ewise_divide, "_left", _buffer_texture.get_handle(), 2);
+        State::bind_texture(_ewise_divide, "_right", additional_buffer.get_handle(), 1);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
+        glBindTexture(GL_TEXTURE_2D, _texture);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
+
+        glBindTexture(GL_TEXTURE_2D, NONE);
+        glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
+
+        State::display();
+
+        return *this;
+    }
+
+    HardwareAcceleratedMatrix HardwareAcceleratedMatrix::operator^(const HardwareAcceleratedMatrix& other) const
+    {
+        auto out = HardwareAcceleratedMatrix(_texture.get_size().x(), _texture.get_size().y());
+
+        State::bind_shader_program(_product);
+        State::bind_texture(_product, "_left", _texture.get_handle(), 2);
+        State::bind_texture(_product, "_right", other._texture.get_handle(), 1);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
+        glBindTexture(GL_TEXTURE_2D, out._texture);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, out._texture, 0);
+
+        glBindTexture(GL_TEXTURE_2D, NONE);
+        glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
+
+        State::display();
+
+        return out;
+    }
+
+    HardwareAcceleratedMatrix& HardwareAcceleratedMatrix::operator^=(const HardwareAcceleratedMatrix& other)
+    {
+        _buffer_texture = _texture;
+
+        if (other._texture.get_handle() != _texture.get_handle())
+        {
+            State::bind_shader_program(_product);
+            State::bind_texture(_product, "_left", _buffer_texture.get_handle(), 2);
+            State::bind_texture(_product, "_right", other._texture.get_handle(), 1);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
+            glBindTexture(GL_TEXTURE_2D, _texture);
+            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
+
+            glBindTexture(GL_TEXTURE_2D, NONE);
+            glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
+
+            State::display();
+
+            return *this;
+        }
+
+        // edge case
+        auto additional_buffer = _texture;
+
+        State::bind_shader_program(_product);
+        State::bind_texture(_product, "_left", _buffer_texture.get_handle(), 2);
+        State::bind_texture(_product, "_right", additional_buffer.get_handle(), 1);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
+        glBindTexture(GL_TEXTURE_2D, _texture);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
+
+        glBindTexture(GL_TEXTURE_2D, NONE);
+        glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
+
+        State::display();
+
+        return *this;
+    }
+
+    HardwareAcceleratedMatrix HardwareAcceleratedMatrix::transpose() const
+    {
+        auto out = HardwareAcceleratedMatrix(_texture.get_size().y(), _texture.get_size().x());
+
+        State::bind_shader_program(_transpose);
+        State::bind_texture(_transpose, "_left", _texture.get_handle(), 2);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
+        glBindTexture(GL_TEXTURE_2D, out._texture);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, out._texture, 0);
+
+        glBindTexture(GL_TEXTURE_2D, _texture.get_handle());
+        glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
+
+        State::display();
+        return out;
+    }
+
+    void HardwareAcceleratedMatrix::transpose_in_place()
+    {
+        auto out = State::register_texture<float, 1>(_texture.get_size().y(), _texture.get_size().x());
+
+        State::bind_shader_program(_transpose);
+        State::bind_texture(_transpose, "_left", _texture.get_handle(), 2);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffer);
+        glBindTexture(GL_TEXTURE_2D, out);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, out, 0);
+
+        glBindTexture(GL_TEXTURE_2D, _texture.get_handle());
+        glViewport(0, 0, _texture.get_size().x(), _texture.get_size().y());
+
+        State::display();
+
+        auto old = _texture.swap_native_objects(out);
+        State::free_texture(old);
+    }
 }
 

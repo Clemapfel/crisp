@@ -125,7 +125,7 @@ add_library(crisp STATIC
         .src/benchmark.inl
 
         include/gpu_side/is_gpu_side.hpp
-        include/video/video_file.hpp .src/video_file.inl include/gpu_side/hardware_accelerated_matrix.hpp .src/hardware_accelerated_matrix.inl)
+        include/video/video_file.hpp .src/video_file.inl include/gpu_side/hardware_accelerated_matrix.hpp .src/hardware_accelerated_matrix.inl )
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp
@@ -150,5 +150,8 @@ target_link_libraries(TEST crisp)
 
 add_executable(VIDEO include/video/video_test.cpp)
 target_link_libraries(VIDEO crisp)
+
+add_executable(BENCHMARK include/gpu_side/.shaders/matrix_operation/benchmark_matrices.cpp)
+target_link_libraries(BENCHMARK crisp)
 
 

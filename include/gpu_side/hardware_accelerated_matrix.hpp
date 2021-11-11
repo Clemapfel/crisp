@@ -16,6 +16,7 @@ namespace crisp
         public:
             HardwareAcceleratedMatrix(size_t n_rows, size_t n_cols, float value = 0);
             explicit HardwareAcceleratedMatrix(const Eigen::MatrixXf&);
+            explicit HardwareAcceleratedMatrix(GLNativeHandle texture);
 
             /// @brief copy ctor
             HardwareAcceleratedMatrix(const HardwareAcceleratedMatrix&);
@@ -36,49 +37,55 @@ namespace crisp
             /// @brief copy assignment
             HardwareAcceleratedMatrix& operator=(const HardwareAcceleratedMatrix&);
 
-            /// @brief move assignemtn
-            HardwareAcceleratedMatrix& operator=(HardwareAcceleratedMatrix&&) = default;
+            /// @brief move assignment
+            HardwareAcceleratedMatrix& operator=(HardwareAcceleratedMatrix&&) noexcept;
 
             /// @brief assign constant to all elements
             void set_constant(float);
 
             /// @brief transpose
-            HardwareAcceleratedMatrix& transpose();
+            HardwareAcceleratedMatrix transpose() const;
+            void transpose_in_place();
+
 
             /// @brief matrix-matrix multiplication
-            HardwareAcceleratedMatrix& operator^(const HardwareAcceleratedMatrix&);
+            HardwareAcceleratedMatrix operator^(const HardwareAcceleratedMatrix&) const;
+            HardwareAcceleratedMatrix& operator^=(const HardwareAcceleratedMatrix&);
 
             /// @brief elementwise add
-            HardwareAcceleratedMatrix& operator+(const HardwareAcceleratedMatrix&);
+            HardwareAcceleratedMatrix operator+(const HardwareAcceleratedMatrix&) const;
             HardwareAcceleratedMatrix& operator+=(const HardwareAcceleratedMatrix&);
 
             /// @brief elementwise multiply
-            HardwareAcceleratedMatrix& operator*(const HardwareAcceleratedMatrix&);
+            HardwareAcceleratedMatrix operator*(const HardwareAcceleratedMatrix&) const;
             HardwareAcceleratedMatrix& operator*=(const HardwareAcceleratedMatrix&);
 
             /// @brief elementwise subtract
-            HardwareAcceleratedMatrix& operator-(const HardwareAcceleratedMatrix&);
+            HardwareAcceleratedMatrix operator-(const HardwareAcceleratedMatrix&) const;
             HardwareAcceleratedMatrix& operator-=(const HardwareAcceleratedMatrix&);
 
-            /// @brief elementwise divide
-            HardwareAcceleratedMatrix& operator/(const HardwareAcceleratedMatrix&);
-            HardwareAcceleratedMatrix& operator/=(const HardwareAcceleratedMatrix&);
-
             /// @brief elementwise scalar add
-            HardwareAcceleratedMatrix& operator+(float scalar);
+            HardwareAcceleratedMatrix operator+(float scalar) const;
             HardwareAcceleratedMatrix& operator+=(float scalar);
 
             /// @brief elementwise scalar multiply
-            HardwareAcceleratedMatrix& operator*(float scalar);
+            HardwareAcceleratedMatrix operator*(float scalar) const;
             HardwareAcceleratedMatrix& operator*=(float scalar);
 
             /// @brief elementwise scalar subtract
-            HardwareAcceleratedMatrix& operator-(float scalar);
+            HardwareAcceleratedMatrix operator-(float scalar) const;
             HardwareAcceleratedMatrix& operator-=(float scalar);
 
+        protected:
+            HardwareAcceleratedMatrix() = default;
+
             /// @brief elementwise scalar divide
-            HardwareAcceleratedMatrix& operator/(float scalar);
-            HardwareAcceleratedMatrix& operator/=(float scalar);
+            [[deprecated]] HardwareAcceleratedMatrix operator/(float scalar) const;
+            [[deprecated]] HardwareAcceleratedMatrix& operator/=(float scalar);
+
+            /// @brief elementwise divide
+            HardwareAcceleratedMatrix operator/(const HardwareAcceleratedMatrix&) const;
+            HardwareAcceleratedMatrix& operator/=(const HardwareAcceleratedMatrix&);
 
         private:
             void init();
@@ -87,7 +94,7 @@ namespace crisp
 
             // shader program handles
             static inline GLNativeHandle _product = -1;
-            static inline GLNativeHandle _ewise_sum = -1, _ewise_product = -1;
+            static inline GLNativeHandle _ewise_sum = -1, _ewise_product = -1, _ewise_divide = -1;
             static inline GLNativeHandle _scalar_sum = -1, _scalar_product = -1;
             static inline GLNativeHandle _transpose = -1;
 
@@ -95,7 +102,7 @@ namespace crisp
 
 
             Texture<float, 1> _texture;
-            Texture<float, 1> _buffer_texture;
+            mutable Texture<float, 1> _buffer_texture;
     };
 }
 

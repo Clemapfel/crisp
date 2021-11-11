@@ -31,33 +31,47 @@ int main()
 
     Eigen::MatrixXf left, right, control_out;
 
-    left.resize(1024, 2000);
+    size_t rows = 1000;
+    size_t cols = 1000;
+
+    left.resize(rows, cols);
     left.setRandom();
 
-    right.resize(2000, 1024);
+    right.resize(rows, cols);
     right.setRandom();
 
     control_out = left;
     auto gpu_matrix = HardwareAcceleratedMatrix(control_out);
+    auto gpu_left = HardwareAcceleratedMatrix(left);
 
+    size_t run = 0;
     auto cpu_side = Benchmark([&](){
-        control_out = (control_out.array() * 5).matrix();
+        control_out.transposeInPlace();
     });
 
-    std::cout << "CPU: " << cpu_side.execute(1) << std::endl;
+    std::cout << "CPU: " << cpu_side.execute(3) << std::endl;
 
+    run = 0;
     auto gpu_side = Benchmark([&](){
-       gpu_matrix *= 5;
+        gpu_matrix.transpose_in_place();
     });
 
-    std::cout << "GPU: " << gpu_side.execute(1) << std::endl;
+    std::cout << "GPU: " << gpu_side.execute(3) << std::endl;
+
+    control_out.transposeInPlace();
+    auto temp = gpu_matrix.transpose();
+    gpu_matrix = temp;
 
     auto data = gpu_matrix.get_data();
     float error = 0;
+    size_t n = 0;
     for (size_t i = 0; i < data.size(); ++i)
-        error += abs(data[i] - control_out.data()[i]);
+    {
+        error += abs(data[i] - control_out.data()[i]);;
+        n++;
+    }
 
-    std::cout << "Mean Error: " << error / data.size() << std::endl;
+    std::cout << "Mean Error: " << error / n << std::endl;
     return 0;
 
     while (window.is_open())

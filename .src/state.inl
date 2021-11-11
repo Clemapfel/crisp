@@ -807,9 +807,6 @@ namespace crisp
 
     void State::free_texture(GLNativeHandle id)
     {
-        if (_textures.find(id) == _textures.end())
-            std::cerr << "[WARNING] Trying to free already deallocated or non-existent texture with handle " << id << std::endl;
-
         _textures.erase(id);
         _texture_info.erase(id);
         glDeleteTextures(1, &id);

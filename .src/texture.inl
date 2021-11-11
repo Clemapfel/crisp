@@ -133,5 +133,25 @@ namespace crisp
     {
         return _workspace;
     }
+
+    template<typename T, size_t N>
+    GLNativeHandle Texture<T, N>::swap_native_objects(GLNativeHandle new_object)
+    {
+        auto out = _handle;
+        auto info = State::get_texture_info(new_object);
+        assert(N == info.n_planes && "Number of planes are different from allocated texture");
+
+        if (std::is_same_v<float, T>)
+            assert(info.type == GL_FLOAT && "Data type different from allocated texture");
+        else
+            assert(info.type == GL_UNSIGNED_BYTE && "Data type different from allocated texture");
+
+        _handle = new_object;
+        _width = info.width;
+        _height = info.height;
+        _workspace.initialize<T, N>(_handle);
+
+        return out;
+    }
 }
 
