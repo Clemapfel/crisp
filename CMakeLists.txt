@@ -125,7 +125,7 @@ add_library(crisp STATIC
         .src/benchmark.inl
 
         include/gpu_side/is_gpu_side.hpp
-        include/video/video_file.hpp .src/video_file.inl include/gpu_side/hardware_accelerated_matrix.hpp)
+        include/video/video_file.hpp .src/video_file.inl include/gpu_side/hardware_accelerated_matrix.hpp .src/hardware_accelerated_matrix.inl)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp

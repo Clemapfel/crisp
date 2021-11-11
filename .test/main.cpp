@@ -31,71 +31,28 @@ int main()
 
     Eigen::MatrixXf left, right, control_out;
 
-    left.resize(1024, 1024);
+    left.resize(1024, 2000);
     left.setRandom();
 
-    right.resize(1024, 1024);
+    right.resize(2000, 1024);
     right.setRandom();
 
-    control_out = left * right;
+    control_out = left;
+    auto gpu_matrix = HardwareAcceleratedMatrix(control_out);
 
-    auto state = sol::state();
-    state.open_libraries(
-            sol::lib::base,
-            sol::lib::package,
-            sol::lib::coroutine,
-            sol::lib::os,
-            sol::lib::math,
-            sol::lib::table,
-            sol::lib::string,
-            sol::lib::io,
-            sol::lib::utf8,
-            sol::lib::debug);
-
-    state.safe_script_file("/home/clem/Workspace/crisp/include/gpu_side/.code_generation/matrix_multiplication.lua");
-
-    std::stringstream script;
-    script << "shader = generate(" << left.rows() << ", " << left.cols() << ", " << right.rows() << ", " << right.cols() << ")" << std::endl;
-    state.safe_script(script.str());
-
-    std::string source = state["shader"];
-
-    auto shader = State::register_shader("matrix.glsl");//State::register_shader_from_source(source);
-    auto program = State::register_program(shader);
-    State::free_shader(shader);
-
-    auto tex_out = Texture<float, 1>(State::register_texture<float, 1>(left.rows(), right.cols()));
-    auto dummy = Texture<float, 1>(State::register_texture<float, 1>(left.rows(), right.cols()));
-
-    std::vector<float> data;
-
-    auto gpu_side = Benchmark([&]()
-    {
-        auto tex_left = Texture<float, 1>(State::register_texture<float, 1>(left.rows(), left.cols(), left.data()));
-        auto tex_right = Texture<float, 1>(State::register_texture<float, 1>(right.rows(), right.cols(), right.data()));
-
-        State::bind_shader_program(program);
-        State::bind_texture(program, "_left", tex_left, 2);
-        State::bind_texture(program, "_right", tex_right, 1);
-
-        GLNativeHandle buffer;
-        glGenFramebuffers(1, &buffer);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer);
-        glBindTexture(GL_TEXTURE_2D, tex_out);
-        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_out, 0);
-
-        glBindTexture(GL_TEXTURE_2D, dummy);
-        glViewport(0, 0, tex_out.get_size().x(), tex_out.get_size().y());
-
-        State::display();
-
-        data = State::get_texture_data(tex_out);
+    auto cpu_side = Benchmark([&](){
+        control_out = (control_out.array() * 5).matrix();
     });
 
-    std::cout << "GPU: " << gpu_side.execute(10) << std::endl;
+    std::cout << "CPU: " << cpu_side.execute(1) << std::endl;
 
+    auto gpu_side = Benchmark([&](){
+       gpu_matrix *= 5;
+    });
+
+    std::cout << "GPU: " << gpu_side.execute(1) << std::endl;
+
+    auto data = gpu_matrix.get_data();
     float error = 0;
     for (size_t i = 0; i < data.size(); ++i)
         error += abs(data[i] - control_out.data()[i]);
@@ -118,5 +75,45 @@ int main()
     }
 
     return 0;
+
 }
+
+/*
+ * auto shader = State::register_shader("matrix_operation/set_constant.glsl");//State::register_shader_from_source(source);
+    auto program = State::register_program(shader);
+    State::free_shader(shader);
+
+    auto tex_out = Texture<float, 1>(State::register_texture<float, 1>(left.rows(), right.cols()));
+    auto dummy = Texture<float, 1>(State::register_texture<float, 1>(left.rows(), right.cols()));
+
+    std::vector<float> data;
+
+    auto gpu_side = Benchmark([&]()
+    {
+        auto tex_left = Texture<float, 1>(State::register_texture<float, 1>(left.rows(), left.cols(), left.data()));
+        auto tex_right = Texture<float, 1>(State::register_texture<float, 1>(right.rows(), right.cols(), right.data()));
+
+        State::bind_shader_program(program);
+        State::bind_texture(program, "_left", tex_left, 2);
+        State::bind_texture(program, "_right", tex_right, 1);
+        State::set_float(program, "_scalar", 5);
+
+        GLNativeHandle buffer;
+        glGenFramebuffers(1, &buffer);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer);
+        glBindTexture(GL_TEXTURE_2D, tex_out);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_out, 0);
+
+        glBindTexture(GL_TEXTURE_2D, NONE);
+        glViewport(0, 0, tex_out.get_size().x(), tex_out.get_size().y());
+
+        State::display();
+
+         data = State::get_texture_data(tex_out);
+    });
+
+
+ */
 
