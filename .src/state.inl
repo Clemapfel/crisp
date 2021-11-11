@@ -181,9 +181,6 @@ namespace crisp
         if (_noop_vertex_shader == NONE)
             initialize_noop_shaders();
 
-        if (id.find('/') != std::string::npos)
-            std::cerr << "[WARNING] When registering a shader, only the filename needs to be specified. Are you sure " << id << " is the filename and not the absolute path?" << std::endl;
-
         std::string path = get_resource_path() + "include/gpu_side/.shaders/" + id;
 
         std::ifstream file;
@@ -483,11 +480,11 @@ namespace crisp
     {
         assert(data.size() == width * height * N);
         static_assert(std::is_same_v<T, bool> or std::is_same_v<T, float>);
-        return register_texture(width, height, &data[0]);
+        return register_texture<T, N>(width, height, &data[0]);
     }
 
     template<typename T, size_t N>
-    GLNativeHandle State::register_texture(size_t width, size_t height, T* data)
+    GLNativeHandle State::register_texture(size_t width, size_t height, const T* data)
     {
         static_assert(0 < N and N <= 4);
         static_assert(std::is_same_v<T, bool> or std::is_same_v<T, float>);

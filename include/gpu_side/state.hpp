@@ -302,7 +302,7 @@ namespace crisp
             /// @param data: OpenGL compliant formatted array
             /// @returns native handle of resulting texture
             template<typename T, size_t N>
-            static GLNativeHandle register_texture(size_t width, size_t height, T* data);
+            static GLNativeHandle register_texture(size_t width, size_t height, const T* data);
 
             /// @brief deallocate texture
             /// @param id: native handle of texture
