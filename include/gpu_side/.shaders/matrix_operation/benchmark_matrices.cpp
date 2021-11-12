@@ -7,100 +7,189 @@
 #include <gpu_side/hardware_accelerated_matrix.hpp>
 #include <benchmark.hpp>
 #include <Dense>
+#include <fstream>
 
-using namespace crisp;
+#include <opencv4/opencv2/core.hpp>
 
 int main()
 {
+    using namespace crisp;
+
     auto window = RenderWindow();
     window.create(1, 1);
     window.set_active();
 
-    Eigen::MatrixXf eigen_left, eigen_right;
+    std::string path = "/home/clem/Workspace/crisp/include/gpu_side/.shaders/matrix_operation/matrix_multiplication.csv";
 
-    for (size_t size : {3, 5, 10, 50, 100, 500, 750, 1000, 2500, 5000})
+    std::fstream file(path, file.binary | file.trunc | file.in | file.out);
+    assert(file.is_open());
+
+    Eigen::MatrixXf eigen_left, eigen_right;
+    size_t n_cycles = 15;
+
+    cv::Mat_<float> cv_left, cv_right;
+
+    file << "# n cycles per benchmark: " << n_cycles << std::endl;
+    //file << "size,scalar_add_eigen,scalar_add_crisp,scalar_prod_eigen,scalar_prod_crisp,cwise_add_eigen,cwise_add_crisp,cwise_prod_eigen,cwise_prod_crisp,true_prod_eigen,true_prod_crisp,transpose_eigen,transpose_crisp,allocate_new_eigen,allocate_new_crisp,copy_eigen,copy_crisp" << std::endl;
+    file << "size,eigen,crisp,cv" << std::endl;
+
+    std::vector<size_t> sizes;
+
+    for (size_t size = 1; size < 150; size += 1)
+        sizes.push_back(size);
+
+
+    for (size_t size = 150; size < 1050; size += 50)
+        sizes.push_back(size);
+
+    for (auto size : sizes)
     {
+        std::cout << "Benchmarking n = " << size << " ..." << std::endl;
+
         eigen_left.resize(size, size);
         eigen_right.resize(size, size);
         eigen_left.setRandom();
         eigen_right.setRandom();
 
+        cv_left.create(size, size);
+        cv_right.create(size, size);
+
+        for (size_t i = 0; i < eigen_left.rows() * eigen_left.cols(); ++i)
+        {
+            cv_left.data[i] = eigen_left.data()[i];
+            cv_right.data[i] = eigen_right.data()[i];
+        }
+
         auto gpu_left = HardwareAcceleratedMatrix(eigen_left);
         auto gpu_right = HardwareAcceleratedMatrix(eigen_right);
 
-        // scalar add
-        float scalar = 0;
-        auto scalar_add_cpu = Benchmark([&](){
-            eigen_left = (eigen_left.array() += scalar++).matrix();
-        });
+        file << size << "," << std::flush;
 
-        auto scalar_add_gpu  = Benchmark([&](){
-            gpu_left += scalar++;
-        });
-
-        // scalar product
-        auto scalar_prod_cpu = Benchmark([&](){
-            eigen_left = (eigen_left.array() *= scalar++).matrix();
-        });
-
-        auto scalar_prod_gpu  = Benchmark([&](){
-            gpu_left *= scalar++;
-        });
-
-        // cwise add
-        auto cwise_add_cpu = Benchmark([&](){
-            eigen_left += eigen_right;
-        });
-
-        auto cwise_add_gpu  = Benchmark([&](){
-            gpu_left += gpu_right;
-        });
-
-        // cwise multiply
-        auto cwise_prod_cpu = Benchmark([&](){
-            eigen_left = eigen_left.cwiseProduct(eigen_right);
-        });
-
-        auto cwise_prod_gpu  = Benchmark([&](){
-            gpu_left *= gpu_right;
-        });
-
-        // matrix multiplication
-        auto true_prod_cpu = Benchmark([&](){
+        auto true_prod_eigen = Benchmark([&](){
             eigen_left *= eigen_right;
         });
 
-        auto true_prod_gpu  = Benchmark([&](){
+        file << true_prod_eigen.execute(n_cycles/2) << "," << std::flush;
+
+        auto true_prod_crisp  = Benchmark([&](){
             gpu_left ^= gpu_right;
         });
 
+        file << true_prod_crisp.execute(n_cycles) << "," << std::flush;
+
+        auto true_prod_cv = Benchmark([&](){
+            cv_left = cv_left * cv_right;
+        });
+
+        file << true_prod_cv.execute(n_cycles) << std::endl;
+
+        /*
+        // scalar add
+        float scalar = 0;
+        auto scalar_add_eigen = Benchmark([&](){
+            eigen_left = (eigen_left.array() += scalar++).matrix();
+        });
+
+        auto scalar_add_crisp  = Benchmark([&](){
+            gpu_left += scalar++;
+        });
+
+        file << scalar_add_crisp.execute(n_cycles) << "," << std::flush;
+
+        // scalar product
+        auto scalar_prod_eigen = Benchmark([&](){
+            eigen_left = (eigen_left.array() *= scalar++).matrix();
+        });
+
+        file << scalar_prod_eigen.execute(n_cycles/2) << "," << std::flush;
+
+        auto scalar_prod_crisp  = Benchmark([&](){
+            gpu_left *= scalar++;
+        });
+
+        file << scalar_prod_crisp.execute(n_cycles) << "," << std::flush;
+
+        // cwise add
+        auto cwise_add_eigen = Benchmark([&](){
+            eigen_left += eigen_right;
+        });
+
+        file << cwise_add_eigen.execute(n_cycles/2) << "," << std::flush;
+
+        auto cwise_add_crisp  = Benchmark([&](){
+            gpu_left += gpu_right;
+        });
+
+        file << cwise_add_crisp.execute(n_cycles) << "," << std::flush;
+
+        // cwise multiply
+        auto cwise_prod_eigen = Benchmark([&](){
+            eigen_left = eigen_left.cwiseProduct(eigen_right);
+        });
+
+        file << cwise_prod_eigen.execute(n_cycles/2) << "," << std::flush;
+
+        auto cwise_prod_crisp  = Benchmark([&](){
+            gpu_left *= gpu_right;
+        });
+
+        file << cwise_prod_crisp.execute(n_cycles) << "," << std::flush;
+
+        // matrix multiplication
+        auto true_prod_eigen = Benchmark([&](){
+            eigen_left *= eigen_right;
+        });
+
+        file << true_prod_eigen.execute(n_cycles/2) << "," << std::flush;
+
+        auto true_prod_crisp  = Benchmark([&](){
+            gpu_left ^= gpu_right;
+        });
+
+        file << true_prod_crisp.execute(n_cycles) << "," << std::flush;
+
         // transposing
-        auto transpose_cpu = Benchmark([&](){
+        auto transpose_eigen = Benchmark([&](){
             eigen_left.transposeInPlace();
         });
 
-        auto transpose_gpu  = Benchmark([&](){
+        file << transpose_eigen.execute(n_cycles/2) << "," << std::flush;
+
+        auto transpose_crisp  = Benchmark([&](){
             gpu_left.transpose_in_place();
         });
 
+        file << transpose_crisp.execute(n_cycles) << "," << std::flush;
+
         // allocation
-        auto allocate_new_cpu = Benchmark([&](){
+        auto allocate_new_eigen = Benchmark([&](){
             volatile auto temp = Eigen::MatrixXf(size, size);
         });
 
-        auto allocate_new_gpu = Benchmark([&](){
+        file << allocate_new_eigen.execute(n_cycles/2) << "," << std::flush;
+
+        auto allocate_new_crisp = Benchmark([&](){
             volatile auto temp = HardwareAcceleratedMatrix(size, size);
         });
 
+        file << allocate_new_crisp.execute(n_cycles) << "," << std::flush;
+
         // copy
-        auto copy_cpu = Benchmark([&](){
+        auto copy_eigen = Benchmark([&](){
             volatile auto temp = eigen_left;
         });
 
-        auto copy_gpu = Benchmark([&](){
+        file << copy_eigen.execute(n_cycles/2) << "," << std::flush;
+
+        auto copy_crisp = Benchmark([&](){
             volatile auto temp = gpu_left;
         });
+
+        file << copy_crisp.execute(n_cycles) << std::endl;
+         */
     }
 
+    std::cout << "completed." << std::endl;
+    file.close();
 }
 

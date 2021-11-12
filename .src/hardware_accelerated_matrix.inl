@@ -32,7 +32,7 @@ namespace crisp
     }
 
     HardwareAcceleratedMatrix::HardwareAcceleratedMatrix(const HardwareAcceleratedMatrix& other)
-        : _n_rows(other._n_rows), _n_cols(other._n_cols), _texture(other._texture.get_handle())
+        : _n_rows(other._n_rows), _n_cols(other._n_cols), _texture(other._texture)
     {
         init();
     }
@@ -41,7 +41,7 @@ namespace crisp
     {
         _n_rows = other._n_rows;
         _n_cols = other._n_cols;
-        _texture = Texture<float, 1>(other._texture.get_handle());
+        _texture = other._texture;
 
         return *this;
     }
@@ -603,7 +603,6 @@ namespace crisp
         State::display();
 
         auto old = _texture.swap_native_objects(out);
-        State::free_texture(old);
     }
 }
 

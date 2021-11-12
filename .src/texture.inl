@@ -52,7 +52,6 @@ namespace crisp
         _width = other.get_size().x();
         _height = other.get_size().y();
         _workspace.initialize<T, N>(_handle);
-
     }
 
     template<typename T, size_t N>
