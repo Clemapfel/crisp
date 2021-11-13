@@ -37,10 +37,19 @@ It's called visual computing, after all. Here's a non-exhaustive list of things 
 
 This makes debugging, filter design or just understanding/explaining your own algorithms much easier and more intuitive.
 
-`crisp` is **fast and flexible**
-+ for full flexibility, `crisp::Image` lives in RAM and is operated upon by the CPU
+
+`crisp` is **fast**
 + for best performance, `crisp::Texture` lives in VRAM and is operated upon by the GPU
 + GPU-side computation makes large-scale real-time processing possible on mid-end machines
++ Example: `crisp::HardwareAcceleratedMatrix` <br>
+  <br>![](./include/gpu_side/.shaders/matrix_operation/to_1000.png)
+  
+
+`crisp` is **flexible**
++ `crisp::Image` lives in RAM
++ extremely intuitive, pixels are stored in a 2D array and each can be accesses freely
++ runs on tiny embedded system with 1 core and no graphics card
+
 
 `crisp` is **well documented**<br>
 + [full tutorials](#tutorial) are available for all features

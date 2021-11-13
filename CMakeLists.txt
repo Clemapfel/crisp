@@ -27,6 +27,7 @@ find_package(Lua REQUIRED)
 # OpenCV
 SET("OpenCV_DIR" "/usr/share/OpenCV")
 find_package(OpenCV REQUIRED)
+set(CMAKE_CXX_FLAGS "-D WITH_CUDA=ON")
 
 
 ### CRISP #######################################################################################
@@ -151,7 +152,7 @@ target_link_libraries(TEST crisp)
 add_executable(VIDEO include/video/video_test.cpp)
 target_link_libraries(VIDEO crisp)
 
-add_executable(BENCHMARK include/gpu_side/.shaders/matrix_operation/benchmark_matrices.cpp)
+add_executable(BENCHMARK include/gpu_side/.shaders/matrix_operation/.benchmarks/benchmark_matrices.cpp)
 target_link_libraries(BENCHMARK crisp)
 
 

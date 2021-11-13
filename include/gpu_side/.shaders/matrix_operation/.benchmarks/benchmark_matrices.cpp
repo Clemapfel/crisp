@@ -10,6 +10,7 @@
 #include <fstream>
 
 #include <opencv4/opencv2/core.hpp>
+#include <opencv4/opencv2/core/cuda.hpp>
 
 int main()
 {
@@ -28,10 +29,11 @@ int main()
     size_t n_cycles = 15;
 
     cv::Mat_<float> cv_left, cv_right;
+    cv::cuda::GpuMat cvgpu_left, cvgpu_right;
 
     file << "# n cycles per benchmark: " << n_cycles << std::endl;
     //file << "size,scalar_add_eigen,scalar_add_crisp,scalar_prod_eigen,scalar_prod_crisp,cwise_add_eigen,cwise_add_crisp,cwise_prod_eigen,cwise_prod_crisp,true_prod_eigen,true_prod_crisp,transpose_eigen,transpose_crisp,allocate_new_eigen,allocate_new_crisp,copy_eigen,copy_crisp" << std::endl;
-    file << "size,eigen,crisp,cv" << std::endl;
+    file << "size,eigen,crisp,cv,cv_gpu" << std::endl;
 
     std::vector<size_t> sizes;
 
@@ -39,7 +41,7 @@ int main()
         sizes.push_back(size);
 
 
-    for (size_t size = 150; size < 1050; size += 50)
+    for (size_t size = 150; size < 500; size += 50)
         sizes.push_back(size);
 
     for (auto size : sizes)
@@ -53,6 +55,9 @@ int main()
 
         cv_left.create(size, size);
         cv_right.create(size, size);
+
+        cvgpu_left.upload(cv_left);
+        cvgpu_right.upload(cv_right);
 
         for (size_t i = 0; i < eigen_left.rows() * eigen_left.cols(); ++i)
         {
@@ -81,7 +86,14 @@ int main()
             cv_left = cv_left * cv_right;
         });
 
-        file << true_prod_cv.execute(n_cycles) << std::endl;
+        file << true_prod_cv.execute(n_cycles) << "," << std::flush;
+
+        auto true_prod_cv_gpu = Benchmark([&](){
+            cv::cuda::GpuMat::
+            //cv::cuda::multiply(cvgpu_left, cv_gpu_right, cvgpu_left);
+        });
+
+        file << true_prod_cv_gpu.execute(n_cycles) << std::endl;
 
         /*
         // scalar add
