@@ -12,6 +12,7 @@ Benchmarks, Textures, Shaders, Hardware Accelerated Versions of Spatial Filter, 
 #include <gpu_Side/state.hpp>
 #include <gpu_side/is_gpu_side.hpp>
 #include <gpu_side/native_handle.hpp>
+#include <gpu_side/hardware_accelerated_matrix.hpp>
 
 // all of the above collected in:
 #include <gpu_side.hpp>

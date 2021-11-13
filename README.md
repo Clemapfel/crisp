@@ -42,14 +42,12 @@ This makes debugging, filter design or just understanding/explaining your own al
 + for best performance, `crisp::Texture` lives in VRAM and is operated upon by the GPU
 + GPU-side computation makes large-scale real-time processing possible on mid-end machines
 + Example: `crisp::HardwareAcceleratedMatrix` <br>
-  <br>![](./include/gpu_side/.shaders/matrix_operation/to_1000.png)
-  
+  <br>![](https://github.com/Clemapfel/crisp/blob/video/include/gpu_side/.shaders/matrix_operation/.benchmarks/to_1000.png)
 
 `crisp` is **flexible**
 + `crisp::Image` lives in RAM
 + extremely intuitive, pixels are stored in a 2D array and each can be accesses freely
 + runs on tiny embedded system with 1 core and no graphics card
-
 
 `crisp` is **well documented**<br>
 + [full tutorials](#tutorial) are available for all features
@@ -94,6 +92,9 @@ This makes debugging, filter design or just understanding/explaining your own al
     - provided as submodule
 + [lua5.3](https://www.lua.org/download.html)
     - `lua5.3` package
++ [Video I/O](https://docs.opencv.org/3.4/d0/da7/videoio_overview.html)
+    - ``libopencv-core4.5``
+    - ``libopencv-videoio4.5``
     
 ### Installation
 `crisp` is header only, to add it to your project, simply use:
