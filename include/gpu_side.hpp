@@ -11,3 +11,4 @@
 #include <gpu_side/state.hpp>
 #include <gpu_side/texture.hpp>
 #include <gpu_side/texture_workspace.hpp>
+#include <gpu_side/hardware_accelerated_matrix.hpp>
