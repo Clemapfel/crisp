@@ -54,6 +54,7 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 10. [**Color**](#color)<br>
     10.1 [Color Representations](#color-representations)<br>
     10.2 [Pseudo Color](#pseudo-color)<br>
+    10.3 [GPU-Side Pseudo Color](#pseudo-color)<br>
 11. [**Noise**](#noise)<br>
     11.1 [crisp::NoiseGenerator](#general)<br>
     11.2 [Types of Noise](#types-of-noise)<br>
@@ -409,7 +410,7 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 + [Value Range to Hue range](./color/color.md/#71-crisppseudocolor)
 + [Value Range to inverse Hue range](./color/color.md/#71-crisppseudocolor)
 + [Multi Range Mapping](./color/color.md/#72-multi-range-mapping)
-
++ [Hardware Accelerated PseudoColor Mapping](./hardware_acceleration/textures.md/#7-pseudo-color-mapping)
 ---
 
 ## [Noise](./noise/noise.md) 

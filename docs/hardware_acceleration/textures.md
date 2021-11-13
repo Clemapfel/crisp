@@ -34,7 +34,7 @@ Benchmarks, Textures, Shaders, Hardware Accelerated Versions of Spatial Filter, 
    5.1 [Thresholding](#51-thresholding)<br>
    5.2 [Segmentation](#52-segmentation)<br>
 6. [**GPU-Side Spectral Filters**](#6-spectral-filtering)<br>
-7. [**GPU-Side Deep Learning**](#7-deep-learning)<br>
+7. [**GPU-Side PseudoColor**](#7-pseudo-color-mapping)<br>
 
 
 ## 0. Foreword
@@ -431,8 +431,54 @@ Once again, the performance increase is extremely significant.
 
 Note that we can simulate combining different filter shapes by copying the spectrum, apply one shape to the first, a second shape to the other and then combining the result using the functions noted in section 2.3. While this may sound cumbersome, it is still far faster than doing the entire process CPU-side. If we want optimum performance, however, we will have to write a custom shader that implements the desired filter shape and apply the shader directly.
 
-# 7. Deep Learning
+# 7. Pseudo Color Mapping
 
-(this feature is not yet implemented)
+When using Pseudo Color to make an image easier to visually parse for humans, we won't be working with a static image but with a video (usually the video stream of a medical instrument, for example). Because of this real-time requirement, speed is paramount for a fluid user experience. To achieve this, `crisp` offers a GPU-side version of pseudo colors:
+
+```cpp
+/// old, cpu-side (c.f. color tutorial)
+template<>
+class PseudoColor<CPU_SIDE> { // unchanged
+}
+
+/// new:
+template<>
+class PseudoColor<GPU_SIDE> 
+{
+    PseudoColor();
+    
+    Texture<float, 3> apply_to(const Texture<float, 1>&) const;
+    Texture<float, 3>& apply_in_place(Texture<float, 3>&) const;
+    
+    void add_value_to_hue(float gray, float hue);
+    void add_value_range_to_hue(float min_gray, float max_gray, float hue);
+    void add_value_range_to_hue_range(float min_gray, float max_gray, float min_hue, float max_hue);
+    void add_value_range_to_inverse_hue_range(float min_gray, float max_gray, float min_hue, float max_hue);
+}
+```
+
+We first note that `PseudoColor<GPU_SIDE>` is no longer a static-only class, we now need to instance it before usage. We do recognize most of the functions as analogues to `PseudoColor<CPU_SIDE>::RangeMapping` and indeed they work in exactly the same, `PseudoColor<GPU_SIDE>` can be seen as an extension of the instanced range mapping concept. 
+
+```cpp
+// instance
+auto pseudo_color = PseudoColor<GPU_SIDE>();
+
+// add ranges
+pseudo_color.add_value_range_to_hue_range(0, 0.3, 0, 1);
+```
+
+Now that we configured our mapping to map gray-values from [0, 0.3] to hue values [0, 1] we apply it to a texture. As shown earlier, two functions are offered for this:
+
++ `apply_to` takes a const reference to a grayscale texture and returns a newly allocated texture. This leaves the old texture unmodified but decreases performance as a new texture of the same size and higher dimensionality has to be allocated
++ `apply_in_place` takes a non-const reference to a color texture. This function interprets the texture as grayscale and modifies it directly. No allocation has to take place, making this method extremely fast.
+
+```cpp
+auto grayscale = Texture<float, 1>(/* ... */);
+auto now_color = pseudo_color.apply_to(grayscale);  // grayscale unchanged
+
+auto color = Texture<float, 3>(/* ... */);
+pseudo_color.apply_in_place(color);                 // color modified
+```
+
 
 
