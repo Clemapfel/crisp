@@ -44,16 +44,6 @@ namespace crisp
     /// @param bitplanes: vector of 1-d binary images
     /// @returns assembled image
     Image<float, 1> bitplane_assemble(const std::array<Image<bool, 1>, 8>&);
-
-    /// @brief wavelet transform
-    /// @param image
-    /// @returns vector of wavelet decompositions as 1d grayscale images
-    std::vector<Image<float, 1>> wavelet_decompose(const Image<float, 1>&);
-
-    /// @brief wavelet transform
-    /// @param vector of wavelet decompositions
-    /// @returns assembled image
-    Image<float, 1> wavelet_assemble(const std::vector<Image<bool, 1>>&);
 }
 
 #include ".src/whole_image_transform.inl"

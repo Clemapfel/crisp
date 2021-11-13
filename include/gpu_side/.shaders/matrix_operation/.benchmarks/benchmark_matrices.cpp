@@ -12,6 +12,8 @@
 #include <opencv4/opencv2/core.hpp>
 #include <opencv4/opencv2/core/cuda.hpp>
 
+#include <frequency_domain_filter.hpp>
+
 int main()
 {
     using namespace crisp;
@@ -89,7 +91,6 @@ int main()
         file << true_prod_cv.execute(n_cycles) << "," << std::flush;
 
         auto true_prod_cv_gpu = Benchmark([&](){
-            cv::cuda::GpuMat::
             //cv::cuda::multiply(cvgpu_left, cv_gpu_right, cvgpu_left);
         });
 

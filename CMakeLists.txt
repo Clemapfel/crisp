@@ -126,7 +126,7 @@ add_library(crisp STATIC
         .src/benchmark.inl
 
         include/gpu_side/is_gpu_side.hpp
-        include/video/video_file.hpp .src/video_file.inl include/gpu_side/hardware_accelerated_matrix.hpp .src/hardware_accelerated_matrix.inl )
+        include/video/video_file.hpp .src/video_file.inl include/gpu_side/hardware_accelerated_matrix.hpp .src/hardware_accelerated_matrix.inl include/video/video_stream.hpp)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp
@@ -149,7 +149,7 @@ include_directories("/usr/include/opencv4")
 add_executable(TEST .test/main.cpp)
 target_link_libraries(TEST crisp)
 
-add_executable(VIDEO include/video/video_test.cpp)
+add_executable(VIDEO .test/video_test.cpp)
 target_link_libraries(VIDEO crisp)
 
 add_executable(BENCHMARK include/gpu_side/.shaders/matrix_operation/.benchmarks/benchmark_matrices.cpp)
