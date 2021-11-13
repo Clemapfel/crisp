@@ -36,9 +36,24 @@ int main()
     color.add_value_range_to_hue_range(0, 0.3, 0, 1);
 
     size_t frame_i = 0;
+    auto img = video.get_frame_as_image(0);
+
+    float i = 0, step_size = 1.0 / (img.get_size().x() * img.get_size().y());
+    for (auto& rgb : img)
+    {
+        auto as_hsv = rgb.to_hsv();
+        as_hsv.hue() = i += step_size;
+        as_hsv.saturation() = 1;
+        rgb = as_hsv.to_rgb();
+    }
+
+    video.set_frame(0, img);
+
     auto tex = video.get_frame(0);
-    color.apply_to(tex);
-    video.set_frame(tex);
+    /*
+    color.apply_in_place(tex);
+    video.set_frame(0, tex);
+     */
 
     std::set<size_t> already_filtered;
 

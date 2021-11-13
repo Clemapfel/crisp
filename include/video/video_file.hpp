@@ -33,7 +33,17 @@ namespace crisp
             /// @brief modify video frame by downloading the current state of the texture into cache
             /// @param i: frame index
             /// @param texture: texture holding the new frame data, has to be of same size
-            void set_frame(size_t i, Texture<float, 3>&);
+            void set_frame(size_t i, const Texture<float, 3>&);
+
+            /// @brief retrieve the nths frame from a file
+            /// @param i: frame index
+            /// @returns frame as image
+            [[nodiscard]] Image<float, 3> get_frame_as_image(size_t i);
+
+            /// @brief modify video frame by assigning an image to it
+            /// @param i: frame index
+            /// @param image: image holding new frame data
+            void set_frame(size_t i, const Image<float, 3>&);
 
             /// @brief download all frames into the cache at once
             void cache();

@@ -8,6 +8,7 @@
 #include <exception>
 
 #include <video/video_file.hpp>
+#include <image/color_image.hpp>
 
 #include <opencv4/opencv2/videoio.hpp>
 #include <opencv4/opencv2/core.hpp>
@@ -102,7 +103,7 @@ namespace crisp
         return Texture<float, 3>(State::register_texture<float, 3>(_size.x(), _size.y(), &(_frames.at(i).at<float>(0, 0))));
     }
 
-    void VideoFile::set_frame(size_t i, Texture<float, 3>& tex)
+    void VideoFile::set_frame(size_t i, const Texture<float, 3>& tex)
     {
         cache_frames_until(i);
         auto info = State::get_texture_info(tex.get_handle());
@@ -110,6 +111,57 @@ namespace crisp
 
         glBindTexture(GL_TEXTURE_2D, tex.get_handle());
         glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, _frames.at(i).data);
+    }
+
+    Image<float, 3> VideoFile::get_frame_as_image(size_t frame_i)
+    {
+        if (frame_i > _n_frames)
+        {
+            std::stringstream str;
+            str << "[ERROR] Trying to access frame with index " << frame_i << " in video file with " << _n_frames << " frames" << std::endl;
+            throw std::out_of_range(str.str());
+        }
+
+        cache_frames_until(frame_i);
+        auto out = Image<float, 3>(_size.x(), _size.y());
+        
+        auto data = &(_frames.at(frame_i).at<float>(0, 0));
+
+        for (size_t y = 0, i = 0; y < _size.y(); ++y)
+        {
+            for (size_t x = 0; x < _size.x(); ++x)
+            {
+                RGB to_push;
+                to_push.red() = data[i];
+                to_push.green() = data[i + 1];
+                to_push.blue() = data[i + 2];
+
+                out(x, y) = to_push;
+                i += 3;
+            }
+        }
+
+        return out;
+    }
+
+    void VideoFile::set_frame(size_t frame_i, const Image<float, 3>& image)
+    {
+        cache_frames_until(frame_i);
+        auto data = &(_frames.at(frame_i).at<float>(0, 0));
+
+        for (size_t y = 0, i = 0; y < _size.y(); ++y)
+        {
+            for (size_t x = 0; x < _size.x(); ++x)
+            {
+                auto rgb = image(x, y);
+
+                data[i] = rgb.red();
+                data[i + 1] = rgb.green();
+                data[i + 2] = rgb.blue();
+
+                i += 3;
+            }
+        }
     }
 
     void VideoFile::cache()
