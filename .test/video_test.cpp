@@ -19,36 +19,35 @@
 #include <thread>
 
 #include <video/video_file.hpp>
+#include <pseudocolor_mapping.hpp>
 
 using namespace crisp;
 
 int main()
 {
     auto video = VideoFile();
-    video.load("/home/clem/Workspace/crisp/include/video/horse.mp4");
+    video.load("/home/clem/Workspace/crisp/.test/horse.mp4");
 
     auto window = RenderWindow();
     window.create(video.get_size().x(), video.get_size().y());
     window.set_active();
 
-    auto shader = State::register_shader("median_filter_5x5.glsl");
-    auto program = State::register_program(shader);
-
-    auto morph = MorphologicalTransform();
-    morph.set_structuring_element(morph.all_foreground(3, 3));
-
-    auto filter = SpatialFilter();
-    filter.set_kernel(filter.box(3, 0));
+    auto color = PseudoColor<GPU_SIDE>();
+    color.add_value_range_to_hue_range(0, 0.3, 0, 1);
 
     size_t frame_i = 0;
     auto tex = video.get_frame(0);
+    color.apply_to(tex);
+    video.set_frame(tex);
+
+    std::set<size_t> already_filtered;
 
     while (window.is_open())
     {
         auto time = window.update();
 
-        State::bind_shader_program(program);
-        State::bind_texture(program, "_texture", tex);
+        State::bind_shader_program(NONE);
+        State::bind_texture(NONE, "_texture", tex);
         State::display();
         window.display();
 
@@ -56,7 +55,12 @@ int main()
         {
             frame_i += 1;
             tex = video.get_frame(frame_i);
-            morph.erode(tex);
+
+            if (already_filtered.find(frame_i) == already_filtered.end())
+            {
+                color.apply_in_place(tex);
+                already_filtered.insert(frame_i);
+            }
             video.set_frame(frame_i, tex);
         }
         else if (InputHandler::is_key_down(LEFT) and frame_i != 0)

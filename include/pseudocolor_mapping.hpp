@@ -103,43 +103,44 @@ namespace crisp
     template<>
     class PseudoColor<GPU_SIDE>
     {
-        /// @brief ctor
-        PseudoColor();
+        public:
+            /// @brief ctor
+            PseudoColor();
 
-        /// @brief apply to texture, invokes copy ctor
-        /// @param texture
-        /// @returns new texture by value
-        Texture<float, 3> apply(const Texture<float, 3>&) const;
+            /// @brief apply to texture, invokes copy ctor
+            /// @param grayscale texture
+            /// @returns new texture by value
+            Texture<float, 3> apply_to(const Texture<float, 1>&) const;
 
-        /// @brief apply to texture in place, does not invokes copy ctor
-        /// @param texture
-        /// @returns reference to texture after modification
-        Texture<float, 3>& apply(Texture<float, 3>&) const;
+            /// @brief apply to texture in place, does not invokes copy ctor
+            /// @param color texture
+            /// @returns reference to texture after modification
+            Texture<float, 3>& apply_in_place(Texture<float, 3>&) const;
 
-        /// @brief add exact value to single hue mapping
-        /// @param gray: origin gray value
-        /// @param hue: destination hue value
-        void add_value_to_hue(float gray, float hue);
+            /// @brief add exact value to single hue mapping
+            /// @param gray: origin gray value
+            /// @param hue: destination hue value
+            void add_value_to_hue(float gray, float hue);
 
-        /// @brief add value range to single hue mapping
-        /// @param min_gray: lower inclusive boundary of gray values
-        /// @param max_gray: upper inclusive boundary of gray values
-        /// @param hue: destination hue value
-        void add_value_range_to_hue(float min_gray, float max_gray, float hue);
+            /// @brief add value range to single hue mapping
+            /// @param min_gray: lower inclusive boundary of gray values
+            /// @param max_gray: upper inclusive boundary of gray values
+            /// @param hue: destination hue value
+            void add_value_range_to_hue(float min_gray, float max_gray, float hue);
 
-        /// @brief add value range to hue range mapping
-        /// @param min_gray: lower inclusive boundary of gray values
-        /// @param max_gray: upper inclusive boundary of gray values
-        /// @param min_hue: lower inclusive boundary of hue values
-        /// @param max_hue: upper inclusive boundary of hue values
-        void add_value_range_to_hue_range(float min_gray, float max_gray, float min_hue, float max_hue);
+            /// @brief add value range to hue range mapping
+            /// @param min_gray: lower inclusive boundary of gray values
+            /// @param max_gray: upper inclusive boundary of gray values
+            /// @param min_hue: lower inclusive boundary of hue values
+            /// @param max_hue: upper inclusive boundary of hue values
+            void add_value_range_to_hue_range(float min_gray, float max_gray, float min_hue, float max_hue);
 
-        /// @brief add value range to inverse hue range mapping
-        /// @param min_gray: lower inclusive boundary of gray values
-        /// @param max_gray: upper inclusive boundary of gray values
-        /// @param min_hue: lower inclusive boundary of hue values
-        /// @param max_hue: upper inclusive boundary of hue values
-        void add_value_range_to_inverse_hue_range(float min_gray, float max_gray, float min_hue, float max_hue);
+            /// @brief add value range to inverse hue range mapping
+            /// @param min_gray: lower inclusive boundary of gray values
+            /// @param max_gray: upper inclusive boundary of gray values
+            /// @param min_hue: lower inclusive boundary of hue values
+            /// @param max_hue: upper inclusive boundary of hue values
+            void add_value_range_to_inverse_hue_range(float min_gray, float max_gray, float min_hue, float max_hue);
 
         protected:
             /// @brief serialize mapping to an array for use in glsl
