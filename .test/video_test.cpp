@@ -33,7 +33,7 @@ int main()
     for (size_t i = 0; i < video.get_n_frames(); ++i)
     {
         auto frame = video.get_frame(i);
-        compute_gradient_magnitude(frame);
+        clamp(frame);
         video.set_frame(i, frame);
     }
 
@@ -52,7 +52,6 @@ int main()
     std::cout << video.get_size() << std::endl;
     std::cout << video.get_fps() << std::endl;
     auto img = video.get_frame_as_image(10);
-
 
     std::set<size_t> already_filtered;
 

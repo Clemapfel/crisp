@@ -17,11 +17,9 @@
 
 namespace crisp
 {
+    /// @brief video capture where all frames are available at the time of loading
     class VideoFile
     {
-        class Iterator;
-        class ConstIterator;
-
         public:
             VideoFile();
 
@@ -80,7 +78,7 @@ namespace crisp
             /// @param i: index
             void release_frame(size_t i);
 
-        //private:
+        private:
             void cache_frames_until(size_t i);
             auto get_fourcc(std::string);
 
