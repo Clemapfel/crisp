@@ -17,7 +17,9 @@ namespace crisp
 {
     VideoFile::VideoFile()
         : _capture()
-    {}
+    {
+
+    }
 
     void VideoFile::cache_frames_until(size_t i)
     {
@@ -27,6 +29,7 @@ namespace crisp
             auto& frame = _frames.back();
             _capture.grab();
             _capture.retrieve(frame);
+            cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB, 3);
             cv::normalize(frame, frame, 0.0, 1.0, cv::NORM_MINMAX, CV_32F);
             cv::flip(frame, frame, 0);
             _current_frame++;
@@ -43,7 +46,7 @@ namespace crisp
         if (not _capture.isOpened())
         {
             std::stringstream str;
-            str << "[ERROR] Unable to open video file at " << path << std::endl;
+            str << "[EXCEPTION] Unable to open video file at " << path << std::endl;
             throw std::invalid_argument(str.str());
         }
 
@@ -66,8 +69,50 @@ namespace crisp
             return;
         }
 
+        bool once = true;
         for (size_t i = 0; i < _frames.size(); ++i)
         {
+            if (_released.find(i) != _released.end() and once)
+            {
+                std::cerr << "[WARNING] Writing one or more frames even though they have already been freed." << std::endl;
+                once = false;
+            }
+
+            cv::Mat& frame = _frames.at(i);
+            cv::normalize(frame, frame, 0.0, 255, cv::NORM_MINMAX, CV_8U);
+            cv::flip(frame, frame, 0);
+            out.write(frame);
+        }
+    }
+
+    void VideoFile::save(std::string path, size_t first_frame, size_t last_frame)
+    {
+        auto out = cv::VideoWriter();
+        out.open(path, _codec, _fps, cv::Size(_size.x(), _size.y()));
+        if (not out.isOpened())
+        {
+            std::stringstream str;
+            str << "[WARNING] Unable to write video file to " << path << std::endl;
+            str << "[LOG] No video file saved." << std::endl;
+            return;
+        }
+
+        if (first_frame >= _n_frames or last_frame >= _n_frames or first_frame > last_frame)
+        {
+            std::stringstream str;
+            str << "[ERROR] first and/or last frame out of range. Assure that first_frame < last_frame.";
+            throw std::out_of_range(str.str());
+        }
+
+        bool once = true;
+        for (size_t i = first_frame; i < last_frame; ++i)
+        {
+            if (_released.find(i) != _released.end() and once)
+            {
+                std::cerr << "[WARNING] Writing one or more frames even though they have already been freed." << std::endl;
+                once = false;
+            }
+
             cv::Mat& frame = _frames.at(i);
             cv::normalize(frame, frame, 0.0, 255, cv::NORM_MINMAX, CV_8U);
             cv::flip(frame, frame, 0);
@@ -92,10 +137,17 @@ namespace crisp
 
     Texture<float, 3> VideoFile::get_frame(size_t i)
     {
-        if (i > _n_frames)
+        if (i >= _n_frames)
         {
             std::stringstream str;
-            str << "[ERROR] Trying to access frame with index " << i << " in video file with " << _n_frames << " frames" << std::endl;
+            str << "[EXCEPTION] Trying to access frame with index " << i << " in video file with " << _n_frames << " frames" << std::endl;
+            throw std::out_of_range(str.str());
+        }
+
+        if (_released.find(i) != _released.end())
+        {
+            std::stringstream str;
+            str << "[EXCEPTION] Trying to access frame " << i << " even though it has already been freed.";
             throw std::out_of_range(str.str());
         }
 
@@ -105,6 +157,13 @@ namespace crisp
 
     void VideoFile::set_frame(size_t i, const Texture<float, 3>& tex)
     {
+        if (_released.find(i) != _released.end())
+        {
+            std::stringstream str;
+            str << "[EXCEPTION] Trying to modify frame " << i << " even though it has already been freed.";
+            throw std::out_of_range(str.str());
+        }
+
         cache_frames_until(i);
         auto info = State::get_texture_info(tex.get_handle());
         assert(info.width == _size.x() and info.height == _size.y());
@@ -118,7 +177,14 @@ namespace crisp
         if (frame_i > _n_frames)
         {
             std::stringstream str;
-            str << "[ERROR] Trying to access frame with index " << frame_i << " in video file with " << _n_frames << " frames" << std::endl;
+            str << "[EXCEPTION] Trying to access frame with index " << frame_i << " in video file with " << _n_frames << " frames" << std::endl;
+            throw std::out_of_range(str.str());
+        }
+
+        if (_released.find(frame_i) != _released.end())
+        {
+            std::stringstream str;
+            str << "[EXCEPTION] Trying to access frame " << frame_i << " even though it has already been freed.";
             throw std::out_of_range(str.str());
         }
 
@@ -146,6 +212,13 @@ namespace crisp
 
     void VideoFile::set_frame(size_t frame_i, const Image<float, 3>& image)
     {
+        if (_released.find(frame_i) != _released.end())
+        {
+            std::stringstream str;
+            str << "[EXCEPTION] Trying to modify frame " << frame_i << " even though it has already been freed.";
+            throw std::out_of_range(str.str());
+        }
+
         cache_frames_until(frame_i);
         auto data = &(_frames.at(frame_i).at<float>(0, 0));
 
@@ -167,5 +240,14 @@ namespace crisp
     void VideoFile::cache()
     {
         cache_frames_until(_n_frames);
+    }
+
+    void VideoFile::release_frame(size_t i)
+    {
+        if (i >= _frames.size() or _released.find(i) != _released.end())
+            return;
+
+        _frames.at(i).resize(0, 0);
+        _released.insert(i);
     }
 }
