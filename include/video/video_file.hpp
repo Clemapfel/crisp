@@ -80,13 +80,14 @@ namespace crisp
             /// @param i: index
             void release_frame(size_t i);
 
-        private:
+        //private:
             void cache_frames_until(size_t i);
+            auto get_fourcc(std::string);
 
             Vector2ui _size;
             double _fps = 0;
-            int _codec;
-            int _codec_format;
+            double _codec;
+            double _codec_format;
 
             size_t _n_frames = 0;
 

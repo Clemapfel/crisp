@@ -23,7 +23,7 @@ namespace crisp
 
     void VideoFile::cache_frames_until(size_t i)
     {
-        while (i >= _current_frame)
+        while (i >= _current_frame and _current_frame < _n_frames)
         {
             _frames.emplace_back();
             auto& frame = _frames.back();
@@ -37,6 +37,28 @@ namespace crisp
 
         if (_current_frame >= _n_frames)
             _capture.release();
+    }
+
+    auto VideoFile::get_fourcc(std::string str)
+    {
+        std::string format;
+        for (auto it = str.end()-1; (*it) != '.' and it != str.begin(); it--)
+            format.insert(format.begin(), *it);
+
+        for (auto& f : format)
+            f = std::tolower(f);
+
+        format.insert(format.begin(), '.');
+
+        if (format == ".mp4" or format == ".mp4v")
+            return cv::VideoWriter::fourcc('m', 'p', '4', 'v');
+        else if (format == ".mp4a")
+            return cv::VideoWriter::fourcc('m', 'p', '4', 'a');
+        else
+        {
+            std::cerr << "[WARNING] File format " << format << " is currently not supported. Please export the file as .mp4 instead" << std::endl;
+            return -1;
+        }
     }
 
     void VideoFile::load(std::string path)
@@ -60,7 +82,7 @@ namespace crisp
     void VideoFile::save(std::string path)
     {
         auto out = cv::VideoWriter();
-        out.open(path, _codec, _fps, cv::Size(_size.x(), _size.y()));
+        out.open(path, get_fourcc(path), _fps, cv::Size(_size.x(), _size.y()));
         if (not out.isOpened())
         {
             std::stringstream str;
@@ -68,6 +90,8 @@ namespace crisp
             str << "[LOG] No video file saved." << std::endl;
             return;
         }
+
+        cache_frames_until(_n_frames);
 
         bool once = true;
         for (size_t i = 0; i < _frames.size(); ++i)
@@ -79,6 +103,7 @@ namespace crisp
             }
 
             cv::Mat& frame = _frames.at(i);
+            cv::cvtColor(frame, frame, cv::COLOR_RGB2BGR, 3);
             cv::normalize(frame, frame, 0.0, 255, cv::NORM_MINMAX, CV_8U);
             cv::flip(frame, frame, 0);
             out.write(frame);
@@ -96,6 +121,8 @@ namespace crisp
             str << "[LOG] No video file saved." << std::endl;
             return;
         }
+
+        cache_frames_until(last_frame);
 
         if (first_frame >= _n_frames or last_frame >= _n_frames or first_frame > last_frame)
         {
@@ -202,7 +229,7 @@ namespace crisp
                 to_push.green() = data[i + 1];
                 to_push.blue() = data[i + 2];
 
-                out(x, y) = to_push;
+                out(x, _size.y() - y) = to_push;
                 i += 3;
             }
         }
