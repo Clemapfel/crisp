@@ -8,6 +8,7 @@
 #include <opencv4/opencv2/videoio.hpp>
 
 #include <gpu_side/texture.hpp>
+#include <gpu_side/whole_texture_transform.hpp>
 #include <system/image_io.hpp>
 #include <benchmark.hpp>
 #include <spatial_filter.hpp>
@@ -26,7 +27,18 @@ using namespace crisp;
 int main()
 {
     auto video = VideoFile();
-    video.load("/home/clem/Workspace/crisp/.test/horse.mp4");//goose.gif");
+    video.load(get_resource_path() + "/docs/video/goose_starting.gif");
+
+    auto shader = State::register_shader("sobel_gradient_magnitude.glsl");
+    for (size_t i = 0; i < video.get_n_frames(); ++i)
+    {
+        auto frame = video.get_frame(i);
+        compute_gradient_magnitude(frame);
+        video.set_frame(i, frame);
+    }
+
+    video.save(get_resource_path() + "/docs/video/.resources/gradient.mp4");
+    return 0;
 
     auto window = RenderWindow();
     window.create(video.get_size().x(), video.get_size().y());
@@ -35,6 +47,12 @@ int main()
     size_t frame_i = 0;
     auto tex = video.get_frame(0);
     video.set_frame(0, tex);
+
+    std::cout << video.get_n_frames() << std::endl;
+    std::cout << video.get_size() << std::endl;
+    std::cout << video.get_fps() << std::endl;
+    auto img = video.get_frame_as_image(10);
+
 
     std::set<size_t> already_filtered;
 

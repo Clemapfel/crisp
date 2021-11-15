@@ -154,7 +154,7 @@ namespace crisp
             /// @param vector
             /// @returns resulting handle
             template<size_t N, typename T>
-            static ProxyID register_vec(const Vector<T, N>&);
+            [[nodiscard]] static ProxyID register_vec(const Vector<T, N>&);
 
             /// @brief free vector of any size
             /// @param vector id
@@ -178,31 +178,31 @@ namespace crisp
             /// @param vector
             /// @returns id of allocated resource
             template<typename T>
-            static ProxyID register_array(const std::vector<T>&);
+            [[nodiscard]] static ProxyID register_array(const std::vector<T>&);
 
             /// @brief allocate array of floats
             /// @param array
             /// @returns id of allocated resource
             template<typename T, size_t N>
-            static ProxyID register_array(const std::array<T, N>&);
+            [[nodiscard]] static ProxyID register_array(const std::array<T, N>&);
 
             /// @brief allocate array of vec2s
             /// @param value
             /// @returns id of allocated resource
             template<typename T>
-            static ProxyID register_vec2_array(const std::vector<crisp::Vector<T, 2>>&);
+            [[nodiscard]] static ProxyID register_vec2_array(const std::vector<crisp::Vector<T, 2>>&);
 
             /// @brief allocate array of vec3s
             /// @param value
             /// @returns id of allocated resource
             template<typename T>
-            static ProxyID register_vec3_array(const std::vector<crisp::Vector<T, 3>>&);
+            [[nodiscard]] static ProxyID register_vec3_array(const std::vector<crisp::Vector<T, 3>>&);
 
             /// @brief allocate array of vec4s
             /// @param value
             /// @returns id of allocated resource
             template<typename T>
-            static ProxyID register_vec4_array(const std::vector<crisp::Vector<T, 4>>&);
+            [[nodiscard]] static ProxyID register_vec4_array(const std::vector<crisp::Vector<T, 4>>&);
 
             /// @brief deallocate array of vectors
             /// @tparam N: 1 for array for floats, 2 for array of vec2s, 3 for vec3s, 4 for vec4s
@@ -225,19 +225,19 @@ namespace crisp
             /// @param value
             /// @returns id: id of allocated resource
             template<typename T>
-            static ProxyID register_matrix(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>&);
+            [[nodiscard]] static ProxyID register_matrix(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>&);
 
             /// @brief allocated structuring element as matrix
             /// @param se: structuring elements
             /// @returns id of allocated matrix
             /// @note a "not care" value will be internally treated as -1.f
-            static ProxyID register_structuring_element(const StructuringElement& se);
+            [[nodiscard]] static ProxyID register_structuring_element(const StructuringElement& se);
 
             /// @brief allocated non-flat structuring element as matrix
             /// @param se: non-flat structuring elements
             /// @returns id of allocated matrix
             /// @note a "not care" value will be internally treated as -1.f
-            static ProxyID register_structuring_element(const NonFlatStructuringElement& se);
+            [[nodiscard]] static ProxyID register_structuring_element(const NonFlatStructuringElement& se);
 
             /// @brief deallocate matrix of any size
             /// @param resource_id
@@ -250,11 +250,14 @@ namespace crisp
             static void bind_matrix(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id);
             
             /// @brief load shader, compile it and allocated gpu-side
-            /// @param path: absolute path to shader source code
+            /// @param id: internal id
             /// @returns native handle of shader
-            static GLNativeHandle register_shader(const ShaderID& id);
+            [[nodiscard]] static GLNativeHandle register_shader(const ShaderID& id);
 
-            static GLNativeHandle register_shader_from_source(std::string);
+            /// @brief load shader, takes absolute path instead of internal id
+            /// @param path: absolute path
+            /// @returns native handle of shader
+            [[nodiscard]] static GLNativeHandle register_shader_from_source(std::string);
             
             /// @brief deallocate shader
             /// @param id: native handle of shader
@@ -263,7 +266,7 @@ namespace crisp
             /// @brief bind shader to shader program, allocate it gpu-side
             /// @param path: absolute path to shader source code
             /// @returns native handle of shader program
-            static GLNativeHandle register_program(GLNativeHandle fragment_shader_id);
+            [[nodiscard]]  static GLNativeHandle register_program(GLNativeHandle fragment_shader_id);
 
             /// @brief deallocate shader program
             /// @param id: native handle of program
@@ -277,32 +280,32 @@ namespace crisp
             /// @param image: image to be converted
             /// @returns native handle of texture
             template<typename T, size_t N>
-            static GLNativeHandle register_texture(const Image<T, N>&);
+            [[nodiscard]] static GLNativeHandle register_texture(const Image<T, N>&);
 
             /// @brief create an empty texture of specified size gpu-side
             /// @param width: x-dimension of the texture
             /// @param height: y-dimension of the texture
             /// @returns native handle of texture
             template<typename T, size_t N>
-            static GLNativeHandle register_texture(size_t width, size_t height);
+            [[nodiscard]] static GLNativeHandle register_texture(size_t width, size_t height);
 
             /// @brief create a deep-copy of an already existing texture
             /// @param to_copy: handle of already existing texture
             /// @returns native handle of resulting texture
             template<typename T, size_t N>
-            static GLNativeHandle register_texture(GLNativeHandle to_copy);
+            [[nodiscard]] static GLNativeHandle register_texture(GLNativeHandle to_copy);
 
             /// @brief create texture from raw data
             /// @param data: OpenGL compliant formatted array
             /// @returns native handle of resulting texture
             template<typename T, size_t N>
-            static GLNativeHandle register_texture(size_t width, size_t height, const std::vector<T>& data);
+            [[nodiscard]] static GLNativeHandle register_texture(size_t width, size_t height, const std::vector<T>& data);
 
             /// @brief create texture from raw data
             /// @param data: OpenGL compliant formatted array
             /// @returns native handle of resulting texture
             template<typename T, size_t N>
-            static GLNativeHandle register_texture(size_t width, size_t height, const T* data);
+            [[nodiscard]] static GLNativeHandle register_texture(size_t width, size_t height, const T* data);
 
             /// @brief deallocate texture
             /// @param id: native handle of texture

@@ -93,7 +93,7 @@ namespace crisp
             /// @returns workspace
             Workspace& get_workspace();
 
-            /// @param swap the underlying openGL texture without deallocation
+            /// @param swap the underlying OpenGL texture without deallocation
             /// @param new_object: handle of new texture
             /// @returns old handle
             GLNativeHandle swap_native_objects(GLNativeHandle new_object);
