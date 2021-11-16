@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.19)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}-std=c++2a -lstdc++fs -pthread -lpthread -lGL")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -lstdc++fs -pthread -lpthread -lGL")
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 
 project(crisp)
 
@@ -27,8 +27,6 @@ find_package(Lua REQUIRED)
 # OpenCV
 SET("OpenCV_DIR" "/usr/share/OpenCV")
 find_package(OpenCV REQUIRED)
-set(CMAKE_CXX_FLAGS "-D WITH_CUDA=ON")
-
 
 ### CRISP #######################################################################################
 
@@ -82,6 +80,7 @@ add_library(crisp STATIC
 
         include/pseudocolor_mapping.hpp
         .src/pseudocolor_mapping.inl
+        .src/pseudocolor_mapping_gpu.inl
 
         .src/common.inl
 
@@ -126,7 +125,17 @@ add_library(crisp STATIC
         .src/benchmark.inl
 
         include/gpu_side/is_gpu_side.hpp
-        include/video/video_file.hpp .src/video_file.inl include/gpu_side/hardware_accelerated_matrix.hpp .src/hardware_accelerated_matrix.inl include/video/video_stream.hpp .src/pseudocolor_mapping_gpu.inl include/gpu_side/whole_texture_transform.hpp .src/whole_texture_transform.inl)
+
+        include/video/video_file.hpp
+        .src/video_file.inl
+
+        include/gpu_side/hardware_accelerated_matrix.hpp
+        .src/hardware_accelerated_matrix.inl
+
+        include/video/video_stream.hpp
+
+        include/gpu_side/whole_texture_transform.hpp
+        .src/whole_texture_transform.inl)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp
@@ -143,16 +152,5 @@ target_link_libraries(crisp
 include_directories("./include")
 include_directories("./")
 include_directories("/usr/include/opencv4")
-
-### TESTS #######################################################################################
-
-add_executable(TEST .test/main.cpp)
-target_link_libraries(TEST crisp)
-
-add_executable(VIDEO .test/video_test.cpp)
-target_link_libraries(VIDEO crisp)
-
-add_executable(BENCHMARK include/gpu_side/.shaders/matrix_operation/.benchmarks/benchmark_matrices.cpp)
-target_link_libraries(BENCHMARK crisp)
 
 
