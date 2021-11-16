@@ -1,125 +1,133 @@
 // 
 // Copyright 2021 Clemens Cords
-// Created on 07.09.21 by clem (mail@clemens-cords.com)
+// Created on 06.11.21 by clem (mail@clemens-cords.com)
 //
 
-#include <classification/fully_connected_neural_network.hpp>
-#include <classification/bayes_classifier.hpp>
-#include <thread>
-#include <iostream>
-#include <fstream>
+#include <opencv4/opencv2/core.hpp>
+#include <opencv4/opencv2/video.hpp>
+#include <opencv4/opencv2/videoio.hpp>
 
-#include <SFML/OpenGL.hpp>
-#include <SFML/Window/Context.hpp>
-#include <SFML/Graphics/RenderTexture.hpp>
-#include <SFML/Graphics.hpp>
-
-#include <system.hpp>
-#include <GLES3/gl32.h>
-
-#include <sol.hpp>
-
-#include <gpu_side/state.hpp>
-
-#include <segmentation.hpp>
-#include <gpu_side/texture_workspace.hpp>
 #include <gpu_side/texture.hpp>
-
-#include <pseudocolor_mapping.hpp>
+#include <system/image_io.hpp>
 #include <benchmark.hpp>
-//#include <resource_path.hpp>
+#include <spatial_filter.hpp>
+#include <system/render_window.hpp>
+#include <morphological_transform.hpp>
+
+#include <SFML/Window.hpp>
+#include <SFML/Graphics.hpp>
+#include <thread>
+
+#include <gpu_side/hardware_accelerated_matrix.hpp>
+#include <sol.hpp>
 
 using namespace crisp;
 
 int main()
 {
-    sol::state state;
-    auto image = crisp::load_grayscale_image("/home/clem/Workspace/crisp/docs/segmentation/.resources/opal_non_uniform.png");
+    auto window = RenderWindow();
+    window.create(300, 300);
+    window.set_active();
 
-    sf::ContextSettings context_settings;
-    context_settings.antialiasingLevel = 0;
-    context_settings.minorVersion = 3;
-    context_settings.majorVersion = 3;
-    context_settings.attributeFlags = context_settings.Core | context_settings.Default;
+    Eigen::MatrixXf left, right, control_out;
 
-    auto style = sf::Style::Titlebar | sf::Style::Close;
+    size_t rows = 1000;
+    size_t cols = 1000;
 
-    auto window = sf::RenderWindow();
-    window.create(sf::VideoMode(2*image.get_size().x(), 2*image.get_size().y()), "", style, context_settings);
-    window.setActive(true);
+    left.resize(rows, cols);
+    left.setRandom();
 
-    auto transform = FourierTransform<SPEED>();
-    transform.transform_from(image);
+    right.resize(rows, cols);
+    right.setRandom();
 
-    auto filter = FrequencyDomainFilter<GPU_SIDE>(transform);
-    filter.as_gaussian_bandpass(0.2, 0.3);
-    //filter.apply_to(transform);
+    control_out = left;
+    auto gpu_matrix = HardwareAcceleratedMatrix(control_out);
+    auto gpu_left = HardwareAcceleratedMatrix(left);
 
-    auto img = transform.as_image();
-    auto tex = Texture<float, 1>(img);
-    State::bind_shader_program(NONE);
-    //State::bind_texture(NONE, "_texture", tex.get_handle());
-    State::display();
+    size_t run = 0;
+    auto cpu_side = Benchmark([&](){
+        control_out.transposeInPlace();
+    });
 
-    /*
-    auto benchmark = Benchmark([&](Texture<float, 1>& tex){tex = transform.as_texture();});
+    std::cout << "CPU: " << cpu_side.execute(3) << std::endl;
 
-    Texture<float, 1> texture = transform.as_texture();
-    std::cout << benchmark.execute<Texture<float, 1>&>(100, texture) << std::endl;
+    run = 0;
+    auto gpu_side = Benchmark([&](){
+        gpu_matrix.transpose_in_place();
+    });
 
-    auto shader = State::register_shader("lowpass_butterworth.glsl");
-    auto program = State::register_program(shader);
+    std::cout << "GPU: " << gpu_side.execute(3) << std::endl;
 
-    State::bind_shader_program(program);
-    State::bind_texture(program, "_texture", texture.get_handle());
+    control_out.transposeInPlace();
+    auto temp = gpu_matrix.transpose();
+    gpu_matrix = temp;
 
-    auto pass_factor = State::register_float(1);
-    auto reject_factor = State::register_float(0);
-    auto cutoff_a = State::register_float(0.4);
-    auto cutoff_b = State::register_float(0.25);
-
-    auto size = State::register_vec<2>(texture.get_size());
-    auto offset = State::register_vec<2>(Vector2f{0.1, 0.1});
-    auto order = State::register_int(3);
-
-    State::bind_float(program, "_cutoff_frequency", cutoff_a);
-    State::bind_float(program, "_cutoff", cutoff_a);
-    State::bind_float(program, "_cutoff_a", cutoff_a);
-    State::bind_float(program, "_cutoff_b", cutoff_b);
-    State::bind_float(program, "_pass_factor", pass_factor);
-    State::bind_float(program, "_reject_factor", reject_factor);
-    State::bind_vec2(program, "_texture_size", size);
-    State::bind_vec2(program, "_offset", offset);
-    State::bind_int(program, "_order", order);
-    */
-
-    window.display();
-
-    while(window.isOpen())
+    auto data = gpu_matrix.get_data();
+    float error = 0;
+    size_t n = 0;
+    for (size_t i = 0; i < data.size(); ++i)
     {
-        auto event = sf::Event();
-        while(window.pollEvent(event))
+        error += abs(data[i] - control_out.data()[i]);;
+        n++;
+    }
+
+    std::cout << "Mean Error: " << error / n << std::endl;
+    return 0;
+
+    while (window.is_open())
+    {
+        auto time = window.update();
+
+        if (InputHandler::was_key_pressed(RIGHT))
         {
-            if (event.type == sf::Event::EventType::Closed)
-                window.close();
-
-            if (event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::Space)
-            {
-                filter.apply_to(transform);
-                img = transform.as_image();
-                tex = Texture<float, 1>(img);
-                State::bind_shader_program(NONE);
-                State::bind_texture(NONE, "_texture", tex.get_handle());
-                State::display();
-
-                State::display();
-                window.display();
-            }
+        }
+        else if (InputHandler::was_key_pressed(LEFT))
+        {
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
 
     return 0;
+
 }
+
+/*
+ * auto shader = State::register_shader("matrix_operation/set_constant.glsl");//State::register_shader_from_source(source);
+    auto program = State::register_program(shader);
+    State::free_shader(shader);
+
+    auto tex_out = Texture<float, 1>(State::register_texture<float, 1>(left.rows(), right.cols()));
+    auto dummy = Texture<float, 1>(State::register_texture<float, 1>(left.rows(), right.cols()));
+
+    std::vector<float> data;
+
+    auto gpu_side = Benchmark([&]()
+    {
+        auto tex_left = Texture<float, 1>(State::register_texture<float, 1>(left.rows(), left.cols(), left.data()));
+        auto tex_right = Texture<float, 1>(State::register_texture<float, 1>(right.rows(), right.cols(), right.data()));
+
+        State::bind_shader_program(program);
+        State::bind_texture(program, "_left", tex_left, 2);
+        State::bind_texture(program, "_right", tex_right, 1);
+        State::set_float(program, "_scalar", 5);
+
+        GLNativeHandle buffer;
+        glGenFramebuffers(1, &buffer);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer);
+        glBindTexture(GL_TEXTURE_2D, tex_out);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_out, 0);
+
+        glBindTexture(GL_TEXTURE_2D, NONE);
+        glViewport(0, 0, tex_out.get_size().x(), tex_out.get_size().y());
+
+        State::display();
+
+         data = State::get_texture_data(tex_out);
+    });
+
+
+ */
 

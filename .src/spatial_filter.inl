@@ -239,7 +239,6 @@ namespace crisp
 
         State::bind_shader_program(program);
         State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_vec(program, "_texture_size", size);
         State::bind_matrix(program, "_kernel", kernel);
 
         if (_kernel.cols() == 1 or _kernel.rows() == 1)

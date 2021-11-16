@@ -3,6 +3,8 @@
 // Created on 26.07.21 by clem (mail@clemens-cords.com)
 //
 
+#include <iostream>
+
 namespace crisp
 {
     inline bool InputHandler::states_at(size_t i, KeyID id)

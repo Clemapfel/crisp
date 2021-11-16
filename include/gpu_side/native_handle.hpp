@@ -5,12 +5,15 @@
 
 #pragma once
 
-/// @brief OpenGL ID: 1, 2, ...
-using GLNativeHandle = unsigned int;
+namespace crisp
+{
+    /// @brief OpenGL ID: 1, 2, ...
+    using GLNativeHandle = unsigned int;
 
-/// @brief internal crisp::State resource ID: -1, -2, ...
-using ProxyID = int;
+    /// @brief internal crisp::State resource ID: -1, -2, ...
+    using ProxyID = int;
 
-/// @brief default OpenGL no value marker
-#define NONE 0
+    /// @brief default OpenGL no value marker
+    constexpr GLNativeHandle NONE = 0;
+}
 

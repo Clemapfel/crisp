@@ -11,7 +11,6 @@ in vec2 _tex_coord;
 out vec4 _out;
 
 uniform sampler2D _texture;
-uniform vec2 _texture_size;
 
 uniform float _pass_factor;
 uniform float _reject_factor;
@@ -24,7 +23,8 @@ uniform int _order;
 void main()
 {
     vec2 pos = _tex_coord;
-    float to_square = _texture_size.y / _texture_size.x;
+    vec2 texture_size = textureSize(_texture, 0);
+    float to_square = texture_size.y / texture_size.x;
     pos.y *= to_square;
 
     float dist_left = distance(pos, vec2(0.5, 0.5 * to_square) + vec2(_offset.x, -1 * _offset.y));

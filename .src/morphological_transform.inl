@@ -217,7 +217,6 @@ namespace crisp
 
         State::bind_shader_program(program);
         State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_vec(program, "_texture_size", size);
         State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
@@ -260,7 +259,6 @@ namespace crisp
 
         State::bind_shader_program(program);
         State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_vec(program, "_texture_size", size);
         State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
@@ -311,7 +309,6 @@ namespace crisp
 
         State::bind_shader_program(program);
         State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_vec(program, "_texture_size", size);
         State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
@@ -375,7 +372,6 @@ namespace crisp
 
         State::bind_shader_program(program);
         State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_vec(program, "_texture_size", size);
         State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
@@ -425,7 +421,6 @@ namespace crisp
 
         State::bind_shader_program(program);
         State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_vec(program, "_texture_size", size);
         State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
@@ -439,7 +434,6 @@ namespace crisp
         State::free_shader(shader);
         State::bind_shader_program(program);
         State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_vec(program, "_texture_size", size);
         State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
@@ -476,7 +470,6 @@ namespace crisp
 
         State::bind_shader_program(program);
         State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_vec(program, "_texture_size", size);
         State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
@@ -490,7 +483,6 @@ namespace crisp
         State::free_shader(shader);
         State::bind_shader_program(program);
         State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_vec(program, "_texture_size", size);
         State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();

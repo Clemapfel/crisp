@@ -48,19 +48,23 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 8. [**GPU-Side Computing**](#gpu-side-computing)<br>
     8.1 [Textures](#textures)<br>
     8.2 [Graphics Card Interface](#graphics-card-interface)<br>
-9. [**Vectors**](#vectors)<br>
-    9.1 [General](#general)<br>
-    9.2 [Arithmetics & Comparison](#arithmetics--comparisons)<br>
-10. [**Color**](#color)<br>
-    10.1 [Color Representations](#color-representations)<br>
-    10.2 [Pseudo Color](#pseudo-color)<br>
-11. [**Noise**](#noise)<br>
-    11.1 [crisp::NoiseGenerator](#general)<br>
-    11.2 [Types of Noise](#types-of-noise)<br>
-12. [**System**](#system)<br>
-    12.1 [Image I/O](#image-io)<br>
-    12.2 [Rendering](#rendering)<br>
-    12.3 [User Input](#keyboardmouse-input)<br>
+9. [**Video**](#video)<br>
+    9.1 [Video Files](#video-files)<br>
+    9.2 [Video Streams](#video-streams)<br>
+10. [**Vectors**](#vectors)<br>
+    10.1 [General](#general)<br>
+    10.2 [Arithmetics & Comparison](#arithmetics--comparisons)<br>
+11. [**Color**](#color)<br>
+    11.1 [Color Representations](#color-representations)<br>
+    11.2 [Pseudo Color](#pseudo-color)<br>
+    11.3 [GPU-Side Pseudo Color](#pseudo-color)<br>
+12. [**Noise**](#noise)<br>
+    12.1 [crisp::NoiseGenerator](#general)<br>
+    12.2 [Types of Noise](#types-of-noise)<br>
+13. [**System**](#system)<br>
+    13.1 [Image I/O](#image-io)<br>
+    13.2 [Rendering](#rendering)<br>
+    13.3 [User Input](#keyboardmouse-input)<br>
 ---
 
 ## [Images](./image/image.md)
@@ -369,6 +373,21 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 
 (this documentation is not yet completed)
 
+## [Video](./video/video.md)
+
+```cpp
+#include <video/video_file.hpp>
+#include <video/video_stream.hpp>
+```
+### [Video Files](./video/video.md/#2-video-files)
++ [Accessing Frames](./video/video.md/#21-accessing-frames)
++ [Modifying Frames](./video/video.md/#22-modifying-frames)
++ [File Export](./video/video.md/#23-exporting-the-video-file)
+
+### [Video Streams](./video/video.md/#3-video-streams)
+
+(this documentation is not yet completed)
+
 ## [Vectors](./vector/vector.md)
 
 ```cpp
@@ -409,7 +428,7 @@ If this is your first time using `crisp`, consider reading the tutorials in the 
 + [Value Range to Hue range](./color/color.md/#71-crisppseudocolor)
 + [Value Range to inverse Hue range](./color/color.md/#71-crisppseudocolor)
 + [Multi Range Mapping](./color/color.md/#72-multi-range-mapping)
-
++ [Hardware Accelerated PseudoColor Mapping](./hardware_acceleration/textures.md/#7-pseudo-color-mapping)
 ---
 
 ## [Noise](./noise/noise.md) 

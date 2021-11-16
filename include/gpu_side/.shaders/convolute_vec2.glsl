@@ -3,14 +3,13 @@
 in vec2 _tex_coord;
 
 uniform sampler2D _texture;
-uniform vec2 _texture_size;
 
 uniform vec2 _kernel;
 uniform bool _vertical;
 
 void main()
 {
-    vec2 step_size = 1 / _texture_size;
+    vec2 step_size = 1 / textureSize(_texture, 0);
 
     float kernel_sum = 0;
     vec4 response = vec4(0);

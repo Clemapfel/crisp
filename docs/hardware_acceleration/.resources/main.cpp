@@ -44,7 +44,6 @@ int main()
     State::bind_shader_program(program);
     State::bind_texture(program, "_texture", texture.get_handle());
     auto size = State::register_vec<2>(texture.get_size());
-    State::bind_vec(program, "_texture_size", size);
 
     auto workspace = texture.get_workspace();
     workspace.display();

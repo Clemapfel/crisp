@@ -1,4 +1,4 @@
-# CRISP: Real-Time Interactive Signal Processing Library (v0.8.3)
+# CRISP: Real-Time Interactive Signal Processing Library (v0.9.1)
 
 ## What is `crisp`?
 `crisp` is a library implementing most image-processing needs from scratch. This includes:
@@ -37,10 +37,20 @@ It's called visual computing, after all. Here's a non-exhaustive list of things 
 
 This makes debugging, filter design or just understanding/explaining your own algorithms much easier and more intuitive.
 
-`crisp` is **fast and flexible**
-+ for full flexibility, `crisp::Image` lives in RAM and is operated upon by the CPU
+
+`crisp` is **fast**
 + for best performance, `crisp::Texture` lives in VRAM and is operated upon by the GPU
 + GPU-side computation makes large-scale real-time processing possible on mid-end machines
++ Example: `crisp::HardwareAcceleratedMatrix` offers best runtime for big matrices<br>
+  <br>
+  ![](https://github.com/Clemapfel/crisp/blob/video/include/gpu_side/.shaders/matrix_operation/.benchmarks/to_1000.png) <br>
++ but for small sizes, `crisp` sticks to cpu-side computation, achieving optimal performance in both cases
+![](https://github.com/Clemapfel/crisp/blob/video/include/gpu_side/.shaders/matrix_operation/.benchmarks/to_150.png)
+
+`crisp` is **flexible**
++ `crisp::Image` lives in RAM
++ extremely intuitive, pixels are stored in a 2D array and each can be accesses freely
++ runs on tiny embedded system with 1 core and no graphics card
 
 `crisp` is **well documented**<br>
 + [full tutorials](#tutorial) are available for all features
@@ -85,6 +95,9 @@ This makes debugging, filter design or just understanding/explaining your own al
     - provided as submodule
 + [lua5.3](https://www.lua.org/download.html)
     - `lua5.3` package
++ [Video I/O](https://docs.opencv.org/3.4/d0/da7/videoio_overview.html)
+    - ``libopencv-core4.5``
+    - ``libopencv-videoio4.5``
     
 ### Installation
 `crisp` is header only, to add it to your project, simply use:
@@ -100,7 +113,7 @@ git submodule add https://github.com/Clemapfel/crisp.git
 Add the corresponding include path to your cmake script and link against `crisp` like so:
 
 ```cmake
-include_directories(/path/to/.../crisp/include/)
+include_directories("/path/to/.../crisp/include/")
 add_executable(MY_EXECUTABLE path/to/my/main.cpp)
 target_link_libraries(MY_EXECUTABLE crisp)
 ```
@@ -122,6 +135,7 @@ Consider reading the tutorials in order, this will teach important principles of
 11. [Feature Extraction](./docs/feature_extraction/feature_extraction.md)
 12. [Deep Learning](./docs/feature_classification/feature_classification_and_deep_learning.md)
 13. [Hardware Acceleration](./docs/hardware_acceleration/textures.md)
+14. [Video](./docs/video/video.md)
 
 ## [Documentation](./docs/index.md)
 

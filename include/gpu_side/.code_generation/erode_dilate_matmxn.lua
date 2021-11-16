@@ -38,7 +38,6 @@ in vec2 _tex_coord;
 out vec4 _out;
 
 uniform sampler2D _texture;
-uniform vec2 _texture_size;
 ]])
 
     table.insert(buffer, "uniform " .. mat .. " _structuring_element;\n\n");
@@ -60,7 +59,7 @@ float to_value(float v)
 
 void main()
 {
-    vec2 step_size = 1.f / _texture_size;
+    vec2 step_size = 1.f / textureSize(_texture, 0);
 ]])
 
     local min_or_max = ""

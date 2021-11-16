@@ -181,9 +181,6 @@ namespace crisp
         if (_noop_vertex_shader == NONE)
             initialize_noop_shaders();
 
-        if (id.find('/') != std::string::npos)
-            std::cerr << "[WARNING] When registering a shader, only the filename needs to be specified. Are you sure " << id << " is the filename and not the absolute path?" << std::endl;
-
         std::string path = get_resource_path() + "include/gpu_side/.shaders/" + id;
 
         std::ifstream file;
@@ -217,6 +214,31 @@ namespace crisp
         if (compilation_success == GL_FALSE)
         {
             std::cerr << "[WARNING] Failed to compile shader at " << path << std::endl;
+            std::cerr << compilation_log << std::endl;
+        }
+
+        _fragment_shaders.insert(shader_id);
+        return shader_id;
+    }
+
+    GLNativeHandle State::register_shader_from_source(std::string source)
+    {
+        if (_noop_vertex_shader == NONE)
+            initialize_noop_shaders();
+
+        const char* source_ptr = source.c_str();
+        auto shader_id = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(shader_id, 1, &source_ptr, nullptr);
+        glCompileShader(shader_id);
+
+        int compilation_success;
+        char compilation_log[1024] = "";
+        glGetShaderiv(shader_id, GL_COMPILE_STATUS, &compilation_success);
+        glGetShaderInfoLog(shader_id, 1024, nullptr, compilation_log);
+
+        if (compilation_success == GL_FALSE)
+        {
+            std::cerr << "[WARNING] Failed to compile shader " << shader_id << std::endl;
             std::cerr << compilation_log << std::endl;
         }
 
@@ -291,6 +313,7 @@ namespace crisp
     GLNativeHandle State::register_texture(const Image<T, N>& image)
     {
         static_assert(0 < N and N <= 4);
+        static_assert(std::is_same_v<T, bool> or std::is_same_v<T, float>);
 
         using Data_t = typename std::conditional<std::is_same_v<T, bool>, GLboolean, float>::type;
         boost::container::vector<Data_t> data;
@@ -452,11 +475,21 @@ namespace crisp
         return texture_id;
     }
 
-    template<size_t N>
-    GLNativeHandle State::register_texture(size_t width, size_t height, const std::vector<float>& data)
+    template<typename T, size_t N>
+    GLNativeHandle State::register_texture(size_t width, size_t height, const std::vector<T>& data)
+    {
+        assert(data.size() == width * height * N);
+        static_assert(std::is_same_v<T, bool> or std::is_same_v<T, float>);
+        return register_texture<T, N>(width, height, &data[0]);
+    }
+
+    template<typename T, size_t N>
+    GLNativeHandle State::register_texture(size_t width, size_t height, const T* data)
     {
         static_assert(0 < N and N <= 4);
-        assert(data.size() == width * height * N);
+        static_assert(std::is_same_v<T, bool> or std::is_same_v<T, float>);
+
+        using Data_t = typename std::conditional<std::is_same_v<T, bool>, GLboolean, float>::type;
 
         GLNativeHandle texture_id;
         glGenTextures(1, &texture_id);
@@ -515,25 +548,37 @@ namespace crisp
         {
             format = GL_RED;
             alignment_n = 1;
-            internal_format = GL_R32F;
+            if (std::is_same_v<T, bool>)
+                internal_format = GL_R8;
+            else
+                internal_format = GL_R32F;
         }
         else if (N == 2)
         {
             format = GL_RG;
             alignment_n = 2;
-            internal_format = GL_RG32F;
+            if (std::is_same_v<T, bool>)
+                internal_format = GL_RG8;
+            else
+                internal_format = GL_RG32F;
         }
         else if (N == 3)
         {
             format = GL_RGB;
             alignment_n = 1;
-            internal_format = GL_RGB32F;
+            if (std::is_same_v<T, bool>)
+                internal_format = GL_RGB8;
+            else
+                internal_format = GL_RGB32F;
         }
         else if (N == 4)
         {
             format = GL_RGBA;
             alignment_n = 4;
-            internal_format = GL_RGBA32F;
+            if (std::is_same_v<T, bool>)
+                internal_format = GL_RGBA8;
+            else
+                internal_format = GL_RGBA32F;
         }
 
         glPixelStorei(GL_UNPACK_ALIGNMENT, alignment_n);
@@ -545,18 +590,18 @@ namespace crisp
                      static_cast<GLsizei>(height),
                      0,
                      format,
-                     GL_FLOAT,
-                     &data[0]);
+                     std::is_same_v<T, bool> ? GL_UNSIGNED_BYTE : GL_FLOAT,
+                     data);
 
         _textures.insert(texture_id);
         _texture_info.insert({
             texture_id,
             TextureInfo{
-                .padding_type = PaddingType::MIRROR,
+                .padding_type = PaddingType::STRETCH,
                 .width = width,
-                .height = width,
+                .height = height,
                 .n_planes = N,
-                .type = GL_FLOAT
+                .type = std::is_same_v<T, bool> ? GL_UNSIGNED_BYTE : GL_FLOAT
             }
         });
 
@@ -762,9 +807,6 @@ namespace crisp
 
     void State::free_texture(GLNativeHandle id)
     {
-        if (_textures.find(id) == _textures.end())
-            std::cerr << "[WARNING] Trying to free already deallocated or non-existent texture with handle " << id << std::endl;
-
         _textures.erase(id);
         _texture_info.erase(id);
         glDeleteTextures(1, &id);

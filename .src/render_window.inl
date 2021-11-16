@@ -7,19 +7,19 @@
 
 namespace crisp
 {
-    inline RenderWindow::RenderWindow()
+    RenderWindow::RenderWindow()
         : sf::RenderWindow()
     {
         InputHandler::set_window(this);
     }
 
-    inline RenderWindow::RenderWindow(size_t width, size_t height)
+    RenderWindow::RenderWindow(size_t width, size_t height)
     {
         InputHandler::set_window(this);
         create(width, height);
     }
 
-    inline void RenderWindow::create(size_t width, size_t height, bool fullscreen, size_t fps_limit)
+    void RenderWindow::create(size_t width, size_t height, bool fullscreen, size_t fps_limit)
     {
         _resolution[0] = width;
         _resolution[1] = height;
@@ -39,12 +39,17 @@ namespace crisp
         _background_shape.setSize(sf::Vector2f{float(width), float(height)});
     }
 
-    inline bool RenderWindow::is_open() const
+    bool RenderWindow::is_open() const
     {
         return sf::RenderWindow::isOpen();
     }
 
-    inline Vector2ui RenderWindow::get_resolution() const
+    void RenderWindow::set_active()
+    {
+        setActive(true);
+    }
+
+    Vector2ui RenderWindow::get_resolution() const
     {
         size_t x = _resolution.at(0);
         size_t y = _resolution.at(1);
@@ -52,7 +57,7 @@ namespace crisp
         return out;
     }
 
-    inline void RenderWindow::set_background_color(RGB color)
+    void RenderWindow::set_background_color(RGB color)
     {
         _background_shape.setPosition(0, 0);
 
@@ -61,20 +66,20 @@ namespace crisp
         _background_shape.setFillColor(sf::Color(to_uint(color.red()), to_uint(color.green()), to_uint(color.blue()), 255));
     }
 
-    inline sf::Time RenderWindow::update()
+    sf::Time RenderWindow::update()
     {
         auto time = _elapsed.restart();
         InputHandler::update(time);
         return time;
     }
 
-    inline void RenderWindow::clear(RGB color)
+    void RenderWindow::clear(RGB color)
     {
         sf::RenderWindow::clear(sf::Color(color.red() * 255, color.green() * 255, color.blue() * 255, 255));
         draw(_background_shape);
     }
 
-    inline Vector2f RenderWindow::get_mouse_position()
+    Vector2f RenderWindow::get_mouse_position()
     {
         auto pos = sf::Mouse::getPosition(*this);
         return Vector2f{float(pos.x), float(pos.y)};

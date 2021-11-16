@@ -8,12 +8,12 @@
 
 namespace crisp
 {
-    ColorImage PseudoColor::identity(const GrayScaleImage& image)
+    ColorImage PseudoColor<CPU_SIDE>::identity(const GrayScaleImage& image)
     {
         return image.convert_to_color();
     }
 
-    ColorImage PseudoColor::value_range_to_hue_range(float min_gray, float max_gray, float min_hue, float max_hue, const GrayScaleImage& in)
+    ColorImage PseudoColor<CPU_SIDE>::value_range_to_hue_range(float min_gray, float max_gray, float min_hue, float max_hue, const GrayScaleImage& in)
     {
         auto f = [min_gray, max_gray, min_hue, max_hue](float x) -> RGB {
 
@@ -43,7 +43,7 @@ namespace crisp
         return out;
     }
 
-    ColorImage PseudoColor::value_range_to_inverse_hue_range(float min_gray, float max_gray, float min_hue, float max_hue, const GrayScaleImage& in)
+    ColorImage PseudoColor<CPU_SIDE>::value_range_to_inverse_hue_range(float min_gray, float max_gray, float min_hue, float max_hue, const GrayScaleImage& in)
     {
         auto f = [min_gray, max_gray, min_hue, max_hue](float x) -> RGB {
 
@@ -74,7 +74,7 @@ namespace crisp
         return out;
     }
 
-    ColorImage PseudoColor::value_ranges_to_hue_ranges(RangeMapping& mapping, const GrayScaleImage& in)
+    ColorImage PseudoColor<CPU_SIDE>::value_ranges_to_hue_ranges(RangeMapping& mapping, const GrayScaleImage& in)
     {
         auto f = [mapping](float x) -> RGB {
 
@@ -130,27 +130,27 @@ namespace crisp
         return out;
     }
     
-    ColorImage PseudoColor::value_to_hue(float gray, float hue, const GrayScaleImage& in)
+    ColorImage PseudoColor<CPU_SIDE>::value_to_hue(float gray, float hue, const GrayScaleImage& in)
     {
         return value_range_to_hue_range(gray, gray, hue, hue, in);
     }
 
-    ColorImage PseudoColor::value_range_to_hue(float min_gray, float max_gray, float hue, const GrayScaleImage& in)
+    ColorImage PseudoColor<CPU_SIDE>::value_range_to_hue(float min_gray, float max_gray, float hue, const GrayScaleImage& in)
     {
         return value_range_to_hue_range(min_gray, max_gray, hue, hue, in);
     }
 
-    void PseudoColor::RangeMapping::add_value_to_hue(float gray, float hue)
+    void PseudoColor<CPU_SIDE>::RangeMapping::add_value_to_hue(float gray, float hue)
     {
         _gray_to_hue.push_back({{gray, gray}, {hue, hue}});
     }
 
-    void PseudoColor::RangeMapping::add_value_range_to_hue(float min_gray, float max_gray, float hue)
+    void PseudoColor<CPU_SIDE>::RangeMapping::add_value_range_to_hue(float min_gray, float max_gray, float hue)
     {
         _gray_to_hue.push_back({{min_gray, max_gray}, {hue, hue}});
     }
 
-    void PseudoColor::RangeMapping::add_value_range_to_hue_range(
+    void PseudoColor<CPU_SIDE>::RangeMapping::add_value_range_to_hue_range(
             float min_gray, 
             float max_gray, 
             float min_hue,
@@ -159,7 +159,7 @@ namespace crisp
         _gray_to_hue.push_back({{min_gray, max_gray}, {min_hue, max_hue}});
     }
 
-    void PseudoColor::RangeMapping::add_value_range_to_inverse_hue_range(
+    void PseudoColor<CPU_SIDE>::RangeMapping::add_value_range_to_inverse_hue_range(
             float min_gray, 
             float max_gray,
             float min_hue, 
@@ -167,58 +167,4 @@ namespace crisp
     {
         _gray_to_inverse_hue.push_back({{min_gray, max_gray}, {min_hue, max_hue}});
     }
-
-    std::array<float, 256> PseudoColor::range_mapping_to_array(const PseudoColor::RangeMapping& mapping)
-    {
-        auto gray_to_hue = [mapping](float x) -> float {
-
-            for (auto& map : mapping._gray_to_hue)
-            {
-                float min_gray = map.first.first;
-                float max_gray = map.first.second;
-                float min_hue = map.second.first;
-                float max_hue = map.second.second;
-
-                if (x >= min_gray and x <= max_gray)
-                {
-                    float hue = x;
-                    hue -= min_gray;
-                    hue /= abs(max_gray - min_gray);
-
-                    hue = project(min_hue, max_hue, hue);
-
-                    return hue;
-                }
-            }
-
-            for (auto& map : mapping._gray_to_inverse_hue)
-            {
-                float min_gray = map.first.first;
-                float max_gray = map.first.second;
-                float min_hue = map.second.first;
-                float max_hue = map.second.second;
-
-                if (x >= min_gray and x <= max_gray)
-                {
-                    float hue = x;
-                    hue -= min_gray;
-                    hue /= abs(max_gray - min_gray);
-
-                    hue = project(min_hue, max_hue, hue);
-                    hue = max_hue - (hue - min_hue);
-
-                    return hue;
-                }
-            }
-
-            return -1;
-        };
-
-        std::array<float, 256> out = {};
-        for (size_t i = 0; i < 256; ++i)
-            out[i] = gray_to_hue(float(i) / 256.f);
-
-        return out;
-    }
-
 }

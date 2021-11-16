@@ -38,11 +38,10 @@ function generate(rows, cols)
 
     table.insert(buffer, [[
 uniform sampler2D _texture;
-uniform vec2 _texture_size;
 
 void main()
 {
-    vec2 step_size = 1 / _texture_size;
+    vec2 step_size = 1 / textureSize(_texture, 0);
 
     float kernel_sum = 0;
     vec4 response = vec4(0);
