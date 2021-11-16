@@ -41,9 +41,11 @@ This makes debugging, filter design or just understanding/explaining your own al
 `crisp` is **fast**
 + for best performance, `crisp::Texture` lives in VRAM and is operated upon by the GPU
 + GPU-side computation makes large-scale real-time processing possible on mid-end machines
-+ Example: `crisp::HardwareAcceleratedMatrix` <br>
++ Example: `crisp::HardwareAcceleratedMatrix` offers best runtime for big matrices<br>
   <br>
-  ![](https://github.com/Clemapfel/crisp/blob/video/include/gpu_side/.shaders/matrix_operation/.benchmarks/to_1000.png)
+  ![](https://github.com/Clemapfel/crisp/blob/video/include/gpu_side/.shaders/matrix_operation/.benchmarks/to_1000.png) <br>
++ but for small sizes, `crisp` sticks to cpu-side computation, achieving optimal performance in both cases
+![](https://github.com/Clemapfel/crisp/blob/video/include/gpu_side/.shaders/matrix_operation/.benchmarks/to_150.png)
 
 `crisp` is **flexible**
 + `crisp::Image` lives in RAM
@@ -133,6 +135,7 @@ Consider reading the tutorials in order, this will teach important principles of
 11. [Feature Extraction](./docs/feature_extraction/feature_extraction.md)
 12. [Deep Learning](./docs/feature_classification/feature_classification_and_deep_learning.md)
 13. [Hardware Acceleration](./docs/hardware_acceleration/textures.md)
+14. [Video](./docs/video/video.md)
 
 ## [Documentation](./docs/index.md)
 
