@@ -121,6 +121,16 @@ namespace crisp
             /// @returns reference to self
             HardwareAcceleratedMatrix& operator-=(const HardwareAcceleratedMatrix&);
 
+            /// @brief elementwise divide
+            /// @param other matrix
+            /// @returns new matrix by value
+            HardwareAcceleratedMatrix operator/(const HardwareAcceleratedMatrix&) const;
+
+            /// @brief elementwise divide, assigns to self without invoking copy ctor
+            /// @param other matrix
+            /// @returns reference to self
+            HardwareAcceleratedMatrix& operator/=(const HardwareAcceleratedMatrix&);
+
             /// @brief elementwise scalar add, invokes copy ctor
             /// @param scalar
             /// @returns new matrix by value
@@ -151,16 +161,19 @@ namespace crisp
             /// @returns reference to self
             HardwareAcceleratedMatrix& operator-=(float scalar);
 
-        protected:
-            HardwareAcceleratedMatrix() = default;
-
             /// @brief elementwise scalar divide
-            [[deprecated]] HardwareAcceleratedMatrix operator/(float scalar) const;
-            [[deprecated]] HardwareAcceleratedMatrix& operator/=(float scalar);
+            /// @param scalar
+            /// @returns new matrix by value
+            HardwareAcceleratedMatrix operator/(float scalar) const;
 
-            /// @brief elementwise divide
-            HardwareAcceleratedMatrix operator/(const HardwareAcceleratedMatrix&) const;
-            HardwareAcceleratedMatrix& operator/=(const HardwareAcceleratedMatrix&);
+            /// @brief elementwise scalar divide, assigns to self without invoking copy ctor
+            /// @param scalar
+            /// @returns reference to self
+            HardwareAcceleratedMatrix& operator/=(float scalar);
+
+        protected:
+            /// @brief default ctor
+            HardwareAcceleratedMatrix() = default;
 
         private:
             void init();

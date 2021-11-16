@@ -1,4 +1,4 @@
-# CRISP: Real-Time Interactive Signal Processing Library (v0.8.3)
+# CRISP: Real-Time Interactive Signal Processing Library (v0.9.1)
 
 ## What is `crisp`?
 `crisp` is a library implementing most image-processing needs from scratch. This includes:
@@ -42,7 +42,8 @@ This makes debugging, filter design or just understanding/explaining your own al
 + for best performance, `crisp::Texture` lives in VRAM and is operated upon by the GPU
 + GPU-side computation makes large-scale real-time processing possible on mid-end machines
 + Example: `crisp::HardwareAcceleratedMatrix` <br>
-  <br>![](https://github.com/Clemapfel/crisp/blob/video/include/gpu_side/.shaders/matrix_operation/.benchmarks/to_1000.png)
+  <br>
+  ![](https://github.com/Clemapfel/crisp/blob/video/include/gpu_side/.shaders/matrix_operation/.benchmarks/to_1000.png)
 
 `crisp` is **flexible**
 + `crisp::Image` lives in RAM

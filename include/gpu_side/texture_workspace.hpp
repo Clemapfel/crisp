@@ -10,7 +10,7 @@
 
 namespace crisp
 {
-    /// @brief creates two textures attached to frame buffers to cycle in between for rendering to a texture and using it for the same shader
+    /// @brief allocates two textures and a framebuffer to allow for best-performance texture modification via shaders
     class Workspace
     {
         public:
@@ -58,8 +58,6 @@ namespace crisp
             GLNativeHandle _framebuffer;
             size_t _n_displays = 0;
             Vector2ui _size;
-
-            std::set<GLNativeHandle> _textures_to_keep;
     };
 }
 
