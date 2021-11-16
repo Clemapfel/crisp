@@ -113,7 +113,7 @@ git submodule add https://github.com/Clemapfel/crisp.git
 Add the corresponding include path to your cmake script and link against `crisp` like so:
 
 ```cmake
-include_directories(/path/to/.../crisp/include/)
+include_directories("/path/to/.../crisp/include/")
 add_executable(MY_EXECUTABLE path/to/my/main.cpp)
 target_link_libraries(MY_EXECUTABLE crisp)
 ```
