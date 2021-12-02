@@ -59,6 +59,11 @@ namespace crisp
         return out;
     }
 
+    const short* AudioFile::get_data()
+    {
+        return _buffer.getSamples();
+    }
+
     GLNativeHandle AudioFile::as_1d_texture() const
     {
 

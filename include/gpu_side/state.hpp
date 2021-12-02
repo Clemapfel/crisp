@@ -28,7 +28,7 @@ namespace crisp
 
     /// @brief handler that manages resource allocation and interaction between cpu-side and gpu-side resources
     /// @note do not interact with this class unless you know what you are doing, intended for internal use only
-    class State
+    union State
     {
         friend class Shader;
         friend class Workspace;
@@ -356,7 +356,7 @@ namespace crisp
             /// @param n_samples: number of elements in data
             /// @param data: pointer to data, 16-bit int
             /// @returns native handle of GL_TEXTURE_1D_ARRAY
-            static GLNativeHandle register_1d_signal(size_t n_samples, int16_t* data);
+            static GLNativeHandle register_1d_signal(size_t n_samples, const float* data);
 
             /// @brief free 1d signal
             /// @param handle

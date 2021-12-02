@@ -21,6 +21,9 @@ namespace crisp
         if (_noop_fragment_shader == NONE or _noop_vertex_shader == NONE or _noop_program == 1)
             initialize_noop_shaders();
 
+        if (not _vertices_initialized)
+            initialize_vertices();
+
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -152,6 +155,7 @@ namespace crisp
             #version 330 core
 
             in vec2 _tex_coord;
+            out vec4 _out;
 
             uniform sampler2D _texture;
 
@@ -159,7 +163,7 @@ namespace crisp
 
             void main()
             {
-                gl_FragColor = texture2D(_texture, _tex_coord);
+                _out = texture2D(_texture, _tex_coord);
             }
         )";
 
@@ -1455,29 +1459,28 @@ namespace crisp
         return Vector2ui{_texture_info.at(texture_handle).width, _texture_info.at(texture_handle).height};
     }
 
-    GLNativeHandle State::register_1d_signal(size_t n_samples, int16_t* data)
+    GLNativeHandle State::register_1d_signal(size_t n_samples, const float* data)
     {
-        static const size_t width = 512;
-        size_t n_layers = 1;
-
         initialize_vertices();
 
         GLNativeHandle signal_id;
         glGenTextures(1, &signal_id);
         glBindTexture(GL_TEXTURE_1D, signal_id);
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexImage1D(GL_TEXTURE_1D,
                      0,
-                     GL_R16I,
-                     n_samples,
+                     GL_R32F,
+                     512,
                      0,
-                     GL_R,
-                     GL_SHORT,
+                     GL_RED,
+                     GL_FLOAT,
                      data);
 
-        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         _1d_texture_arrays.insert(signal_id);
         return signal_id;
@@ -1509,6 +1512,7 @@ namespace crisp
         }
 
         verify_program_id(program_id);
+
         if (_1d_texture_arrays.find(signal_id) == _1d_texture_arrays.end())
         {
             std::stringstream s;

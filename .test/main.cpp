@@ -23,11 +23,54 @@
 #include <histogram.hpp>
 
 #include <audio/audio_file.hpp>
+#include <system/sprite.hpp>
 
 using namespace crisp;
 
 int main()
 {
+    auto window = RenderWindow();
+    window.create(500, 500);
+    window.set_active();
+
+    auto image = load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
+    auto texture = Texture<float, 3>(image);
+
+    auto audio = AudioFile();
+    audio.load("/home/clem/Workspace/crisp/.test/killdeer.wav");
+
+    float max = std::numeric_limits<short>::min();
+    float min = std::numeric_limits<short>::max();
+
+    std::vector<float> data;
+    for (size_t i = 0; i < audio.get_n_samples(); ++i)
+    {
+        data.push_back(audio.get_data()[i]);
+        min = std::min(min, data.back());
+        max = std::max(max, data.back());
+    }
+
+    for (auto& s : data)
+        s = (s - min) / (max - min);
+
+    auto signal = State::register_1d_signal(audio.get_n_samples(), &data[0]);
+    auto shader = State::register_shader("visualize_1d.glsl");
+    auto program = State::register_program(shader);
+    State::bind_shader_program(program);
+
+    //State::bind_texture(State::get_active_program_handle(), "_texture", texture);
+    State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
+    State::display();
+
+    while (window.is_open())
+    {
+        window.update();
+
+        window.display();
+        std::this_thread::sleep_for(std::chrono::milliseconds(16));
+    }
+}
+    /*
     auto window = RenderWindow();
     window.create(300, 300);
     window.set_active();
@@ -55,23 +98,29 @@ int main()
     std::cout << "Min: " << min << " | " << "Max: " << max << std::endl;
     std::cout << "Unique: " << unique.size() << std::endl;
 
-    /*
+
     auto shader = State::register_shader("visualize_1d.glsl");
     auto program = State::register_program(shader);
     State::bind_shader_program(program);
-*/
     auto image = load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
     auto texture = Texture<float, 3>(image);
+
+    auto sprite = Sprite();
+    sprite.create_from(image);
 
     State::bind_texture(State::get_active_program_handle(), "_texture", texture);
 
     //auto as_1d_tex = State::register_1d_signal(audio.get_n_samples(), &audio.get_samples()[0]);
     //State::bind_1d_signal(program, "_texture_1d", as_1d_tex, 0);
     State::display();
+    return 0;
 
     while (window.is_open())
     {
         auto time = window.update();
+        window.clear();
+        window.draw(sprite);
+        window.display();
 
         if (InputHandler::was_key_pressed(SPACE))
         {}

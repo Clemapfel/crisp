@@ -36,6 +36,7 @@ namespace crisp
             GLNativeHandle as_1d_texture() const;
 
             [[nodiscard]] std::vector<int16_t> get_samples() const;
+            const short* get_data();
 
         private:
             sf::SoundBuffer _buffer;
