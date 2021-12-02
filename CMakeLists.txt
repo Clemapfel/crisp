@@ -137,7 +137,8 @@ add_library(crisp STATIC
         include/gpu_side/whole_texture_transform.hpp
         .src/whole_texture_transform.inl
 
-        include/audio/audio_file.hpp .src/audio_file.cpp)
+        include/audio/audio_file.hpp
+        .src/audio_file.inl)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp

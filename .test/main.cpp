@@ -20,6 +20,7 @@
 
 #include <gpu_side/hardware_accelerated_matrix.hpp>
 #include <sol.hpp>
+#include <histogram.hpp>
 
 #include <audio/audio_file.hpp>
 
@@ -33,22 +34,52 @@ int main()
 
     auto audio = AudioFile();
     audio.load("/home/clem/Workspace/crisp/.test/killdeer.wav");
-    auto sound = audio.as_sound();
+
+    std::cout << "n samples: " << audio.get_n_samples() << std::endl;
+    auto samples = audio.get_samples();
+
+    std::cout << "n channels: " << audio.get_n_channels() << std::endl;
+    std::cout << "max texture dim: " << GL_MAX_TEXTURE_SIZE << " | max array depth: " << GL_MAX_ARRAY_TEXTURE_LAYERS << std::endl;
+
+    int16_t min = std::numeric_limits<int16_t>::max();
+    int16_t max = std::numeric_limits<int16_t>::min();
+    auto unique = std::set<float>();
+
+    for (auto& s : samples)
+    {
+        min = std::min(min, s);
+        max = std::max(max, s);
+        unique.insert(s);
+    }
+
+    std::cout << "Min: " << min << " | " << "Max: " << max << std::endl;
+    std::cout << "Unique: " << unique.size() << std::endl;
+
+    /*
+    auto shader = State::register_shader("visualize_1d.glsl");
+    auto program = State::register_program(shader);
+    State::bind_shader_program(program);
+*/
+    auto image = load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
+    auto texture = Texture<float, 3>(image);
+
+    State::bind_texture(State::get_active_program_handle(), "_texture", texture);
+
+    //auto as_1d_tex = State::register_1d_signal(audio.get_n_samples(), &audio.get_samples()[0]);
+    //State::bind_1d_signal(program, "_texture_1d", as_1d_tex, 0);
+    State::display();
 
     while (window.is_open())
     {
         auto time = window.update();
 
         if (InputHandler::was_key_pressed(SPACE))
-        {
-            sound.play();
-        }
+        {}
 
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
 
     return 0;
-
 }
 
 /*
