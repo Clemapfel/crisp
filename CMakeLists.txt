@@ -135,13 +135,16 @@ add_library(crisp STATIC
         include/video/video_stream.hpp
 
         include/gpu_side/whole_texture_transform.hpp
-        .src/whole_texture_transform.inl)
+        .src/whole_texture_transform.inl
+
+        include/audio/audio_file.hpp .src/audio_file.cpp)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp
         sfml-graphics
         sfml-window
         sfml-system
+        sfml-audio
         fftw3
         fftw3l
         fftw3f
@@ -152,5 +155,8 @@ target_link_libraries(crisp
 include_directories("./include")
 include_directories("./")
 include_directories("/usr/include/opencv4")
+
+add_executable(AUDIO .test/main.cpp)
+target_link_libraries(AUDIO crisp)
 
 

@@ -21,6 +21,8 @@
 #include <gpu_side/hardware_accelerated_matrix.hpp>
 #include <sol.hpp>
 
+#include <audio/audio_file.hpp>
+
 using namespace crisp;
 
 int main()
@@ -29,60 +31,17 @@ int main()
     window.create(300, 300);
     window.set_active();
 
-    Eigen::MatrixXf left, right, control_out;
-
-    size_t rows = 1000;
-    size_t cols = 1000;
-
-    left.resize(rows, cols);
-    left.setRandom();
-
-    right.resize(rows, cols);
-    right.setRandom();
-
-    control_out = left;
-    auto gpu_matrix = HardwareAcceleratedMatrix(control_out);
-    auto gpu_left = HardwareAcceleratedMatrix(left);
-
-    size_t run = 0;
-    auto cpu_side = Benchmark([&](){
-        control_out.transposeInPlace();
-    });
-
-    std::cout << "CPU: " << cpu_side.execute(3) << std::endl;
-
-    run = 0;
-    auto gpu_side = Benchmark([&](){
-        gpu_matrix.transpose_in_place();
-    });
-
-    std::cout << "GPU: " << gpu_side.execute(3) << std::endl;
-
-    control_out.transposeInPlace();
-    auto temp = gpu_matrix.transpose();
-    gpu_matrix = temp;
-
-    auto data = gpu_matrix.get_data();
-    float error = 0;
-    size_t n = 0;
-    for (size_t i = 0; i < data.size(); ++i)
-    {
-        error += abs(data[i] - control_out.data()[i]);;
-        n++;
-    }
-
-    std::cout << "Mean Error: " << error / n << std::endl;
-    return 0;
+    auto audio = AudioFile();
+    audio.load("/home/clem/Workspace/crisp/.test/killdeer.wav");
+    auto sound = audio.as_sound();
 
     while (window.is_open())
     {
         auto time = window.update();
 
-        if (InputHandler::was_key_pressed(RIGHT))
+        if (InputHandler::was_key_pressed(SPACE))
         {
-        }
-        else if (InputHandler::was_key_pressed(LEFT))
-        {
+            sound.play();
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
