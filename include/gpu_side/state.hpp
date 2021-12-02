@@ -28,7 +28,7 @@ namespace crisp
 
     /// @brief handler that manages resource allocation and interaction between cpu-side and gpu-side resources
     /// @note do not interact with this class unless you know what you are doing, intended for internal use only
-    class State
+    union State
     {
         friend class Shader;
         friend class Workspace;
