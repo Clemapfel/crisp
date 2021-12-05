@@ -85,7 +85,7 @@ int main()
         }
         else if (InputHandler::was_key_pressed(KeyID::UP))
         {
-            size += 100;
+            size += (size > 100 ? 100 : 5);
 
             std::cout << "size: " << size << std::endl;
             State::free_1d_signal(signal);
@@ -96,7 +96,7 @@ int main()
         }
         else if (InputHandler::was_key_pressed(KeyID::DOWN))
         {
-            size -= 100;
+            size -= (size > 100 ? 100 : 5);
             size = std::max(0, size);
 
             std::cout << "size: " << size << std::endl;
