@@ -1467,6 +1467,15 @@ namespace crisp
         glGenTextures(1, &signal_id);
         glBindTexture(GL_TEXTURE_1D, signal_id);
 
+        /*
+        if (n_samples > GL_MAX_TEXTURE_SIZE)
+        {
+            std::cerr << "[WARNING] Trying to register a 1d texture with a number of samples greater than supported by the implementation." << std::endl;
+            std::cerr << "[LOG] Resizing signal section to " << GL_MAX_TEXTURE_SIZE << std::endl;
+            n_samples = GL_MAX_TEXTURE_SIZE-1;
+        }
+         */
+
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexImage1D(GL_TEXTURE_1D,
                      0,
@@ -1479,8 +1488,9 @@ namespace crisp
 
         glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
         glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glGenerateMipmap(GL_TEXTURE_1D);
 
         _1d_texture_arrays.insert(signal_id);
         return signal_id;

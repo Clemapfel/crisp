@@ -90,9 +90,9 @@ int main()
             State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
             State::display();
         }
-        else if (InputHandler::is_key_down(KeyID::UP))
+        else if (InputHandler::was_key_pressed(KeyID::UP))
         {
-            size += 10;
+            size += 100;
 
             std::cout << "size: " << size << std::endl;
             State::free_1d_signal(signal);
@@ -100,10 +100,9 @@ int main()
             State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
             State::display();
         }
-
-        else if (InputHandler::is_key_down(KeyID::DOWN))
+        else if (InputHandler::was_key_pressed(KeyID::DOWN))
         {
-            size -= 10;
+            size -= 100;
             size = std::max(0, size);
 
             std::cout << "size: " << size << std::endl;
@@ -112,26 +111,7 @@ int main()
             State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
             State::display();
         }
-        else if (InputHandler::is_key_down(KeyID::N))
-        {
-            size *= 2;
 
-            std::cout << "size: " << size << std::endl;
-            State::free_1d_signal(signal);
-            signal = State::register_1d_signal(size, offset, &data[0]);
-            State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
-            State::display();
-        }
-        else if (InputHandler::is_key_down(KeyID::M))
-        {
-            size /= 2;
-
-            std::cout << "size: " << size << std::endl;
-            State::free_1d_signal(signal);
-            signal = State::register_1d_signal(size, offset, &data[0]);
-            State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
-            State::display();
-        }
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
 }
