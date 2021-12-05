@@ -43,15 +43,17 @@ int main()
 
     auto data = audio.get_samples();
 
-    int offset = 0;
-    int size = width;
+    int offset = 15000;
+    int size = 100;
     auto signal = State::register_1d_signal(size, offset, &data[0]);
     auto shader = State::register_shader("audio/as_curve.glsl");
     auto program = State::register_program(shader);
+    State::free_shader(shader);
     State::bind_shader_program(program);
 
     State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
     State::set_int(State::get_active_program_handle(), "_n_samples", size);
+    State::set_vec<2>(State::get_active_program_handle(), "_resolution", window.get_resolution().cast_to<float>());
     State::display();
 
     while (window.is_open())
@@ -97,13 +99,25 @@ int main()
         else if (InputHandler::was_key_pressed(KeyID::DOWN))
         {
             size -= (size > 100 ? 100 : 5);
-            size = std::max(0, size);
 
             std::cout << "size: " << size << std::endl;
             State::free_1d_signal(signal);
             signal = State::register_1d_signal(size, offset, &data[0]);
             State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
             State::set_int(State::get_active_program_handle(), "_n_samples", size);
+            State::display();
+        }
+        else if (InputHandler::was_key_pressed(KeyID::SPACE))
+        {
+            shader = State::register_shader("audio/as_curve.glsl");
+            program = State::register_program(shader);
+            State::free_shader(shader);
+            State::bind_shader_program(program);
+
+            signal = State::register_1d_signal(size, offset, &data[0]);
+            State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
+            State::set_int(State::get_active_program_handle(), "_n_samples", size);
+            State::set_vec<2>(State::get_active_program_handle(), "_resolution", window.get_resolution().cast_to<float>());
             State::display();
         }
 

@@ -7,6 +7,7 @@ out vec4 _out;
 
 uniform sampler1D _texture_1d;
 uniform int _n_samples;
+uniform vec2 _resolution;
 
 void main()
 {
@@ -24,6 +25,6 @@ void main()
     float value = (slope * x + intercept);
     value = (value) * 0.5;
 
-    float y_dist = _tex_coord.y - 0.5;
-    _out = vec4(float((y_dist > 0 && y_dist < value) || (y_dist < 0 && y_dist > value)));
+    //float y_dist = abs(_tex_coord.y - 0.5 - value);
+    _out = vec4(float(abs(_tex_coord.y - value - 0.5) < max(1.f / _resolution.y, clamp(abs(y2 - y1), min(y1, y2), max(y1, y2)))));
 }
