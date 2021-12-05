@@ -33,10 +33,8 @@ namespace crisp
 
             sf::Sound as_sound() const;
 
-            GLNativeHandle as_1d_texture() const;
-
-            [[nodiscard]] std::vector<int16_t> get_samples() const;
-            const short* get_data();
+            /// @returns vector of float with values in range [-1, 1]
+            [[nodiscard]] std::vector<float> get_samples() const;
 
         private:
             sf::SoundBuffer _buffer;

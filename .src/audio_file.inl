@@ -9,7 +9,7 @@
 namespace crisp
 {
     AudioFile::AudioFile()
-        : _buffer()
+            : _buffer()
     {}
 
     void AudioFile::load(std::string path)
@@ -47,26 +47,25 @@ namespace crisp
         return sf::Sound(_buffer);
     }
 
-    std::vector<int16_t> AudioFile::get_samples() const
+    std::vector<float> AudioFile::get_samples() const
     {
-        std::vector<int16_t> out;
+        std::vector<float> data;
         size_t n = _buffer.getSampleCount();
-        out.reserve(n);
+        data.reserve(n);
+
+        float max = std::numeric_limits<short>::min();
+        float min = std::numeric_limits<short>::max();
 
         for (size_t i = 0; i < n; ++i)
-            out.push_back(_buffer.getSamples()[i]);
+        {
+            data.push_back(_buffer.getSamples()[i]);
+            min = std::min(min, data.back());
+            max = std::max(max, data.back());
+        }
 
-        return out;
-    }
+        for (auto& s : data)
+            s = ((s - min) / (max - min)) * 2 - 1;  // project into [-1, 1]
 
-    const short* AudioFile::get_data()
-    {
-        return _buffer.getSamples();
-    }
-
-    GLNativeHandle AudioFile::as_1d_texture() const
-    {
-
+        return data;
     }
 }
-

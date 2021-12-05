@@ -29,8 +29,10 @@ using namespace crisp;
 
 int main()
 {
+    constexpr size_t width = 1500;
+
     auto window = RenderWindow();
-    window.create(500, 500);
+    window.create(width, 500);
     window.set_active();
 
     auto image = load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
@@ -39,28 +41,17 @@ int main()
     auto audio = AudioFile();
     audio.load("/home/clem/Workspace/crisp/.test/killdeer.wav");
 
-    float max = std::numeric_limits<short>::min();
-    float min = std::numeric_limits<short>::max();
-
-    std::vector<float> data;
-    for (size_t i = 0; i < audio.get_n_samples(); ++i)
-    {
-        data.push_back(audio.get_data()[i]);
-        min = std::min(min, data.back());
-        max = std::max(max, data.back());
-    }
-
-    for (auto& s : data)
-        s = ((s - min) / (max - min)) * 2 - 1;  // project into [-1, 1]
+    auto data = audio.get_samples();
 
     int offset = 0;
-    int size = 500;
+    int size = width;
     auto signal = State::register_1d_signal(size, offset, &data[0]);
-    auto shader = State::register_shader("visualize_1d.glsl");
+    auto shader = State::register_shader("audio/as_curve.glsl");
     auto program = State::register_program(shader);
     State::bind_shader_program(program);
 
     State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
+    State::set_int(State::get_active_program_handle(), "_n_samples", size);
     State::display();
 
     while (window.is_open())
@@ -77,6 +68,7 @@ int main()
             State::free_1d_signal(signal);
             signal = State::register_1d_signal(size, offset, &data[0]);
             State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
+            State::set_int(State::get_active_program_handle(), "_n_samples", size);
             State::display();
         }
         else if (InputHandler::is_key_down(KeyID::LEFT))
@@ -88,6 +80,7 @@ int main()
             State::free_1d_signal(signal);
             signal = State::register_1d_signal(size, offset, &data[0]);
             State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
+            State::set_int(State::get_active_program_handle(), "_n_samples", size);
             State::display();
         }
         else if (InputHandler::was_key_pressed(KeyID::UP))
@@ -98,6 +91,7 @@ int main()
             State::free_1d_signal(signal);
             signal = State::register_1d_signal(size, offset, &data[0]);
             State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
+            State::set_int(State::get_active_program_handle(), "_n_samples", size);
             State::display();
         }
         else if (InputHandler::was_key_pressed(KeyID::DOWN))
@@ -109,6 +103,7 @@ int main()
             State::free_1d_signal(signal);
             signal = State::register_1d_signal(size, offset, &data[0]);
             State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
+            State::set_int(State::get_active_program_handle(), "_n_samples", size);
             State::display();
         }
 
