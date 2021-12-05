@@ -9,5 +9,7 @@ uniform sampler1D _texture_1d;
 
 void main()
 {
-    _out = vec4(texture(_texture_1d, _tex_coord.x).xxx, 1.0); //(texture(_texture_1d, _tex_coord.x).xxxx + 25600) / (24832 + 25600);
+    float value = texture(_texture_1d, _tex_coord.x).x;
+    value = smoothstep(0, 1, value);
+    _out = vec4(vec3(value), 1.0); //(texture(_texture_1d, _tex_coord.x).xxxx + 25600) / (24832 + 25600);
 }

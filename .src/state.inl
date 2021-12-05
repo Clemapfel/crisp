@@ -1459,7 +1459,7 @@ namespace crisp
         return Vector2ui{_texture_info.at(texture_handle).width, _texture_info.at(texture_handle).height};
     }
 
-    GLNativeHandle State::register_1d_signal(size_t n_samples, const float* data)
+    GLNativeHandle State::register_1d_signal(size_t n_samples, size_t first_sample, const float* data)
     {
         initialize_vertices();
 
@@ -1471,11 +1471,11 @@ namespace crisp
         glTexImage1D(GL_TEXTURE_1D,
                      0,
                      GL_R32F,
-                     512,
+                     n_samples,
                      0,
                      GL_RED,
                      GL_FLOAT,
-                     data);
+                     data + first_sample);
 
         glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
         glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);

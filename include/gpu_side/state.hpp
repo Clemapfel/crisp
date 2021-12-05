@@ -356,7 +356,7 @@ namespace crisp
             /// @param n_samples: number of elements in data
             /// @param data: pointer to data, 16-bit int
             /// @returns native handle of GL_TEXTURE_1D_ARRAY
-            static GLNativeHandle register_1d_signal(size_t n_samples, const float* data);
+            static GLNativeHandle register_1d_signal(size_t n_samples, size_t first_sample, const float* data);
 
             /// @brief free 1d signal
             /// @param handle
