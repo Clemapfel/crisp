@@ -48,6 +48,33 @@ namespace crisp
     }
 
     template<FourierTransformMode Mode>
+    std::vector<float> FourierTransform1D<Mode>::as_signal() const
+    {
+        std::vector<float> out;
+        out.reserve(_spectrum.size());
+
+        for (size_t i = 0; i < _spectrum.size(); ++i)
+        {
+            float value = log(1 + _spectrum.at(i));
+
+            if (_min_spectrum < 0)
+            {
+                value += _min_spectrum;
+                value /= _max_spectrum;
+            }
+            else
+            {
+                value -= _min_spectrum;
+                value /= (_max_spectrum + _min_spectrum);
+            }
+
+            out.push_back(value);
+        }
+
+        return out;
+    }
+
+    template<FourierTransformMode Mode>
     std::vector<typename FourierTransform1D<Mode>::Value_t>& FourierTransform1D<Mode>::get_spectrum()
     {
         return _spectrum;
@@ -63,14 +90,21 @@ namespace crisp
     template<typename T>
     void FourierTransform1D<Mode>::transform_from(const std::vector<T>& data)
     {
-        _size = data.size() * 2;
+        transform_from(&data[0], data.size());
+    }
+
+    template<FourierTransformMode Mode>
+    template<typename T>
+    void FourierTransform1D<Mode>::transform_from(const T* begin, size_t n)
+    {
+        _size = n * 2;
 
         auto* values = fftwf_alloc_complex(_size);
         auto plan = fftwf_plan_dft_1d(_size, values, values, FFTW_FORWARD, FFTW_ESTIMATE);
 
         for (size_t i = 0; i < _size; ++i)
         {
-            values[i][0] = i < data.size() ? static_cast<Value_t>(data[i]) : 0; // 0-padding
+            values[i][0] = i < n ? static_cast<Value_t>(*(begin + i)) : 0; // 0-padding
             values[i][1] = 0;
         }
 

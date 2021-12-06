@@ -31,23 +31,11 @@ using namespace crisp;
 
 int main()
 {
-
-    std::vector<float> in = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-
-    auto fourier = FourierTransform1D<SPEED>();
-    fourier.transform_from(in);
-    auto re = fourier.transform_to();
-
-    for (auto& s : re)
-        std::cout << s << std::endl;
-
-
-    return 0;
-
     constexpr size_t width = 1500;
+    constexpr size_t height = 1000;
 
     auto window = RenderWindow();
-    window.create(width, 500);
+    window.create(width, height);
     window.set_active();
 
     auto image = load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
@@ -59,17 +47,25 @@ int main()
     auto data = audio.get_samples();
 
     int offset = 15000;
-    int size = 100;
-    auto signal = State::register_1d_signal(size, offset, &data[0]);
-    auto shader = State::register_shader("audio/as_curve.glsl");
+    int size = height;
+    auto shader = State::register_shader("audio/visualize_fourier.glsl");
     auto program = State::register_program(shader);
     State::free_shader(shader);
     State::bind_shader_program(program);
 
-    State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
-    State::set_int(State::get_active_program_handle(), "_n_samples", size);
-    State::set_vec<2>(State::get_active_program_handle(), "_resolution", window.get_resolution().cast_to<float>());
-    State::display();
+    auto fourier = FourierTransform1D<SPEED>();
+    auto update_signal = [&](){
+
+        fourier.transform_from(&data[offset], size);
+        auto as_signal = fourier.as_signal();
+        auto signal = State::register_1d_signal(as_signal.size(), 0, static_cast<float*>(&as_signal[0]));
+        State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
+        State::set_int(State::get_active_program_handle(), "_n_samples", size);
+        State::set_vec<2>(State::get_active_program_handle(), "_resolution", window.get_resolution().cast_to<float>());
+        State::display();
+    };
+
+    update_signal();
 
     while (window.is_open())
     {
@@ -78,62 +74,26 @@ int main()
 
         if (InputHandler::is_key_down(KeyID::RIGHT))
         {
-            offset += size / 10;
+            offset += 10;
             offset = std::min<int>(data.size(), offset);
 
-            std::cout << "offset: " << offset << std::endl;
-            State::free_1d_signal(signal);
-            signal = State::register_1d_signal(size, offset, &data[0]);
-            State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
-            State::set_int(State::get_active_program_handle(), "_n_samples", size);
-            State::display();
+            update_signal();
         }
         else if (InputHandler::is_key_down(KeyID::LEFT))
         {
-            offset -= size / 10;
+            offset -= 10;
             offset = std::max(0, offset);
 
-            std::cout << "offset: " << offset << std::endl;
-            State::free_1d_signal(signal);
-            signal = State::register_1d_signal(size, offset, &data[0]);
-            State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
-            State::set_int(State::get_active_program_handle(), "_n_samples", size);
-            State::display();
-        }
-        else if (InputHandler::was_key_pressed(KeyID::UP))
-        {
-            size += (size > 100 ? 100 : 5);
-
-            std::cout << "size: " << size << std::endl;
-            State::free_1d_signal(signal);
-            signal = State::register_1d_signal(size, offset, &data[0]);
-            State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
-            State::set_int(State::get_active_program_handle(), "_n_samples", size);
-            State::display();
-        }
-        else if (InputHandler::was_key_pressed(KeyID::DOWN))
-        {
-            size -= (size > 100 ? 100 : 5);
-
-            std::cout << "size: " << size << std::endl;
-            State::free_1d_signal(signal);
-            signal = State::register_1d_signal(size, offset, &data[0]);
-            State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
-            State::set_int(State::get_active_program_handle(), "_n_samples", size);
-            State::display();
+            update_signal();
         }
         else if (InputHandler::was_key_pressed(KeyID::SPACE))
         {
-            shader = State::register_shader("audio/as_curve.glsl");
+            shader = State::register_shader("audio/visualize_fourier.glsl");
             program = State::register_program(shader);
             State::free_shader(shader);
             State::bind_shader_program(program);
 
-            signal = State::register_1d_signal(size, offset, &data[0]);
-            State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
-            State::set_int(State::get_active_program_handle(), "_n_samples", size);
-            State::set_vec<2>(State::get_active_program_handle(), "_resolution", window.get_resolution().cast_to<float>());
-            State::display();
+            update_signal();
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
