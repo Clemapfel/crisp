@@ -48,31 +48,27 @@ int main()
     auto shader = State::register_shader("audio/visualize_fourier.glsl");
     auto program = State::register_program(shader);
     State::free_shader(shader);
+    State::bind_shader_program(program);
 
     auto fourier = FourierTransform1D<SPEED>();
     auto update_signal = [&]()
     {
         constexpr size_t n_samples = 500;
 
-        std::vector<float> texture_data;
+        std::vector<std::vector<float>> texture_data;
 
-        AS 1D TEXTURE ARRAY
-
+        size_t first = offset;
         for (size_t i = 0; i < width; ++i)
         {
-            fourier.transform_from_complex(&data[i * n_samples], n_samples);
+            fourier.transform_from_complex(&data[first], height);
             auto as_signal = fourier.as_signal();
+            texture_data.push_back(as_signal);
 
-            for (size_t j = 0; j < n_samples; ++j)
-                texture_data.push_back(fourier.get_spectrum()[j]);
+            first += n_samples * 0.5;
         }
 
-        std::cout << texture_data.size() << std::endl;
-        std::cout << width * n_samples << std::endl;
-        assert(width * n_samples == texture_data.size());
-
-        auto texture = State::register_texture<float, 1>(width, n_samples, &texture_data[0]);
-        State::bind_texture(NONE, "_texture", texture);
+        auto array = State::register_signal_array(n_samples * 2, width, texture_data);
+        State::bind_signal_array(State::get_active_program_handle(), "_signal_array", array);
         State::display();
 
         /*

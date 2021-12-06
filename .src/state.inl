@@ -1459,7 +1459,7 @@ namespace crisp
         return Vector2ui{_texture_info.at(texture_handle).width, _texture_info.at(texture_handle).height};
     }
 
-    GLNativeHandle State::register_1d_signal(size_t n_samples, size_t first_sample, const float* data)
+    GLNativeHandle State::register_signal(size_t n_samples, size_t first_sample, const float* data)
     {
         initialize_vertices();
 
@@ -1496,13 +1496,13 @@ namespace crisp
         return signal_id;
     }
 
-    GLNativeHandle State::free_1d_signal(GLNativeHandle id)
+    GLNativeHandle State::free_signal(GLNativeHandle id)
     {
         _1d_texture_arrays.erase(id);
         glDeleteTextures(1, &id);
     }
 
-    void State::bind_1d_signal(
+    void State::bind_signal(
             GLNativeHandle program_id,
             const std::string& var_name,
             GLNativeHandle signal_id,
@@ -1541,6 +1541,88 @@ namespace crisp
         glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), texture_location);
         glActiveTexture(GL_TEXTURE0 + texture_location);
         glBindTexture(GL_TEXTURE_1D, signal_id);
+    }
+
+    GLNativeHandle State::register_signal_array(
+            size_t n_samples,
+            size_t n_layers,
+            const std::vector<std::vector<float>>& data)
+    {
+        GLNativeHandle out;
+        glGenTextures(1, &out);
+        glBindTexture(GL_TEXTURE_1D_ARRAY, out);
+
+        glTexStorage2D(GL_TEXTURE_1D_ARRAY, 1, GL_R32F, n_samples, n_layers);
+        glTexSubImage2D(
+                GL_TEXTURE_1D_ARRAY,
+                0,
+                0,
+                0,
+                n_samples,
+                n_layers,
+                GL_RED,
+                GL_FLOAT,
+                &data[0][0]);
+
+        /*
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glTexImage2D(
+                GL_TEXTURE_1D_ARRAY,
+                0,
+                GL_R32F,
+                n_samples,
+                n_layers,
+                0,
+                GL_RED,
+                GL_FLOAT,
+                &data[0][0]);
+        */
+
+        glTexParameteri(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        return out;
+    }
+
+    GLNativeHandle State::free_signal_array(GLNativeHandle handle)
+    {
+        glDeleteTextures(1, &handle);
+    }
+
+    void State::bind_signal_array(
+            GLNativeHandle program_id,
+            const std::string& var_name,
+            GLNativeHandle signal_id,
+            size_t texture_location)
+    {
+        if (program_id == NONE)
+        {
+            initialize_noop_shaders();
+            program_id = _noop_program;
+        }
+
+        if (signal_id == NONE)
+        {
+            glActiveTexture(GL_TEXTURE0 + texture_location);
+            glBindTexture(GL_TEXTURE_1D, 0);
+            return;
+        }
+
+        verify_program_id(program_id);
+
+        if (_active_program != program_id)
+        {
+            std::cerr << "[WARNING] Binding signal " << signal_id << " to uniform \"" << var_name << "\" in program "
+                      << program_id << " even though the program is not currently bound." << std::endl;
+            std::cerr << "[LOG] Changed active program to program " << program_id << std::endl;
+            State::bind_shader_program(program_id);
+        }
+
+        glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), texture_location);
+        glActiveTexture(GL_TEXTURE0 + texture_location);
+        glBindTexture(GL_TEXTURE_1D_ARRAY, signal_id);
     }
 
     GLNativeHandle State::get_active_program_handle()
