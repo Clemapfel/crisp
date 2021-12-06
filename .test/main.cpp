@@ -38,16 +38,13 @@ int main()
     window.create(width, height);
     window.set_active();
 
-    auto image = load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
-    auto texture = Texture<float, 3>(image);
-
     auto audio = AudioFile();
-    audio.load("/home/clem/Workspace/crisp/.test/killdeer.wav");
+    audio.load("/home/clem/Workspace/crisp/.test/bell.wav");
 
     auto data = audio.get_samples();
 
     int offset = 15000;
-    int size = height;
+    int size = width;
     auto shader = State::register_shader("audio/visualize_fourier.glsl");
     auto program = State::register_program(shader);
     State::free_shader(shader);
@@ -56,7 +53,7 @@ int main()
     auto fourier = FourierTransform1D<SPEED>();
     auto update_signal = [&](){
 
-        fourier.transform_from(&data[offset], size);
+        fourier.transform_from_real(&data[offset], size);
         auto as_signal = fourier.as_signal();
         auto signal = State::register_1d_signal(as_signal.size(), 0, static_cast<float*>(&as_signal[0]));
         State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);

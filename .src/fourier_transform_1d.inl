@@ -88,24 +88,80 @@ namespace crisp
 
     template<FourierTransformMode Mode>
     template<typename T>
-    void FourierTransform1D<Mode>::transform_from(const std::vector<T>& data)
+    void FourierTransform1D<Mode>::transform_from_real(const std::vector<T>& data)
     {
-        transform_from(&data[0], data.size());
+        transform_from_real(&data[0], data.size());
     }
 
     template<FourierTransformMode Mode>
     template<typename T>
-    void FourierTransform1D<Mode>::transform_from(const T* begin, size_t n)
+    void FourierTransform1D<Mode>::transform_from_real(const T* begin, size_t n)
+    {
+        _size = n * 2;
+
+        auto* in = fftwf_alloc_real(_size);
+        auto* out = fftwf_alloc_complex(_size);
+
+        auto plan = fftwf_plan_dft_r2c_1d(_size, in, out, FFTW_ESTIMATE);
+
+        bool dither = true;
+        for (size_t i = 0; i < _size; ++i)
+        {
+            in[i] = (i < n ? static_cast<Value_t>(*(begin + i)) : 0); // * (dither ? 1 : -1); // 0-padding
+            dither = not dither;
+        }
+
+        fftwf_execute(plan);
+
+        _min_spectrum = std::numeric_limits<Value_t>::max();
+        _max_spectrum = std::numeric_limits<Value_t>::min();
+
+        _spectrum.clear();
+        _spectrum.reserve(_size);
+        _phase_angle.clear();
+        _phase_angle.reserve(_size);
+
+        for (size_t i = 0; i < _size; ++i)
+        {
+            auto f = std::complex<float>(out[i][0], out[i][1]);
+            auto magnitude = abs(f);
+
+            _spectrum.emplace_back(magnitude);
+            _phase_angle.emplace_back(arg(f));
+
+            auto scaled = log(1 + magnitude);
+            _min_spectrum = std::min<Value_t>(_min_spectrum, scaled);
+            _max_spectrum = std::max<Value_t>(_max_spectrum, scaled);
+        }
+
+        fftwf_destroy_plan(plan);
+        fftwf_free(in);
+        fftwf_free(out);
+    }
+
+    template<FourierTransformMode Mode>
+    template<typename T>
+    void FourierTransform1D<Mode>::transform_from_complex(const std::vector<T>& data)
+    {
+        transform_from_complex(&data[0], data.size());
+    }
+
+    template<FourierTransformMode Mode>
+    template<typename T>
+    void FourierTransform1D<Mode>::transform_from_complex(const T* begin, size_t n)
     {
         _size = n * 2;
 
         auto* values = fftwf_alloc_complex(_size);
         auto plan = fftwf_plan_dft_1d(_size, values, values, FFTW_FORWARD, FFTW_ESTIMATE);
 
+        bool dither = true;
         for (size_t i = 0; i < _size; ++i)
         {
-            values[i][0] = i < n ? static_cast<Value_t>(*(begin + i)) : 0; // 0-padding
+            values[i][0] = (i < n ? static_cast<Value_t>(*(begin + i)) : 0) * (dither ? 1 : -1); // 0-padding
             values[i][1] = 0;
+
+            dither = not dither;
         }
 
         fftwf_execute(plan);
@@ -138,6 +194,7 @@ namespace crisp
     template<FourierTransformMode Mode>
     std::vector<typename FourierTransform1D<Mode>::Value_t> FourierTransform1D<Mode>::transform_to() const
     {
+        assert(false);
         std::vector<Value_t> out;
         out.resize(_size / 2);
 
@@ -153,8 +210,9 @@ namespace crisp
 
         fftwf_execute(plan);
 
+        bool dither = true;
         for (size_t i = 0; i < out.size(); ++i)
-            out[i] = values[i][0] / _size;
+            out[i] = (values[i][0] / _size) * (dither ? 1.f : -1.f);
 
         return out;
     }

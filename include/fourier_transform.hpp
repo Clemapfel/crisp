@@ -140,13 +140,19 @@ namespace crisp
             /// @brief creates fourier transform from signal
             /// @param signal: 1d signal section to be transformed
             template<typename T>
-            void transform_from(const std::vector<T>&);
+            void transform_from_real(const std::vector<T>&);
+
+            template<typename T>
+            void transform_from_complex(const std::vector<T>&);
 
             /// @brief creates fourier transform from signal
             /// @param begin: first sample
             /// @param n: number of samples
             template<typename T>
-            void transform_from(const T* begin, size_t n);
+            void transform_from_real(const T* begin, size_t n);
+
+            template<typename T>
+            void transform_from_complex(const T* begin, size_t n);
 
             std::vector<float> as_signal() const;
 
