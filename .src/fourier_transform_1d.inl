@@ -107,7 +107,7 @@ namespace crisp
         bool dither = true;
         for (size_t i = 0; i < _size; ++i)
         {
-            in[i] = (i < n ? static_cast<Value_t>(*(begin + i)) : 0); // * (dither ? 1 : -1); // 0-padding
+            in[i] = (i < n ? static_cast<Value_t>(*(begin + i)) : 0) * (dither ? 1 : -1); // 0-padding
             dither = not dither;
         }
 
