@@ -26,5 +26,8 @@ void main()
     value = (value) * 0.5;
 
     float y_dist = _tex_coord.y - 0.5;
-    _out = vec4(float((value > 0 && y_dist > 0 && y_dist < value) || (value < 0 && y_dist < 0 && y_dist > value)));
+    float y = texture(_texture_1d, _tex_coord.x).x;
+    _out = vec4(float(abs(y_dist - value) < abs(y - y1)));
+
+    //_out = vec4(float((value > 0 && y_dist > 0 && y_dist < value) || (value < 0 && y_dist < 0 && y_dist > value)));
 }

@@ -89,7 +89,7 @@ add_library(crisp STATIC
         .src/frequency_domain_filter_gpu.inl
 
         include/fourier_transform.hpp
-        .src/fourier_transform.inl
+        .src/fourier_transform_2d.inl
 
         include/histogram.hpp
         .src/histogram.inl

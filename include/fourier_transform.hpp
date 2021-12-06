@@ -107,8 +107,12 @@ namespace crisp
             /// @returns sf::Vector where .x is the width, .y the size of the transform
             Vector2ui get_size() const;
 
-        //protected:
+            /// @brief expose spectrum
+            /// @returns reference to spectrum as vector
             std::vector<Value_t>& get_spectrum();
+
+            /// @brief expose phase angle
+            /// @returns reference to phase angle as vector
             std::vector<Value_t>& get_phase_angle();
 
         private:
@@ -120,6 +124,77 @@ namespace crisp
 
             Value_t _min_spectrum = 0, _max_spectrum = 1; // already log(1+x) scaled
     };
+
+    template<FourierTransformMode Mode>
+    using FourierTransform2D = FourierTransform<Mode>;
+
+    template<FourierTransformMode Mode>
+    class FourierTransform1D
+    {
+        using Value_t = typename std::conditional<Mode == SPEED, float, typename std::conditional<Mode == ACCURACY, long double, double>::type>::type;
+
+        public:
+            /// @brief default ctor
+            FourierTransform1D() = default;
+
+            /// @brief creates fourier transform from signal
+            /// @param signal: 1d signal section to be transformed
+            template<typename T>
+            void transform_from(const std::vector<T>&);
+
+            /// @brief transform back into signal
+            /// @returns resulting signal
+            std::vector<Value_t> transform_to() const;
+
+            /// @brief get coefficient as complex number
+            /// @param frequency: frequency component index, range [0, 2*m] where m the number of samples in the signal
+            /// @returns complex number
+            std::complex<Value_t> get_coefficient(size_t frequency) const;
+
+            /// @brief const-access component of spectrum
+            /// @param frequency: frequency component index, range [0, 2*m] where m the number of samples in the signal
+            /// @returns component magnitude
+            Value_t get_component(size_t frequency) const;
+
+            /// @brief access component of spectrum
+            /// @param frequency: frequency component index, range [0, 2*m] where m the number of samples in the signal
+            /// @returns component magnitude
+            Value_t& get_component(size_t frequency);
+
+            /// @brief const-access phase angle of spectrum
+            /// @param frequency: frequency component index, range [0, 2*m] where m the number of samples in the signal
+            /// @returns component phase angle
+            Value_t get_phase_angle(size_t frequency) const;
+
+            /// @brief const-access phase angle of spectrum
+            /// @param frequency: frequency component index, range [0, 2*m] where m the number of samples in the signal
+            /// @returns component phase angle
+            Value_t& get_phase_angle(size_t frequency);
+
+            /// @brief get DC component value
+            /// @returns component magnitude for frequency 0
+            Value_t get_dc_component() const;
+
+            /// @brief get size of spectrum
+            /// @returns size
+            size_t get_size() const;
+
+            /// @brief expose spectrum
+            /// @returns reference to spectrum as vector
+            std::vector<Value_t>& get_spectrum();
+
+            /// @brief expose phase angle
+            /// @returns reference to phase angle as vector
+            std::vector<Value_t>& get_phase_angle();
+
+        private:
+            size_t _size = 0;
+            std::vector<Value_t> _spectrum,
+                                 _phase_angle;
+
+            Value_t _min_spectrum = 0, _max_spectrum = 1;
+    };
 }
 
-#include ".src/fourier_transform.inl"
+#include ".src/fourier_transform_2d.inl"
+#include ".src/fourier_transform_1d.inl"

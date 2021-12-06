@@ -25,10 +25,25 @@
 #include <audio/audio_file.hpp>
 #include <system/sprite.hpp>
 
+#include <fourier_transform.hpp>
+
 using namespace crisp;
 
 int main()
 {
+
+    std::vector<float> in = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+    auto fourier = FourierTransform1D<SPEED>();
+    fourier.transform_from(in);
+    auto re = fourier.transform_to();
+
+    for (auto& s : re)
+        std::cout << s << std::endl;
+
+
+    return 0;
+
     constexpr size_t width = 1500;
 
     auto window = RenderWindow();
