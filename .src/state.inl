@@ -1548,6 +1548,17 @@ namespace crisp
             size_t n_layers,
             const std::vector<std::vector<float>>& data)
     {
+        for (auto& vec : data)
+            assert(vec.size() == n_samples);
+
+        assert(data.size() == n_layers);
+
+        std::vector<float> raw;
+
+        for (size_t i = 0; i < data.front().size(); ++i)
+            for (auto& vec : data)
+                raw.push_back(vec.at(i));
+
         GLNativeHandle out;
         glGenTextures(1, &out);
         glBindTexture(GL_TEXTURE_1D_ARRAY, out);
@@ -1562,7 +1573,7 @@ namespace crisp
                 n_layers,
                 GL_RED,
                 GL_FLOAT,
-                &data[0][0]);
+                &raw[0]);
 
         /*
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);

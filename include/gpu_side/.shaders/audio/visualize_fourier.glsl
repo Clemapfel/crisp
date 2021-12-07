@@ -6,9 +6,11 @@ in vec2 _tex_coord;
 out vec4 _out;
 
 uniform sampler1DArray _signal_array;
+uniform int _n_signals;
 
 void main()
 {
-    float value = texture(_signal_array, vec2(_tex_coord.y, 0)).x;
+    vec2 pos = _tex_coord;
+    float value = texture(_signal_array, vec2(pos.x, pos.y * _n_signals)).x;
     _out = vec4(vec3(value), 1);
 }

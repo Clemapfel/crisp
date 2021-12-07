@@ -56,17 +56,8 @@ namespace crisp
         for (size_t i = 0; i < _spectrum.size(); ++i)
         {
             float value = log(1 + _spectrum.at(i));
-
-            if (_min_spectrum < 0)
-            {
-                value += _min_spectrum;
-                value /= _max_spectrum;
-            }
-            else
-            {
-                value -= _min_spectrum;
-                value /= (_max_spectrum + _min_spectrum);
-            }
+            value -= _min_spectrum;
+            value /= (_max_spectrum - _min_spectrum);
 
             out.push_back(value);
         }
@@ -99,19 +90,19 @@ namespace crisp
     {
         _size = n * 2;
 
-        auto* in = fftwf_alloc_real(_size);
-        auto* out = fftwf_alloc_complex(_size);
+        auto* in = fftw_alloc_real(_size);
+        auto* out = fftw_alloc_complex(_size);
 
-        auto plan = fftwf_plan_dft_r2c_1d(_size, in, out, FFTW_ESTIMATE);
+        auto plan = fftw_plan_dft_r2c_1d(_size, in, out, FFTW_ESTIMATE);
 
         bool dither = true;
         for (size_t i = 0; i < _size; ++i)
         {
-            in[i] = (i < n ? static_cast<Value_t>(*(begin + i)) : 0) * (dither ? 1 : -1); // 0-padding
+            in[i] = (i < n ? static_cast<double>(*(begin + i)) : 0);// * (dither ? 1 : -1); // 0-padding
             dither = not dither;
         }
 
-        fftwf_execute(plan);
+        fftw_execute(plan);
 
         _min_spectrum = std::numeric_limits<Value_t>::max();
         _max_spectrum = std::numeric_limits<Value_t>::min();
@@ -134,9 +125,9 @@ namespace crisp
             _max_spectrum = std::max<Value_t>(_max_spectrum, scaled);
         }
 
-        fftwf_destroy_plan(plan);
-        fftwf_free(in);
-        fftwf_free(out);
+        fftw_destroy_plan(plan);
+        fftw_free(in);
+        fftw_free(out);
     }
 
     template<FourierTransformMode Mode>
@@ -152,19 +143,19 @@ namespace crisp
     {
         _size = n * 2;
 
-        auto* values = fftwf_alloc_complex(_size);
-        auto plan = fftwf_plan_dft_1d(_size, values, values, FFTW_FORWARD, FFTW_ESTIMATE);
+        auto* values = fftw_alloc_complex(_size);
+        auto plan = fftw_plan_dft_1d(_size, values, values, FFTW_FORWARD, FFTW_ESTIMATE);
 
         bool dither = true;
         for (size_t i = 0; i < _size; ++i)
         {
-            values[i][0] = (i < n ? static_cast<Value_t>(*(begin + i)) : 0) * (dither ? 1 : -1); // 0-padding
+            values[i][0] = (i < n ? static_cast<Value_t>(*(begin + i)) : 0);// * (dither ? 1 : -1); // 0-padding
             values[i][1] = 0;
 
             dither = not dither;
         }
 
-        fftwf_execute(plan);
+        fftw_execute(plan);
 
         _min_spectrum = std::numeric_limits<Value_t>::max();
         _max_spectrum = std::numeric_limits<Value_t>::min();
@@ -176,7 +167,7 @@ namespace crisp
 
         for (size_t i = 0; i < _size; ++i)
         {
-            auto f = std::complex<float>(values[i][0], values[i][1]);
+            auto f = std::complex<double>(values[i][0], values[i][1]);
             auto magnitude = abs(f);
 
             _spectrum.emplace_back(magnitude);
@@ -187,8 +178,8 @@ namespace crisp
             _max_spectrum = std::max<Value_t>(_max_spectrum, scaled);
         }
 
-        fftwf_destroy_plan(plan);
-        fftwf_free(values);
+        fftw_destroy_plan(plan);
+        fftw_free(values);
     }
 
     template<FourierTransformMode Mode>
@@ -198,17 +189,17 @@ namespace crisp
         std::vector<Value_t> out;
         out.resize(_size / 2);
 
-        auto* values = fftwf_alloc_complex(_size);
-        auto plan = fftwf_plan_dft_1d(_size, values, values, FFTW_BACKWARD, FFTW_ESTIMATE);
+        auto* values = fftw_alloc_complex(_size);
+        auto plan = fftw_plan_dft_1d(_size, values, values, FFTW_BACKWARD, FFTW_ESTIMATE);
 
         for (size_t i = 0; i < _size; ++i)
         {
-            auto f = std::polar<float>(_spectrum.at(i), _phase_angle.at(i));
+            auto f = std::polar<double>(_spectrum.at(i), _phase_angle.at(i));
             values[i][0] = f.real();
             values[i][1] = f.imag();
         }
 
-        fftwf_execute(plan);
+        fftw_execute(plan);
 
         bool dither = true;
         for (size_t i = 0; i < out.size(); ++i)

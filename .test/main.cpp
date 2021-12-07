@@ -43,73 +43,65 @@ int main()
 
     auto data = audio.get_samples();
 
-    int offset = 15000;
-    int size = width;
     auto shader = State::register_shader("audio/visualize_fourier.glsl");
     auto program = State::register_program(shader);
-    State::free_shader(shader);
     State::bind_shader_program(program);
+    State::free_shader(shader);
 
     auto fourier = FourierTransform1D<SPEED>();
-    auto update_signal = [&]()
+
+    GLNativeHandle array;
+    auto update = [&]()
     {
-        constexpr size_t n_samples = 500;
+        size_t n_windows = 2000;
+        size_t n_samples = 1000;
+        std::vector<std::vector<float>> signals;
 
-        std::vector<std::vector<float>> texture_data;
-
-        size_t first = offset;
-        for (size_t i = 0; i < width; ++i)
+        size_t first = 0;
+        for (size_t i = 0; i < n_windows and first + n_samples < audio.get_n_samples(); ++i, first += n_samples * 0.1)
         {
-            fourier.transform_from_complex(&data[first], height);
-            auto as_signal = fourier.as_signal();
-            texture_data.push_back(as_signal);
+            std::vector<float> window;
+            window.reserve(n_samples);
 
-            first += n_samples * 0.5;
+            for (size_t j = first; j < first + n_samples; ++j)
+            {
+                float weight = exp(-4 * pow(2 * ((j-first) / float(n_samples)) - 1, 2));//pow(cos(M_PI*((j-first) / float(n_samples)) - (M_PI / 2)), 2);
+                //gauss: exp(-4 * pow(2 * ((j-first) / float(n_samples)) - 1, 2));
+                //cos: cos(M_PI*((j-first) / float(n_samples)) - M_PI / 2)
+                //hanning: pow(cos((M_PI * x - (M_PI / 2)) / 1), 1)
+                window.push_back(data[j] * weight);
+            }
+
+            fourier.transform_from_complex(&window[0], window.size());
+            auto as_signal = fourier.as_signal();
+            as_signal.resize(as_signal.size() / 2);
+            signals.push_back(as_signal);
         }
 
-        auto array = State::register_signal_array(n_samples * 2, width, texture_data);
-        State::bind_signal_array(State::get_active_program_handle(), "_signal_array", array);
-        State::display();
+        std::cout << n_samples << std::endl;
+        std::cout << first << " | " << audio.get_n_samples() << std::endl;
+        std::cout << signals.size() << std::endl;
 
-        /*
-        auto as_signal = fourier.as_signal();
-        auto signal = State::register_1d_signal(width * 3, 0, static_cast<float*>(&as_signal[0]));
-        State::bind_1d_signal(State::get_active_program_handle(), "_texture_1d", signal);
-        State::set_int(State::get_active_program_handle(), "_n_samples", size);
-        State::set_vec<2>(State::get_active_program_handle(), "_resolution", window.get_resolution().cast_to<float>());
+        array = State::register_signal_array(signals.back().size(), signals.size(), signals);
+        State::bind_signal_array(State::get_active_program_handle(), "_signal_array", array);
+        State::set_int(State::get_active_program_handle(), "_n_signals", signals.size());
         State::display();
-        std::cout << "reloaded." << std::endl;*/
     };
 
-    update_signal();
+    update();
 
     while (window.is_open())
     {
         window.update();
         window.display();
 
-        if (InputHandler::is_key_down(KeyID::RIGHT))
-        {
-            offset += 10;
-            offset = std::min<int>(data.size(), offset);
-
-            update_signal();
-        }
-        else if (InputHandler::is_key_down(KeyID::LEFT))
-        {
-            offset -= 10;
-            offset = std::max(0, offset);
-
-            update_signal();
-        }
-        else if (InputHandler::was_key_pressed(KeyID::SPACE))
+        if (InputHandler::was_key_pressed(KeyID::SPACE))
         {
             shader = State::register_shader("audio/visualize_fourier.glsl");
             program = State::register_program(shader);
-            State::free_shader(shader);
             State::bind_shader_program(program);
-
-            update_signal();
+            State::free_shader(shader);
+            update();
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
