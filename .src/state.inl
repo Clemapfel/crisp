@@ -1575,20 +1575,6 @@ namespace crisp
                 GL_FLOAT,
                 &raw[0]);
 
-        /*
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glTexImage2D(
-                GL_TEXTURE_1D_ARRAY,
-                0,
-                GL_R32F,
-                n_samples,
-                n_layers,
-                0,
-                GL_RED,
-                GL_FLOAT,
-                &data[0][0]);
-        */
-
         glTexParameteri(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
         glTexParameteri(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
         glTexParameteri(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);

@@ -154,7 +154,8 @@ namespace crisp
             template<typename T>
             void transform_from_complex(const T* begin, size_t n);
 
-            std::vector<float> as_signal() const;
+            std::vector<Value_t> as_signal() const;
+            std::vector<Value_t> as_raw_signal() const;
 
             /// @brief transform back into signal
             /// @returns resulting signal

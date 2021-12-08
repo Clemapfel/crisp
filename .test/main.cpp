@@ -26,6 +26,7 @@
 #include <system/sprite.hpp>
 
 #include <fourier_transform.hpp>
+#include <audio/spectrogram.hpp>
 
 using namespace crisp;
 
@@ -41,6 +42,15 @@ int main()
     auto audio = AudioFile();
     audio.load("/home/clem/Workspace/crisp/.test/bell.wav");
 
+    sf::Clock clock;
+
+    auto spectrogram = Spectrogram();
+    clock.restart();
+    spectrogram.create_from(audio, 8000, 0.1);
+    std::cout << "spec: " << clock.restart().asSeconds() << std::endl;
+    return 0;
+
+    clock.restart();
     auto data = audio.get_samples();
 
     auto shader = State::register_shader("audio/visualize_fourier.glsl");
@@ -48,47 +58,56 @@ int main()
     State::bind_shader_program(program);
     State::free_shader(shader);
 
-    auto fourier = FourierTransform1D<SPEED>();
+    auto fourier = FourierTransform1D<ACCURACY>();
+    std::cout << audio.get_sample_rate() << std::endl;
 
     GLNativeHandle array;
     auto update = [&]()
     {
-        size_t n_windows = 2000;
-        size_t n_samples = 1000;
+        size_t n_windows = width;
+        size_t n_samples = 3000;
         std::vector<std::vector<float>> signals;
 
-        size_t first = 0;
-        for (size_t i = 0; i < n_windows and first + n_samples < audio.get_n_samples(); ++i, first += n_samples * 0.1)
+        size_t offset = 0;
+        for (size_t i = 0; i < n_windows and offset + n_samples < audio.get_n_samples(); ++i, offset += n_samples * 0.01)
         {
             std::vector<float> window;
             window.reserve(n_samples);
 
-            for (size_t j = first; j < first + n_samples; ++j)
+            for (size_t j = offset; j < offset + n_samples; ++j)
             {
-                float weight = exp(-4 * pow(2 * ((j-first) / float(n_samples)) - 1, 2));//pow(cos(M_PI*((j-first) / float(n_samples)) - (M_PI / 2)), 2);
+                float weight = exp(-4 * pow(2 * ((j - offset) / float(n_samples)) - 1, 2));//pow(cos(M_PI*((j-first) / float(n_samples)) - (M_PI / 2)), 2);
                 //gauss: exp(-4 * pow(2 * ((j-first) / float(n_samples)) - 1, 2));
                 //cos: cos(M_PI*((j-first) / float(n_samples)) - M_PI / 2)
                 //hanning: pow(cos((M_PI * x - (M_PI / 2)) / 1), 1)
                 window.push_back(data[j] * weight);
             }
 
-            fourier.transform_from_complex(&window[0], window.size());
+            fourier.transform_from_real(&window[0], window.size());
             auto as_signal = fourier.as_signal();
-            as_signal.resize(as_signal.size() / 2);
-            signals.push_back(as_signal);
+            as_signal.resize(n_samples);
+
+            // filter
+
+
+            // export
+            signals.emplace_back();
+            for (auto& s : as_signal)
+                signals.back().push_back(float(s)); //push_back(as_signal);
         }
 
         std::cout << n_samples << std::endl;
-        std::cout << first << " | " << audio.get_n_samples() << std::endl;
+        std::cout << offset << " | " << audio.get_n_samples() << std::endl;
         std::cout << signals.size() << std::endl;
 
-        array = State::register_signal_array(signals.back().size(), signals.size(), signals);
+        array = State::register_signal_array(signals.front().size(), signals.size(), signals);
         State::bind_signal_array(State::get_active_program_handle(), "_signal_array", array);
-        State::set_int(State::get_active_program_handle(), "_n_signals", signals.size());
+        State::set_int(State::get_active_program_handle(), "_n_signals", width);
         State::display();
     };
 
     update();
+    std::cout << "non spec: " << clock.restart().asSeconds() << std::endl;
 
     while (window.is_open())
     {
