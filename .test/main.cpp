@@ -32,6 +32,7 @@ using namespace crisp;
 
 int main()
 {
+    /*
     constexpr size_t width = 1500;
     constexpr size_t height = 1000;
 
@@ -39,75 +40,41 @@ int main()
     window.create(width, height);
     window.set_active();
 
-    auto audio = AudioFile();
-    audio.load("/home/clem/Workspace/crisp/.test/bell.wav");
-
     sf::Clock clock;
+     */
+
+    auto audio = AudioFile();
+    audio.load("/home/clem/Workspace/crisp/.test/national_anthem.wav");
 
     auto spectrogram = Spectrogram();
-    clock.restart();
-    spectrogram.create_from(audio, 8000, 0.1);
-    std::cout << "spec: " << clock.restart().asSeconds() << std::endl;
-    return 0;
+    spectrogram.create_from(audio, 1000, 0.5, 1000);
 
-    clock.restart();
-    auto data = audio.get_samples();
+    auto img = spectrogram.as_image();
+    save_to_disk(img, "/home/clem/Workspace/crisp/.test/spectrogram.png");
+    return 0;
+}
+    /*
+
+
+
+
+
+
+    std::cout << spectrogram.get_size() << std::endl;
+    std::cout << GL_MAX_TEXTURE_SIZE << " " << GL_MAX_TEXTURE_SIZE << std::endl;
+
+    glViewport(0, 0, spectrogram.get_size().x(), spectrogram.get_size().y());
 
     auto shader = State::register_shader("audio/visualize_fourier.glsl");
     auto program = State::register_program(shader);
     State::bind_shader_program(program);
     State::free_shader(shader);
 
-    auto fourier = FourierTransform1D<ACCURACY>();
-    std::cout << audio.get_sample_rate() << std::endl;
-
-    GLNativeHandle array;
-    auto update = [&]()
-    {
-        size_t n_windows = width;
-        size_t n_samples = 3000;
-        std::vector<std::vector<float>> signals;
-
-        size_t offset = 0;
-        for (size_t i = 0; i < n_windows and offset + n_samples < audio.get_n_samples(); ++i, offset += n_samples * 0.01)
-        {
-            std::vector<float> window;
-            window.reserve(n_samples);
-
-            for (size_t j = offset; j < offset + n_samples; ++j)
-            {
-                float weight = exp(-4 * pow(2 * ((j - offset) / float(n_samples)) - 1, 2));//pow(cos(M_PI*((j-first) / float(n_samples)) - (M_PI / 2)), 2);
-                //gauss: exp(-4 * pow(2 * ((j-first) / float(n_samples)) - 1, 2));
-                //cos: cos(M_PI*((j-first) / float(n_samples)) - M_PI / 2)
-                //hanning: pow(cos((M_PI * x - (M_PI / 2)) / 1), 1)
-                window.push_back(data[j] * weight);
-            }
-
-            fourier.transform_from_real(&window[0], window.size());
-            auto as_signal = fourier.as_signal();
-            as_signal.resize(n_samples);
-
-            // filter
-
-
-            // export
-            signals.emplace_back();
-            for (auto& s : as_signal)
-                signals.back().push_back(float(s)); //push_back(as_signal);
-        }
-
-        std::cout << n_samples << std::endl;
-        std::cout << offset << " | " << audio.get_n_samples() << std::endl;
-        std::cout << signals.size() << std::endl;
-
-        array = State::register_signal_array(signals.front().size(), signals.size(), signals);
-        State::bind_signal_array(State::get_active_program_handle(), "_signal_array", array);
-        State::set_int(State::get_active_program_handle(), "_n_signals", width);
-        State::display();
-    };
-
-    update();
-    std::cout << "non spec: " << clock.restart().asSeconds() << std::endl;
+    //array = State::register_signal_array(signals.front().size(), signals.size(), signals);
+    auto spec_tex = spectrogram.as_1d_texture_array();
+    State::bind_signal_array(State::get_active_program_handle(), "_signal_array", spec_tex);
+    State::set_int(State::get_active_program_handle(), "_n_signals", spectrogram.get_size().x());
+    State::display();
 
     while (window.is_open())
     {
@@ -119,8 +86,10 @@ int main()
             shader = State::register_shader("audio/visualize_fourier.glsl");
             program = State::register_program(shader);
             State::bind_shader_program(program);
+            State::bind_signal_array(State::get_active_program_handle(), "_signal_array", spec_tex);
+            State::set_int(State::get_active_program_handle(), "_n_signals", spectrogram.get_size().x());
             State::free_shader(shader);
-            update();
+            State::display();
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(16));

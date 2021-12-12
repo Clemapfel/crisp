@@ -11,7 +11,7 @@ uniform int _n_signals;
 void main()
 {
     vec2 pos = _tex_coord;
-    float value = texture(_signal_array, vec2(pos.x / 2, pos.y * _n_signals)).x;
+    float value = texture(_signal_array, vec2(pos.y, pos.x * _n_signals)).x;
 
     _out = vec4(vec3(value), 1);
 }

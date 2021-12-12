@@ -12,8 +12,14 @@ namespace crisp
 {
     void Spectrogram::create_from(const AudioFile& audio, size_t window_size, float window_overlap, WindowType type)
     {
+        create_from(audio, window_size, window_overlap, audio.get_n_samples(), type);
+    }
+
+    void Spectrogram::create_from(const AudioFile& audio, size_t window_size, float window_overlap, size_t n_windows, WindowType type)
+    {
         auto n_samples = audio.get_n_samples();
-        _data.resize(window_size / 2 + 1, n_samples / (window_size * window_overlap));
+        auto cols = std::min<size_t>(n_samples / (window_size * window_overlap), n_windows);
+        _data.resize(window_size / 2, cols);
 
         auto signal = audio.get_samples();
         auto fourier = FourierTransform1D<SPEED>();
@@ -22,7 +28,7 @@ namespace crisp
         for (size_t i = 0; i < _data.cols(); ++i, offset += window_size * window_overlap)
         {
             std::vector<float> window;
-            window.reserve(window_size);
+            window.reserve(window_size / 2);
 
             for (size_t j = offset; j < offset + window_size; ++j)
             {
@@ -40,7 +46,7 @@ namespace crisp
                         break;
                 }
 
-                window.push_back(weight * signal[j] * weight);
+                window.push_back(weight * signal[j]);
             }
 
             fourier_transform(window);
@@ -48,8 +54,6 @@ namespace crisp
             for (size_t j = 0; j < window.size(); ++j)
                 _data(j, i) = window.at(j);
         }
-
-        std::cout << _data.rows() << " " << _data.cols() << std::endl;
     }
 
     void Spectrogram::fourier_transform(std::vector<float>& in)
@@ -62,7 +66,7 @@ namespace crisp
         float _min_spectrum = std::numeric_limits<float>::max();
         float _max_spectrum = std::numeric_limits<float>::min();
 
-        in.resize(in.size() / 2 + 1);
+        in.resize(_data.rows());
         for (size_t i = 0; i < in.size(); ++i)
         {
             auto f = std::complex<float>(complex[i][0], complex[i][1]);
@@ -75,11 +79,14 @@ namespace crisp
         fftwf_destroy_plan(plan);
         fftwf_free(complex);
 
+        auto low_boost = [](auto x){ return x;};//x * exp(-0.5*pow((3*x), 4));};
+        auto normalize = [](auto x){ return log(1+x);};
+
         for (auto& e : in)
         {
-            e = log(1 + e);
-            e -= log(1 + _min_spectrum);
-            e /= (log(1 + _max_spectrum) - log(1 + _min_spectrum));
+            e = low_boost(e);
+            e = (normalize(e) - normalize(_min_spectrum)) / (normalize(_max_spectrum) - normalize(_min_spectrum));
+            e = clamp<float>(0, 1, e);
         }
     }
 
@@ -103,9 +110,25 @@ namespace crisp
 
         glTexParameteri(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
         glTexParameteri(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-        glTexParameteri(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         return out;
+    }
+
+    GrayScaleImage Spectrogram::as_image() const
+    {
+        auto out = GrayScaleImage(_data.cols(), _data.rows());
+
+        for (size_t x = 0; x < _data.rows(); ++x)
+            for (size_t y = 0; y < _data.cols(); ++y)
+                out(y, out.get_size().y() - +x) = _data(x, y);
+
+        return out;
+    }
+
+    Vector2ui Spectrogram::get_size() const
+    {
+        return Vector2ui{size_t(_data.cols()), size_t(_data.rows())}; // sic
     }
 }
