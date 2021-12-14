@@ -5,26 +5,27 @@
 
 #include <audio/spectrogram.hpp>
 #include <fourier_transform.hpp>
+#include <audio/window_function.hpp>
 
 #include <fftw3.h>
 
 namespace crisp
 {
-    void Spectrogram::create_from(const AudioFile& audio, size_t window_size, float window_overlap, WindowType type)
+    void Spectrogram::create_from(const AudioFile& audio, size_t window_size, float window_overlap)
     {
-        create_from(audio, window_size, window_overlap, audio.get_n_samples(), type);
+        create_from(audio, window_size, window_overlap, 0, audio.get_n_samples());
     }
 
-    void Spectrogram::create_from(const AudioFile& audio, size_t window_size, float window_overlap, size_t n_windows, WindowType type)
+    void Spectrogram::create_from(const AudioFile& audio, size_t window_size, float window_overlap, size_t first_window, size_t n_windows)
     {
         auto n_samples = audio.get_n_samples();
-        auto cols = std::min<size_t>(n_samples / (window_size * window_overlap), n_windows);
-        _data.resize(window_size / 2, cols);
+        auto cols = std::min<size_t>((n_samples - first_window) / (window_size * window_overlap), n_windows);
+        _data.resize(window_size / (2 * audio.get_n_channels()), cols);
 
         auto signal = audio.get_samples();
         auto fourier = FourierTransform1D<SPEED>();
 
-        size_t offset = 0;
+        size_t offset = first_window;
         for (size_t i = 0; i < _data.cols(); ++i, offset += window_size * window_overlap)
         {
             std::vector<float> window;
@@ -32,20 +33,7 @@ namespace crisp
 
             for (size_t j = offset; j < offset + window_size; ++j)
             {
-                float weight = 1;
-                switch (type)
-                {
-                    case GAUSS:
-                        weight = exp(-4 * pow(2 * ((j - offset) / float(n_samples)) - 1, 2));
-                        break;
-                    case HANNING:
-                        weight = pow(cos(M_PI*((j - offset) / float(n_samples)) - (M_PI / 2)), 2);
-                        break;
-                    case BINARY:
-                        weight = 1;
-                        break;
-                }
-
+                float weight = WindowFunction::gauss((j - offset) / float(window_size));
                 window.push_back(weight * signal[j]);
             }
 
@@ -58,13 +46,13 @@ namespace crisp
 
     void Spectrogram::fourier_transform(std::vector<float>& in)
     {
+        _min_spectrum = std::numeric_limits<float>::max();
+        _max_spectrum = std::numeric_limits<float>::min();
+
         auto* complex = fftwf_alloc_complex(in.size());
 
         auto plan = fftwf_plan_dft_r2c_1d(in.size(), &in[0], complex, FFTW_ESTIMATE);
         fftwf_execute(plan);
-
-        float _min_spectrum = std::numeric_limits<float>::max();
-        float _max_spectrum = std::numeric_limits<float>::min();
 
         in.resize(_data.rows());
         for (size_t i = 0; i < in.size(); ++i)

@@ -27,12 +27,12 @@
 
 #include <fourier_transform.hpp>
 #include <audio/spectrogram.hpp>
+#include <pseudocolor_mapping.hpp>
 
 using namespace crisp;
 
 int main()
 {
-    /*
     constexpr size_t width = 1500;
     constexpr size_t height = 1000;
 
@@ -41,25 +41,18 @@ int main()
     window.set_active();
 
     sf::Clock clock;
-     */
 
     auto audio = AudioFile();
-    audio.load("/home/clem/Workspace/crisp/.test/national_anthem.wav");
+    audio.load("/home/clem/Workspace/crisp/.test/tonleiter.wav");
 
     auto spectrogram = Spectrogram();
-    spectrogram.create_from(audio, 1000, 0.5, 1000);
+    spectrogram.create_from(audio, 2215, 0.33, Spectrogram::WindowType::GAUSS);
 
     auto img = spectrogram.as_image();
     save_to_disk(img, "/home/clem/Workspace/crisp/.test/spectrogram.png");
     return 0;
 }
     /*
-
-
-
-
-
-
     std::cout << spectrogram.get_size() << std::endl;
     std::cout << GL_MAX_TEXTURE_SIZE << " " << GL_MAX_TEXTURE_SIZE << std::endl;
 

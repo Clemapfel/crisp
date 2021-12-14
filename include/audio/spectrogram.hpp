@@ -15,15 +15,8 @@ namespace crisp
         public:
             Spectrogram() = default;
 
-            enum WindowType
-            {
-                GAUSS,
-                HANNING,
-                BINARY
-            };
-
-            void create_from(const AudioFile&, size_t window_size, float window_overlap, WindowType type = GAUSS);
-            void create_from(const AudioFile&, size_t window_size, float window_overlap, size_t n_windows, WindowType type = GAUSS);
+            void create_from(const AudioFile&, size_t window_size, float window_overlap);
+            void create_from(const AudioFile&, size_t window_size, float window_overlap, size_t first_window, size_t n_windows);
 
             GLNativeHandle as_1d_texture_array() const;
             GrayScaleImage as_image() const;
@@ -32,6 +25,8 @@ namespace crisp
 
         private:
             void fourier_transform(std::vector<float>& in);
+            float _min_spectrum = std::numeric_limits<float>::max();
+            float _max_spectrum = std::numeric_limits<float>::min();
 
             Eigen::MatrixXf _data;
     };
