@@ -18,12 +18,6 @@ include_directories("./eigen/Eigen")
 # OpenGL
 FIND_PACKAGE(OpenGL REQUIRED)
 
-# sol2
-include_directories("./sol2/include/sol")
-include_directories("./sol2/include")
-include_directories("/usr/include/lua5.3")
-find_package(Lua REQUIRED)
-
 # OpenCV
 SET("OpenCV_DIR" "/usr/share/OpenCV")
 find_package(OpenCV REQUIRED)
@@ -158,7 +152,6 @@ target_link_libraries(crisp
         fftw3l
         fftw3f
         ${OPENGL_LIBRARIES}
-        ${LUA_LIBRARIES}
         ${OpenCV_LIBS})
 
 include_directories("./include")
