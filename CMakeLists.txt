@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -lstdc++fs -pthread -lpthread -lGL")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -lstdc++fs -pthread -lpthread -lGL -Wl,--export-dynamic")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_BUILD_TYPE Debug)
 
@@ -21,6 +21,9 @@ FIND_PACKAGE(OpenGL REQUIRED)
 # OpenCV
 SET("OpenCV_DIR" "/usr/share/OpenCV")
 find_package(OpenCV REQUIRED)
+
+# Julia
+include_directories(/usr/include/julia/) # modify this if julia is located somewhere else
 
 ### CRISP #######################################################################################
 
@@ -109,8 +112,8 @@ add_library(crisp STATIC
         .src/bayes_classifier.inl
 
         include/gpu_side/native_handle.hpp
-        include/gpu_side/state.hpp
-        .src/state.inl
+        include/gpu_side/opengl_state.hpp
+        .src/opengl_state.inl
 
         include/gpu_side/texture_workspace.hpp
         .src/texture_workspace.inl foo.h .src/texture.inl
@@ -140,7 +143,12 @@ add_library(crisp STATIC
         .src/window_function.inl
         include/audio/audio_stream.hpp
 
-        include/audio/filter.hpp)
+        include/audio/filter.hpp
+
+        .src/julia_state.inl
+        include/julia/julia_state.hpp
+
+        include/julia/julia_proxy.hpp .src/julia_proxy.inl include/julia/julia_native_type.hpp .src/julia_native_type.inl)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp
@@ -151,11 +159,15 @@ target_link_libraries(crisp
         fftw3
         fftw3l
         fftw3f
+        julia
         ${OPENGL_LIBRARIES}
         ${OpenCV_LIBS})
 
 include_directories("./include")
 include_directories("./")
 include_directories("/usr/include/opencv4")
+
+add_executable(JULIA .test/main.cpp)
+target_link_libraries(JULIA crisp)
 
 
