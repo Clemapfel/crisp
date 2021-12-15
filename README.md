@@ -1,4 +1,4 @@
-# CRISP: Real-Time Interactive Signal Processing Library (v0.9.1)
+# CRISP: Real-Time Interactive Signal Processing Library (v0.9.2)
 
 ## What is `crisp`?
 `crisp` is a library implementing most image-processing needs from scratch. This includes:
@@ -89,8 +89,6 @@ This makes debugging, filter design or just understanding/explaining your own al
     - `libfftw3-double3` 
     - `libfftw3-long3`
     - `libfftw3-quad3`
-+ [sol2](https://github.com/ThePhD/sol2/)
-    - provided as submodule
 + [lua5.3](https://www.lua.org/download.html)
     - `lua5.3` package
 + [Video I/O](https://docs.opencv.org/3.4/d0/da7/videoio_overview.html)
