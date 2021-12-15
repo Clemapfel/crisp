@@ -14,9 +14,9 @@
 #include <image/multi_plane_image.hpp>
 #include <resource_path.hpp>
 
-namespace crisp
+namespace crisp::gl
 {
-    void State::display()
+    void gl::State::display()
     {
         if (_noop_fragment_shader == NONE or _noop_vertex_shader == NONE or _noop_program == 1)
             initialize_noop_shaders();
@@ -32,7 +32,7 @@ namespace crisp
     }
 
     template<typename T>
-    void State::get_pixel_buffer(Image<T, 1>& image, Vector2ui top_left)
+    void gl::State::get_pixel_buffer(Image<T, 1>& image, Vector2ui top_left)
     {
         std::vector<float> buffer;
         buffer.resize(image.get_size().x() * image.get_size().y() * 4);
@@ -54,7 +54,7 @@ namespace crisp
     }
 
     template<typename T>
-    void State::get_pixel_buffer(Image<T, 2>& image, Vector2ui top_left)
+    void gl::State::get_pixel_buffer(Image<T, 2>& image, Vector2ui top_left)
     {
         std::vector<float> buffer;
         buffer.resize(image.get_size().x() * image.get_size().y() * 4);
@@ -76,7 +76,7 @@ namespace crisp
     }
 
     template<typename T>
-    void State::get_pixel_buffer(Image<T, 3>& image, Vector2ui top_left)
+    void gl::State::get_pixel_buffer(Image<T, 3>& image, Vector2ui top_left)
     {
         std::vector<float> buffer;
         buffer.resize(image.get_size().x() * image.get_size().y() * 4);
@@ -98,7 +98,7 @@ namespace crisp
     }
 
     template<typename T>
-    void State::get_pixel_buffer(Image<T, 4>& image, Vector2ui top_left)
+    void gl::State::get_pixel_buffer(Image<T, 4>& image, Vector2ui top_left)
     {
         std::vector<float> buffer;
         buffer.resize(image.get_size().x() * image.get_size().y() * 4);
@@ -119,7 +119,7 @@ namespace crisp
         }
     }
 
-    void State::initialize_noop_shaders()
+    void gl::State::initialize_noop_shaders()
     {
         if (_noop_initialized)
             return;
@@ -174,13 +174,13 @@ namespace crisp
 
         _noop_fragment_shader = id;
         _noop_initialized = true;
-        _noop_program = State::register_program(_noop_fragment_shader);
+        _noop_program = gl::State::register_program(_noop_fragment_shader);
 
         _shader_programs.insert(_noop_program);
-        State::bind_shader_program(_noop_program);
+        gl::State::bind_shader_program(_noop_program);
     }
 
-    GLNativeHandle State::register_shader(const ShaderID& id)
+    GLNativeHandle gl::State::register_shader(const ShaderID& id)
     {
         if (_noop_vertex_shader == NONE)
             initialize_noop_shaders();
@@ -225,7 +225,7 @@ namespace crisp
         return shader_id;
     }
 
-    GLNativeHandle State::register_shader_from_source(std::string source)
+    GLNativeHandle gl::State::register_shader_from_source(std::string source)
     {
         if (_noop_vertex_shader == NONE)
             initialize_noop_shaders();
@@ -250,7 +250,7 @@ namespace crisp
         return shader_id;
     }
 
-    void State::free_shader(GLNativeHandle id)
+    void gl::State::free_shader(GLNativeHandle id)
     {
         if (_fragment_shaders.find(id) == _fragment_shaders.end())
             std::cerr << "[WARNING] Trying to free already deallocated or non-existent shader with handle " << id << std::endl;
@@ -259,7 +259,7 @@ namespace crisp
         glDeleteShader(id);
     }
 
-    GLNativeHandle State::register_program(GLNativeHandle fragment_shader_id)
+    GLNativeHandle gl::State::register_program(GLNativeHandle fragment_shader_id)
     {
         auto program_id = glCreateProgram();
         glAttachShader(program_id, _noop_vertex_shader);
@@ -280,7 +280,7 @@ namespace crisp
         return program_id;
     }
 
-    void State::free_program(GLNativeHandle id)
+    void gl::State::free_program(GLNativeHandle id)
     {
         if (_shader_programs.find(id) == _shader_programs.end())
             std::cerr << "[WARNING] Trying to free already deallocated or non-existent program with handle " << id << std::endl;
@@ -289,7 +289,7 @@ namespace crisp
         glDeleteProgram(id);
     }
     
-    void State::verify_program_id(GLNativeHandle program_id)
+    void gl::State::verify_program_id(GLNativeHandle program_id)
     {
         if (_shader_programs.find(program_id) == _shader_programs.end())
         {
@@ -299,7 +299,7 @@ namespace crisp
         }
     }
 
-    void State::bind_shader_program(GLNativeHandle program_id)
+    void gl::State::bind_shader_program(GLNativeHandle program_id)
     {
         if (program_id == NONE)
         {
@@ -313,7 +313,7 @@ namespace crisp
         _active_program = program_id;
     }
 
-    void State::initialize_vertices()
+    void gl::State::initialize_vertices()
     {
         if (not _vertices_initialized)
         {
@@ -360,7 +360,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    GLNativeHandle State::register_texture(const Image<T, N>& image)
+    GLNativeHandle gl::State::register_texture(const Image<T, N>& image)
     {
         static_assert(0 < N and N <= 4);
         static_assert(std::is_same_v<T, bool> or std::is_same_v<T, float>);
@@ -485,7 +485,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    GLNativeHandle State::register_texture(size_t width, size_t height, const std::vector<T>& data)
+    GLNativeHandle gl::State::register_texture(size_t width, size_t height, const std::vector<T>& data)
     {
         assert(data.size() == width * height * N);
         static_assert(std::is_same_v<T, bool> or std::is_same_v<T, float>);
@@ -493,7 +493,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    GLNativeHandle State::register_texture(size_t width, size_t height, const T* data)
+    GLNativeHandle gl::State::register_texture(size_t width, size_t height, const T* data)
     {
         static_assert(0 < N and N <= 4);
         static_assert(std::is_same_v<T, bool> or std::is_same_v<T, float>);
@@ -638,7 +638,7 @@ namespace crisp
         return texture_id;
     }
     template<typename T, size_t N>
-    GLNativeHandle State::register_texture(size_t width, size_t height)
+    GLNativeHandle gl::State::register_texture(size_t width, size_t height)
     {
         static_assert(0 < N and N <= 4);
 
@@ -759,7 +759,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    GLNativeHandle State::register_texture(GLNativeHandle to_copy)
+    GLNativeHandle gl::State::register_texture(GLNativeHandle to_copy)
     {
         if (_textures.find(to_copy) == _textures.end())
         {
@@ -769,7 +769,7 @@ namespace crisp
         }
 
         auto info = _texture_info.at(to_copy);
-        auto out = State::register_texture<T, N>(info.width, info.height);
+        auto out = gl::State::register_texture<T, N>(info.width, info.height);
 
         glBindTexture(GL_TEXTURE_2D, out);
 
@@ -801,48 +801,48 @@ namespace crisp
         auto before = _active_program;
 
         glBindTexture(GL_TEXTURE_2D, to_copy);
-        State::bind_shader_program(NONE);
-        State::bind_texture(NONE, "_texture", to_copy);
+        gl::State::bind_shader_program(NONE);
+        gl::State::bind_texture(NONE, "_texture", to_copy);
         glViewport(0, 0, info.width, info.height);
 
-        State::display();
+        gl::State::display();
 
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, NONE);
         glDeleteFramebuffers(1, &buffer);
-        State::bind_shader_program(before);
+        gl::State::bind_shader_program(before);
 
         return out;
     }
 
-    void State::free_texture(GLNativeHandle id)
+    void gl::State::free_texture(GLNativeHandle id)
     {
         _textures.erase(id);
         _texture_info.erase(id);
         glDeleteTextures(1, &id);
     }
 
-    ProxyID State::register_int(int v)
+    ProxyID gl::State::register_int(int v)
     {
         auto id = get_next_id();
         _ints.insert({id, v});
         return id;
     }
 
-    ProxyID State::register_uint(size_t v)
+    ProxyID gl::State::register_uint(size_t v)
     {
         auto id = get_next_id();
         _uints.insert({id, v});
         return id;
     }
 
-    ProxyID State::register_float(float v)
+    ProxyID gl::State::register_float(float v)
     {
         auto id = get_next_id();
         _floats.insert({id, v});
         return id;
     }
 
-    ProxyID State::register_bool(bool v)
+    ProxyID gl::State::register_bool(bool v)
     {
         auto id = get_next_id();
         _bools.insert({id, v});
@@ -850,7 +850,7 @@ namespace crisp
     }
 
     template<size_t N, typename T>
-    ProxyID State::register_vec(const Vector<T, N>& vec)
+    ProxyID gl::State::register_vec(const Vector<T, N>& vec)
     {
         static_assert(2 <= N and N <= 4);
 
@@ -869,7 +869,7 @@ namespace crisp
     }
 
     template<typename T>
-    ProxyID State::register_matrix(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& matrix)
+    ProxyID gl::State::register_matrix(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& matrix)
     {
         assert(2 <= matrix.rows() and matrix.rows() <= 4 and 2 <= matrix.cols() and matrix.cols() <= 4);
         auto id = get_next_id();
@@ -893,7 +893,7 @@ namespace crisp
         return id;
     }
 
-    ProxyID State::register_structuring_element(const StructuringElement& se)
+    ProxyID gl::State::register_structuring_element(const StructuringElement& se)
     {
         Eigen::MatrixXf as_float;
         as_float.resize(se.rows(), se.cols());
@@ -914,7 +914,7 @@ namespace crisp
         return register_matrix<float>(as_float);
     }
 
-    ProxyID State::register_structuring_element(const NonFlatStructuringElement& se)
+    ProxyID gl::State::register_structuring_element(const NonFlatStructuringElement& se)
     {
         Eigen::MatrixXf as_float;
         as_float.resize(se.rows(), se.cols());
@@ -935,7 +935,7 @@ namespace crisp
         return register_matrix<float>(as_float);
     }
 
-    void State::bind_matrix(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
+    void gl::State::bind_matrix(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
         verify_program_id(program_id);
         if (_mats.find(proxy_id) == _mats.end())
@@ -983,7 +983,7 @@ namespace crisp
             bind_shader_program(before);
     }
 
-    void State::free_matrix(ProxyID id)
+    void gl::State::free_matrix(ProxyID id)
     {
         if (_mats.find(id) == _mats.end())
             std::cerr << "[WARNING] Trying to free already deallocated or non-existent matrix with id " << id << std::endl;
@@ -992,7 +992,7 @@ namespace crisp
     }
 
     template<typename T>
-    ProxyID State::register_array(const std::vector<T>& data)
+    ProxyID gl::State::register_array(const std::vector<T>& data)
     {
         std::vector<float> as_float;
 
@@ -1009,7 +1009,7 @@ namespace crisp
     }
 
     template<typename T, size_t N>
-    ProxyID State::register_array(const std::array<T, N>& data)
+    ProxyID gl::State::register_array(const std::array<T, N>& data)
     {
         std::vector<float> as_float;
 
@@ -1026,7 +1026,7 @@ namespace crisp
     }
 
     template<typename T>
-    ProxyID State::register_vec2_array(const std::vector<crisp::Vector<T, 2>>& data)
+    ProxyID gl::State::register_vec2_array(const std::vector<crisp::Vector<T, 2>>& data)
     {
         std::vector<float> as_float;
 
@@ -1046,7 +1046,7 @@ namespace crisp
     }
 
     template<typename T>
-    ProxyID State::register_vec3_array(const std::vector<crisp::Vector<T, 3>>& data)
+    ProxyID gl::State::register_vec3_array(const std::vector<crisp::Vector<T, 3>>& data)
     {
         std::vector<float> as_float;
 
@@ -1067,7 +1067,7 @@ namespace crisp
     }
 
     template<typename T>
-    ProxyID State::register_vec4_array(const std::vector<crisp::Vector<T, 4>>& data)
+    ProxyID gl::State::register_vec4_array(const std::vector<crisp::Vector<T, 4>>& data)
     {
         std::vector<float> as_float;
 
@@ -1089,7 +1089,7 @@ namespace crisp
     }
 
     template<size_t N>
-    void State::free_array(ProxyID id)
+    void gl::State::free_array(ProxyID id)
     {
         static_assert(1 <= N and N <= 4);
 
@@ -1106,7 +1106,7 @@ namespace crisp
     }
 
     template<size_t N>
-    void State::bind_array(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
+    void gl::State::bind_array(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
         static_assert(1 <= N and N <= 4, "tparam N is the number of dimensions of the innver vector type, not the number of elements in the array");
 
@@ -1162,7 +1162,7 @@ namespace crisp
             bind_shader_program(before);
     }
 
-    void State::free_float(ProxyID id)
+    void gl::State::free_float(ProxyID id)
     {
         if (_floats.find(id) == _floats.end())
             std::cerr << "[WARNING] Trying to free already deallocated or non-existent float with id " << id << std::endl;
@@ -1170,7 +1170,7 @@ namespace crisp
         _floats.erase(id);
     }
 
-    void State::free_bool(ProxyID id)
+    void gl::State::free_bool(ProxyID id)
     {
         if (_bools.find(id) == _bools.end())
             std::cerr << "[WARNING] Trying to free already deallocated or non-existent bool with id " << id << std::endl;
@@ -1178,7 +1178,7 @@ namespace crisp
         _bools.erase(id);
     }
 
-    void State::free_int(ProxyID id)
+    void gl::State::free_int(ProxyID id)
     {
         if (_ints.find(id) == _ints.end())
             std::cerr << "[WARNING] Trying to free already deallocated or non-existent int with id " << id << std::endl;
@@ -1186,7 +1186,7 @@ namespace crisp
         _ints.erase(id);
     }
 
-    void State::free_uint(ProxyID id)
+    void gl::State::free_uint(ProxyID id)
     {
         if (_uints.find(id) == _uints.end())
             std::cerr << "[WARNING] Trying to free already deallocated or non-existent int with id " << id << std::endl;
@@ -1194,7 +1194,7 @@ namespace crisp
         _uints.erase(id);
     }
 
-    void State::free_vec(ProxyID id)
+    void gl::State::free_vec(ProxyID id)
     {
         if (_vecs.find(id) == _vecs.end())
             std::cerr << "[WARNING] Trying to free already deallocated or non-existent vec2 with id " << id << std::endl;
@@ -1202,7 +1202,7 @@ namespace crisp
         _vecs.erase(id);
     }
 
-    void State::bind_int(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
+    void gl::State::bind_int(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
         verify_program_id(program_id);
         if (_ints.find(proxy_id) == _ints.end())
@@ -1222,7 +1222,7 @@ namespace crisp
             bind_shader_program(before);
     }
 
-    void State::set_int(GLNativeHandle program_id, const std::string& var_name, int i)
+    void gl::State::set_int(GLNativeHandle program_id, const std::string& var_name, int i)
     {
         verify_program_id(program_id);
 
@@ -1236,7 +1236,7 @@ namespace crisp
             bind_shader_program(before);
     }
 
-    void State::bind_uint(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
+    void gl::State::bind_uint(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
         verify_program_id(program_id);
         if (_ints.find(proxy_id) == _ints.end())
@@ -1256,7 +1256,7 @@ namespace crisp
             bind_shader_program(before);
     }
 
-    void State::set_uint(GLNativeHandle program_id, const std::string& var_name, int i)
+    void gl::State::set_uint(GLNativeHandle program_id, const std::string& var_name, int i)
     {
         verify_program_id(program_id);
 
@@ -1270,7 +1270,7 @@ namespace crisp
             bind_shader_program(before);
     }
 
-    void State::bind_float(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
+    void gl::State::bind_float(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
         verify_program_id(program_id);
         if (_floats.find(proxy_id) == _floats.end())
@@ -1290,7 +1290,7 @@ namespace crisp
             bind_shader_program(before);
     }
 
-    void State::set_float(GLNativeHandle program_id, const std::string& var_name, float f)
+    void gl::State::set_float(GLNativeHandle program_id, const std::string& var_name, float f)
     {
         verify_program_id(program_id);
 
@@ -1304,7 +1304,7 @@ namespace crisp
             bind_shader_program(before);
     }
 
-    void State::bind_bool(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
+    void gl::State::bind_bool(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
         verify_program_id(program_id);
         if (_bools.find(proxy_id) == _bools.end())
@@ -1324,7 +1324,7 @@ namespace crisp
             bind_shader_program(before);
     }
 
-    void State::set_bool(GLNativeHandle program_id, const std::string& var_name, bool b)
+    void gl::State::set_bool(GLNativeHandle program_id, const std::string& var_name, bool b)
     {
         verify_program_id(program_id);
 
@@ -1338,7 +1338,7 @@ namespace crisp
             bind_shader_program(before);
     }
 
-    void State::bind_vec(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
+    void gl::State::bind_vec(GLNativeHandle program_id, const std::string& var_name, ProxyID proxy_id)
     {
         verify_program_id(program_id);
         if (_vecs.find(proxy_id) == _vecs.end())
@@ -1366,7 +1366,7 @@ namespace crisp
     }
 
     template<size_t N>
-    void State::set_vec(GLNativeHandle program_id, const std::string& var_name, Vector<float, N> vec)
+    void gl::State::set_vec(GLNativeHandle program_id, const std::string& var_name, Vector<float, N> vec)
     {
         static_assert(2 <= N and N <= 4);
 
@@ -1391,7 +1391,7 @@ namespace crisp
             bind_shader_program(before);
     }
 
-    void State::bind_texture(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle texture_id, size_t texture_unit)
+    void gl::State::bind_texture(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle texture_id, size_t texture_unit)
     {
         if (program_id == NONE)
         {
@@ -1419,7 +1419,7 @@ namespace crisp
             std::cerr << "[WARNING] Binding texture " << texture_id << " to uniform \"" << var_name << "\" in program "
                       << program_id << " even though the program is not currently bound." << std::endl;
             std::cerr << "[LOG] Changed active program to program " << program_id << std::endl;
-            State::bind_shader_program(program_id);
+            gl::State::bind_shader_program(program_id);
         }
 
         glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), texture_unit);
@@ -1447,7 +1447,7 @@ namespace crisp
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     }
 
-    Vector2ui State::get_texture_size(GLNativeHandle texture_handle)
+    Vector2ui gl::State::get_texture_size(GLNativeHandle texture_handle)
     {
         if (_textures.find(texture_handle) == _textures.end())
         {
@@ -1459,7 +1459,7 @@ namespace crisp
         return Vector2ui{_texture_info.at(texture_handle).width, _texture_info.at(texture_handle).height};
     }
 
-    GLNativeHandle State::register_signal(size_t n_samples, size_t first_sample, const float* data)
+    GLNativeHandle gl::State::register_signal(size_t n_samples, size_t first_sample, const float* data)
     {
         initialize_vertices();
 
@@ -1496,13 +1496,13 @@ namespace crisp
         return signal_id;
     }
 
-    GLNativeHandle State::free_signal(GLNativeHandle id)
+    void gl::State::free_signal(GLNativeHandle id)
     {
         _1d_texture_arrays.erase(id);
         glDeleteTextures(1, &id);
     }
 
-    void State::bind_signal(
+    void gl::State::bind_signal(
             GLNativeHandle program_id,
             const std::string& var_name,
             GLNativeHandle signal_id,
@@ -1535,7 +1535,7 @@ namespace crisp
             std::cerr << "[WARNING] Binding signal " << signal_id << " to uniform \"" << var_name << "\" in program "
                       << program_id << " even though the program is not currently bound." << std::endl;
             std::cerr << "[LOG] Changed active program to program " << program_id << std::endl;
-            State::bind_shader_program(program_id);
+            gl::State::bind_shader_program(program_id);
         }
 
         glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), texture_location);
@@ -1543,7 +1543,7 @@ namespace crisp
         glBindTexture(GL_TEXTURE_1D, signal_id);
     }
 
-    GLNativeHandle State::register_signal_array(
+    GLNativeHandle gl::State::register_signal_array(
             size_t n_samples,
             size_t n_layers,
             const std::vector<std::vector<float>>& data)
@@ -1583,12 +1583,12 @@ namespace crisp
         return out;
     }
 
-    void State::free_signal_array(GLNativeHandle handle)
+    void gl::State::free_signal_array(GLNativeHandle handle)
     {
         glDeleteTextures(1, &handle);
     }
 
-    void State::bind_signal_array(
+    void gl::State::bind_signal_array(
             GLNativeHandle program_id,
             const std::string& var_name,
             GLNativeHandle signal_id,
@@ -1614,7 +1614,7 @@ namespace crisp
             std::cerr << "[WARNING] Binding signal " << signal_id << " to uniform \"" << var_name << "\" in program "
                       << program_id << " even though the program is not currently bound." << std::endl;
             std::cerr << "[LOG] Changed active program to program " << program_id << std::endl;
-            State::bind_shader_program(program_id);
+            gl::State::bind_shader_program(program_id);
         }
 
         glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), texture_location);
@@ -1622,12 +1622,12 @@ namespace crisp
         glBindTexture(GL_TEXTURE_1D_ARRAY, signal_id);
     }
 
-    GLNativeHandle State::get_active_program_handle()
+    GLNativeHandle gl::State::get_active_program_handle()
     {
         return _active_program;
     }
 
-    std::vector<float> State::get_texture_data(GLNativeHandle id)
+    std::vector<float> gl::State::get_texture_data(GLNativeHandle id)
     {
         if (_textures.find(id) == _textures.end())
         {
@@ -1657,7 +1657,7 @@ namespace crisp
         return out;
     }
 
-    typename State::TextureInfo State::get_texture_info(GLNativeHandle handle)
+    typename gl::State::TextureInfo gl::State::get_texture_info(GLNativeHandle handle)
     {
         if (_textures.find(handle) == _textures.end())
         {
@@ -1669,7 +1669,7 @@ namespace crisp
         return _texture_info.at(handle);
     }
 
-    void State::set_internal_context_active()
+    void gl::State::set_internal_context_active()
     {
         _context.setActive(true);
     }

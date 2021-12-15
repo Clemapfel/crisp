@@ -10,8 +10,8 @@ namespace crisp
     {
         _original = texture;
         _texture_a = texture;
-        _size = State::get_texture_size(texture);
-        _texture_b = State::register_texture<T, N>(_size.x(), _size.y());
+        _size = gl::State::get_texture_size(texture);
+        _texture_b = gl::State::register_texture<T, N>(_size.x(), _size.y());
         glGenFramebuffers(1, &_framebuffer);
     }
 
@@ -22,9 +22,9 @@ namespace crisp
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture_b, 0);
 
         glBindTexture(GL_TEXTURE_2D, _texture_a);
-        State::bind_texture(State::get_active_program_handle(), "_texture", _texture_a);
+        gl::State::bind_texture(gl::State::get_active_program_handle(), "_texture", _texture_a);
         glViewport(0, 0, _size.x(), _size.y());
-        State::display();
+        gl::State::display();
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
         _last_updated = _texture_b;
@@ -56,10 +56,10 @@ namespace crisp
         // paste buffer onto original if it is currently not the buffer
         if (_last_updated != _original)
         {
-            auto before = State::get_active_program_handle();
-            State::bind_shader_program(NONE);
+            auto before = gl::State::get_active_program_handle();
+            gl::State::bind_shader_program(NONE);
             display();
-            State::bind_shader_program(before);
+            gl::State::bind_shader_program(before);
         }
 
         return _original;

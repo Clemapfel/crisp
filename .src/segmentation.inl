@@ -365,13 +365,13 @@ namespace crisp::Segmentation
 
         auto out = texture;
 
-        auto shader = State::register_shader("local_threshold.glsl");
-        auto program = State::register_program(shader);
-        State::bind_shader_program(program);
-        State::free_shader(shader);
+        auto shader = gl::State::register_shader("local_threshold.glsl");
+        auto program = gl::State::register_program(shader);
+        gl::State::bind_shader_program(program);
+        gl::State::free_shader(shader);
 
-        State::set_uint(program, "_neighborhood_size", neighborhood_size);
-        State::set_uint(program, "_correction", correction);
+        gl::State::set_uint(program, "_neighborhood_size", neighborhood_size);
+        gl::State::set_uint(program, "_correction", correction);
 
         auto& workspace = out.get_workspace();
         workspace.display();

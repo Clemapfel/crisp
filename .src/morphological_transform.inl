@@ -208,23 +208,23 @@ namespace crisp
         std::stringstream shader_id;
         shader_id << "erode_mat" << _structuring_element.cols() << "x" << _structuring_element.rows() << ".glsl";
 
-        auto shader = State::register_shader(shader_id.str());
-        auto program = State::register_program(shader);
-        State::free_shader(shader);
+        auto shader = gl::State::register_shader(shader_id.str());
+        auto program = gl::State::register_program(shader);
+        gl::State::free_shader(shader);
 
-        auto size = State::register_vec<2>(texture.get_size());
-        auto se = State::register_structuring_element(_structuring_element);
+        auto size = gl::State::register_vec<2>(texture.get_size());
+        auto se = gl::State::register_structuring_element(_structuring_element);
 
-        State::bind_shader_program(program);
-        State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_matrix(program, "_structuring_element", se);
+        gl::State::bind_shader_program(program);
+        gl::State::bind_texture(program, "_texture", texture.get_handle());
+        gl::State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
         workspace.yield();
 
-        State::free_program(program);
-        State::free_vec(size);
-        State::free_matrix(se);
+        gl::State::free_program(program);
+        gl::State::free_vec(size);
+        gl::State::free_matrix(se);
     }
 
     template<typename Image_t>
@@ -250,23 +250,23 @@ namespace crisp
         std::stringstream shader_id;
         shader_id << "dilate_mat" << _structuring_element.cols() << "x" << _structuring_element.rows() << ".glsl";
 
-        auto shader = State::register_shader(shader_id.str());
-        auto program = State::register_program(shader);
-        State::free_shader(shader);
+        auto shader = gl::State::register_shader(shader_id.str());
+        auto program = gl::State::register_program(shader);
+        gl::State::free_shader(shader);
 
-        auto size = State::register_vec<2>(texture.get_size());
-        auto se = State::register_structuring_element(_structuring_element);
+        auto size = gl::State::register_vec<2>(texture.get_size());
+        auto se = gl::State::register_structuring_element(_structuring_element);
 
-        State::bind_shader_program(program);
-        State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_matrix(program, "_structuring_element", se);
+        gl::State::bind_shader_program(program);
+        gl::State::bind_texture(program, "_texture", texture.get_handle());
+        gl::State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
         workspace.yield();
 
-        State::free_program(program);
-        State::free_vec(size);
-        State::free_matrix(se);
+        gl::State::free_program(program);
+        gl::State::free_vec(size);
+        gl::State::free_matrix(se);
     }
 
     template<typename Image_t>
@@ -300,36 +300,36 @@ namespace crisp
         std::stringstream shader_id;
         shader_id << "erode_mat" << _structuring_element.cols() << "x" << _structuring_element.rows() << ".glsl";
 
-        auto shader = State::register_shader(shader_id.str());
-        auto program = State::register_program(shader);
-        State::free_shader(shader);
+        auto shader = gl::State::register_shader(shader_id.str());
+        auto program = gl::State::register_program(shader);
+        gl::State::free_shader(shader);
 
-        auto size = State::register_vec<2>(texture.get_size());
-        auto se = State::register_structuring_element(_structuring_element);
+        auto size = gl::State::register_vec<2>(texture.get_size());
+        auto se = gl::State::register_structuring_element(_structuring_element);
 
-        State::bind_shader_program(program);
-        State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_matrix(program, "_structuring_element", se);
+        gl::State::bind_shader_program(program);
+        gl::State::bind_texture(program, "_texture", texture.get_handle());
+        gl::State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
 
-        State::free_program(program);
-        State::free_vec(size);
-        State::free_matrix(se);
+        gl::State::free_program(program);
+        gl::State::free_vec(size);
+        gl::State::free_matrix(se);
 
-        shader = State::register_shader("geodesic_compare_erode.glsl");
-        program = State::register_program(shader);
-        State::free_shader(shader);
+        shader = gl::State::register_shader("geodesic_compare_erode.glsl");
+        program = gl::State::register_program(shader);
+        gl::State::free_shader(shader);
 
-        State::bind_shader_program(program);
-        State::bind_texture(program, "_mask", mask.get_handle(), 2);
-        State::bind_texture(program, "_original", original.get_handle(), 1);
-        State::bind_texture(program, "_texture", texture.get_handle(), 0);
+        gl::State::bind_shader_program(program);
+        gl::State::bind_texture(program, "_mask", mask.get_handle(), 2);
+        gl::State::bind_texture(program, "_original", original.get_handle(), 1);
+        gl::State::bind_texture(program, "_texture", texture.get_handle(), 0);
 
         workspace.display();
         workspace.yield();
 
-        State::free_program(program);
+        gl::State::free_program(program);
     }
 
     template<typename Image_t>
@@ -363,36 +363,36 @@ namespace crisp
         std::stringstream shader_id;
         shader_id << "dilate_mat" << _structuring_element.cols() << "x" << _structuring_element.rows() << ".glsl";
 
-        auto shader = State::register_shader(shader_id.str());
-        auto program = State::register_program(shader);
-        State::free_shader(shader);
+        auto shader = gl::State::register_shader(shader_id.str());
+        auto program = gl::State::register_program(shader);
+        gl::State::free_shader(shader);
 
-        auto size = State::register_vec<2>(texture.get_size());
-        auto se = State::register_structuring_element(_structuring_element);
+        auto size = gl::State::register_vec<2>(texture.get_size());
+        auto se = gl::State::register_structuring_element(_structuring_element);
 
-        State::bind_shader_program(program);
-        State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_matrix(program, "_structuring_element", se);
+        gl::State::bind_shader_program(program);
+        gl::State::bind_texture(program, "_texture", texture.get_handle());
+        gl::State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
 
-        State::free_program(program);
-        State::free_vec(size);
-        State::free_matrix(se);
+        gl::State::free_program(program);
+        gl::State::free_vec(size);
+        gl::State::free_matrix(se);
 
-        shader = State::register_shader("geodesic_compare_dilate.glsl");
-        program = State::register_program(shader);
-        State::free_shader(shader);
+        shader = gl::State::register_shader("geodesic_compare_dilate.glsl");
+        program = gl::State::register_program(shader);
+        gl::State::free_shader(shader);
 
-        State::bind_shader_program(program);
-        State::bind_texture(program, "_mask", mask.get_handle(), 2);
-        State::bind_texture(program, "_original", original.get_handle(), 1);
-        State::bind_texture(program, "_texture", texture.get_handle(), 0);
+        gl::State::bind_shader_program(program);
+        gl::State::bind_texture(program, "_mask", mask.get_handle(), 2);
+        gl::State::bind_texture(program, "_original", original.get_handle(), 1);
+        gl::State::bind_texture(program, "_texture", texture.get_handle(), 0);
 
         workspace.display();
         workspace.yield();
 
-        State::free_program(program);
+        gl::State::free_program(program);
     }
 
     template<typename Image_t>
@@ -412,36 +412,36 @@ namespace crisp
         std::stringstream shader_id;
         shader_id << "erode_mat" << _structuring_element.cols() << "x" << _structuring_element.rows() << ".glsl";
 
-        auto shader = State::register_shader(shader_id.str());
-        auto program = State::register_program(shader);
-        State::free_shader(shader);
+        auto shader = gl::State::register_shader(shader_id.str());
+        auto program = gl::State::register_program(shader);
+        gl::State::free_shader(shader);
 
-        auto size = State::register_vec<2>(texture.get_size());
-        auto se = State::register_structuring_element(_structuring_element);
+        auto size = gl::State::register_vec<2>(texture.get_size());
+        auto se = gl::State::register_structuring_element(_structuring_element);
 
-        State::bind_shader_program(program);
-        State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_matrix(program, "_structuring_element", se);
+        gl::State::bind_shader_program(program);
+        gl::State::bind_texture(program, "_texture", texture.get_handle());
+        gl::State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
 
-        State::free_program(program);
+        gl::State::free_program(program);
         std::stringstream new_shader_id;
         new_shader_id << "dilate_mat" << _structuring_element.cols() << "x" << _structuring_element.rows() << ".glsl";
 
-        shader = State::register_shader(new_shader_id.str());
-        program = State::register_program(shader);
-        State::free_shader(shader);
-        State::bind_shader_program(program);
-        State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_matrix(program, "_structuring_element", se);
+        shader = gl::State::register_shader(new_shader_id.str());
+        program = gl::State::register_program(shader);
+        gl::State::free_shader(shader);
+        gl::State::bind_shader_program(program);
+        gl::State::bind_texture(program, "_texture", texture.get_handle());
+        gl::State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
         workspace.yield();
 
-        State::free_program(program);
-        State::free_vec(size);
-        State::free_matrix(se);
+        gl::State::free_program(program);
+        gl::State::free_vec(size);
+        gl::State::free_matrix(se);
     }
 
     template<typename Image_t>
@@ -461,36 +461,36 @@ namespace crisp
         std::stringstream shader_id;
         shader_id << "dilate_mat" << _structuring_element.cols() << "x" << _structuring_element.rows() << ".glsl";
 
-        auto shader = State::register_shader(shader_id.str());
-        auto program = State::register_program(shader);
-        State::free_shader(shader);
+        auto shader = gl::State::register_shader(shader_id.str());
+        auto program = gl::State::register_program(shader);
+        gl::State::free_shader(shader);
 
-        auto size = State::register_vec<2>(texture.get_size());
-        auto se = State::register_structuring_element(_structuring_element);
+        auto size = gl::State::register_vec<2>(texture.get_size());
+        auto se = gl::State::register_structuring_element(_structuring_element);
 
-        State::bind_shader_program(program);
-        State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_matrix(program, "_structuring_element", se);
+        gl::State::bind_shader_program(program);
+        gl::State::bind_texture(program, "_texture", texture.get_handle());
+        gl::State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
 
-        State::free_program(program);
+        gl::State::free_program(program);
         std::stringstream new_shader_id;
         new_shader_id << "erode_mat" << _structuring_element.cols() << "x" << _structuring_element.rows() << ".glsl";
 
-        shader = State::register_shader(new_shader_id.str());
-        program = State::register_program(shader);
-        State::free_shader(shader);
-        State::bind_shader_program(program);
-        State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_matrix(program, "_structuring_element", se);
+        shader = gl::State::register_shader(new_shader_id.str());
+        program = gl::State::register_program(shader);
+        gl::State::free_shader(shader);
+        gl::State::bind_shader_program(program);
+        gl::State::bind_texture(program, "_texture", texture.get_handle());
+        gl::State::bind_matrix(program, "_structuring_element", se);
 
         workspace.display();
         workspace.yield();
 
-        State::free_program(program);
-        State::free_vec(size);
-        State::free_matrix(se);
+        gl::State::free_program(program);
+        gl::State::free_vec(size);
+        gl::State::free_matrix(se);
     }
 
     StructuringElement MorphologicalTransform::all_dont_care(long nrows, long ncols)

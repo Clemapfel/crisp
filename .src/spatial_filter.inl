@@ -167,31 +167,31 @@ namespace crisp
         else
             shader_id << "convolute_mat" << _kernel.cols() << "x" << _kernel.rows() << ".glsl";
 
-        auto shader = State::register_shader(shader_id.str());
-        auto program = State::register_program(shader);
-        State::free_shader(shader);
+        auto shader = gl::State::register_shader(shader_id.str());
+        auto program = gl::State::register_program(shader);
+        gl::State::free_shader(shader);
 
-        auto size = State::register_vec<2>(texture.get_size());
+        auto size = gl::State::register_vec<2>(texture.get_size());
 
         ProxyID kernel;
         ProxyID vec_layout_maybe;
 
         if (_kernel.cols() != 1 and _kernel.rows() != 1)
-            kernel = State::register_matrix(_kernel);
+            kernel = gl::State::register_matrix(_kernel);
         else if (_kernel.rows() != 1)
         {
-            vec_layout_maybe = State::register_bool(false);
+            vec_layout_maybe = gl::State::register_bool(false);
 
             if (_kernel.cols() == 2)
             {
-                kernel = State::register_vec<2>(Vector2f{
+                kernel = gl::State::register_vec<2>(Vector2f{
                         _kernel(0, 0),
                         _kernel(0, 1)
                 });
             }
             else if (_kernel.cols() == 3)
             {
-                kernel = State::register_vec<3>(Vector3f{
+                kernel = gl::State::register_vec<3>(Vector3f{
                    _kernel(0, 0),
                    _kernel(0, 1),
                    _kernel(0, 2)
@@ -199,7 +199,7 @@ namespace crisp
             }
             else if (_kernel.cols() == 4)
             {
-                kernel = State::register_vec<3>(Vector3f{
+                kernel = gl::State::register_vec<3>(Vector3f{
                    _kernel(0, 0),
                    _kernel(0, 1),
                    _kernel(0, 2),
@@ -209,18 +209,18 @@ namespace crisp
         }
         else if (_kernel.cols() != 1)
         {
-            vec_layout_maybe = State::register_bool(false);
+            vec_layout_maybe = gl::State::register_bool(false);
 
             if (_kernel.rows() == 2)
             {
-                kernel = State::register_vec<3>(Vector3f{
+                kernel = gl::State::register_vec<3>(Vector3f{
                    _kernel(0, 0),
                    _kernel(1, 0),
                 });
             }
             else if (_kernel.rows() == 3)
             {
-                kernel = State::register_vec<3>(Vector3f{
+                kernel = gl::State::register_vec<3>(Vector3f{
                    _kernel(0, 0),
                    _kernel(1, 0),
                    _kernel(2, 0),
@@ -228,7 +228,7 @@ namespace crisp
             }
             else if (_kernel.rows() == 4)
             {
-                kernel = State::register_vec<3>(Vector3f{
+                kernel = gl::State::register_vec<3>(Vector3f{
                    _kernel(0, 0),
                    _kernel(1, 0),
                    _kernel(2, 0),
@@ -237,19 +237,19 @@ namespace crisp
             }
         }
 
-        State::bind_shader_program(program);
-        State::bind_texture(program, "_texture", texture.get_handle());
-        State::bind_matrix(program, "_kernel", kernel);
+        gl::State::bind_shader_program(program);
+        gl::State::bind_texture(program, "_texture", texture.get_handle());
+        gl::State::bind_matrix(program, "_kernel", kernel);
 
         if (_kernel.cols() == 1 or _kernel.rows() == 1)
-            State::bind_bool(program, "_vertical", vec_layout_maybe);
+            gl::State::bind_bool(program, "_vertical", vec_layout_maybe);
 
         workspace.display();
         workspace.yield();
 
-        State::free_program(program);
-        State::free_vec(size);
-        State::free_matrix(kernel);
+        gl::State::free_program(program);
+        gl::State::free_vec(size);
+        gl::State::free_matrix(kernel);
     }
 
 

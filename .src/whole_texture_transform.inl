@@ -14,16 +14,16 @@ namespace crisp
     {
         auto& workspace = texture.get_workspace();
 
-        auto shader = State::register_shader("sobel_gradient_magnitude.glsl");
-        auto program = State::register_program(shader);
-        State::free_shader(shader);
-        State::bind_shader_program(program);
-        State::bind_texture(program, "_texture", texture);
+        auto shader = gl::State::register_shader("sobel_gradient_magnitude.glsl");
+        auto program = gl::State::register_program(shader);
+        gl::State::free_shader(shader);
+        gl::State::bind_shader_program(program);
+        gl::State::bind_texture(program, "_texture", texture);
 
         workspace.display();
         workspace.yield();
 
-        State::free_program(program);
+        gl::State::free_program(program);
         return;
     }
 
@@ -32,16 +32,16 @@ namespace crisp
     {
         auto& workspace = texture.get_workspace();
 
-        auto shader = State::register_shader("normalize_clamp.glsl");
-        auto program = State::register_program(shader);
-        State::free_shader(shader);
-        State::bind_shader_program(program);
-        State::bind_texture(program, "_texture", texture);
+        auto shader = gl::State::register_shader("normalize_clamp.glsl");
+        auto program = gl::State::register_program(shader);
+        gl::State::free_shader(shader);
+        gl::State::bind_shader_program(program);
+        gl::State::bind_texture(program, "_texture", texture);
 
         workspace.display();
         workspace.yield();
 
-        State::free_program(program);
+        gl::State::free_program(program);
         return;
     }
 
@@ -50,23 +50,23 @@ namespace crisp
     {
         auto& workspace = texture.get_workspace();
 
-        auto shader = State::register_shader("normalize_smoothstep.glsl");
-        auto program = State::register_program(shader);
-        State::free_shader(shader);
-        State::bind_shader_program(program);
-        State::bind_texture(program, "_texture", texture);
+        auto shader = gl::State::register_shader("normalize_smoothstep.glsl");
+        auto program = gl::State::register_program(shader);
+        gl::State::free_shader(shader);
+        gl::State::bind_shader_program(program);
+        gl::State::bind_texture(program, "_texture", texture);
 
         workspace.display();
         workspace.yield();
 
-        State::free_program(program);
+        gl::State::free_program(program);
         return;
     }
 
     template<size_t N>
     void normalize(Texture<float, N>& texture)
     {
-        auto data = State::get_texture_data(texture.get_handle());
+        auto data = gl::State::get_texture_data(texture.get_handle());
 
         auto max = Vector<float, 4>(0);
         auto min = Vector<float, 4>(1);
@@ -81,24 +81,24 @@ namespace crisp
 
         auto& workspace = texture.get_workspace();
 
-        auto min_id = State::register_vec<4>(min);
-        auto max_id = State::register_vec<4>(max);
+        auto min_id = gl::State::register_vec<4>(min);
+        auto max_id = gl::State::register_vec<4>(max);
 
-        auto shader = State::register_shader("normalize_minmax.glsl");
-        auto program = State::register_program(shader);
+        auto shader = gl::State::register_shader("normalize_minmax.glsl");
+        auto program = gl::State::register_program(shader);
 
-        State::free_shader(shader);
-        State::bind_shader_program(program);
-        State::bind_texture(program, "_texture", texture);
-        State::bind_vec(program, "_min", min_id);
-        State::bind_vec(program, "_max", max_id);
+        gl::State::free_shader(shader);
+        gl::State::bind_shader_program(program);
+        gl::State::bind_texture(program, "_texture", texture);
+        gl::State::bind_vec(program, "_min", min_id);
+        gl::State::bind_vec(program, "_max", max_id);
 
         workspace.display();
         workspace.yield();
 
-        State::free_program(program);
-        State::free_vec(min_id);
-        State::free_vec(max_id);
+        gl::State::free_program(program);
+        gl::State::free_vec(min_id);
+        gl::State::free_vec(max_id);
         return;
     }
 

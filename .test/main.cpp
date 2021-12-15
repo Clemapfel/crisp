@@ -3,34 +3,34 @@
 // Created on 06.11.21 by clem (mail@clemens-cords.com)
 //
 
-#include <opencv4/opencv2/core.hpp>
-#include <opencv4/opencv2/video.hpp>
-#include <opencv4/opencv2/videoio.hpp>
-
-#include <gpu_side/texture.hpp>
-#include <system/image_io.hpp>
-#include <benchmark.hpp>
-#include <spatial_filter.hpp>
-#include <system/render_window.hpp>
-#include <morphological_transform.hpp>
-
-#include <SFML/Window.hpp>
-#include <SFML/Graphics.hpp>
-#include <thread>
-
-#include <gpu_side/hardware_accelerated_matrix.hpp>
-#include <sol.hpp>
-#include <histogram.hpp>
-
+#include <uv.h>
+#include <julia.h>
 #include <audio/audio_file.hpp>
-#include <system/sprite.hpp>
-
-#include <fourier_transform.hpp>
-#include <audio/spectrogram.hpp>
-#include <pseudocolor_mapping.hpp>
+#include ".src/julia_binding.inl"
 
 using namespace crisp;
 
+#ifdef JULIA_DEFINE_FAST_TLS // only available in Julia v0.7 and above
+JULIA_DEFINE_FAST_TLS()
+#endif
+
+int main(int argc, char *argv[])
+{
+    julia::init();
+
+    /* run Julia commands */
+    jl_eval_string("print(sqrt(2.0))");
+
+    /* strongly recommended: notify Julia that the
+         program is about to terminate. this allows
+         Julia time to cleanup pending write requests
+         and run all finalizers
+    */
+    jl_atexit_hook(0);
+    return 0;
+}
+
+/*
 int main()
 {
     constexpr size_t width = 1500;

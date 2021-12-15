@@ -179,7 +179,7 @@ namespace crisp
         }
 
         cache_frames_until(i);
-        return Texture<float, 3>(State::register_texture<float, 3>(_size.x(), _size.y(), &(_frames.at(i).at<float>(0, 0))));
+        return Texture<float, 3>(gl::State::register_texture<float, 3>(_size.x(), _size.y(), &(_frames.at(i).at<float>(0, 0))));
     }
 
     void VideoFile::set_frame(size_t i, const Texture<float, 3>& tex)
@@ -192,7 +192,7 @@ namespace crisp
         }
 
         cache_frames_until(i);
-        auto info = State::get_texture_info(tex.get_handle());
+        auto info = gl::State::get_texture_info(tex.get_handle());
         assert(info.width == _size.x() and info.height == _size.y());
 
         glBindTexture(GL_TEXTURE_2D, tex.get_handle());

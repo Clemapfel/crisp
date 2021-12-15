@@ -7,7 +7,7 @@
 
 namespace crisp
 {
-    /// @brief typedef used as a template argument for specializations
+    /// @brief bool proxy used as a template argument for specializations
     template<bool b>
     struct is_gpu_side
     {

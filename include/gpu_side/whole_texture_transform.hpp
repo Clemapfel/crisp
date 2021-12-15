@@ -29,8 +29,6 @@ namespace crisp
     /// @param texture: texture to be modified
     template<size_t N>
     void smoothstep(Texture<float, N>&);
-
-
 }
 
 #include ".src/whole_texture_transform.inl"

@@ -12,8 +12,8 @@ namespace crisp
 {
     Shader::Shader(const std::string& path)
     {
-        _shader_id = State::register_shader(path);
-        _program_id = State::register_program(_shader_id);
+        _shader_id = gl::State::register_shader(path);
+        _program_id = gl::State::register_program(_shader_id);
     }
 
     void Shader::load_from_file(const std::string& path)
@@ -21,13 +21,13 @@ namespace crisp
         std::cerr << "[LOG] Recompiling " << path << std::endl;
 
         if (_shader_id != -1)
-            State::free_shader(_shader_id);
+            gl::State::free_shader(_shader_id);
 
         if (_program_id != -1)
-            State::free_program(_program_id);
+            gl::State::free_program(_program_id);
 
-        _shader_id = State::register_shader(path);
-        _program_id = State::register_program(_shader_id);
+        _shader_id = gl::State::register_shader(path);
+        _program_id = gl::State::register_program(_shader_id);
     }
 
     Shader::~Shader()
@@ -37,37 +37,37 @@ namespace crisp
             switch (entry.second.type)
             {
                 case INT:
-                    State::free_int(entry.second.id);
+                    gl::State::free_int(entry.second.id);
                     break;
                 case FLOAT:
-                    State::free_float(entry.second.id);
+                    gl::State::free_float(entry.second.id);
                     break;
                 case BOOL:
-                    State::free_bool(entry.second.id);
+                    gl::State::free_bool(entry.second.id);
                     break;
                 case VEC2:
-                    State::free_vec(entry.second.id);
+                    gl::State::free_vec(entry.second.id);
                     break;
                 case VEC3:
-                    State::free_vec(entry.second.id);
+                    gl::State::free_vec(entry.second.id);
                     break;
                 case VEC4:
-                    State::free_vec(entry.second.id);
+                    gl::State::free_vec(entry.second.id);
                     break;
                 case MATRIX:
-                    State::free_matrix(entry.second.id);
+                    gl::State::free_matrix(entry.second.id);
                     break;
                 case ARRAY_VEC1:
-                    State::free_array<1>(entry.second.id);
+                    gl::State::free_array<1>(entry.second.id);
                     break;
                 case ARRAY_VEC2:
-                    State::free_array<2>(entry.second.id);
+                    gl::State::free_array<2>(entry.second.id);
                     break;
                 case ARRAY_VEC3:
-                    State::free_array<3>(entry.second.id);
+                    gl::State::free_array<3>(entry.second.id);
                     break;
                 case ARRAY_VEC4:
-                    State::free_array<4>(entry.second.id);
+                    gl::State::free_array<4>(entry.second.id);
                     break;
                 case TEXTURE:
                     // sic, noop
@@ -75,8 +75,8 @@ namespace crisp
             }
         }
 
-        State::free_shader(_shader_id);
-        State::free_program(_program_id);
+        gl::State::free_shader(_shader_id);
+        gl::State::free_program(_program_id);
     }
 
     void Shader::bind_uniforms()
@@ -87,40 +87,40 @@ namespace crisp
             switch (pair.second.type)
             {
                 case INT:
-                    State::bind_int(_program_id, pair.first, pair.second.id);
+                    gl::State::bind_int(_program_id, pair.first, pair.second.id);
                     break;
                 case FLOAT:
-                    State::bind_float(_program_id, pair.first, pair.second.id);
+                    gl::State::bind_float(_program_id, pair.first, pair.second.id);
                     break;
                 case BOOL:
-                    State::bind_bool(_program_id, pair.first, pair.second.id);
+                    gl::State::bind_bool(_program_id, pair.first, pair.second.id);
                     break;
                 case VEC2:
-                    State::bind_vec(_program_id, pair.first, pair.second.id);
+                    gl::State::bind_vec(_program_id, pair.first, pair.second.id);
                     break;
                 case VEC3:
-                    State::bind_vec(_program_id, pair.first, pair.second.id);
+                    gl::State::bind_vec(_program_id, pair.first, pair.second.id);
                     break;
                 case VEC4:
-                    State::bind_vec(_program_id, pair.first, pair.second.id);
+                    gl::State::bind_vec(_program_id, pair.first, pair.second.id);
                     break;
                 case MATRIX:
-                    State::bind_matrix(_program_id, pair.first, pair.second.id);
+                    gl::State::bind_matrix(_program_id, pair.first, pair.second.id);
                     break;
                 case ARRAY_VEC1:
-                    State::bind_array<1>(_program_id, pair.first, pair.second.id);
+                    gl::State::bind_array<1>(_program_id, pair.first, pair.second.id);
                     break;
                 case ARRAY_VEC2:
-                    State::bind_array<2>(_program_id, pair.first, pair.second.id);
+                    gl::State::bind_array<2>(_program_id, pair.first, pair.second.id);
                     break;
                 case ARRAY_VEC3:
-                    State::bind_array<3>(_program_id, pair.first, pair.second.id);
+                    gl::State::bind_array<3>(_program_id, pair.first, pair.second.id);
                     break;
                 case ARRAY_VEC4:
-                    State::bind_array<4>(_program_id, pair.first, pair.second.id);
+                    gl::State::bind_array<4>(_program_id, pair.first, pair.second.id);
                     break;
                 case TEXTURE:
-                    State::bind_texture(_program_id, pair.first, pair.second.id, texture_location);
+                    gl::State::bind_texture(_program_id, pair.first, pair.second.id, texture_location);
                     texture_location += 1;
                     break;
             }
@@ -135,40 +135,40 @@ namespace crisp
             switch (pair.second.type)
             {
                 case INT:
-                    State::bind_int(_program_id, pair.first, -1);
+                    gl::State::bind_int(_program_id, pair.first, -1);
                     break;
                 case FLOAT:
-                    State::bind_float(_program_id, pair.first, -1);
+                    gl::State::bind_float(_program_id, pair.first, -1);
                     break;
                 case BOOL:
-                    State::bind_bool(_program_id, pair.first, -1);
+                    gl::State::bind_bool(_program_id, pair.first, -1);
                     break;
                 case VEC2:
-                    State::bind_vec(_program_id, pair.first, -1);
+                    gl::State::bind_vec(_program_id, pair.first, -1);
                     break;
                 case VEC3:
-                    State::bind_vec(_program_id, pair.first, -1);
+                    gl::State::bind_vec(_program_id, pair.first, -1);
                     break;
                 case VEC4:
-                    State::bind_vec(_program_id, pair.first, -1);
+                    gl::State::bind_vec(_program_id, pair.first, -1);
                     break;
                 case MATRIX:
-                    State::bind_matrix(_program_id, pair.first, -1);
+                    gl::State::bind_matrix(_program_id, pair.first, -1);
                     break;
                 case ARRAY_VEC1:
-                    State::bind_array<1>(_program_id, pair.first, -1);
+                    gl::State::bind_array<1>(_program_id, pair.first, -1);
                     break;
                 case ARRAY_VEC2:
-                    State::bind_array<2>(_program_id, pair.first, -1);
+                    gl::State::bind_array<2>(_program_id, pair.first, -1);
                     break;
                 case ARRAY_VEC3:
-                    State::bind_array<3>(_program_id, pair.first, -1);
+                    gl::State::bind_array<3>(_program_id, pair.first, -1);
                     break;
                 case ARRAY_VEC4:
-                    State::bind_array<4>(_program_id, pair.first, -1);
+                    gl::State::bind_array<4>(_program_id, pair.first, -1);
                     break;
                 case TEXTURE:
-                    State::bind_texture(_program_id, pair.first, -1, texture_location);
+                    gl::State::bind_texture(_program_id, pair.first, -1, texture_location);
                     texture_location += 1;
                     break;
             }
@@ -177,8 +177,8 @@ namespace crisp
 
     void Shader::set_active()
     {
-        State::bind_shader_program(_program_id);
-        State::bind_shader(this);
+        gl::State::bind_shader_program(_program_id);
+        gl::State::bind_shader(this);
     }
 
     void Shader::set_int(const std::string& var_name, int32_t v)
@@ -186,7 +186,7 @@ namespace crisp
         _var_name_to_proxy.insert({
             var_name,
             ProxyEntry{
-                .id = State::register_int(v),
+                .id = gl::State::register_int(v),
                 .type = ProxyType::INT
             }
         });
@@ -197,7 +197,7 @@ namespace crisp
         _var_name_to_proxy.insert({
             var_name,
             ProxyEntry{
-                .id = State::register_bool(v),
+                .id = gl::State::register_bool(v),
                 .type = ProxyType::BOOL
             }
         });
@@ -208,7 +208,7 @@ namespace crisp
         _var_name_to_proxy.insert({
             var_name,
             ProxyEntry{
-                .id = State::register_float(v),
+                .id = gl::State::register_float(v),
                 .type = ProxyType::FLOAT
             }
         });
@@ -220,7 +220,7 @@ namespace crisp
         _var_name_to_proxy.insert({
             var_name,
             ProxyEntry {
-                .id = State::register_vec<2>(vec),
+                .id = gl::State::register_vec<2>(vec),
                 .type = ProxyType::VEC2
             }
         });
@@ -232,7 +232,7 @@ namespace crisp
         _var_name_to_proxy.insert({
             var_name,
             ProxyEntry {
-                .id = State::register_vec<3>(vec),
+                .id = gl::State::register_vec<3>(vec),
                 .type = ProxyType::VEC3
             }
         });
@@ -244,7 +244,7 @@ namespace crisp
         _var_name_to_proxy.insert({
             var_name,
             ProxyEntry {
-                .id = State::register_vec<4>(vec),
+                .id = gl::State::register_vec<4>(vec),
                 .type = ProxyType::VEC4
             }
         });
@@ -256,7 +256,7 @@ namespace crisp
         _var_name_to_proxy.insert({
             var_name,
             ProxyEntry {
-                .id = State::register_matrix<T, n_rows, n_cols>(matrix),
+                .id = gl::State::register_matrix<T, n_rows, n_cols>(matrix),
                 .type = ProxyType::MATRIX
             }
         });
@@ -268,7 +268,7 @@ namespace crisp
         _var_name_to_proxy.insert({
             var_name,
             ProxyEntry {
-                .id = State::register_array(data),
+                .id = gl::State::register_array(data),
                 .type = ProxyType::ARRAY_VEC1
             }
         });
@@ -280,7 +280,7 @@ namespace crisp
         _var_name_to_proxy.insert({
             var_name,
             ProxyEntry {
-                .id = State::register_vec2_array(data),
+                .id = gl::State::register_vec2_array(data),
                 .type = ProxyType::ARRAY_VEC2
             }
         });
@@ -292,7 +292,7 @@ namespace crisp
         _var_name_to_proxy.insert({
             var_name,
             ProxyEntry {
-                .id = State::register_vec3_array(data),
+                .id = gl::State::register_vec3_array(data),
                 .type = ProxyType::ARRAY_VEC3
             }
         });
@@ -304,7 +304,7 @@ namespace crisp
         _var_name_to_proxy.insert({
             var_name,
             ProxyEntry {
-                .id = State::register_vec4_array(data),
+                .id = gl::State::register_vec4_array(data),
                 .type = ProxyType::ARRAY_VEC4
             }
         });
@@ -317,7 +317,7 @@ namespace crisp
         _var_name_to_proxy.insert({
             var_name,
             ProxyEntry {
-                .id = State::register_vec<3>(as_vec),
+                .id = gl::State::register_vec<3>(as_vec),
                 .type = ProxyType::VEC3
             }
         });
@@ -354,7 +354,7 @@ namespace crisp
     template<typename Value_t, size_t N>
     GLNativeHandle Shader::set_texture(const std::string& var_name, const Image<Value_t, N>& tex)
     {
-        auto id = State::register_texture(tex);
+        auto id = gl::State::register_texture(tex);
         _var_name_to_proxy.insert({
             var_name,
             ProxyEntry {

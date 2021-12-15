@@ -11,19 +11,19 @@ namespace crisp
 {
     PseudoColor<GPU_SIDE>::PseudoColor()
     {
-        auto shader = State::register_shader("pseudocolor.glsl");
-        _program = State::register_program(shader);
-        State::free_shader(shader);
+        auto shader = gl::State::register_shader("pseudocolor.glsl");
+        _program = gl::State::register_program(shader);
+        gl::State::free_shader(shader);
     }
 
     Texture<float, 3> PseudoColor<GPU_SIDE>::apply_to(const Texture<float, 1>& in) const
     {
-        Texture<float, 3> out = Texture<float, 3>(State::register_texture<float, 3>(in.get_size().x(), in.get_size().y()));
-        auto array = State::register_array(range_mapping_to_array());
+        Texture<float, 3> out = Texture<float, 3>(gl::State::register_texture<float, 3>(in.get_size().x(), in.get_size().y()));
+        auto array = gl::State::register_array(range_mapping_to_array());
 
         auto workspace = out.get_workspace();
-        State::bind_shader_program(_program);
-        State::bind_array<1>(_program, "_gray_to_hue", array);
+        gl::State::bind_shader_program(_program);
+        gl::State::bind_array<1>(_program, "_gray_to_hue", array);
         workspace.swap_buffers();
         workspace.draw_to_buffer();
 
@@ -32,11 +32,11 @@ namespace crisp
 
     Texture<float, 3>& PseudoColor<GPU_SIDE>::apply_in_place(Texture<float, 3>& in) const
     {
-        auto array = State::register_array(range_mapping_to_array());
+        auto array = gl::State::register_array(range_mapping_to_array());
 
         auto workspace = in.get_workspace();
-        State::bind_shader_program(_program);
-        State::bind_array<1>(_program, "_gray_to_hue", array);
+        gl::State::bind_shader_program(_program);
+        gl::State::bind_array<1>(_program, "_gray_to_hue", array);
         workspace.display();
         workspace.yield();
 

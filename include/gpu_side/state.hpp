@@ -19,7 +19,7 @@
 #include <gpu_side/native_handle.hpp>
 #include <structuring_element.hpp>
 
-namespace crisp
+namespace crisp::gl
 {
     class Shader;
 
@@ -28,7 +28,7 @@ namespace crisp
 
     /// @brief handler that manages resource allocation and interaction between cpu-side and gpu-side resources
     /// @note do not interact with this class unless you know what you are doing, intended for internal use only
-    union State
+    struct State
     {
         friend class Shader;
         friend class Workspace;
@@ -360,7 +360,7 @@ namespace crisp
 
             /// @brief free 1d signal
             /// @param handle
-            static GLNativeHandle free_signal(GLNativeHandle);
+            static void free_signal(GLNativeHandle);
 
             /// @brief bind 1d signal
             /// @param program_id: native handle of shader program

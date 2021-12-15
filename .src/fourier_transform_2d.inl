@@ -63,18 +63,18 @@ namespace crisp
     template<FourierTransformMode Mode>
     Texture<float, 1> FourierTransform<Mode>::as_texture() const
     {
-        auto out = Texture<float, 1>(State::register_texture<1>(_size.x(), _size.y(), _spectrum));
+        auto out = Texture<float, 1>(gl::State::register_texture<1>(_size.x(), _size.y(), _spectrum));
 
         auto& workspace = out.get_workspace();
 
-        auto shader = State::register_shader("visualize_fourier.glsl");
-        auto program = State::register_program(shader);
-        State::free_shader(shader);
+        auto shader = gl::State::register_shader("visualize_fourier.glsl");
+        auto program = gl::State::register_program(shader);
+        gl::State::free_shader(shader);
 
-        State::bind_shader_program(program);
-        State::set_float(program, "_min", _min_spectrum);
-        State::set_float(program, "_max", _max_spectrum);
-        State::bind_texture(program, "_texture", out.get_handle());
+        gl::State::bind_shader_program(program);
+        gl::State::set_float(program, "_min", _min_spectrum);
+        gl::State::set_float(program, "_max", _max_spectrum);
+        gl::State::bind_texture(program, "_texture", out.get_handle());
 
         workspace.display();
         workspace.yield();
