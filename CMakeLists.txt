@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.19)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -lstdc++fs -pthread -lpthread -lGL")
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
 
 project(crisp)
 
@@ -17,12 +17,6 @@ include_directories("./eigen/Eigen")
 
 # OpenGL
 FIND_PACKAGE(OpenGL REQUIRED)
-
-# sol2
-include_directories("./sol2/include/sol")
-include_directories("./sol2/include")
-include_directories("/usr/include/lua5.3")
-find_package(Lua REQUIRED)
 
 # OpenCV
 SET("OpenCV_DIR" "/usr/share/OpenCV")
@@ -89,7 +83,7 @@ add_library(crisp STATIC
         .src/frequency_domain_filter_gpu.inl
 
         include/fourier_transform.hpp
-        .src/fourier_transform.inl
+        .src/fourier_transform_2d.inl
 
         include/histogram.hpp
         .src/histogram.inl
@@ -135,18 +129,29 @@ add_library(crisp STATIC
         include/video/video_stream.hpp
 
         include/gpu_side/whole_texture_transform.hpp
-        .src/whole_texture_transform.inl)
+        .src/whole_texture_transform.inl
+
+        include/audio/audio_file.hpp
+        .src/audio_file.inl
+
+        include/audio/spectrogram.hpp
+        .src/spectrogram.inl
+
+        .src/window_function.inl
+        include/audio/audio_stream.hpp
+
+        include/audio/filter.hpp)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp
         sfml-graphics
         sfml-window
         sfml-system
+        sfml-audio
         fftw3
         fftw3l
         fftw3f
         ${OPENGL_LIBRARIES}
-        ${LUA_LIBRARIES}
         ${OpenCV_LIBS})
 
 include_directories("./include")

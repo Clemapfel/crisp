@@ -7,5 +7,9 @@
 
 namespace crisp
 {
-    // this feature is not yet implemented
+    /// @brief video signal where all frames are not yet known at the time of loading
+    class VideoStream
+    {
+        // this feature is not yet implemented
+    };
 }

@@ -20,76 +20,133 @@
 
 #include <gpu_side/hardware_accelerated_matrix.hpp>
 #include <sol.hpp>
+#include <histogram.hpp>
+
+#include <audio/audio_file.hpp>
+#include <system/sprite.hpp>
+
+#include <fourier_transform.hpp>
+#include <audio/spectrogram.hpp>
+#include <pseudocolor_mapping.hpp>
 
 using namespace crisp;
 
 int main()
 {
+    constexpr size_t width = 1500;
+    constexpr size_t height = 1000;
+
+    auto window = RenderWindow();
+    window.create(width, height);
+    window.set_active();
+
+    sf::Clock clock;
+
+    auto audio = AudioFile();
+    audio.load("/home/clem/Workspace/crisp/.test/tonleiter.wav");
+
+    auto spectrogram = Spectrogram();
+    spectrogram.create_from(audio, 2215, 0.33, Spectrogram::WindowType::GAUSS);
+
+    auto img = spectrogram.as_image();
+    save_to_disk(img, "/home/clem/Workspace/crisp/.test/spectrogram.png");
+    return 0;
+}
+    /*
+    std::cout << spectrogram.get_size() << std::endl;
+    std::cout << GL_MAX_TEXTURE_SIZE << " " << GL_MAX_TEXTURE_SIZE << std::endl;
+
+    glViewport(0, 0, spectrogram.get_size().x(), spectrogram.get_size().y());
+
+    auto shader = State::register_shader("audio/visualize_fourier.glsl");
+    auto program = State::register_program(shader);
+    State::bind_shader_program(program);
+    State::free_shader(shader);
+
+    //array = State::register_signal_array(signals.front().size(), signals.size(), signals);
+    auto spec_tex = spectrogram.as_1d_texture_array();
+    State::bind_signal_array(State::get_active_program_handle(), "_signal_array", spec_tex);
+    State::set_int(State::get_active_program_handle(), "_n_signals", spectrogram.get_size().x());
+    State::display();
+
+    while (window.is_open())
+    {
+        window.update();
+        window.display();
+
+        if (InputHandler::was_key_pressed(KeyID::SPACE))
+        {
+            shader = State::register_shader("audio/visualize_fourier.glsl");
+            program = State::register_program(shader);
+            State::bind_shader_program(program);
+            State::bind_signal_array(State::get_active_program_handle(), "_signal_array", spec_tex);
+            State::set_int(State::get_active_program_handle(), "_n_signals", spectrogram.get_size().x());
+            State::free_shader(shader);
+            State::display();
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(16));
+    }
+}
+    /*
     auto window = RenderWindow();
     window.create(300, 300);
     window.set_active();
 
-    Eigen::MatrixXf left, right, control_out;
+    auto audio = AudioFile();
+    audio.load("/home/clem/Workspace/crisp/.test/killdeer.wav");
 
-    size_t rows = 1000;
-    size_t cols = 1000;
+    std::cout << "n samples: " << audio.get_n_samples() << std::endl;
+    auto samples = audio.get_samples();
 
-    left.resize(rows, cols);
-    left.setRandom();
+    std::cout << "n channels: " << audio.get_n_channels() << std::endl;
+    std::cout << "max texture dim: " << GL_MAX_TEXTURE_SIZE << " | max array depth: " << GL_MAX_ARRAY_TEXTURE_LAYERS << std::endl;
 
-    right.resize(rows, cols);
-    right.setRandom();
+    int16_t min = std::numeric_limits<int16_t>::max();
+    int16_t max = std::numeric_limits<int16_t>::min();
+    auto unique = std::set<float>();
 
-    control_out = left;
-    auto gpu_matrix = HardwareAcceleratedMatrix(control_out);
-    auto gpu_left = HardwareAcceleratedMatrix(left);
-
-    size_t run = 0;
-    auto cpu_side = Benchmark([&](){
-        control_out.transposeInPlace();
-    });
-
-    std::cout << "CPU: " << cpu_side.execute(3) << std::endl;
-
-    run = 0;
-    auto gpu_side = Benchmark([&](){
-        gpu_matrix.transpose_in_place();
-    });
-
-    std::cout << "GPU: " << gpu_side.execute(3) << std::endl;
-
-    control_out.transposeInPlace();
-    auto temp = gpu_matrix.transpose();
-    gpu_matrix = temp;
-
-    auto data = gpu_matrix.get_data();
-    float error = 0;
-    size_t n = 0;
-    for (size_t i = 0; i < data.size(); ++i)
+    for (auto& s : samples)
     {
-        error += abs(data[i] - control_out.data()[i]);;
-        n++;
+        min = std::min(min, s);
+        max = std::max(max, s);
+        unique.insert(s);
     }
 
-    std::cout << "Mean Error: " << error / n << std::endl;
+    std::cout << "Min: " << min << " | " << "Max: " << max << std::endl;
+    std::cout << "Unique: " << unique.size() << std::endl;
+
+
+    auto shader = State::register_shader("visualize_1d.glsl");
+    auto program = State::register_program(shader);
+    State::bind_shader_program(program);
+    auto image = load_color_image("/home/clem/Workspace/crisp/.test/opal_color.png");
+    auto texture = Texture<float, 3>(image);
+
+    auto sprite = Sprite();
+    sprite.create_from(image);
+
+    State::bind_texture(State::get_active_program_handle(), "_texture", texture);
+
+    //auto as_1d_tex = State::register_1d_signal(audio.get_n_samples(), &audio.get_samples()[0]);
+    //State::bind_1d_signal(program, "_texture_1d", as_1d_tex, 0);
+    State::display();
     return 0;
 
     while (window.is_open())
     {
         auto time = window.update();
+        window.clear();
+        window.draw(sprite);
+        window.display();
 
-        if (InputHandler::was_key_pressed(RIGHT))
-        {
-        }
-        else if (InputHandler::was_key_pressed(LEFT))
-        {
-        }
+        if (InputHandler::was_key_pressed(SPACE))
+        {}
 
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
 
     return 0;
-
 }
 
 /*

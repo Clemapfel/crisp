@@ -28,7 +28,7 @@ namespace crisp
 
     /// @brief handler that manages resource allocation and interaction between cpu-side and gpu-side resources
     /// @note do not interact with this class unless you know what you are doing, intended for internal use only
-    class State
+    union State
     {
         friend class Shader;
         friend class Workspace;
@@ -352,6 +352,42 @@ namespace crisp
             /// @returns texture info as State::TextureInfo object
             static TextureInfo get_texture_info(GLNativeHandle);
 
+            /// @brief register 1d signal of arbitrary length
+            /// @param n_samples: number of elements in data
+            /// @param data: pointer to data, 16-bit int
+            /// @returns native handle of GL_TEXTURE_1D_ARRAY
+            static GLNativeHandle register_signal(size_t n_samples, size_t first_sample, const float* data);
+
+            /// @brief free 1d signal
+            /// @param handle
+            static GLNativeHandle free_signal(GLNativeHandle);
+
+            /// @brief bind 1d signal
+            /// @param program_id: native handle of shader program
+            /// @param var_name: exact variable name in shader source
+            /// @param signal_id: native handle of signal
+            /// @param texture_location: value of layout qualifier
+            /// @notes when binding multiple textures to the same program, start with the texture with the *highest* texture unit first, then proceed towards the lowest
+            static void bind_signal(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle signal_id, size_t texture_location = 0);
+
+            /// @brief register 1d signal array
+            /// @param n_samples: width of 1d signal, all signals have to have the same width
+            /// @param n_layers: number of elements in array
+            /// @param vector: vector of signals
+            /// @returns handle
+            static GLNativeHandle register_signal_array(size_t n_samples, size_t n_layers, const std::vector<std::vector<float>>&);
+
+            /// @brief erase signal array
+            /// @param handle
+            static void free_signal_array(GLNativeHandle);
+
+            /// @brief bind 1d signal array to program
+            /// @param program_id: native handle of shader program
+            /// @param var_name: exact variable name in shader source
+            /// @param signal_id: native handle of signal array
+            /// @param texture_location: value of layout qualifier
+            static void bind_signal_array(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle signal_id, size_t texture_location = 0);
+
             /// @brief get id of currently bound shader program
             /// @returns -1 if no programs bound, the programs native handle in {1, 2, ...} otherwise
             static GLNativeHandle get_active_program_handle();
@@ -406,6 +442,7 @@ namespace crisp
 
             static inline GLNativeHandle _active_program = NONE;
 
+            static void initialize_vertices();
             static inline bool _vertices_initialized = false;
             static inline GLNativeHandle _vertex_array = NONE,
                                          _vertex_buffer = NONE,
@@ -424,6 +461,8 @@ namespace crisp
 
             static inline std::unordered_map<GLNativeHandle, FrameBufferProxy> _frame_buffer = {};
             static inline GLNativeHandle _active_buffer = NONE;
+
+            static inline std::multiset<GLNativeHandle> _1d_texture_arrays = {};
 
             // exceptions and safety
             static void verify_program_id(GLNativeHandle);

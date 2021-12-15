@@ -21,6 +21,9 @@ namespace crisp
         if (_noop_fragment_shader == NONE or _noop_vertex_shader == NONE or _noop_program == 1)
             initialize_noop_shaders();
 
+        if (not _vertices_initialized)
+            initialize_vertices();
+
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -152,6 +155,7 @@ namespace crisp
             #version 330 core
 
             in vec2 _tex_coord;
+            out vec4 _out;
 
             uniform sampler2D _texture;
 
@@ -159,7 +163,7 @@ namespace crisp
 
             void main()
             {
-                gl_FragColor = texture2D(_texture, _tex_coord);
+                _out = texture2D(_texture, _tex_coord);
             }
         )";
 
@@ -309,39 +313,8 @@ namespace crisp
         _active_program = program_id;
     }
 
-    template<typename T, size_t N>
-    GLNativeHandle State::register_texture(const Image<T, N>& image)
+    void State::initialize_vertices()
     {
-        static_assert(0 < N and N <= 4);
-        static_assert(std::is_same_v<T, bool> or std::is_same_v<T, float>);
-
-        using Data_t = typename std::conditional<std::is_same_v<T, bool>, GLboolean, float>::type;
-        boost::container::vector<Data_t> data;
-        data.reserve(image.get_size().x() * image.get_size().y() * N);
-
-        for (size_t y = 0; y < image.get_size().y(); y++)
-        {
-            for (size_t x = 0; x < image.get_size().x(); x++)
-            {
-                std::vector<size_t> seq;
-
-                auto px = image.at(x, image.get_size().y() - (y + 1));
-
-                for (size_t i = 0; i < px.size(); ++i)
-                {
-                    if (std::is_same_v<T, bool>)
-                        data.push_back(bool(px.at(i)) ? 255 : 0);
-                    else
-                        data.push_back(px.at(i));
-                }
-            }
-        }
-
-        GLNativeHandle texture_id;
-        glGenTextures(1, &texture_id);
-
-        glBindTexture(GL_TEXTURE_2D, texture_id);
-
         if (not _vertices_initialized)
         {
             // vertex info
@@ -384,6 +357,42 @@ namespace crisp
 
             _vertices_initialized = true;
         }
+    }
+
+    template<typename T, size_t N>
+    GLNativeHandle State::register_texture(const Image<T, N>& image)
+    {
+        static_assert(0 < N and N <= 4);
+        static_assert(std::is_same_v<T, bool> or std::is_same_v<T, float>);
+
+        using Data_t = typename std::conditional<std::is_same_v<T, bool>, GLboolean, float>::type;
+        boost::container::vector<Data_t> data;
+        data.reserve(image.get_size().x() * image.get_size().y() * N);
+
+        for (size_t y = 0; y < image.get_size().y(); y++)
+        {
+            for (size_t x = 0; x < image.get_size().x(); x++)
+            {
+                std::vector<size_t> seq;
+
+                auto px = image.at(x, image.get_size().y() - (y + 1));
+
+                for (size_t i = 0; i < px.size(); ++i)
+                {
+                    if (std::is_same_v<T, bool>)
+                        data.push_back(bool(px.at(i)) ? 255 : 0);
+                    else
+                        data.push_back(px.at(i));
+                }
+            }
+        }
+
+        GLNativeHandle texture_id;
+        glGenTextures(1, &texture_id);
+
+        glBindTexture(GL_TEXTURE_2D, texture_id);
+
+        initialize_vertices();
 
         GLint internal_format;
         GLint format;
@@ -1448,6 +1457,169 @@ namespace crisp
         }
 
         return Vector2ui{_texture_info.at(texture_handle).width, _texture_info.at(texture_handle).height};
+    }
+
+    GLNativeHandle State::register_signal(size_t n_samples, size_t first_sample, const float* data)
+    {
+        initialize_vertices();
+
+        GLNativeHandle signal_id;
+        glGenTextures(1, &signal_id);
+        glBindTexture(GL_TEXTURE_1D, signal_id);
+
+        /*
+        if (n_samples > GL_MAX_TEXTURE_SIZE)
+        {
+            std::cerr << "[WARNING] Trying to register a 1d texture with a number of samples greater than supported by the implementation." << std::endl;
+            std::cerr << "[LOG] Resizing signal section to " << GL_MAX_TEXTURE_SIZE << std::endl;
+            n_samples = GL_MAX_TEXTURE_SIZE-1;
+        }
+         */
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glTexImage1D(GL_TEXTURE_1D,
+                     0,
+                     GL_R32F,
+                     n_samples,
+                     0,
+                     GL_RED,
+                     GL_FLOAT,
+                     data + first_sample);
+
+        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glGenerateMipmap(GL_TEXTURE_1D);
+
+        _1d_texture_arrays.insert(signal_id);
+        return signal_id;
+    }
+
+    GLNativeHandle State::free_signal(GLNativeHandle id)
+    {
+        _1d_texture_arrays.erase(id);
+        glDeleteTextures(1, &id);
+    }
+
+    void State::bind_signal(
+            GLNativeHandle program_id,
+            const std::string& var_name,
+            GLNativeHandle signal_id,
+            size_t texture_location)
+    {
+        if (program_id == NONE)
+        {
+            initialize_noop_shaders();
+            program_id = _noop_program;
+        }
+
+        if (signal_id == NONE)
+        {
+            glActiveTexture(GL_TEXTURE0 + texture_location);
+            glBindTexture(GL_TEXTURE_1D, 0);
+            return;
+        }
+
+        verify_program_id(program_id);
+
+        if (_1d_texture_arrays.find(signal_id) == _1d_texture_arrays.end())
+        {
+            std::stringstream s;
+            s << "[ERROR] No signal with handle "  << signal_id << " allocated" << std::endl;
+            throw std::out_of_range(s.str());
+        }
+
+        if (_active_program != program_id)
+        {
+            std::cerr << "[WARNING] Binding signal " << signal_id << " to uniform \"" << var_name << "\" in program "
+                      << program_id << " even though the program is not currently bound." << std::endl;
+            std::cerr << "[LOG] Changed active program to program " << program_id << std::endl;
+            State::bind_shader_program(program_id);
+        }
+
+        glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), texture_location);
+        glActiveTexture(GL_TEXTURE0 + texture_location);
+        glBindTexture(GL_TEXTURE_1D, signal_id);
+    }
+
+    GLNativeHandle State::register_signal_array(
+            size_t n_samples,
+            size_t n_layers,
+            const std::vector<std::vector<float>>& data)
+    {
+        for (auto& vec : data)
+            assert(vec.size() == n_samples);
+
+        assert(data.size() == n_layers);
+
+        std::vector<float> raw;
+
+        for (size_t i = 0; i < data.front().size(); ++i)
+            for (auto& vec : data)
+                raw.push_back(vec.at(i));
+
+        GLNativeHandle out;
+        glGenTextures(1, &out);
+        glBindTexture(GL_TEXTURE_1D_ARRAY, out);
+
+        glTexStorage2D(GL_TEXTURE_1D_ARRAY, 1, GL_R32F, n_samples, n_layers);
+        glTexSubImage2D(
+                GL_TEXTURE_1D_ARRAY,
+                0,
+                0,
+                0,
+                n_samples,
+                n_layers,
+                GL_RED,
+                GL_FLOAT,
+                &raw[0]);
+
+        glTexParameteri(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        return out;
+    }
+
+    void State::free_signal_array(GLNativeHandle handle)
+    {
+        glDeleteTextures(1, &handle);
+    }
+
+    void State::bind_signal_array(
+            GLNativeHandle program_id,
+            const std::string& var_name,
+            GLNativeHandle signal_id,
+            size_t texture_location)
+    {
+        if (program_id == NONE)
+        {
+            initialize_noop_shaders();
+            program_id = _noop_program;
+        }
+
+        if (signal_id == NONE)
+        {
+            glActiveTexture(GL_TEXTURE0 + texture_location);
+            glBindTexture(GL_TEXTURE_1D, 0);
+            return;
+        }
+
+        verify_program_id(program_id);
+
+        if (_active_program != program_id)
+        {
+            std::cerr << "[WARNING] Binding signal " << signal_id << " to uniform \"" << var_name << "\" in program "
+                      << program_id << " even though the program is not currently bound." << std::endl;
+            std::cerr << "[LOG] Changed active program to program " << program_id << std::endl;
+            State::bind_shader_program(program_id);
+        }
+
+        glUniform1i(glGetUniformLocation(program_id, var_name.c_str()), texture_location);
+        glActiveTexture(GL_TEXTURE0 + texture_location);
+        glBindTexture(GL_TEXTURE_1D_ARRAY, signal_id);
     }
 
     GLNativeHandle State::get_active_program_handle()
