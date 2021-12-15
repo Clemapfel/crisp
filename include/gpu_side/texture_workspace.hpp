@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <gpu_side/state.hpp>
+#include <gpu_side/opengl_state.hpp>
 #include <gpu_side/texture.hpp>
 
 namespace crisp

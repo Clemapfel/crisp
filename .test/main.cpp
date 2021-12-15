@@ -6,7 +6,8 @@
 #include <uv.h>
 #include <julia.h>
 #include <audio/audio_file.hpp>
-#include ".src/julia_binding.inl"
+#include ".src/julia_state.inl"
+#include <julia/julia_state.hpp>
 
 using namespace crisp;
 
@@ -16,17 +17,11 @@ JULIA_DEFINE_FAST_TLS()
 
 int main(int argc, char *argv[])
 {
-    julia::init();
+    julia::State::init();
+    auto test = julia::State::script("convert(Float16, 1+2)");
 
-    /* run Julia commands */
-    jl_eval_string("print(sqrt(2.0))");
+    std::cout << test.cast_to<float>() << std::endl;
 
-    /* strongly recommended: notify Julia that the
-         program is about to terminate. this allows
-         Julia time to cleanup pending write requests
-         and run all finalizers
-    */
-    jl_atexit_hook(0);
     return 0;
 }
 

@@ -4,7 +4,7 @@
 //
 
 #include <pseudocolor_mapping.hpp>
-#include <gpu_side/state.hpp>
+#include <gpu_side/opengl_state.hpp>
 #include <gpu_side/texture_workspace.hpp>
 
 namespace crisp 

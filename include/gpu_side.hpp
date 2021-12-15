@@ -8,7 +8,7 @@
 /// @brief collects all relevant headers from /crisp/gpu_side
 #include <gpu_side/is_gpu_side.hpp>
 #include <gpu_side/native_handle.hpp>
-#include <gpu_side/state.hpp>
+#include <gpu_side/opengl_state.hpp>
 #include <gpu_side/texture.hpp>
 #include <gpu_side/texture_workspace.hpp>
 #include <gpu_side/hardware_accelerated_matrix.hpp>

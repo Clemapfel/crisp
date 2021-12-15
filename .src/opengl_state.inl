@@ -10,7 +10,7 @@
 #include <fstream>
 #include <iostream>
 
-#include <gpu_side/state.hpp>
+#include <gpu_side/opengl_state.hpp>
 #include <image/multi_plane_image.hpp>
 #include <resource_path.hpp>
 

@@ -4,7 +4,7 @@
 //
 
 #include <gpu_side/shader.hpp>
-#include <gpu_side/state.hpp>
+#include <gpu_side/opengl_state.hpp>
 #include <spatial_filter.hpp>
 #include <morphological_transform.hpp>
 

@@ -4,7 +4,7 @@
 //
 
 #include <audio/audio_file.hpp>
-#include <gpu_side/state.hpp>
+#include <gpu_side/opengl_state.hpp>
 
 namespace crisp
 {

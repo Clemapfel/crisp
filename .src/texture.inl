@@ -4,7 +4,7 @@
 //
 
 #include <gpu_side/texture.hpp>
-#include <gpu_side/state.hpp>
+#include <gpu_side/opengl_state.hpp>
 #include <GL/gl.h>
 
 namespace crisp
