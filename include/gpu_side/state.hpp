@@ -370,8 +370,22 @@ namespace crisp
             /// @notes when binding multiple textures to the same program, start with the texture with the *highest* texture unit first, then proceed towards the lowest
             static void bind_signal(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle signal_id, size_t texture_location = 0);
 
+            /// @brief register 1d signal array
+            /// @param n_samples: width of 1d signal, all signals have to have the same width
+            /// @param n_layers: number of elements in array
+            /// @param vector: vector of signals
+            /// @returns handle
             static GLNativeHandle register_signal_array(size_t n_samples, size_t n_layers, const std::vector<std::vector<float>>&);
-            static GLNativeHandle free_signal_array(GLNativeHandle);
+
+            /// @brief erase signal array
+            /// @param handle
+            static void free_signal_array(GLNativeHandle);
+
+            /// @brief bind 1d signal array to program
+            /// @param program_id: native handle of shader program
+            /// @param var_name: exact variable name in shader source
+            /// @param signal_id: native handle of signal array
+            /// @param texture_location: value of layout qualifier
             static void bind_signal_array(GLNativeHandle program_id, const std::string& var_name, GLNativeHandle signal_id, size_t texture_location = 0);
 
             /// @brief get id of currently bound shader program

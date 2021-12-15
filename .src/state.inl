@@ -1583,7 +1583,7 @@ namespace crisp
         return out;
     }
 
-    GLNativeHandle State::free_signal_array(GLNativeHandle handle)
+    void State::free_signal_array(GLNativeHandle handle)
     {
         glDeleteTextures(1, &handle);
     }
