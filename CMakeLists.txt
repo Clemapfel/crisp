@@ -138,7 +138,15 @@ add_library(crisp STATIC
         .src/whole_texture_transform.inl
 
         include/audio/audio_file.hpp
-        .src/audio_file.inl include/audio/spectrogram.hpp .src/spectrogram.inl .src/window_function.inl include/audio/audio_stream.hpp)
+        .src/audio_file.inl
+
+        include/audio/spectrogram.hpp
+        .src/spectrogram.inl
+
+        .src/window_function.inl
+        include/audio/audio_stream.hpp
+
+        include/audio/filter.hpp)
 
 set_target_properties(crisp PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(crisp
@@ -156,8 +164,5 @@ target_link_libraries(crisp
 include_directories("./include")
 include_directories("./")
 include_directories("/usr/include/opencv4")
-
-add_executable(AUDIO .test/main.cpp include/audio/window_function.hpp)
-target_link_libraries(AUDIO crisp)
 
 
