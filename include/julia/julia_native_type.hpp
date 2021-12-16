@@ -32,3 +32,5 @@ namespace crisp::julia
 
     NativeType get_type(jl_value_t*);
 }
+
+#include ".src/julia_native_type.inl"

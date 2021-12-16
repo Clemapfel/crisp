@@ -14,6 +14,7 @@ namespace crisp::julia
     {
         public:
             Proxy(jl_value_t*);
+            ~Proxy();
 
             operator bool();
             operator char();
@@ -35,8 +36,6 @@ namespace crisp::julia
 
             template<typename T>
             T cast_to() const;
-
-        private:
 
             NativeType _type;
             jl_value_t* _value;

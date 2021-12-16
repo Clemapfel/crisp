@@ -4,7 +4,6 @@
 //
 
 #include <uv.h>
-#include <julia.h>
 #include <audio/audio_file.hpp>
 #include ".src/julia_state.inl"
 #include <julia/julia_state.hpp>
@@ -17,10 +16,16 @@ JULIA_DEFINE_FAST_TLS()
 
 int main(int argc, char *argv[])
 {
-    julia::State::init();
-    auto test = julia::State::script("convert(Float16, 1+2)");
 
-    std::cout << test.cast_to<float>() << std::endl;
+    julia::State::init();
+
+    {
+        julia::Proxy first = julia::State::script("test = convert(Float32, 1+2)");
+    }
+    int test = julia::State::script("return test");
+    julia::Proxy second = julia::State::script("test += 2");
+
+
 
     return 0;
 }

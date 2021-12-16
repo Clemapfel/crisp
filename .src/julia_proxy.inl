@@ -3,7 +3,10 @@
 // Created on 15.12.21 by clem (mail@clemens-cords.com)
 //
 
+#include <julia.h>
 #include <julia/julia_proxy.hpp>
+#include <julia/julia_native_type.hpp>
+#include <julia/julia_state.hpp>
 
 namespace crisp::julia
 {
@@ -11,6 +14,13 @@ namespace crisp::julia
     {
         _value = v;
         _type = get_type(v);
+
+        State::allocate(_value);
+    }
+
+    Proxy::~Proxy()
+    {
+        State::schedule_free(_value);
     }
 
     template<typename T>
